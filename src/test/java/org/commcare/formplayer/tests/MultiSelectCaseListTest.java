@@ -83,4 +83,9 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 + "</result>\n";
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
+
+    @Override
+    protected boolean useCommCareArchiveReference() {
+        return false;
+    }
 }
