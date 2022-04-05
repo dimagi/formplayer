@@ -824,12 +824,21 @@ public class BaseTestClass {
             String testName,
             QueryData queryData,
             Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections, testName, queryData, null, clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(String[] selections,
+            String testName,
+            QueryData queryData,
+            String[] selectedValues,
+            Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setQueryData(queryData);
+        sessionNavigationBean.setSelectedValues(selectedValues);
         return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
                 ControllerType.MENU,
                 RequestType.POST,
