@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -64,17 +65,15 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         String sessionId = formRespUsingGuid.getSessionId();
         EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('commcaresession')/session/data/selected_cases");
-        assert evaluateXpathResponseBean.getStatus().equals(
-                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         String guid = selections[selections.length - 1];
         String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>" + guid + "</result>\n";
-        assert evaluateXpathResponseBean.getOutput().equals(result);
+        assertEquals(evaluateXpathResponseBean.getOutput(), result);
 
         // Ensure that 'selected_cases' instance is populated correctly
         evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('selected_cases')/results");
-        assert evaluateXpathResponseBean.getStatus().equals(
-                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<result>\n"
                 + "  <results id=\"selected_cases\">\n"
@@ -82,6 +81,11 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 + "    <value>3512eb7c-7a58-4a95-beda-205eb0d7f163</value>\n"
                 + "  </results>\n"
                 + "</result>\n";
-        assert evaluateXpathResponseBean.getOutput().equals(result);
+        assertEquals(evaluateXpathResponseBean.getOutput(), result);
+    }
+
+    @Override
+    protected boolean useCommCareArchiveReference() {
+        return false;
     }
 }

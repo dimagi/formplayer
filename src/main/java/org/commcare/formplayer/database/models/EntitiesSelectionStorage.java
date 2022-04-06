@@ -75,6 +75,18 @@ public class EntitiesSelectionStorage implements EntitiesSelectionCache {
         }
     }
 
+    @Override
+    public boolean contains(String key) throws SQLException {
+        try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(handler,
+                TABLE_NAME,
+                new String[]{COL_KEY},
+                new String[]{key})) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
     private String serialize(String[] values) {
         return Joiner.on(ARRAY_SEPARATOR).join(values);
     }
