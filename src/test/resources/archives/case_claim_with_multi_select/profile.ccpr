@@ -14,7 +14,6 @@
     <property key="PostURL" value="http://localhost:8000/a/test/receiver/secure/10e4b0749867a6b4736324cdde823222/" force="true"/>
     <property key="PostTestURL" value="http://localhost:8000/a/test/receiver/secure/10e4b0749867a6b4736324cdde823222/" force="true"/>
     <property key="key_server" value="http://localhost:8000/a/test/phone/keys/" force="true"/>
-    <property key="cur_locale" value="en" force="false"/>
     <property key="cc_user_domain" value="test.commcarehq.org" force="true"/>
     <property key="jr_openrosa_api" value="1.0" force="true"/>
 
