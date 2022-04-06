@@ -56,3 +56,4 @@ submodules:
     trunk: formplayer
     branches:
       - ce/ensure-session # Cal Nov 20 2021
+      - rc/exclude-subcase-query-from-search-filter # Robert April 6
