@@ -29,6 +29,9 @@ import org.springframework.util.MultiValueMap;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ *
+ */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class MultiSelectCaseClaimTest extends BaseTestClass {
@@ -78,6 +81,9 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
                 selectedValues,
                 CommandListResponseBean.class);
 
+        // `use_selected_values' should be replaced in returned selections
+        Assertions.assertNotEquals(selections, commandResponse.getSelections());
+
         // Verify case claim request
         verify(webClientMock, times(1)).post(urlCaptor.capture(), requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/claim-case/", urlCaptor.getAllValues().get(0));
@@ -87,9 +93,6 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         List<String> casesToBeClaimed = Arrays.asList("0156fa3e-093e-4136-b95c-01b13dae66c7",
                 "0156fa3e-093e-4136-b95c-01b13dae66c8");
         assertEquals(requestData.get("case_id"), casesToBeClaimed);
-
-        // `use_selected_values' should be replaced in returned selections
-        Assertions.assertNotEquals(selections, commandResponse.getSelections());
     }
 
     private void configureSyncMock() {
