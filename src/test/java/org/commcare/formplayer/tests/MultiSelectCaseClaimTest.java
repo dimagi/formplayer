@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
+ * Tests for selecting and claiming multiple entities from case search results screen
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
