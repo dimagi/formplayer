@@ -102,4 +102,9 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
                 .thenReturn(FileUtils.getFile(this.getClass(),
                         "query_responses/case_claim_multi_select_response.xml"));
     }
+
+    @Override
+    protected boolean useCommCareArchiveReference() {
+        return false;
+    }
 }
