@@ -61,8 +61,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
     @Test
     public void testCaseClaimWithMultiSelectList() throws Exception {
-        configureQueryMock();
-        configureSyncMock();
+        configureCaseSearchMock();
 
         // default search is on so we should skip to search results directly
         EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"1", "action 1"},
@@ -95,12 +94,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         assertEquals(requestData.get("case_id"), casesToBeClaimed);
     }
 
-    private void configureSyncMock() {
-        when(webClientMock.post(anyString(), any()))
-                .thenReturn("");
-    }
-
-    private void configureQueryMock() {
+    private void configureCaseSearchMock() {
         when(webClientMock.postFormData(anyString(), any(Multimap.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(),
                         "query_responses/case_claim_multi_select_response.xml"));
