@@ -49,7 +49,7 @@
 
 trunk: master
 name: autostaging
-branches:
+# branches:
   # - gh/form-def/add-table # Graham Jan 24 (contains migration)
 submodules:
   libs/commcare:
