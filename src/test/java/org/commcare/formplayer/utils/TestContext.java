@@ -8,6 +8,7 @@ import org.commcare.formplayer.mocks.TestInstallService;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
@@ -72,6 +73,9 @@ public class TestContext {
 
     @MockBean
     public FormSessionService formSessionService;
+
+    @MockBean
+    public FormDefinitionService formDefinitionService;
 
     @MockBean
     public MenuSessionService menuSessionService;
