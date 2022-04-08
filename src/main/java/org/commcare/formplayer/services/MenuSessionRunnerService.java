@@ -50,6 +50,8 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -482,8 +484,12 @@ public class MenuSessionRunnerService {
     }
 
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
+        Boolean dontSync = false;
         try {
-            webClient.post(screen.getUrl(), screen.getQueryParams());
+            ResponseEntity<String> entity = webClient.post(screen.getUrl(), screen.getQueryParams());
+            if (entity != null && entity.getStatusCode() == HttpStatus.NO_CONTENT) {
+                dontSync = true;
+            }
         } catch (RestClientResponseException e) {
             return new NotificationMessage(
                     String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true,
@@ -492,7 +498,9 @@ public class MenuSessionRunnerService {
             return new NotificationMessage("Unknown error performing case claim", true,
                     NotificationMessage.Tag.sync);
         }
-        restoreFactory.performTimedSync(false, false, false);
+        if (!dontSync) {
+            restoreFactory.performTimedSync(false, false, false);
+        }
         return null;
     }
 
