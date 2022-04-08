@@ -363,7 +363,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(webClientMock.post(anyString(), anyString())).thenReturn("");
+        when(webClientMock.post(anyString(), anyString())).thenReturn(null);
     }
 
     private void configureQueryMock() {
