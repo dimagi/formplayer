@@ -163,6 +163,7 @@ public class Constants {
     // End Datadog metrics
 
     public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
+    public static final String SCHEDULED_TASKS_PURGE_ENTITIES_SELECTIONS = "scheduled_tasks.purge_entities_selections";
 
     // Feature Flags/Toggles
     // These correspond to the names of StaticToggle objects in commcare-hq repo's corehq/toggles.py

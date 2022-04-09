@@ -1,6 +1,10 @@
 package org.commcare.formplayer.objects;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -22,6 +26,10 @@ public class EntitiesSelection {
     @Convert(converter=ByteArrayConverter.class)
     private String[] entities;
 
+    @CreationTimestamp
+    @Column(name="datecreated")
+    private Instant dateCreated;
+
     @SuppressWarnings("unused")
     public EntitiesSelection() {
     }
@@ -36,5 +44,9 @@ public class EntitiesSelection {
 
     public String getId() {
         return id;
+    }
+
+    public Instant getDateCreated() {
+        return dateCreated;
     }
 }

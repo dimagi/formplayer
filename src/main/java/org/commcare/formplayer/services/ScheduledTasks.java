@@ -1,6 +1,9 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.Constants;
@@ -9,8 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
-
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 public class ScheduledTasks {
@@ -25,6 +26,9 @@ public class ScheduledTasks {
     @Autowired
     private FormSessionService formSessionService;
 
+    @Autowired
+    private EntitiesSelectionService entitiesSelectionService;
+
     // the default "0 0 0 * * *" schedule means midnight each night
     @Scheduled(cron= "${commcare.formplayer.scheduledTasks.purge.cron:0 0 0 * * *}")
     @SchedulerLock(name = "purge",
@@ -35,6 +39,12 @@ public class ScheduledTasks {
         int deletedRows = formSessionService.purge();
         datadogStatsDClient.count(
                 String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "deletedRows"),
+                deletedRows
+        );
+
+        int deletedEntitiesSelectionsRows = entitiesSelectionService.purge();
+        datadogStatsDClient.count(
+                String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "deletedEntitiesSelectionsRows"),
                 deletedRows
         );
         datadogStatsDClient.increment(

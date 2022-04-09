@@ -10,8 +10,10 @@ public class V22__init_entities_selection extends BaseFormplayerMigration {
                 "CREATE TABLE entities_selection (\n" +
                         "    id text NOT NULL,\n" +
                         "    entities bytea NOT NULL,\n" +
+                        "    datecreated timestamptz NOT NULL,\n" +
                         "    CONSTRAINT entities_selection_pkey PRIMARY KEY (id)\n" +
-                        ")"
+                        ")",
+                "CREATE INDEX ON entities_selection (datecreated)"
         );
     }
 }
