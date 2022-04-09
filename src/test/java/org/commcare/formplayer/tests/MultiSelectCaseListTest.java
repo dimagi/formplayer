@@ -20,8 +20,7 @@ import org.springframework.util.Assert;
 /**
  * Tests Navigation involving a multi-select case list
  */
-@SpringBootTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class MultiSelectCaseListTest extends BaseTestClass {
 
