@@ -11,14 +11,17 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.Assert;
 
 /**
  * Tests Navigation involving a multi-select case list
  */
-@WebMvcTest
+@SpringBootTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(classes = TestContext.class)
 public class MultiSelectCaseListTest extends BaseTestClass {
 
