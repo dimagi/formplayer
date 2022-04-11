@@ -97,7 +97,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
     private void configureCaseSearchMock() {
         when(webClientMock.postFormData(anyString(), any(Multimap.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(),
-                        "query_responses/case_claim_multi_select_response.xml"));
+                        "query_responses/case_search_multi_select_response.xml"));
     }
 
     @Override

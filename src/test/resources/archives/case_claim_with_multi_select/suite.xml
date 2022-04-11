@@ -192,19 +192,7 @@
     <instance id="commcaresession" src="jr://instance/session"/>
    <session>
       <datum id="case_id_new_case_0" function="uuid()"/>
-      <query url="http://www.example.com/a/domain/phone/get_case/" storage-instance="registry" template="case" default_search="true">
-        <data key="case_type" ref="'case'"/>
-      </query>
-    </session>
-    <stack>
-      <create if="count(instance('commcaresession')/session/data/return_to) = 1 and instance('commcaresession')/session/data/return_to = 'm1' and count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id_new_case_0]) &gt; 0">
-        <command value="'m1'"/>
-        <datum id="case_id" value="instance('commcaresession')/session/data/case_id_new_case_0"/>
-      </create>
-      <create if="count(instance('commcaresession')/session/data/return_to) = 1 and instance('commcaresession')/session/data/return_to = 'm1' and count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id_new_case_0]) = 0">
-        <command value="'m1'"/>
-      </create>
-    </stack>
+   </session>
   </entry>
   <entry>
     <form>http://openrosa.org/formdesigner/52D111C9-79C6-403F-BF4C-D24B64A872E2</form>
@@ -271,35 +259,6 @@
               <locale id="search_property.m1.name"/>
             </text>
           </display>
-        </prompt>
-        <prompt key="state" input="select1" default="&quot;ka&quot;" allow_blank_value="true">
-          <display>
-            <text>
-              <locale id="search_property.m1.state"/>
-            </text>
-            <hint>
-              <text>
-                <locale id="search_property.m1.hint"/>
-              </text>
-            </hint>
-          </display>
-          <itemset nodeset="instance('state')/state_list/state">
-            <label ref="name"/>
-            <value ref="id"/>
-            <sort ref="id"/>
-          </itemset>
-        </prompt>
-        <prompt key="district" input="select">
-          <display>
-            <text>
-              <locale id="search_property.m1.district"/>
-            </text>
-          </display>
-          <itemset nodeset="instance('district')/district_list/district[state_id = $state]">
-            <label ref="name"/>
-            <value ref="id"/>
-            <sort ref="id"/>
-          </itemset>
         </prompt>
       </query>
       <instance-datum id="search_cases" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
