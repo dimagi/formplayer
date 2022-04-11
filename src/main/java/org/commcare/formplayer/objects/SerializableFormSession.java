@@ -65,6 +65,11 @@ public class SerializableFormSession implements Serializable{
     @Column(name="instancexml")
     private String instanceXml;
 
+    @Setter
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "form_definition_id")
+    private SerializableFormDefinition formDefinition;
+
     @Column(updatable=false)
     private String username;
 
