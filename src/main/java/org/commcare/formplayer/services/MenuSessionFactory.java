@@ -52,6 +52,9 @@ public class MenuSessionFactory {
     @Autowired
     protected FormplayerStorageFactory storageFactory;
 
+    @Autowired
+    private EntitiesSelectionService entitiesSelectionService;
+
     @Value("${commcarehq.host}")
     private String host;
 
@@ -149,11 +152,12 @@ public class MenuSessionFactory {
                                     boolean preview) throws Exception {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
-                caseSearchHelper);
+                caseSearchHelper, entitiesSelectionService);
     }
 
     @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper);
+        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper,
+                entitiesSelectionService);
     }
 }
