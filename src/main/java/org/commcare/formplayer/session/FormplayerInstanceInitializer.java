@@ -1,13 +1,14 @@
 package org.commcare.formplayer.session;
 
 import org.commcare.cases.instance.CaseInstanceTreeElement;
+import org.commcare.cases.model.Case;
+import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.data.xml.VirtualInstances;
+import org.commcare.formplayer.database.models.EntitiesSelectionStorage;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
-
-import org.commcare.cases.model.Case;
-import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
@@ -17,8 +18,8 @@ import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
 
+import java.sql.SQLException;
 import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Created by willpride on 1/29/16.
@@ -31,16 +32,16 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-                                         UserSqlSandbox mSandbox, CommCarePlatform mPlatform) {
+            UserSqlSandbox mSandbox, CommCarePlatform mPlatform) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
     }
 
     @Override
     protected InstanceRoot setupCaseData(ExternalDataInstance instance) {
         if (casebase == null) {
-            SqlStorage<Case> storage = (SqlStorage<Case>) mSandbox.getCaseStorage();
+            SqlStorage<Case> storage = (SqlStorage<Case>)mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
-            formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox) mSandbox);
+            formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox)mSandbox);
             casebase = new CaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.
@@ -82,6 +83,24 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         } else {
             return new ConcreteInstanceRoot(loadFixtureRoot(instance, instance.getReference()));
         }
+    }
+
+    @Override
+    protected InstanceRoot setupSelectedCases(ExternalDataInstance instance) {
+        String guid = getGuidForSelectedCasesInstance(instance);
+        if (guid != null) {
+            try {
+                String[] selectedValues = new EntitiesSelectionStorage(
+                        ((UserSqlSandbox)mSandbox).getConnection()).read(guid);
+                if (selectedValues != null) {
+                    return new ConcreteInstanceRoot(
+                            VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
+                }
+            } catch (SQLException throwables) {
+                throw new RuntimeException("An error occurred while trying to read entity selections from storage ", throwables);
+            }
+        }
+        return ConcreteInstanceRoot.NULL;
     }
 
     public String getVersionString() {
