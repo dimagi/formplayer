@@ -31,9 +31,6 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
     private EntitiesSelectionRepo entitiesSelectionRepo;
 
     @Autowired
-    private RestoreFactory mRestoreFactory;
-
-    @Autowired
     private FormplayerStorageFactory storageFactory;
 
     @Autowired(required = false)
@@ -44,8 +41,8 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
 
     @Override
     public UUID write(String[] values) {
-        EntitiesSelection entitySelection =  new EntitiesSelection(mRestoreFactory.getUsername(),
-                mRestoreFactory.getDomain(), storageFactory.getAppId(), mRestoreFactory.getAsUsername(), values);
+        EntitiesSelection entitySelection =  new EntitiesSelection(storageFactory.getUsername(),
+                storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(), values);
         EntitiesSelection entitiesSelection = entitiesSelectionRepo.save(entitySelection);
         Cache cache = cacheManager.getCache("entities_selection");
         cache.put(entitiesSelection.getId(), entitiesSelection.getEntities());
