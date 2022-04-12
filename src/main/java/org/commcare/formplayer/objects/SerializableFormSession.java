@@ -78,7 +78,7 @@ public class SerializableFormSession implements Serializable {
     private String initLang;
 
     @Column(name = "sessiondata")
-    @Convert(converter=ByteArrayConverter.class)
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, String> sessionData;
 
     @Setter
@@ -86,7 +86,7 @@ public class SerializableFormSession implements Serializable {
     private String currentIndex;
 
     @Column(name = "functioncontext")
-    @Convert(converter=ByteArrayConverter.class)
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, FunctionHandler[]> functionContext;
 
     @Column(name = "inpromptmode")
