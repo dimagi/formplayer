@@ -30,6 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,7 +82,7 @@ public class EntitiesSelectionServiceTest {
         String[] selectedValues = new String[]{"val1", "val2"};
         String recordId = entitiesSelectionService.write(selectedValues);
         assertTrue(getCachedRecord(recordId).isPresent());
-        entitiesSelectionService.purge();
+        entitiesSelectionService.purge(Instant.now());
         assertFalse(getCachedRecord(recordId).isPresent());
     }
 

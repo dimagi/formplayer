@@ -61,15 +61,7 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
     }
 
     @CacheEvict(allEntries = true)
-    public int purge() {
-        Instant cutoff = Instant.now().minus(7, ChronoUnit.DAYS);
-        long start = System.currentTimeMillis();
-        int deletedRows = entitiesSelectionRepo.deleteSessionsOlderThan(cutoff);
-        long elapsed = System.currentTimeMillis() - start;
-        log.info(String.format("Purged %d stale entities selections in %d ms", deletedRows, elapsed));
-        if (datadogStatsDClient != null) {
-            datadogStatsDClient.time("PostgresEntitiesSelectionRepo.purge.timeInMillis", elapsed);
-        }
-        return deletedRows;
+    public int purge(Instant cutoff) {
+        return entitiesSelectionRepo.deleteSessionsOlderThan(cutoff);
     }
 }
