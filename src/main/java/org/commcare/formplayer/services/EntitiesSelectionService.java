@@ -37,7 +37,7 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
     CacheManager cacheManager;
 
     @Override
-    public String cache(String[] values) {
+    public String write(String[] values) {
         EntitiesSelection entitySelection = entitiesSelectionRepo.save(new EntitiesSelection(values));
         Cache cache = cacheManager.getCache("entities_selection");
         cache.put(entitySelection.getId(), entitySelection.getEntities());

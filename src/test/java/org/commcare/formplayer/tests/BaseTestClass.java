@@ -319,7 +319,7 @@ public class BaseTestClass {
 
     private void mockEntitiesSelectionService() {
         entitiesSelectionMap.clear();
-        when(entitiesSelectionService.cache(any(String[].class))).thenAnswer(invocation -> {
+        when(entitiesSelectionService.write(any(String[].class))).thenAnswer(invocation -> {
             EntitiesSelection entitiesSelection = new EntitiesSelection((String[])invocation.getArguments()[0]);
             if (entitiesSelection.getId() == null) {
                 // this is normally taken care of by Hibernate

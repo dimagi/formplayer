@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -68,7 +66,7 @@ public class EntitiesSelectionServiceTest {
     public void testGetRecordById_cached() {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
-        String recordId = entitiesSelectionService.cache(selectedValues);
+        String recordId = entitiesSelectionService.write(selectedValues);
 
         // cache is populated on save
         assertEquals(selectedValues, getCachedRecord(recordId).get());
@@ -81,7 +79,7 @@ public class EntitiesSelectionServiceTest {
     @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
-        String recordId = entitiesSelectionService.cache(selectedValues);
+        String recordId = entitiesSelectionService.write(selectedValues);
         assertTrue(getCachedRecord(recordId).isPresent());
         entitiesSelectionService.purge();
         assertFalse(getCachedRecord(recordId).isPresent());
