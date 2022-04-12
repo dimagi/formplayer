@@ -12,18 +12,18 @@ import java.time.Instant;
 import java.util.Map;
 
 @Entity
-@Table(name="formplayer_sessions")
+@Table(name = "formplayer_sessions")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-public class SerializableFormSession implements Serializable{
+public class SerializableFormSession implements Serializable {
     public enum SubmitStatus {
         PROCESSED_XML,
         PROCESSED_STACK
     }
 
     @Id
-    @GeneratedValue( generator="uuid" )
-    @GenericGenerator(name="uuid", strategy="org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     @Version
