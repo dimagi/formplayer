@@ -67,7 +67,7 @@ public class EntitiesSelectionServiceTest {
     public void testGetRecordById_cached() {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
-        String recordId = entitiesSelectionService.write(selectedValues);
+        UUID recordId = entitiesSelectionService.write(selectedValues);
 
         // cache is populated on save
         assertEquals(selectedValues, getCachedRecord(recordId).get());
@@ -80,13 +80,13 @@ public class EntitiesSelectionServiceTest {
     @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
-        String recordId = entitiesSelectionService.write(selectedValues);
+        UUID recordId = entitiesSelectionService.write(selectedValues);
         assertTrue(getCachedRecord(recordId).isPresent());
         entitiesSelectionService.purge(Instant.now());
         assertFalse(getCachedRecord(recordId).isPresent());
     }
 
-    private Optional<String[]> getCachedRecord(String recordId) {
+    private Optional<String[]> getCachedRecord(UUID recordId) {
         return ofNullable(cacheManager.getCache("entities_selection")).map(
                 c -> c.get(recordId, String[].class)
         );

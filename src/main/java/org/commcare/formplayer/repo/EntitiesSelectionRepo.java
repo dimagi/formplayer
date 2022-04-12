@@ -8,11 +8,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * JpaRepository implementation for 'entities_selection' entity
  */
-public interface EntitiesSelectionRepo extends JpaRepository<EntitiesSelection, String> {
+public interface EntitiesSelectionRepo extends JpaRepository<EntitiesSelection, UUID> {
 
     @Modifying
     @Transactional

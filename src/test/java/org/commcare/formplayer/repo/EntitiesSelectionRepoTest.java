@@ -38,7 +38,7 @@ public class EntitiesSelectionRepoTest {
     @Test
     public void testSaveAndLoad() {
         EntitiesSelection entitiesSelection = entitiesSelectionRepo.saveAndFlush(
-                new EntitiesSelection(new String[]{"case1", "case3"}));
+                getEntitiesSelection(new String[]{"case1", "case3"}));
         Assertions.assertNotNull(entitiesSelection.getId());
 
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
@@ -81,7 +81,11 @@ public class EntitiesSelectionRepoTest {
     }
 
     private EntitiesSelection getEntitiySelection(int i) {
-        return new EntitiesSelection(new String[]{"case" + i});
+        return getEntitiesSelection(new String[]{"case" + i});
+    }
+
+    private EntitiesSelection getEntitiesSelection(String[] selections) {
+        return new EntitiesSelection("username", "domain", "appid", "asUser", selections);
     }
 }
 

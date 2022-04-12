@@ -20,6 +20,7 @@ import org.javarosa.core.model.instance.TreeElement;
 
 import java.sql.SQLException;
 import java.util.Hashtable;
+import java.util.UUID;
 
 /**
  * Created by willpride on 1/29/16.
@@ -92,14 +93,10 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     protected InstanceRoot setupSelectedCases(ExternalDataInstance instance) {
         String guid = getGuidForSelectedCasesInstance(instance);
         if (guid != null) {
-            try {
-                String[] selectedValues = entitiesSelectionCache.read(guid);
-                if (selectedValues != null) {
-                    return new ConcreteInstanceRoot(
-                            VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
-                }
-            } catch (SQLException throwables) {
-                throw new RuntimeException("An error occurred while trying to read entity selections from storage ", throwables);
+            String[] selectedValues = entitiesSelectionCache.read(UUID.fromString(guid));
+            if (selectedValues != null) {
+                return new ConcreteInstanceRoot(
+                        VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
             }
         }
         return ConcreteInstanceRoot.NULL;

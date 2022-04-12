@@ -16,8 +16,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -30,6 +30,12 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
     @Autowired
     private EntitiesSelectionRepo entitiesSelectionRepo;
 
+    @Autowired
+    private RestoreFactory mRestoreFactory;
+
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
+
     @Autowired(required = false)
     private StatsDClient datadogStatsDClient;
 
@@ -37,17 +43,19 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
     CacheManager cacheManager;
 
     @Override
-    public String write(String[] values) {
-        EntitiesSelection entitySelection = entitiesSelectionRepo.save(new EntitiesSelection(values));
+    public UUID write(String[] values) {
+        EntitiesSelection entitySelection =  new EntitiesSelection(mRestoreFactory.getUsername(),
+                mRestoreFactory.getDomain(), storageFactory.getAppId(), mRestoreFactory.getAsUsername(), values);
+        EntitiesSelection entitiesSelection = entitiesSelectionRepo.save(entitySelection);
         Cache cache = cacheManager.getCache("entities_selection");
-        cache.put(entitySelection.getId(), entitySelection.getEntities());
-        return entitySelection.getId();
+        cache.put(entitiesSelection.getId(), entitiesSelection.getEntities());
+        return entitiesSelection.getId();
     }
 
     @Nullable
     @Override
     @Cacheable
-    public String[] read(String key) {
+    public String[] read(UUID key) {
         Optional<EntitiesSelection> entitySelection = entitiesSelectionRepo.findById(key);
         if (entitySelection.isPresent()) {
             return entitySelection.get().getEntities();
@@ -56,7 +64,7 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
     }
 
     @Override
-    public boolean contains(String key) {
+    public boolean contains(UUID key) {
         return entitiesSelectionRepo.existsById(key);
     }
 

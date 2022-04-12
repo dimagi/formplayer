@@ -227,7 +227,7 @@ public class BaseTestClass {
             new HashMap<String, SerializableFormSession>();
     final Map<String, SerializableMenuSession> menuSessionMap =
             new HashMap<String, SerializableMenuSession>();
-    final Map<String, EntitiesSelection> entitiesSelectionMap = new HashMap();
+    final Map<UUID, EntitiesSelection> entitiesSelectionMap = new HashMap();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -320,25 +320,26 @@ public class BaseTestClass {
     private void mockEntitiesSelectionService() {
         entitiesSelectionMap.clear();
         when(entitiesSelectionService.write(any(String[].class))).thenAnswer(invocation -> {
-            EntitiesSelection entitiesSelection = new EntitiesSelection((String[])invocation.getArguments()[0]);
+            EntitiesSelection entitiesSelection = new EntitiesSelection("username", "domain", "appid", "asuser",
+                    (String[])invocation.getArguments()[0]);
             if (entitiesSelection.getId() == null) {
                 // this is normally taken care of by Hibernate
-                ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID().toString());
+                ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID());
             }
             entitiesSelectionMap.put(entitiesSelection.getId(), entitiesSelection);
             return entitiesSelection.getId();
         });
 
-        when(entitiesSelectionService.read(anyString())).thenAnswer(invocation -> {
-            String key = (String)invocation.getArguments()[0];
+        when(entitiesSelectionService.read(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
             if (entitiesSelectionMap.containsKey(key)) {
                 return entitiesSelectionMap.get(key).getEntities();
             }
             return null;
         });
 
-        when(entitiesSelectionService.contains(anyString())).thenAnswer(invocation -> {
-            String key = (String)invocation.getArguments()[0];
+        when(entitiesSelectionService.contains(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
             return entitiesSelectionMap.containsKey(key);
         });
     }
