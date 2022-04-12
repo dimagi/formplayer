@@ -3,8 +3,8 @@ package org.commcare.formplayer.services;
 import java.io.IOException;
 import java.util.Optional;
 
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
@@ -30,6 +30,7 @@ public class FormDefinitionService {
     /**
      * Checks if an entry for this (appId, formXmlns, formVersion) combination already exists, and returns if so
      * Otherwise creates a new entry which entails serializing the formDef object (costly operation)
+     *
      * @param appId id for application built in HQ
      * @param formXmlns xmlns identifier for specific form within app
      * @param formVersion version of form xml
