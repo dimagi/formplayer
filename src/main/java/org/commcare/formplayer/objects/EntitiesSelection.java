@@ -13,6 +13,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * Entity to represent entities selected on the multi-select Entity Screen
+ */
 @Entity
 @Table(name = "entities_selection")
 public class EntitiesSelection {

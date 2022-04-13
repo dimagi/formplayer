@@ -21,6 +21,10 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+/**
+ * Implementation for persisting entities selections for a multi-select Entity Screen through a Spring JPA
+ * repository
+ */
 @Service
 @CacheConfig(cacheNames = {"entities_selection"})
 public class EntitiesSelectionService implements EntitiesSelectionCache {
@@ -41,7 +45,7 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
 
     @Override
     public UUID write(String[] values) {
-        EntitiesSelection entitySelection =  new EntitiesSelection(storageFactory.getUsername(),
+        EntitiesSelection entitySelection = new EntitiesSelection(storageFactory.getUsername(),
                 storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(), values);
         EntitiesSelection entitiesSelection = entitiesSelectionRepo.save(entitySelection);
         Cache cache = cacheManager.getCache("entities_selection");
@@ -56,7 +60,7 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
         Optional<EntitiesSelection> entitySelectionOptional = entitiesSelectionRepo.findById(key);
         if (entitySelectionOptional.isPresent()) {
             EntitiesSelection entitiesSelection = entitySelectionOptional.get();
-            if(entitiesSelection.getUsername().equals(storageFactory.getUsername())
+            if (entitiesSelection.getUsername().equals(storageFactory.getUsername())
                     && entitiesSelection.getAppId().equals(storageFactory.getAppId())) {
                 return entitiesSelection.getEntities();
             }
