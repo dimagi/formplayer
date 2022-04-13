@@ -14,6 +14,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -47,13 +48,20 @@ public class EntitiesSelectionServiceTest {
     @Autowired
     private EntitiesSelectionRepo entitiesSelectionRepo;
 
+    @Autowired
+    FormplayerStorageFactory storageFactory;
+
     @BeforeEach
     public void setUp() {
+        when(storageFactory.getUsername()).thenAnswer(invocation -> "username");
+        when(storageFactory.getDomain()).thenAnswer(invocation -> "domain");
+        when(storageFactory.getAppId()).thenAnswer(invocation -> "appId");
+        when(storageFactory.getAsUsername()).thenAnswer(invocation -> "asUsername");
         // the repo always returns the saved object so simulate that in the mock
         when(entitiesSelectionRepo.save(any())).thenAnswer(
                 (Answer<EntitiesSelection>)invocation -> {
                     EntitiesSelection entitiesSelection = (EntitiesSelection)invocation.getArguments()[0];
-                    ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID().toString());
+                    ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID());
                     return entitiesSelection;
                 });
     }
@@ -61,6 +69,7 @@ public class EntitiesSelectionServiceTest {
     @AfterEach
     public void cleanup() {
         cacheManager.getCache("entities_selection").clear();
+        storageFactory.getSQLiteDB().closeConnection();
     }
 
     @Test
@@ -110,6 +119,14 @@ public class EntitiesSelectionServiceTest {
 
         @MockBean
         public JdbcTemplate jdbcTemplate;
+
+        @MockBean
+        public FormSessionService formSessionService;
+
+        @Bean
+        public FormplayerStorageFactory storageFactory() {
+            return Mockito.spy(FormplayerStorageFactory.class);
+        }
 
         @Bean
         public CacheManager cacheManager() {
