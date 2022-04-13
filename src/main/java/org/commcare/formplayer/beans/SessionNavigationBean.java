@@ -159,10 +159,12 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.casesPerPage = casesPerPage;
     }
 
+    @JsonGetter(value = "selected_values")
     public String[] getSelectedValues() {
         return selectedValues;
     }
 
+    @JsonSetter(value = "selected_values")
     public void setSelectedValues(String[] selectedValues) {
         this.selectedValues = selectedValues;
     }
