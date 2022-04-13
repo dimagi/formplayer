@@ -3,19 +3,21 @@ package org.commcare.formplayer.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.Assert;
+
+import java.util.HashMap;
 
 /**
  * Tests Navigation involving a multi-select case list
@@ -60,9 +62,11 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         selections = formResp.getSelections();
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
+        checkForSelectedCasesInstance(formRespUsingGuid.getSessionId(), selections);
+    }
 
+    private void checkForSelectedCasesInstance(String sessionId, String[] selections) throws Exception {
         // Ensure that the datum is set correctly to the guid
-        String sessionId = formRespUsingGuid.getSessionId();
         EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('commcaresession')/session/data/selected_cases");
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
@@ -82,6 +86,23 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 + "  </results>\n"
                 + "</result>\n";
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
+    }
+
+    @Test
+    public void testEofNavigationRetainsSelectedCases() throws Exception {
+        String[] selections = new String[]{"0", "1", "use_selected_values"};
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                NewFormResponse.class);
+        SubmitResponseBean submitResponse = submitForm(
+                new HashMap<>(),
+                formResp.getSessionId()
+        );
+        assertTrue(submitResponse.getStatus().contentEquals("success"));
+        NewFormResponse newFormResponse = getNextScreenForEofNavigation(submitResponse,
+                NewFormResponse.class);
+        checkForSelectedCasesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections());
     }
 
     @Override
