@@ -326,7 +326,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             sessionWrapper.setXmlns(FunctionUtils.toString(form.eval(ec)));
             sessionWrapper.setEntityDatum("", "awful");
         } else {
-            sessionWrapper.setEntityDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
+            sessionWrapper.setEntityDatum(datum, FunctionUtils.toString(form.eval(ec)));
         }
     }
 
