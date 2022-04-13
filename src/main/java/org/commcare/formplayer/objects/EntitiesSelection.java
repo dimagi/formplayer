@@ -65,4 +65,20 @@ public class EntitiesSelection {
     public Instant getDateCreated() {
         return dateCreated;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public String getAsUser() {
+        return asUser;
+    }
 }

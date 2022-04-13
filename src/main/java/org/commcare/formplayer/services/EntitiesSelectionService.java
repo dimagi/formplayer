@@ -53,9 +53,13 @@ public class EntitiesSelectionService implements EntitiesSelectionCache {
     @Override
     @Cacheable
     public String[] read(UUID key) {
-        Optional<EntitiesSelection> entitySelection = entitiesSelectionRepo.findById(key);
-        if (entitySelection.isPresent()) {
-            return entitySelection.get().getEntities();
+        Optional<EntitiesSelection> entitySelectionOptional = entitiesSelectionRepo.findById(key);
+        if (entitySelectionOptional.isPresent()) {
+            EntitiesSelection entitiesSelection = entitySelectionOptional.get();
+            if(entitiesSelection.getUsername().equals(storageFactory.getUsername())
+                    && entitiesSelection.getAppId().equals(storageFactory.getAppId())) {
+                return entitiesSelection.getEntities();
+            }
         }
         return null;
     }
