@@ -2,7 +2,9 @@ package org.commcare.formplayer.tests;
 
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.exceptions.AlreadyExistsInPoolException;
+import org.commcare.formplayer.exceptions.ExceedsMaxPoolSizeException;
 import org.commcare.formplayer.exceptions.FormDefEntryNotFoundException;
+import org.commcare.formplayer.exceptions.ExceedsMaxPoolSizePerId;
 import org.commcare.formplayer.objects.FormDefPool;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
@@ -39,6 +41,24 @@ public class FormDefPoolTests extends BaseTestClass {
     public void testCreateThrowsExceptionIfFormDefAlreadyAdded() throws Exception {
         this.formDefPool.create("abc123", this.formDefToTest);
         assertThrows(AlreadyExistsInPoolException.class, () -> this.formDefPool.create("abc123", this.formDefToTest));
+    }
+
+    @Test
+    public void testCreateThrowsExceptionWhenMaxObjsPerIdIsReached() throws Exception {
+        FormDefPool customFormDelPool = new FormDefPool(1, 10);
+        customFormDelPool.create("abc123", this.formDefToTest);
+        assertThrows(ExceedsMaxPoolSizePerId.class, () -> {
+            customFormDelPool.create("abc123", this.formDefToTest);
+        });
+    }
+
+    @Test
+    public void testCreateThrowsExceptionWhenMaxObjsTotalIsReached() throws Exception {
+        FormDefPool customFormDelPool = new FormDefPool(1, 1);
+        customFormDelPool.create("abc123", this.formDefToTest);
+        assertThrows(ExceedsMaxPoolSizeException.class, () -> {
+            customFormDelPool.create("def456", this.formDefToTest);
+        });
     }
 
     @Test

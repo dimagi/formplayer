@@ -1,7 +1,9 @@
 package org.commcare.formplayer.objects;
 
 import org.commcare.formplayer.exceptions.AlreadyExistsInPoolException;
+import org.commcare.formplayer.exceptions.ExceedsMaxPoolSizeException;
 import org.commcare.formplayer.exceptions.FormDefEntryNotFoundException;
+import org.commcare.formplayer.exceptions.ExceedsMaxPoolSizePerId;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.TreeElement;
@@ -13,13 +15,30 @@ public class FormDefPool {
 
     private final Hashtable<String, Pair<TreeElement, List<FormDefPoolElement>>> pool;
 
+    private int maxPoolSizePerId;
+    private int maxPoolSize;
+
     public FormDefPool() {
+        this.maxPoolSizePerId = 5;
+        this.maxPoolSize = 50;
         this.pool = new Hashtable<>();
     }
 
-    public void create(String id, FormDef formDef) throws AlreadyExistsInPoolException {
+    public FormDefPool(int maxPoolSizePerId, int maxPoolSize) {
+        this.maxPoolSizePerId = maxPoolSizePerId;
+        this.maxPoolSize = maxPoolSize;
+        this.pool = new Hashtable<>();
+    }
+
+    public void create(String id, FormDef formDef) throws Exception {
+        if (getPoolSize() == this.maxPoolSize) {
+            throw new ExceedsMaxPoolSizeException(maxPoolSize);
+        }
         Pair<TreeElement, List<FormDefPoolElement>> pair = this.pool.get(id);
         if (pair != null) {
+            if (pair.second.size() == this.maxPoolSizePerId) {
+                throw new ExceedsMaxPoolSizePerId(this.maxPoolSizePerId, id);
+            }
             addFormDefToExistingEntry(pair.second, formDef);
         } else {
             createNewFormDefPoolEntry(id, formDef);
@@ -74,5 +93,13 @@ public class FormDefPool {
         FormDefPoolElement elementToAdd = new FormDefPoolElement(formDef);
         elements.add(elementToAdd);
         this.pool.put(id, new Pair(templateRoot, elements));
+    }
+
+    private int getPoolSize() {
+        int totalSize = 0;
+        for (Pair<TreeElement, List<FormDefPoolElement>> pair : this.pool.values()) {
+            totalSize += pair.second.size();
+        }
+        return totalSize;
     }
 }
