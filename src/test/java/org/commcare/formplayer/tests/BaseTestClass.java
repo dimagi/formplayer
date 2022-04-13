@@ -48,6 +48,7 @@ import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.objects.EntitiesSelection;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -55,6 +56,7 @@ import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.EntitiesSelectionService;
+import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
@@ -67,6 +69,7 @@ import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
@@ -79,6 +82,8 @@ import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
+import org.javarosa.core.model.FormDef;
+
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
@@ -145,6 +150,9 @@ public class BaseTestClass {
 
     @Autowired
     protected FormSessionService formSessionService;
+
+    @Autowired
+    protected FormDefinitionService formDefinitionService;
 
     @Autowired
     private MenuSessionService menuSessionService;
@@ -229,6 +237,8 @@ public class BaseTestClass {
             new HashMap<String, SerializableMenuSession>();
     final Map<UUID, EntitiesSelection> entitiesSelectionMap = new HashMap();
 
+    protected Long currentFormDefinitionId = 1L;
+
     @BeforeEach
     public void setUp() throws Exception {
         Mockito.reset(webClientMock);
@@ -269,6 +279,7 @@ public class BaseTestClass {
         DateUtils.setTimezoneProvider(tzProvider);
 
         mockFormSessionService();
+        mockFormDefinitionService();
         mockMenuSessionService();
         mockEntitiesSelectionService();
     }
@@ -316,7 +327,6 @@ public class BaseTestClass {
         }).when(formSessionService).deleteSessionById(anyString());
     }
 
-
     private void mockEntitiesSelectionService() {
         entitiesSelectionMap.clear();
         when(entitiesSelectionService.write(any(String[].class))).thenAnswer(invocation -> {
@@ -342,6 +352,47 @@ public class BaseTestClass {
             UUID key = (UUID)invocation.getArguments()[0];
             return entitiesSelectionMap.containsKey(key);
         });
+    }
+
+    /*
+     * Setup mocking for the FormDefinitionService that allows saving and retrieving form definitions.
+     * The 'persisted' definitions are cleared at the start of each test.
+     */
+    private void mockFormDefinitionService() {
+        formDefinitionMap.clear();
+        currentFormDefinitionId = 1L;
+        doAnswer(new Answer<SerializableFormDefinition>() {
+            @Override
+            public SerializableFormDefinition answer(InvocationOnMock invocation) throws Throwable {
+                String appId = ((String)invocation.getArguments()[0]);
+                String appVersion = ((String)invocation.getArguments()[1]);
+                String xmlns = ((String)invocation.getArguments()[2]);
+                for (SerializableFormDefinition tmp : formDefinitionMap.values()) {
+                    if (tmp.getAppId().equals(appId) && tmp.getFormXmlns().equals(xmlns) && tmp.getFormVersion().equals(appVersion)) {
+                        return tmp;
+                    }
+                }
+                // else create a new one
+                String serializedFormDef;
+                try {
+                    serializedFormDef = FormDefStringSerializer.serialize(((FormDef)invocation.getArguments()[3]));
+                } catch (IOException ex) {
+                    serializedFormDef = "could not serialize provided form def";
+                }
+                SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(
+                        appId, appVersion, xmlns, serializedFormDef
+                );
+                if (serializableFormDef.getId() == null) {
+                    // this is normally taken care of by Hibernate
+                    ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
+                    currentFormDefinitionId++;
+                }
+                formDefinitionMap.put(serializableFormDef.getId(), serializableFormDef);
+                return serializableFormDef;
+            }
+        }).when(this.formDefinitionService).getOrCreateFormDefinition(
+                anyString(), anyString(), anyString(), any(FormDef.class)
+        );
     }
 
     private void mockMenuSessionService() {
