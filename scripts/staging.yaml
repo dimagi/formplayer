@@ -50,6 +50,7 @@
 trunk: master
 name: autostaging
 branches:
+  - multiSelectList+entitiesSelectionPostgress+gh/form-def/add-table # Jenny April 13
   - gh/form-def/add-table # Graham April 12
   - multiSelectList # Shubham/Jenny April 11
   - entitiesSelectionPostgress # Shubham/Jenny April 11
