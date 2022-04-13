@@ -2,9 +2,9 @@ package org.commcare.formplayer.session;
 
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
+import org.commcare.core.interfaces.EntitiesSelectionCache;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.data.xml.VirtualInstances;
-import org.commcare.formplayer.database.models.EntitiesSelectionStorage;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
@@ -20,6 +20,7 @@ import org.javarosa.core.model.instance.TreeElement;
 
 import java.sql.SQLException;
 import java.util.Hashtable;
+import java.util.UUID;
 
 /**
  * Created by willpride on 1/29/16.
@@ -27,13 +28,16 @@ import java.util.Hashtable;
 public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
 
+    private EntitiesSelectionCache entitiesSelectionCache;
+
     public FormplayerInstanceInitializer(UserSqlSandbox sandbox) {
         super(sandbox);
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-            UserSqlSandbox mSandbox, CommCarePlatform mPlatform) {
+            UserSqlSandbox mSandbox, CommCarePlatform mPlatform, EntitiesSelectionCache entitiesSelectionCache) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
+        this.entitiesSelectionCache = entitiesSelectionCache;
     }
 
     @Override
@@ -89,15 +93,10 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     protected InstanceRoot setupSelectedCases(ExternalDataInstance instance) {
         String guid = getGuidForSelectedCasesInstance(instance);
         if (guid != null) {
-            try {
-                String[] selectedValues = new EntitiesSelectionStorage(
-                        ((UserSqlSandbox)mSandbox).getConnection()).read(guid);
-                if (selectedValues != null) {
-                    return new ConcreteInstanceRoot(
-                            VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
-                }
-            } catch (SQLException throwables) {
-                throw new RuntimeException("An error occurred while trying to read entity selections from storage ", throwables);
+            String[] selectedValues = entitiesSelectionCache.read(UUID.fromString(guid));
+            if (selectedValues != null) {
+                return new ConcreteInstanceRoot(
+                        VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
             }
         }
         return ConcreteInstanceRoot.NULL;
