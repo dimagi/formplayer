@@ -695,7 +695,7 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_DETAILS,
@@ -732,12 +732,27 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    private String getInstallReference(String testName) {
+        if (useCommCareArchiveReference()) {
+            return "archives/" + testName + ".ccz";
+        } else {
+            return "archives/" + testName + "/profile.ccpr";
+        }
+    }
+
+    /**
+     * @return whether to use a ccz file reference for the test
+     */
+    protected boolean useCommCareArchiveReference() {
+        return true;
     }
 
     <T> T sessionNavigate(String[] selections, String testName, int sortIndex, Class<T> clazz)
@@ -748,7 +763,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSortIndex(sortIndex);
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -767,7 +782,24 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
+                ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            Class<T> clazz)
+            throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -787,7 +819,7 @@ public class BaseTestClass {
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_ENDPOINT,
@@ -807,13 +839,22 @@ public class BaseTestClass {
             String testName,
             QueryData queryData,
             Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections, testName, queryData, null, clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(String[] selections,
+            String testName,
+            QueryData queryData,
+            String[] selectedValues,
+            Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setQueryData(queryData);
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

@@ -1,10 +1,12 @@
 package org.commcare.formplayer.session;
 
 import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+import static org.commcare.session.SessionFrame.isEntitySelectionDatum;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.database.models.EntitiesSelectionStorage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -25,10 +27,12 @@ import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormIdDatum;
+import org.commcare.suite.model.MultiSelectEntityDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.FormDef;
@@ -115,13 +119,15 @@ public class MenuSession implements HereFunctionHandlerListener {
             this.sandbox = restoreFactory.performTimedSync();
         }
         this.sandbox = restoreFactory.getSandbox();
-        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox, instanceFetcher);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
+                instanceFetcher);
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
-        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox, instanceFetcher);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
+                instanceFetcher);
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -141,8 +147,8 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param allowAutoLaunch If this step is allowed to automatically launch an action,
      *                        assuming it has an autolaunch action specified.
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean inputValidated, boolean allowAutoLaunch)
-            throws CommCareSessionException {
+    public boolean handleInput(String input, boolean needsDetail, boolean inputValidated,
+            boolean allowAutoLaunch, String[] selectedValues) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
@@ -157,14 +163,19 @@ public class MenuSession implements HereFunctionHandlerListener {
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
-                        return handleInput(input, true, inputValidated, allowAutoLaunch);
+                        return handleInput(input, true, inputValidated, allowAutoLaunch, selectedValues);
                     }
-                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
                 } else {
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
             } else {
-                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
+            }
+
+            if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
+                    MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId());
             }
 
             if (addBreadcrumb) {
@@ -174,7 +185,8 @@ public class MenuSession implements HereFunctionHandlerListener {
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
-                    " threw exception " + e.getMessage() + ". Please try reloading this application" +
+                    " threw exception " + e.getMessage() + ". Please try reloading this application"
+                    +
                     " and if the problem persists please report a bug.", e);
         }
     }
@@ -185,7 +197,8 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @return true if the session was advanced
      * @throws CommCareSessionException
      */
-    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
+    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu)
+            throws CommCareSessionException {
         if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
             return false;
         }
@@ -236,7 +249,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             MenuScreen menuScreen = new MenuScreen();
             menuScreen.init(sessionWrapper);
             return menuScreen;
-        } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
+        } else if (isEntitySelectionDatum(next)) {
             EntityScreen entityScreen = getEntityScreenForSession(needsDetail);
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
@@ -264,7 +277,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen getEntityScreenForSession(boolean needsDetail) throws CommCareSessionException {
+    private EntityScreen getEntityScreenForSession(boolean needsDetail)
+            throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
         //This is only needed because with remote queries there can be nested datums with the same
@@ -273,7 +287,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
         String datumKey = datum.getDataId() + ", " + nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
-            EntityScreen entityScreen = createFreshEntityScreen(needsDetail);
+            EntityScreen entityScreen = createFreshEntityScreen(needsDetail, datum);
             entityScreenCache.put(datumKey, entityScreen);
             return entityScreen;
         } else {
@@ -282,9 +296,17 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen createFreshEntityScreen(boolean needsDetail) throws CommCareSessionException {
-        EntityScreen entityScreen = new EntityScreen(false, needsDetail, sessionWrapper);
-        return entityScreen;
+    private EntityScreen createFreshEntityScreen(boolean needsDetail,
+            EntityDatum datum)
+            throws CommCareSessionException {
+        if (datum instanceof MultiSelectEntityDatum) {
+            EntitiesSelectionStorage entitiesSelectionStorage = new EntitiesSelectionStorage(
+                    sandbox.getConnection());
+            return new MultiSelectEntityScreen(false, needsDetail,
+                    sessionWrapper, entitiesSelectionStorage);
+        } else {
+            return new EntityScreen(false, needsDetail, sessionWrapper);
+        }
     }
 
     private void computeDatum() {
@@ -323,11 +345,13 @@ public class MenuSession implements HereFunctionHandlerListener {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
+        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty(
+                "PostURL");
         return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
                 sessionData, postUrl, session.getLocale(), session.getId(),
                 null, oneQuestionPerScreen,
-                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory,
+                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
+                storageFactory,
                 false, null, new SessionFrame(sessionWrapper.getFrame()), caseSearchHelper);
     }
 
