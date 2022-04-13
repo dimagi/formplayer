@@ -3,8 +3,8 @@ package org.commcare.formplayer.tests;
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.exceptions.AlreadyExistsInPoolException;
 import org.commcare.formplayer.exceptions.ExceedsMaxPoolSizeException;
-import org.commcare.formplayer.exceptions.FormDefEntryNotFoundException;
 import org.commcare.formplayer.exceptions.ExceedsMaxPoolSizePerId;
+import org.commcare.formplayer.exceptions.FormDefEntryNotFoundException;
 import org.commcare.formplayer.objects.FormDefPool;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
@@ -20,8 +20,16 @@ import org.springframework.test.context.ContextConfiguration;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
+/**
+ * Tests for FormDefPool object
+ */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class FormDefPoolTests extends BaseTestClass {
