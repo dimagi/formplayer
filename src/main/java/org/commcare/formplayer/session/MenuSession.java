@@ -2,6 +2,7 @@ package org.commcare.formplayer.session;
 
 import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
 import static org.commcare.session.SessionFrame.isEntitySelectionDatum;
+import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALUES;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -164,7 +165,8 @@ public class MenuSession implements HereFunctionHandlerListener {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 boolean autoLaunch = entityScreen.getAutoLaunchAction() != null && allowAutoLaunch;
                 addBreadcrumb = !autoLaunch;
-                if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
+                if (input.startsWith("action ") || (autoLaunch) || !inputValidated ||
+                        input.contentEquals(USE_SELECTED_VALUES)) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
                         return handleInput(input, true, inputValidated, allowAutoLaunch, selectedValues);
@@ -178,7 +180,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             }
 
             if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
-                    MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                    USE_SELECTED_VALUES)) {
                 addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId().toString());
             }
 

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -13,6 +15,7 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.Assert;
@@ -63,6 +66,19 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
         checkForSelectedCasesInstance(formRespUsingGuid.getSessionId(), selections);
+    }
+
+    @Test
+    public void testMultiSelectCaseListWithPreValidatedInput() throws Exception {
+        Mockito.doReturn(true)
+                .when(restoreFactoryMock).isConfirmedSelection(any());
+        String[] selections = new String[]{"0", "1", "use_selected_values"};
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                NewFormResponse.class);
+        sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                NewFormResponse.class);
     }
 
     private void checkForSelectedCasesInstance(String sessionId, String[] selections) throws Exception {
