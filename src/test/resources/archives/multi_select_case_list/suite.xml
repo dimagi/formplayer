@@ -86,9 +86,17 @@
       </text>
     </command>
     <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
     <session>
       <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m0_case_short" detail-confirm="m0_case_long" max-select-value="10"/>
     </session>
+    <stack>
+      <create>
+        <command value="'m0'"/>
+        <command value="'m0-f1'"/>
+        <datum id="selected_cases" value="instance('commcaresession')/session/data/selected_cases"/>
+      </create>
+    </stack>
   </entry>
   <menu id="m0">
     <text>
