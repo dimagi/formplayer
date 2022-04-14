@@ -47,12 +47,14 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.objects.EntitiesSelection;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.EntitiesSelectionService;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
@@ -189,6 +191,9 @@ public class BaseTestClass {
     @Autowired
     private NotificationLogger notificationLogger;
 
+    @Autowired
+    protected EntitiesSelectionService entitiesSelectionService;
+
     @InjectMocks
     protected FormController formController;
 
@@ -222,6 +227,7 @@ public class BaseTestClass {
             new HashMap<String, SerializableFormSession>();
     final Map<String, SerializableMenuSession> menuSessionMap =
             new HashMap<String, SerializableMenuSession>();
+    final Map<UUID, EntitiesSelection> entitiesSelectionMap = new HashMap();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -264,6 +270,7 @@ public class BaseTestClass {
 
         mockFormSessionService();
         mockMenuSessionService();
+        mockEntitiesSelectionService();
     }
 
     /*
@@ -307,6 +314,34 @@ public class BaseTestClass {
                 return null;
             }
         }).when(formSessionService).deleteSessionById(anyString());
+    }
+
+
+    private void mockEntitiesSelectionService() {
+        entitiesSelectionMap.clear();
+        when(entitiesSelectionService.write(any(String[].class))).thenAnswer(invocation -> {
+            EntitiesSelection entitiesSelection = new EntitiesSelection("username", "domain", "appid", "asuser",
+                    (String[])invocation.getArguments()[0]);
+            if (entitiesSelection.getId() == null) {
+                // this is normally taken care of by Hibernate
+                ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID());
+            }
+            entitiesSelectionMap.put(entitiesSelection.getId(), entitiesSelection);
+            return entitiesSelection.getId();
+        });
+
+        when(entitiesSelectionService.read(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
+            if (entitiesSelectionMap.containsKey(key)) {
+                return entitiesSelectionMap.get(key).getEntities();
+            }
+            return null;
+        });
+
+        when(entitiesSelectionService.contains(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
+            return entitiesSelectionMap.containsKey(key);
+        });
     }
 
     private void mockMenuSessionService() {
@@ -1054,7 +1089,8 @@ public class BaseTestClass {
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper());
+                menuSessionRunnerService.getCaseSearchHelper(),
+                entitiesSelectionService);
     }
 
     @Nullable

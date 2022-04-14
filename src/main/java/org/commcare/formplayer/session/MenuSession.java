@@ -5,8 +5,8 @@ import static org.commcare.session.SessionFrame.isEntitySelectionDatum;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.EntitiesSelectionCache;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.formplayer.database.models.EntitiesSelectionStorage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -78,19 +78,22 @@ public class MenuSession implements HereFunctionHandlerListener {
     private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
     private boolean oneQuestionPerScreen;
     private RemoteInstanceFetcher instanceFetcher;
+    private EntitiesSelectionCache entitiesSelectionCache;
 
     private String smartLinkRedirect;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-            RestoreFactory restoreFactory, RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RestoreFactory restoreFactory, RemoteInstanceFetcher instanceFetcher,
+            EntitiesSelectionCache entitiesSelectionCache) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
         this.engine = installService.configureApplication(session.getInstallReference(),
                 session.isPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
+        this.entitiesSelectionCache = entitiesSelectionCache;
         this.sessionWrapper = new FormplayerSessionWrapper(
                 SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
-                engine.getPlatform(), sandbox, instanceFetcher);
+                engine.getPlatform(), sandbox, instanceFetcher, entitiesSelectionCache);
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
@@ -99,7 +102,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RemoteInstanceFetcher instanceFetcher, EntitiesSelectionCache entitiesSelectionCache) throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
@@ -119,15 +122,16 @@ public class MenuSession implements HereFunctionHandlerListener {
             this.sandbox = restoreFactory.performTimedSync();
         }
         this.sandbox = restoreFactory.getSandbox();
+        this.entitiesSelectionCache = entitiesSelectionCache;
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, entitiesSelectionCache);
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, entitiesSelectionCache);
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -175,7 +179,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
             if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
                     MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
-                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId());
+                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId().toString());
             }
 
             if (addBreadcrumb) {
@@ -300,10 +304,8 @@ public class MenuSession implements HereFunctionHandlerListener {
             EntityDatum datum)
             throws CommCareSessionException {
         if (datum instanceof MultiSelectEntityDatum) {
-            EntitiesSelectionStorage entitiesSelectionStorage = new EntitiesSelectionStorage(
-                    sandbox.getConnection());
             return new MultiSelectEntityScreen(false, needsDetail,
-                    sessionWrapper, entitiesSelectionStorage);
+                    sessionWrapper, entitiesSelectionCache);
         } else {
             return new EntityScreen(false, needsDetail, sessionWrapper);
         }
@@ -352,7 +354,8 @@ public class MenuSession implements HereFunctionHandlerListener {
                 null, oneQuestionPerScreen,
                 session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory,
-                false, null, new SessionFrame(sessionWrapper.getFrame()), caseSearchHelper);
+                false, null, new SessionFrame(sessionWrapper.getFrame()), caseSearchHelper,
+                entitiesSelectionCache);
     }
 
     public SessionWrapper getSessionWrapper() {
