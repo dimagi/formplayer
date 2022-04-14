@@ -46,7 +46,7 @@ public class FormDefPool {
             if (pair.second.size() == this.maxPoolSizePerId) {
                 throw new ExceedsMaxPoolSizePerId(this.maxPoolSizePerId, id);
             }
-            addFormDefToExistingEntry(pair.second, formDef);
+            addFormDefForExistingId(pair.second, formDef);
         } else {
             createNewFormDefPoolEntry(id, formDef);
         }
@@ -89,7 +89,8 @@ public class FormDefPool {
         return formDef;
     }
 
-    private void addFormDefToExistingEntry(List<FormDefPoolElement> elements, FormDef formDef) throws AlreadyExistsInPoolException {
+    private void addFormDefForExistingId(List<FormDefPoolElement> elements,
+                                         FormDef formDef) throws AlreadyExistsInPoolException {
         FormDefPoolElement element = elements.stream().filter(e -> e.formDef == formDef).findFirst().orElse(null);
         if (element != null) {
             throw new AlreadyExistsInPoolException();

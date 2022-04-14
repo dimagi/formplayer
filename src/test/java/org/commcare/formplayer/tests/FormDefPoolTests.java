@@ -48,7 +48,9 @@ public class FormDefPoolTests extends BaseTestClass {
     @Test
     public void testCreateThrowsExceptionIfFormDefAlreadyAdded() throws Exception {
         this.formDefPool.create("abc123", this.formDefToTest);
-        assertThrows(AlreadyExistsInPoolException.class, () -> this.formDefPool.create("abc123", this.formDefToTest));
+        assertThrows(
+                AlreadyExistsInPoolException.class, () -> this.formDefPool.create("abc123", this.formDefToTest)
+        );
     }
 
     @Test
