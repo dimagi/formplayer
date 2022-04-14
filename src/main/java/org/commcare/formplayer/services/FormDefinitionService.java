@@ -3,8 +3,8 @@ package org.commcare.formplayer.services;
 import java.io.IOException;
 import java.util.Optional;
 
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
@@ -43,10 +43,9 @@ public class FormDefinitionService {
             String formXmlns,
             String formVersion,
             FormDef formDef) {
-        Optional<SerializableFormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndFormXmlnsAndFormVersion(
-                appId, formXmlns, formVersion
-        );
-        return optFormDef.orElseGet(() -> {
+        Optional<SerializableFormDefinition> optFormDef = this.formDefinitionRepo
+                .findByAppIdAndFormXmlnsAndFormVersion(appId, formXmlns, formVersion);
+        SerializableFormDefinition formDefinition = optFormDef.orElseGet(() -> {
             try {
                 String serializedFormDef = FormDefStringSerializer.serialize(formDef);
                 SerializableFormDefinition newFormDef = new SerializableFormDefinition(
@@ -57,5 +56,7 @@ public class FormDefinitionService {
                 throw new WrappedException("Error serializing form def", e);
             }
         });
+        formDefinition.setFormDef(formDef);
+        return formDefinition;
     }
 }
