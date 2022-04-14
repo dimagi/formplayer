@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -75,10 +75,12 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         String[] selections = new String[]{"0", "1", "use_selected_values"};
         String[] selectedValues =
                 new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
-        NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
-                NewFormResponse.class);
-        sessionNavigateWithSelectedValues(selections, APP, selectedValues,
-                NewFormResponse.class);
+        try {
+            sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                    NewFormResponse.class);
+        } catch (Exception e) {
+            fail("Session Navigation failed for pre-validated input", e);
+        }
     }
 
     private void checkForSelectedCasesInstance(String sessionId, String[] selections) throws Exception {
