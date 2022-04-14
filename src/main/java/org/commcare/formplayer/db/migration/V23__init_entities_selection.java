@@ -10,7 +10,7 @@ public class V23__init_entities_selection extends BaseFormplayerMigration {
                 "CREATE TABLE entities_selection (\n" +
                         "    id uuid NOT NULL,\n" +
                         "    username varchar NOT NULL,\n" +
-                        "    asUser varchar NOT NULL,\n" +
+                        "    asUser varchar,\n" +
                         "    domain varchar NOT NULL,\n" +
                         "    appid varchar NOT NULL,\n" +
                         "    entities bytea NOT NULL,\n" +
