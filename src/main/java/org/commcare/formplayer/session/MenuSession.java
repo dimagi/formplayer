@@ -171,7 +171,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
                 } else {
-                    sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
+                    sessionWrapper.setEntityDatum(sessionWrapper.getNeededDatum(), input);
                 }
             } else {
                 screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
@@ -324,9 +324,9 @@ public class MenuSession implements HereFunctionHandlerListener {
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
         if (datum instanceof FormIdDatum) {
             sessionWrapper.setXmlns(FunctionUtils.toString(form.eval(ec)));
-            sessionWrapper.setDatum("", "awful");
+            sessionWrapper.setEntityDatum("", "awful");
         } else {
-            sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
+            sessionWrapper.setEntityDatum(datum, FunctionUtils.toString(form.eval(ec)));
         }
     }
 
