@@ -46,7 +46,7 @@ public class FormDefinitionService {
         Optional<SerializableFormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndFormXmlnsAndFormVersion(
                 appId, formXmlns, formVersion
         );
-        return optFormDef.orElseGet(() -> {
+        SerializableFormDefinition formDefinition = optFormDef.orElseGet(() -> {
             try {
                 String serializedFormDef = FormDefStringSerializer.serialize(formDef);
                 SerializableFormDefinition newFormDef = new SerializableFormDefinition(
@@ -57,5 +57,7 @@ public class FormDefinitionService {
                 throw new WrappedException("Error serializing form def", e);
             }
         });
+        formDefinition.setFormDef(formDef);
+        return formDefinition;
     }
 }

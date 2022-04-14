@@ -152,7 +152,7 @@ public class FormSession {
             RemoteInstanceFetcher instanceFetcher) throws Exception {
 
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
-        this.formDef = FormDefStringSerializer.deserialize(serializableFormDefinition.getSerializedFormDef());
+        this.formDef = serializableFormDefinition.getFormDef();
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, this.formDef.getTitle(), oneQuestionPerScreen,
