@@ -8,7 +8,6 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
@@ -74,12 +73,13 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId());
 
         FormDef formDef = parseFormDef(formXml);
-        SerializableFormDefinition serializableFormDefinition = this.formDefinitionService.getOrCreateFormDefinition(
-                bean.getSessionData().getAppId(),
-                formDef.getMainInstance().schema,
-                bean.getSessionData().getAppVersion(),
-                formDef
-        );
+        SerializableFormDefinition serializableFormDefinition = this.formDefinitionService
+                .getOrCreateFormDefinition(
+                        bean.getSessionData().getAppId(),
+                        formDef.getMainInstance().schema,
+                        bean.getSessionData().getAppVersion(),
+                        formDef
+                );
         FormSession formSession = new FormSession(
                 sandbox,
                 serializableFormDefinition,
