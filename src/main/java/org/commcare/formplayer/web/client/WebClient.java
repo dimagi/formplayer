@@ -41,13 +41,13 @@ public class WebClient {
         );
     }
 
-    public <T> ResponseEntity<String> post(String url, T body) {
+    public <T> String post(String url, T body) {
         checkHmac();
         URI uri = URI.create(url);
         return restTemplate.exchange(
                 RequestEntity.post(uri).headers(restoreFactory.getRequestHeaders(uri)).body(body),
                 String.class
-        );
+        ).getBody();
     }
 
     public <T> String postFormData(String url, Multimap<String, String> data) {
