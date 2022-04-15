@@ -146,7 +146,14 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, commCareSession, caseSearchHelper);
+        return new FormSession(serializableFormSession,
+                restoreFactory,
+                formSendCalloutHandler,
+                storageFactory,
+                commCareSession,
+                caseSearchHelper,
+                formDefinitionService
+        );
     }
 
     private String getFormXml(String formUrl) {
