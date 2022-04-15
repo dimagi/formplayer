@@ -10,6 +10,7 @@ import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.javarosa.core.log.WrappedException;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.util.externalizable.DeserializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -58,5 +59,32 @@ public class FormDefinitionService {
         });
         formDefinition.setFormDef(formDef);
         return formDefinition;
+    }
+
+    /**
+     * This method uses appId, formXmlns, formVersion, and sessionId to cache deserizlied FormDefs
+     * Deserializing a serialized FormDef object is costly, and this avoids doing so in between requests
+     * within the same session
+     *
+     * @param appId application id
+     * @param formXmlns xmlns for specific form
+     * @param formVersion version for specific form
+     * @param sessionId form session id
+     * @param serializedFormDef serialized FormDef object
+     * @return deserialized FormDef object
+     */
+    @Cacheable(key = "{#appId, #formXmlns, #formVersion, #sessionId}")
+    public FormDef getFormDef(String appId,
+            String formXmlns,
+            String formVersion,
+            String sessionId,
+            String serializedFormDef) {
+        FormDef formDef;
+        try {
+            formDef = FormDefStringSerializer.deserialize(serializedFormDef);
+        } catch (Exception e) {
+            formDef = null;
+        }
+        return formDef;
     }
 }

@@ -17,6 +17,7 @@ import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
@@ -97,7 +98,8 @@ public class FormSession {
             FormSendCalloutHandler formSendCalloutHandler,
             FormplayerStorageFactory storageFactory,
             @Nullable CommCareSession commCareSession,
-            RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RemoteInstanceFetcher instanceFetcher,
+            FormDefinitionService formDefinitionService) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -107,7 +109,11 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
         if (session.getFormDefinition() != null) {
-            this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+            this.formDef = formDefinitionService.getFormDef(session.getFormDefinition().getAppId(),
+                    session.getFormDefinition().getFormXmlns(),
+                    session.getFormDefinition().getFormVersion(),
+                    session.getId(),
+                    session.getFormDefinition().getSerializedFormDef());
         } else {
             // DEPRECATED: this code will be removed once all incomplete sessions that depend on this are purged
             this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());

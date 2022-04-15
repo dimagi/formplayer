@@ -348,6 +348,7 @@ public class BaseTestClass {
                 SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(
                         appId, appVersion, xmlns, serializedFormDef
                 );
+                serializableFormDef.setFormDef(((FormDef)invocation.getArguments()[3]));
                 if (serializableFormDef.getId() == null) {
                     // this is normally taken care of by Hibernate
                     ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
@@ -359,6 +360,10 @@ public class BaseTestClass {
         }).when(this.formDefinitionService).getOrCreateFormDefinition(
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
+
+        when(this.formDefinitionService.getFormDef(
+                anyString(), anyString(), anyString(), anyString(), anyString()
+        )).thenCallRealMethod();
     }
 
     private void mockMenuSessionService() {
@@ -1065,7 +1070,8 @@ public class BaseTestClass {
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper());
+                menuSessionRunnerService.getCaseSearchHelper(),
+                formDefinitionService);
     }
 
     @Nullable
