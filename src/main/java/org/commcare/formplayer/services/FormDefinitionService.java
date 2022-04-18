@@ -62,23 +62,16 @@ public class FormDefinitionService {
     }
 
     /**
-     * This method uses appId, formXmlns, formVersion, and sessionId to cache deserizlied FormDefs
+     * This method uses the sessionId to cache deserizlied FormDefs
      * Deserializing a serialized FormDef object is costly, and this avoids doing so in between requests
      * within the same session
      *
-     * @param appId application id
-     * @param formXmlns xmlns for specific form
-     * @param formVersion version for specific form
      * @param sessionId form session id
      * @param serializedFormDef serialized FormDef object
      * @return deserialized FormDef object
      */
-    @Cacheable(key = "{#appId, #formXmlns, #formVersion, #sessionId}")
-    public FormDef getFormDef(String appId,
-            String formXmlns,
-            String formVersion,
-            String sessionId,
-            String serializedFormDef) {
+    @Cacheable(key = "{#sessionId}")
+    public FormDef getFormDef(String sessionId, String serializedFormDef) {
         FormDef formDef;
         try {
             formDef = FormDefStringSerializer.deserialize(serializedFormDef);

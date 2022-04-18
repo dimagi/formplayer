@@ -109,9 +109,7 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
         if (session.getFormDefinition() != null) {
-            this.formDef = formDefinitionService.getFormDef(session.getFormDefinition().getAppId(),
-                    session.getFormDefinition().getFormXmlns(),
-                    session.getFormDefinition().getFormVersion(),
+            this.formDef = formDefinitionService.getFormDef(
                     session.getId(),
                     session.getFormDefinition().getSerializedFormDef());
         } else {
