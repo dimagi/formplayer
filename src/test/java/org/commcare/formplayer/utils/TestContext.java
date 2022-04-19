@@ -8,7 +8,6 @@ import org.commcare.formplayer.mocks.TestInstallService;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.EntitiesSelectionService;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
@@ -20,6 +19,7 @@ import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
@@ -78,7 +78,7 @@ public class TestContext {
     public MenuSessionService menuSessionService;
 
     @MockBean
-    public EntitiesSelectionService mEntitiesSelectionService;
+    public VirtualDataInstanceService virtualDataInstanceService;
 
     @MockBean
     public WebClient webClient;
