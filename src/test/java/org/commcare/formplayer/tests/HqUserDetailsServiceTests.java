@@ -14,6 +14,7 @@ import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
+import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +43,10 @@ public class HqUserDetailsServiceTests {
     // mock this so we don't need to configure a DB
     @MockBean
     public MenuSessionRepo menuSessionRepo;
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    public VirtualDataInstanceRepo virtualDataInstanceRepo;
 
     @Autowired
     private ObjectMapper objectMapper;
