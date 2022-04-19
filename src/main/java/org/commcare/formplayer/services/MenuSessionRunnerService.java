@@ -92,6 +92,9 @@ public class MenuSessionRunnerService {
     protected FormSessionService formSessionService;
 
     @Autowired
+    protected FormDefinitionService formDefinitionService;
+
+    @Autowired
     protected MenuSessionService menuSessionService;
 
     @Autowired
@@ -683,7 +686,7 @@ public class MenuSessionRunnerService {
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         menuSessionService.saveSession(menuSession.serialize());
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory,
-                caseSearchHelper);
+                caseSearchHelper, formDefinitionService);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
         response.setNotification(establishVolatility(formEntrySession));

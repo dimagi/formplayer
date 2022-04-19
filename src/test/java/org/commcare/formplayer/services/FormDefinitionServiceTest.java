@@ -43,11 +43,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Tests for FormDefinitionService
+ */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
 public class FormDefinitionServiceTest {
 
-    final private Map<List<String>, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
+    private final Map<List<String>, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     @Autowired
     FormDefinitionService formDefinitionService;
     @Autowired
@@ -173,8 +176,10 @@ public class FormDefinitionServiceTest {
                 new InputStreamReader(IOUtils.toInputStream(formXml, "UTF-8")));
     }
 
-    // only include the service under test and it's dependencies
-    // This should not be necessary but we're using older versions of junit and spring
+    /**
+     * Only include the service under test and its dependencies
+     * This should not be necessary, but we're using older versions of junit and spring
+     */
     @ComponentScan(
             basePackageClasses = {FormDefinitionService.class},
             useDefaultFilters = false,
