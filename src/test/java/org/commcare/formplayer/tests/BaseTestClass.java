@@ -47,6 +47,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.objects.EntitiesSelection;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -54,6 +55,7 @@ import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.EntitiesSelectionService;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
@@ -196,6 +198,9 @@ public class BaseTestClass {
     @Autowired
     private NotificationLogger notificationLogger;
 
+    @Autowired
+    protected EntitiesSelectionService entitiesSelectionService;
+
     @InjectMocks
     protected FormController formController;
 
@@ -228,6 +233,7 @@ public class BaseTestClass {
     final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
+    final Map<UUID, EntitiesSelection> entitiesSelectionMap = new HashMap();
 
     protected Long currentFormDefinitionId = 1L;
 
@@ -273,6 +279,7 @@ public class BaseTestClass {
         mockFormSessionService();
         mockFormDefinitionService();
         mockMenuSessionService();
+        mockEntitiesSelectionService();
     }
 
     /*
@@ -358,6 +365,33 @@ public class BaseTestClass {
         }).when(this.formDefinitionService).getOrCreateFormDefinition(
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
+    }
+
+    private void mockEntitiesSelectionService() {
+        entitiesSelectionMap.clear();
+        when(entitiesSelectionService.write(any(String[].class))).thenAnswer(invocation -> {
+            EntitiesSelection entitiesSelection = new EntitiesSelection("username", "domain", "appid", "asuser",
+                    (String[])invocation.getArguments()[0]);
+            if (entitiesSelection.getId() == null) {
+                // this is normally taken care of by Hibernate
+                ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID());
+            }
+            entitiesSelectionMap.put(entitiesSelection.getId(), entitiesSelection);
+            return entitiesSelection.getId();
+        });
+
+        when(entitiesSelectionService.read(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
+            if (entitiesSelectionMap.containsKey(key)) {
+                return entitiesSelectionMap.get(key).getEntities();
+            }
+            return null;
+        });
+
+        when(entitiesSelectionService.contains(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
+            return entitiesSelectionMap.containsKey(key);
+        });
     }
 
     private void mockMenuSessionService() {
@@ -746,7 +780,7 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_DETAILS,
@@ -783,12 +817,27 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    private String getInstallReference(String testName) {
+        if (useCommCareArchiveReference()) {
+            return "archives/" + testName + ".ccz";
+        } else {
+            return "archives/" + testName + "/profile.ccpr";
+        }
+    }
+
+    /**
+     * @return whether to use a ccz file reference for the test
+     */
+    protected boolean useCommCareArchiveReference() {
+        return true;
     }
 
     <T> T sessionNavigate(String[] selections, String testName, int sortIndex, Class<T> clazz)
@@ -799,7 +848,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSortIndex(sortIndex);
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -818,7 +867,24 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
+                ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            Class<T> clazz)
+            throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -838,7 +904,7 @@ public class BaseTestClass {
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_ENDPOINT,
@@ -858,13 +924,22 @@ public class BaseTestClass {
             String testName,
             QueryData queryData,
             Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections, testName, queryData, null, clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(String[] selections,
+            String testName,
+            QueryData queryData,
+            String[] selectedValues,
+            Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setQueryData(queryData);
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -1064,7 +1139,8 @@ public class BaseTestClass {
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper());
+                menuSessionRunnerService.getCaseSearchHelper(),
+                entitiesSelectionService);
     }
 
     @Nullable

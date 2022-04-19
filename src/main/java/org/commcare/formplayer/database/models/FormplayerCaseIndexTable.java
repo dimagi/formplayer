@@ -1,5 +1,7 @@
 package org.commcare.formplayer.database.models;
 
+import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
@@ -42,26 +44,8 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
     public FormplayerCaseIndexTable(ConnectionHandler connectionHandler) {
         this.connectionHandler = connectionHandler;
-        execSQL(connectionHandler.getConnection(), getTableDefinition());
+        execSql(connectionHandler.getConnection(), getTableDefinition());
         createIndexes(connectionHandler.getConnection());
-    }
-
-    private static void execSQL(Connection connection, String query) {
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing prepared statement ", e);
-                }
-            }
-        }
     }
 
     private static String getTableDefinition() {
@@ -78,11 +62,11 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     private static void createIndexes(Connection connection) {
         String recordFirstIndexId = "RECORD_NAME_ID_TARGET";
         String recordFirstIndex = COL_CASE_RECORD_ID + ", " + COL_INDEX_NAME + ", " + COL_INDEX_TARGET;
-        execSQL(connection, DatabaseIndexingUtils.indexOnTableCommand(recordFirstIndexId, TABLE_NAME, recordFirstIndex));
+        execSql(connection, DatabaseIndexingUtils.indexOnTableCommand(recordFirstIndexId, TABLE_NAME, recordFirstIndex));
 
         String typeFirstIndexId = "NAME_TARGET_RECORD";
         String typeFirstIndex = COL_INDEX_NAME + ", " + COL_CASE_RECORD_ID + ", " + COL_INDEX_TARGET;
-        execSQL(connection, DatabaseIndexingUtils.indexOnTableCommand(typeFirstIndexId, TABLE_NAME, typeFirstIndex));
+        execSql(connection, DatabaseIndexingUtils.indexOnTableCommand(typeFirstIndexId, TABLE_NAME, typeFirstIndex));
     }
 
     /**

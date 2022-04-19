@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -113,8 +114,7 @@ public class FormSessionServiceTest {
     public void testPurgeClearsCache() {
         formSessionService.saveSession(new SerializableFormSession(sessionId));
         assertTrue(getCachedSession(sessionId).isPresent());
-
-        formSessionService.purge();
+        formSessionService.purge(Instant.now());
         assertFalse(getCachedSession(sessionId).isPresent());
     }
 
