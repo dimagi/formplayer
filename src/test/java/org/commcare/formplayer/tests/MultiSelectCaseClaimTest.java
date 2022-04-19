@@ -52,6 +52,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
         cacheManager.getCache("case_search").clear();
+        configureCaseSearchMock();
     }
 
     @Override
@@ -61,8 +62,6 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
     @Test
     public void testCaseClaimWithMultiSelectList() throws Exception {
-        configureCaseSearchMock();
-
         // default search is on so we should skip to search results directly
         EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 APP_NAME,
@@ -92,6 +91,19 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         List<String> casesToBeClaimed = Arrays.asList("0156fa3e-093e-4136-b95c-01b13dae66c7",
                 "0156fa3e-093e-4136-b95c-01b13dae66c8");
         assertEquals(requestData.get("case_id"), casesToBeClaimed);
+    }
+
+    @Test
+    public void testNoCaseClaimRequestWhenAllCasesOwned() throws Exception {
+        String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"};
+        String[] selections = new String[]{"1", "action 1", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+        sessionNavigateWithQuery(selections,
+                APP_NAME,
+                null,
+                selectedValues,
+                CommandListResponseBean.class);
+        // Verify case claim request should not fire if the selected cases were owned already
+        verify(webClientMock, times(0)).post(any(), any());
     }
 
     private void configureCaseSearchMock() {
