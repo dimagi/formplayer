@@ -46,17 +46,6 @@ public class SerializableFormDefinition {
     @Column(name = "formdef")
     private String serializedFormDef;
 
-    @Transient
-    private FormDef formDef;
-
-    public FormDef getFormDef() {
-        return formDef;
-    }
-
-    public void setFormDef(FormDef formDef) {
-        this.formDef = formDef;
-    }
-
     protected SerializableFormDefinition() {}
 
     public SerializableFormDefinition(String appId, String formXmlns, String formVersion, String formDef) {

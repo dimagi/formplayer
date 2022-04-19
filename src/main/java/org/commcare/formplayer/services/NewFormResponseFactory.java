@@ -83,6 +83,7 @@ public class NewFormResponseFactory {
         FormSession formSession = new FormSession(
                 sandbox,
                 serializableFormDefinition,
+                formDef,
                 bean.getUsername(),
                 bean.getDomain(),
                 bean.getSessionData().getData(),

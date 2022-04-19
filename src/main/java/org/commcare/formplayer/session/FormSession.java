@@ -133,6 +133,7 @@ public class FormSession {
 
     public FormSession(UserSqlSandbox sandbox,
             SerializableFormDefinition serializableFormDefinition,
+            FormDef formDef,
             String username,
             String domain,
             Map<String, String> sessionData,
@@ -152,7 +153,7 @@ public class FormSession {
             RemoteInstanceFetcher instanceFetcher) throws Exception {
 
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
-        this.formDef = serializableFormDefinition.getFormDef();
+        this.formDef = formDef;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, this.formDef.getTitle(), oneQuestionPerScreen,
