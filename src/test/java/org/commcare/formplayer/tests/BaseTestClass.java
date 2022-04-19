@@ -274,6 +274,10 @@ public class BaseTestClass {
         mockFormSessionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
+
+        if (useCommCareArchiveReference()) {
+            ReferenceHandler.clearInstance();
+        }
     }
 
     /*
