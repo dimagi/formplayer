@@ -328,7 +328,8 @@ public class BaseTestClass {
         serializableDataInstanceMap.clear();
         when(virtualDataInstanceService.write(any(VirtualDataInstance.class))).thenAnswer(invocation -> {
             VirtualDataInstance virtualDataInstance = (VirtualDataInstance)invocation.getArguments()[0];
-            SerializableDataInstance serializableDataInstance = new SerializableDataInstance(virtualDataInstance.getInstanceId(),
+            SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
+                    virtualDataInstance.getInstanceId(),
                     "username", "domain", "appid", "asuser",
                     (TreeElement)virtualDataInstance.getRoot());
             if (serializableDataInstance.getId() == null) {
@@ -342,7 +343,7 @@ public class BaseTestClass {
         when(virtualDataInstanceService.read(any(UUID.class))).thenAnswer(invocation -> {
             UUID key = (UUID)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
-                SerializableDataInstance serializableDataInstance =  serializableDataInstanceMap.get(key);
+                SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
                 return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
                         serializableDataInstance.getInstanceXml());
             }

@@ -48,7 +48,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
     public VirtualDataInstance read(UUID key) {
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance serializableDataInstance = cache.get(key, SerializableDataInstance.class);
-        if(serializableDataInstance == null) {
+        if (serializableDataInstance == null) {
             Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findById(key);
             if (optionalSerializableDataInstance.isPresent()) {
                 serializableDataInstance = optionalSerializableDataInstance.get();

@@ -5,7 +5,12 @@ import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.util.externalizable.ExtUtil;
 
 import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
+/**
+ * Serialization converter for {@link TreeElement}
+ */
+@Converter
 public class TreeElementConverter implements AttributeConverter<TreeElement, byte[]> {
 
     @Override

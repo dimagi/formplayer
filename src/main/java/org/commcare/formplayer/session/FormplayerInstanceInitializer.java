@@ -4,7 +4,6 @@ import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.process.CommCareInstanceInitializer;
-import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
@@ -35,7 +34,8 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-            UserSqlSandbox mSandbox, CommCarePlatform mPlatform, VirtualDataInstanceCache virtualDataInstanceCache) {
+            UserSqlSandbox mSandbox, CommCarePlatform mPlatform,
+            VirtualDataInstanceCache virtualDataInstanceCache) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
         this.virtualDataInstanceCache = virtualDataInstanceCache;
     }

@@ -6,8 +6,8 @@ import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALU
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -103,7 +103,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            RemoteInstanceFetcher instanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
+            RemoteInstanceFetcher instanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache)
+            throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);

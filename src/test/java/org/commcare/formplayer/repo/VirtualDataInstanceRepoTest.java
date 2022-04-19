@@ -84,7 +84,8 @@ public class VirtualDataInstanceRepoTest {
                     Timestamp.from(now.minus(i, ChronoUnit.DAYS)), savedInstance.getId()
             );
         }
-        List<String> allIds = jdbcTemplate.queryForList("SELECT id FROM " + POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME,
+        List<String> allIds = jdbcTemplate.queryForList(
+                "SELECT id FROM " + POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME,
                 String.class);
         assertThat(allIds.size()).isEqualTo(5);
 
@@ -92,7 +93,8 @@ public class VirtualDataInstanceRepoTest {
         assertThat(deleted).isEqualTo(2);
         entityManager.flush();
 
-        List<String> remainingIds = jdbcTemplate.queryForList("SELECT id FROM " + POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME,
+        List<String> remainingIds = jdbcTemplate.queryForList(
+                "SELECT id FROM " + POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME,
                 String.class);
         assertThat(remainingIds.size()).isEqualTo(3);
     }
@@ -110,7 +112,7 @@ public class VirtualDataInstanceRepoTest {
     public static VirtualDataInstance buildSelectedCasesInstance(String[] selections) {
         List<SimpleNode> nodes = new ArrayList<>();
         for (String selection : selections) {
-            nodes.add( SimpleNode.textNode("value", Collections.emptyMap(), selection));
+            nodes.add(SimpleNode.textNode("value", Collections.emptyMap(), selection));
         }
         TreeElement root = TreeBuilder.buildTree("selected_cases", "results", nodes);
         return new VirtualDataInstance("selected_cases", root);
