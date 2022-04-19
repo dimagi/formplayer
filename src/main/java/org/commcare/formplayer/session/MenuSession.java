@@ -6,7 +6,7 @@ import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALU
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.core.interfaces.EntitiesSelectionCache;
+import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -79,22 +79,22 @@ public class MenuSession implements HereFunctionHandlerListener {
     private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
     private boolean oneQuestionPerScreen;
     private RemoteInstanceFetcher instanceFetcher;
-    private EntitiesSelectionCache entitiesSelectionCache;
+    private VirtualDataInstanceCache virtualDataInstanceCache;
 
     private String smartLinkRedirect;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
             RestoreFactory restoreFactory, RemoteInstanceFetcher instanceFetcher,
-            EntitiesSelectionCache entitiesSelectionCache) throws Exception {
+            VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
         this.engine = installService.configureApplication(session.getInstallReference(),
                 session.isPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
-        this.entitiesSelectionCache = entitiesSelectionCache;
+        this.virtualDataInstanceCache = virtualDataInstanceCache;
         this.sessionWrapper = new FormplayerSessionWrapper(
                 SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
-                engine.getPlatform(), sandbox, instanceFetcher, entitiesSelectionCache);
+                engine.getPlatform(), sandbox, instanceFetcher, virtualDataInstanceCache);
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
@@ -103,7 +103,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            RemoteInstanceFetcher instanceFetcher, EntitiesSelectionCache entitiesSelectionCache) throws Exception {
+            RemoteInstanceFetcher instanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
@@ -123,16 +123,16 @@ public class MenuSession implements HereFunctionHandlerListener {
             this.sandbox = restoreFactory.performTimedSync();
         }
         this.sandbox = restoreFactory.getSandbox();
-        this.entitiesSelectionCache = entitiesSelectionCache;
+        this.virtualDataInstanceCache = virtualDataInstanceCache;
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher, entitiesSelectionCache);
+                instanceFetcher, virtualDataInstanceCache);
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher, entitiesSelectionCache);
+                instanceFetcher, virtualDataInstanceCache);
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -307,7 +307,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             throws CommCareSessionException {
         if (datum instanceof MultiSelectEntityDatum) {
             return new MultiSelectEntityScreen(false, needsDetail,
-                    sessionWrapper, entitiesSelectionCache);
+                    sessionWrapper, virtualDataInstanceCache);
         } else {
             return new EntityScreen(false, needsDetail, sessionWrapper);
         }
@@ -357,7 +357,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory,
                 false, null, new SessionFrame(sessionWrapper.getFrame()), caseSearchHelper,
-                entitiesSelectionCache);
+                virtualDataInstanceCache);
     }
 
     public SessionWrapper getSessionWrapper() {

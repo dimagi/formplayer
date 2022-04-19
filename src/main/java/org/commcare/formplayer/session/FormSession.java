@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.core.interfaces.EntitiesSelectionCache;
+import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.formplayer.api.json.JsonActionUtils;
@@ -98,7 +98,7 @@ public class FormSession {
             FormplayerStorageFactory storageFactory,
             @Nullable CommCareSession commCareSession,
             RemoteInstanceFetcher instanceFetcher,
-            EntitiesSelectionCache entitiesSelectionCache) throws Exception {
+            VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -124,7 +124,8 @@ public class FormSession {
         if (sessionFrame == null) {
             sessionFrame = createSessionFrame(session.getSessionData());
         }
-        initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher, entitiesSelectionCache);
+        initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher,
+                virtualDataInstanceCache);
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -146,7 +147,7 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
-            EntitiesSelectionCache entitiesSelectionCache) throws Exception {
+            VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
 
         this.formDef = formDef;
         session = new SerializableFormSession(
@@ -168,10 +169,10 @@ public class FormSession {
         if (instanceContent != null) {
             loadInstanceXml(this.formDef, instanceContent);
             initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher,
-                    entitiesSelectionCache);
+                    virtualDataInstanceCache);
         } else {
             initialize(true, storageFactory.getStorageManager(), sessionFrame, instanceFetcher,
-                    entitiesSelectionCache);
+                    virtualDataInstanceCache);
         }
 
         if (oneQuestionPerScreen) {
@@ -248,13 +249,13 @@ public class FormSession {
     @Trace
     private void initialize(boolean newInstance, StorageManager storageManager,
             SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher,
-            EntitiesSelectionCache entitiesSelectionCache)
+            VirtualDataInstanceCache virtualDataInstanceCache)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION,
                 storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(
-                platform, this.sandbox, sessionFrame, instanceFetcher, entitiesSelectionCache);
+                platform, this.sandbox, sessionFrame, instanceFetcher, virtualDataInstanceCache);
 
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 

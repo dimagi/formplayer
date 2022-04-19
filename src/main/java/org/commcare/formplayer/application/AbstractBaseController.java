@@ -57,7 +57,7 @@ public abstract class AbstractBaseController {
     private NotificationLogger notificationLogger;
 
     @Autowired
-    private EntitiesSelectionService entitiesSelectionService;
+    private VirtualDataInstanceService virtualDataInstanceService;
 
 
     void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
@@ -106,7 +106,7 @@ public abstract class AbstractBaseController {
                 storageFactory,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
                 runnerService.getCaseSearchHelper(),
-                entitiesSelectionService);
+                virtualDataInstanceService);
     }
 
 }
