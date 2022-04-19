@@ -1,5 +1,7 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.formplayer.repo.VirtualDataInstanceRepoTest.buildSelectedCasesInstance;
+import static org.commcare.formplayer.util.Constants.VIRTUAL_DATA_INSTANCES_CACHE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,8 +10,9 @@ import static org.mockito.Mockito.when;
 
 import static java.util.Optional.ofNullable;
 
-import org.commcare.formplayer.objects.EntitiesSelection;
-import org.commcare.formplayer.repo.EntitiesSelectionRepo;
+import org.commcare.formplayer.objects.SerializableDataInstance;
+import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
+import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,16 +40,16 @@ import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
-public class EntitiesSelectionServiceTest {
+public class VirtualDataInstanceServiceTest {
 
     @Autowired
-    EntitiesSelectionService entitiesSelectionService;
+    VirtualDataInstanceService virtualDataInstanceService;
 
     @Autowired
     CacheManager cacheManager;
 
     @Autowired
-    private EntitiesSelectionRepo entitiesSelectionRepo;
+    private VirtualDataInstanceRepo virtualDataInstanceRepo;
 
     @Autowired
     FormplayerStorageFactory storageFactory;
@@ -58,17 +61,17 @@ public class EntitiesSelectionServiceTest {
         when(storageFactory.getAppId()).thenAnswer(invocation -> "appId");
         when(storageFactory.getAsUsername()).thenAnswer(invocation -> "asUsername");
         // the repo always returns the saved object so simulate that in the mock
-        when(entitiesSelectionRepo.save(any())).thenAnswer(
-                (Answer<EntitiesSelection>)invocation -> {
-                    EntitiesSelection entitiesSelection = (EntitiesSelection)invocation.getArguments()[0];
-                    ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID());
-                    return entitiesSelection;
+        when(virtualDataInstanceRepo.save(any())).thenAnswer(
+                (Answer<SerializableDataInstance>)invocation -> {
+                    SerializableDataInstance serializableDataInstance = (SerializableDataInstance)invocation.getArguments()[0];
+                    ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
+                    return serializableDataInstance;
                 });
     }
 
     @AfterEach
     public void cleanup() {
-        cacheManager.getCache("entities_selection").clear();
+        cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE).clear();
         storageFactory.getSQLiteDB().closeConnection();
     }
 
@@ -76,46 +79,48 @@ public class EntitiesSelectionServiceTest {
     public void testGetRecordById_cached() {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
-        UUID recordId = entitiesSelectionService.write(selectedValues);
+        VirtualDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
+        UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
 
         // cache is populated on save
-        assertEquals(selectedValues, getCachedRecord(recordId).get());
+        assertEquals(virtualDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
 
         // get Record hits the cache (repo is mocked)
-        String[] fetchedRecord = entitiesSelectionService.read(recordId);
-        assertEquals(selectedValues, fetchedRecord);
+        VirtualDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
+        assertEquals(virtualDataInstance.getRoot(), fetchedRecord.getRoot());
     }
 
     @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
-        UUID recordId = entitiesSelectionService.write(selectedValues);
+        VirtualDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
+        UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
         assertTrue(getCachedRecord(recordId).isPresent());
-        entitiesSelectionService.purge(Instant.now());
+        virtualDataInstanceService.purge(Instant.now());
         assertFalse(getCachedRecord(recordId).isPresent());
     }
 
-    private Optional<String[]> getCachedRecord(UUID recordId) {
-        return ofNullable(cacheManager.getCache("entities_selection")).map(
-                c -> c.get(recordId, String[].class)
+    private Optional<SerializableDataInstance> getCachedRecord(UUID recordId) {
+        return ofNullable(cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE)).map(
+                c -> c.get(recordId, SerializableDataInstance.class)
         );
     }
 
     // only include the service under test and it's dependencies
     // This should not be necessary but we're using older versions of junit and spring
     @ComponentScan(
-            basePackageClasses = {EntitiesSelectionService.class},
+            basePackageClasses = {VirtualDataInstanceService.class},
             useDefaultFilters = false,
             includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
-                    EntitiesSelectionService.class})
+                    VirtualDataInstanceService.class})
     )
     @EnableCaching
     @Configuration
     @EnableTransactionManagement(proxyTargetClass = true)
-    public static class EntitiesSelectionServiceTestConfig {
+    public static class VirtualDataInstanceServiceTestConfig {
 
         @MockBean
-        public EntitiesSelectionRepo entitiesSelectionRepo;
+        public VirtualDataInstanceRepo virtualDataInstanceRepo;
 
         @MockBean
         public JdbcTemplate jdbcTemplate;
@@ -130,7 +135,7 @@ public class EntitiesSelectionServiceTest {
 
         @Bean
         public CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("entities_selection");
+            return new ConcurrentMapCacheManager(VIRTUAL_DATA_INSTANCES_CACHE);
         }
     }
 }
