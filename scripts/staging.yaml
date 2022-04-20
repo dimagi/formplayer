@@ -50,9 +50,8 @@
 trunk: master
 name: autostaging
 branches:
-  - gh/form-def/use-shared-def+multiSelectList # Graham April 19
   - multiSelectList # Shubham/Jenny April 11
-  # - gh/form-def/cache-by-session-id # Graham April 20 (I'm just gonna wait)
+  - gh/form-def/cache-by-session-id # Graham April 20 (I'm just gonna wait)
 submodules:
   libs/commcare:
     trunk: formplayer
