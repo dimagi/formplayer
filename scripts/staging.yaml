@@ -50,13 +50,13 @@
 trunk: master
 name: autostaging
 branches:
-  #- gh/form-def/add-table # Graham Jan 24 (contains migration)
-  #- multiSelectList # Shubham/Jenny April 11
-  #- entitiesSelectionPostgress # Shubham/Jenny April 11
+  - multiSelectList+entitiesSelectionPostgress+gh/form-def/add-table # Jenny April 13
+  - gh/form-def/add-table # Graham April 12
+  - multiSelectList # Shubham/Jenny April 11
+  - fixesForMultiSelect # Shubham/Jenny April 11
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - ce/ensure-session # Cal Nov 20 2021
-      - rc/exclude-subcase-query-from-search-filter # Robert April 6
-      #- multiSelectList # Shubham/Jenny April 11
+      - multiSelectList # Shubham/Jenny April 11
