@@ -50,8 +50,8 @@
 trunk: master
 name: autostaging
 branches:
-  #- gh/form-def/use-shared-def+multiSelectList # Graham April 19
-  #- gh/form-def/use-shared-def # Graham April 19
+  - gh/form-def/use-shared-def+multiSelectList # Graham April 19
+  - gh/form-def/use-shared-def # Graham April 19
   - multiSelectList # Shubham/Jenny April 11
 submodules:
   libs/commcare:
