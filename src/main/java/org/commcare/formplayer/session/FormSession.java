@@ -647,4 +647,8 @@ public class FormSession {
     public SerializableFormSession getSerializableSession() {
         return session;
     }
+
+    public FormDef getFormDef() {
+        return formDef;
+    }
 }
