@@ -110,9 +110,7 @@ public class FormSession {
         if (session.getFormDefinition() != null) {
             this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
         } else {
-            // DEPRECATED: leave to allow rollback if needed
-            // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe
-            this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
+            this.log.error("No form definition attached to form session " + session.getId());
         }
 
         loadInstanceXml(this.formDef, session.getInstanceXml());
@@ -162,9 +160,6 @@ public class FormSession {
                 locale, inPromptMode, sessionData, functionContext
         );
         this.session.setFormDefinition(serializableFormDefinition);
-        // DEPRECATED: leave to allow rollback if needed
-        // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe
-        this.session.setFormXml(serializableFormDefinition.getSerializedFormDef());
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
