@@ -3,6 +3,7 @@ package org.commcare.formplayer.services;
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NewSessionRequestBean;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
@@ -11,8 +12,8 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.xform.util.XFormUtils;
 import org.javarosa.core.services.locale.Localization;
+import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,9 @@ public class NewFormResponseFactory {
     private FormSessionService formSessionService;
 
     @Autowired
+    private FormDefinitionService formDefinitionService;
+
+    @Autowired
     private FormSendCalloutHandler formSendCalloutHandler;
 
     @Autowired
@@ -46,6 +50,9 @@ public class NewFormResponseFactory {
 
     @Autowired
     private FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    private EntitiesSelectionService entitiesSelectionService;
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
@@ -68,8 +75,18 @@ public class NewFormResponseFactory {
                 bean.getRestoreAs(),
                 bean.getRestoreAsCaseId());
 
+        FormDef formDef = parseFormDef(formXml);
+        SerializableFormDefinition serializableFormDefinition = this.formDefinitionService
+                .getOrCreateFormDefinition(
+                        bean.getSessionData().getAppId(),
+                        formDef.getMainInstance().schema,
+                        bean.getSessionData().getAppVersion(),
+                        formDef
+                );
+
         FormSession formSession = new FormSession(
                 sandbox,
+                serializableFormDefinition,
                 parseFormDef(formXml),
                 bean.getUsername(),
                 bean.getDomain(),
@@ -87,7 +104,8 @@ public class NewFormResponseFactory {
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
                 bean.getRestoreAsCaseId(),
                 null,
-                caseSearchHelper
+                caseSearchHelper,
+                entitiesSelectionService
         );
 
         NewFormResponse response = getResponse(formSession);
@@ -132,7 +150,8 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, commCareSession, caseSearchHelper);
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory,
+                commCareSession, caseSearchHelper, entitiesSelectionService);
     }
 
     private String getFormXml(String formUrl) {
