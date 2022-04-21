@@ -12,8 +12,8 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.xform.util.XFormUtils;
 import org.javarosa.core.services.locale.Localization;
+import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -55,6 +55,9 @@ public class NewFormResponseFactory {
 
     @Autowired
     private CacheManager cacheManager;
+
+    @Autowired
+    private VirtualDataInstanceService virtualDataInstanceService;
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
@@ -106,7 +109,8 @@ public class NewFormResponseFactory {
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
                 bean.getRestoreAsCaseId(),
                 null,
-                caseSearchHelper
+                caseSearchHelper,
+                virtualDataInstanceService
         );
 
         NewFormResponse response = getResponse(formSession);
@@ -160,8 +164,8 @@ public class NewFormResponseFactory {
                 storageFactory,
                 commCareSession,
                 caseSearchHelper,
-                formDefinitionService
-        );
+                formDefinitionService,
+                virtualDataInstanceService);
     }
 
     private String getFormXml(String formUrl) {
