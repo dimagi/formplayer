@@ -1,0 +1,204 @@
+package org.commcare.formplayer.services;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import static java.util.Optional.ofNullable;
+
+import org.apache.commons.io.IOUtils;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
+import org.commcare.formplayer.repo.FormDefinitionRepo;
+import org.commcare.formplayer.utils.FileUtils;
+import org.javarosa.core.api.ClassNameHasher;
+import org.javarosa.core.model.FormDef;
+import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.javarosa.xform.util.XFormUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * Tests for FormDefinitionService
+ */
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration
+public class FormDefinitionServiceTest {
+
+    private final Map<List<String>, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
+    @Autowired
+    FormDefinitionService formDefinitionService;
+    @Autowired
+    CacheManager cacheManager;
+    @Autowired
+    private FormDefinitionRepo formDefinitionRepo;
+    private String appId;
+    private String formXmlns;
+    private String formVersion;
+    private FormDef formDef;
+
+    @BeforeAll
+    public static void setUpAll() {
+        PrototypeFactory.setStaticHasher(new ClassNameHasher());
+    }
+
+    private void mockFormDefinitionRepo() {
+        // the repo always returns the saved object so simulate that in the mock
+        when(this.formDefinitionRepo.save(any())).thenAnswer(new Answer<SerializableFormDefinition>() {
+            @Override
+            public SerializableFormDefinition answer(InvocationOnMock invocation) throws Throwable {
+                SerializableFormDefinition formDef = (SerializableFormDefinition)invocation.getArguments()[0];
+                formDefinitionMap.put(
+                        Arrays.asList(formDef.getAppId(), formDef.getFormXmlns(), formDef.getFormVersion()),
+                        formDef
+                );
+                return formDef;
+            }
+        });
+
+        // need to mock this to test get is successful
+        when(this.formDefinitionRepo.findByAppIdAndFormXmlnsAndFormVersion(any(), any(), any())).thenAnswer(
+                new Answer<Optional<SerializableFormDefinition>>() {
+                    @Override
+                    public Optional<SerializableFormDefinition> answer(InvocationOnMock invocation)
+                            throws Throwable {
+                        String appId = (String)invocation.getArguments()[0];
+                        String formXmlns = (String)invocation.getArguments()[1];
+                        String formVersion = (String)invocation.getArguments()[2];
+                        List<String> keyList = Arrays.asList(appId, formXmlns, formVersion);
+                        if (formDefinitionMap.containsKey(keyList)) {
+                            return Optional.of(formDefinitionMap.get(keyList));
+                        }
+                        return Optional.empty();
+                    }
+                });
+    }
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        this.mockFormDefinitionRepo();
+
+        this.appId = "123456789";
+        this.formXmlns = "abc-123";
+        this.formVersion = "1";
+        this.formDef = loadFormDef();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        this.cacheManager.getCache("form_definition").clear();
+    }
+
+    @Test
+    public void testGetOrCreateFormDefinitionCreatesSuccessfully() {
+        SerializableFormDefinition createdFormDefinition = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+        assertNotNull(createdFormDefinition);
+    }
+
+    @Test
+    public void testGetOrCreateFormDefinitionGetsSuccessfully() {
+        SerializableFormDefinition createdFormDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+
+        this.cacheManager.getCache("form_definition").clear();
+
+        SerializableFormDefinition fetchedFormDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+        assertEquals(createdFormDef, fetchedFormDef);
+    }
+
+    @Test
+    public void testGetOrCreateFormDefinitionCachesSuccessfully() {
+        assertEquals(Optional.empty(), getCachedFormDefinition(this.appId, this.formXmlns, this.formVersion));
+
+        SerializableFormDefinition formDefinition = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+
+        assertEquals(Optional.of(formDefinition),
+                getCachedFormDefinition(this.appId, this.formXmlns, this.formVersion));
+    }
+
+    @Test
+    public void testGetOrCreateFormDefinitionNewVersionNotEqual() {
+        SerializableFormDefinition formDefinitionV1 = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+
+        String updatedFormVersion = "2";
+        SerializableFormDefinition formDefinitionV2 = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, updatedFormVersion, this.formDef
+        );
+
+        assertNotEquals(formDefinitionV1, formDefinitionV2);
+    }
+
+    private Optional<SerializableFormDefinition> getCachedFormDefinition(
+            String appId, String formXmlns, String formVersion) {
+        List<String> idArray = Arrays.asList(appId, formXmlns, formVersion);
+        return ofNullable(this.cacheManager.getCache("form_definition")).map(
+                cache -> cache.get(idArray, SerializableFormDefinition.class)
+        );
+    }
+
+    private FormDef loadFormDef() throws Exception {
+        String formXml = FileUtils.getFile(this.getClass(), "xforms/hidden_value_form.xml");
+        return XFormUtils.getFormRaw(
+                new InputStreamReader(IOUtils.toInputStream(formXml, "UTF-8")));
+    }
+
+    /**
+     * Only include the service under test and its dependencies
+     * This should not be necessary, but we're using older versions of junit and spring
+     */
+    @ComponentScan(
+            basePackageClasses = {FormDefinitionService.class},
+            useDefaultFilters = false,
+            includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+                    FormDefinitionService.class})
+    )
+    @EnableCaching
+    @Configuration
+    public static class FormDefinitionServiceTestConfig {
+
+        @MockBean
+        public FormDefinitionRepo formDefinitionRepo;
+
+        @MockBean
+        public JdbcTemplate jdbcTemplate;
+
+        @Bean
+        public CacheManager cacheManager() {
+            return new ConcurrentMapCacheManager("form_definition");
+        }
+    }
+}

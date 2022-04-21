@@ -15,6 +15,7 @@ import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
@@ -107,9 +108,17 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
-        this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
-        loadInstanceXml(formDef, session.getInstanceXml());
-        formDef.setSendCalloutHandler(formSendCalloutHandler);
+
+        if (session.getFormDefinition() != null) {
+            this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+        } else {
+            // DEPRECATED: leave to allow rollback if needed
+            // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe
+            this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
+        }
+
+        loadInstanceXml(this.formDef, session.getInstanceXml());
+        this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
 
         if (session.isOneQuestionPerScreen() || session.isInPromptMode()) {
@@ -129,6 +138,7 @@ public class FormSession {
     }
 
     public FormSession(UserSqlSandbox sandbox,
+            SerializableFormDefinition serializableFormDefinition,
             FormDef formDef,
             String username,
             String domain,
@@ -148,14 +158,17 @@ public class FormSession {
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
             VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
-
+        // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
-        session = new SerializableFormSession(
+        this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
-        session.setFormXml(FormDefStringSerializer.serialize(this.formDef));
+        this.session.setFormDefinition(serializableFormDefinition);
+        // DEPRECATED: leave to allow rollback if needed
+        // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe
+        this.session.setFormXml(serializableFormDefinition.getSerializedFormDef());
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
