@@ -81,7 +81,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Trace
     public void configure(String username, String domain, String appId, String asUsername) {
-        if(username == null || domain == null || appId == null) {
+        if(username == null || domain == null) {
             throw new RuntimeException(String.format("Cannot configure FormplayerStorageFactory with null arguments. " +
                     "username = %s, domain = %s, appId = %s", username, domain, appId));
         }
