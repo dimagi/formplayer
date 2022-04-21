@@ -48,6 +48,7 @@ import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.objects.QueryData;
+import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -64,6 +65,7 @@ import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -82,8 +84,11 @@ import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
+import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.json.JSONObject;
@@ -196,6 +201,9 @@ public class BaseTestClass {
     @Autowired
     private NotificationLogger notificationLogger;
 
+    @Autowired
+    protected VirtualDataInstanceService virtualDataInstanceService;
+
     @InjectMocks
     protected FormController formController;
 
@@ -228,6 +236,7 @@ public class BaseTestClass {
     final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
+    final Map<UUID, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
 
     protected Long currentFormDefinitionId = 1L;
 
@@ -273,6 +282,11 @@ public class BaseTestClass {
         mockFormSessionService();
         mockFormDefinitionService();
         mockMenuSessionService();
+        mockVirtualDataInstanceService();
+
+        if (useCommCareArchiveReference()) {
+            ReferenceHandler.clearInstance();
+        }
     }
 
     /*
@@ -347,6 +361,7 @@ public class BaseTestClass {
                 SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(
                         appId, appVersion, xmlns, serializedFormDef
                 );
+                serializableFormDef.setFormDef(((FormDef)invocation.getArguments()[3]));
                 if (serializableFormDef.getId() == null) {
                     // this is normally taken care of by Hibernate
                     ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
@@ -358,6 +373,40 @@ public class BaseTestClass {
         }).when(this.formDefinitionService).getOrCreateFormDefinition(
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
+
+        when(this.formDefinitionService.getFormDef(anyString(), anyString())).thenCallRealMethod();
+    }
+
+    private void mockVirtualDataInstanceService() {
+        serializableDataInstanceMap.clear();
+        when(virtualDataInstanceService.write(any(VirtualDataInstance.class))).thenAnswer(invocation -> {
+            VirtualDataInstance virtualDataInstance = (VirtualDataInstance)invocation.getArguments()[0];
+            SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
+                    virtualDataInstance.getInstanceId(),
+                    "username", "domain", "appid", "asuser",
+                    (TreeElement)virtualDataInstance.getRoot());
+            if (serializableDataInstance.getId() == null) {
+                // this is normally taken care of by Hibernate
+                ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
+            }
+            serializableDataInstanceMap.put(serializableDataInstance.getId(), serializableDataInstance);
+            return serializableDataInstance.getId();
+        });
+
+        when(virtualDataInstanceService.read(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
+            if (serializableDataInstanceMap.containsKey(key)) {
+                SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
+                return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
+                        serializableDataInstance.getInstanceXml());
+            }
+            return null;
+        });
+
+        when(virtualDataInstanceService.contains(any(UUID.class))).thenAnswer(invocation -> {
+            UUID key = (UUID)invocation.getArguments()[0];
+            return serializableDataInstanceMap.containsKey(key);
+        });
     }
 
     private void mockMenuSessionService() {
@@ -746,7 +795,7 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_DETAILS,
@@ -783,12 +832,27 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    private String getInstallReference(String testName) {
+        if (useCommCareArchiveReference()) {
+            return "archives/" + testName + ".ccz";
+        } else {
+            return "archives/" + testName + "/profile.ccpr";
+        }
+    }
+
+    /**
+     * @return whether to use a ccz file reference for the test
+     */
+    protected boolean useCommCareArchiveReference() {
+        return true;
     }
 
     <T> T sessionNavigate(String[] selections, String testName, int sortIndex, Class<T> clazz)
@@ -799,7 +863,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSortIndex(sortIndex);
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -818,7 +882,24 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
+                ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            Class<T> clazz)
+            throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -838,7 +919,7 @@ public class BaseTestClass {
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_ENDPOINT,
@@ -858,13 +939,22 @@ public class BaseTestClass {
             String testName,
             QueryData queryData,
             Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections, testName, queryData, null, clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(String[] selections,
+            String testName,
+            QueryData queryData,
+            String[] selectedValues,
+            Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setQueryData(queryData);
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -1064,7 +1154,9 @@ public class BaseTestClass {
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper());
+                menuSessionRunnerService.getCaseSearchHelper(),
+                formDefinitionService,
+                virtualDataInstanceService);
     }
 
     @Nullable

@@ -54,4 +54,24 @@ public class FormDefinitionService {
             return this.formDefinitionRepo.save(newFormDef);
         });
     }
+
+    /**
+     * This method uses the sessionId to cache deserialized FormDefs
+     * Deserializing a serialized FormDef object is costly, and this avoids doing so in between requests
+     * within the same session
+     *
+     * @param sessionId form session id
+     * @param serializedFormDef serialized FormDef object
+     * @return deserialized FormDef object
+     */
+    @Cacheable(key = "#sessionId")
+    public FormDef getFormDef(String sessionId, String serializedFormDef) {
+        FormDef formDef;
+        try {
+            formDef = FormDefStringSerializer.deserialize(serializedFormDef);
+        } catch (Exception e) {
+            formDef = null;
+        }
+        return formDef;
+    }
 }
