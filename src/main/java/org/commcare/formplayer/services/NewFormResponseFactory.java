@@ -52,7 +52,7 @@ public class NewFormResponseFactory {
     private FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private EntitiesSelectionService entitiesSelectionService;
+    private VirtualDataInstanceService virtualDataInstanceService;
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
@@ -105,7 +105,7 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId(),
                 null,
                 caseSearchHelper,
-                entitiesSelectionService
+                virtualDataInstanceService
         );
 
         NewFormResponse response = getResponse(formSession);
@@ -151,7 +151,7 @@ public class NewFormResponseFactory {
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
         return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory,
-                commCareSession, caseSearchHelper, entitiesSelectionService);
+                commCareSession, caseSearchHelper, virtualDataInstanceService);
     }
 
     private String getFormXml(String formUrl) {

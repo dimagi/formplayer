@@ -47,15 +47,14 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
-import org.commcare.formplayer.objects.EntitiesSelection;
 import org.commcare.formplayer.objects.QueryData;
+import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.EntitiesSelectionService;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
@@ -66,6 +65,7 @@ import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -84,8 +84,11 @@ import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
+import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.json.JSONObject;
@@ -199,7 +202,7 @@ public class BaseTestClass {
     private NotificationLogger notificationLogger;
 
     @Autowired
-    protected EntitiesSelectionService entitiesSelectionService;
+    protected VirtualDataInstanceService virtualDataInstanceService;
 
     @InjectMocks
     protected FormController formController;
@@ -233,7 +236,7 @@ public class BaseTestClass {
     final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
-    final Map<UUID, EntitiesSelection> entitiesSelectionMap = new HashMap();
+    final Map<UUID, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
 
     protected Long currentFormDefinitionId = 1L;
 
@@ -279,7 +282,11 @@ public class BaseTestClass {
         mockFormSessionService();
         mockFormDefinitionService();
         mockMenuSessionService();
-        mockEntitiesSelectionService();
+        mockVirtualDataInstanceService();
+
+        if (useCommCareArchiveReference()) {
+            ReferenceHandler.clearInstance();
+        }
     }
 
     /*
@@ -367,30 +374,35 @@ public class BaseTestClass {
         );
     }
 
-    private void mockEntitiesSelectionService() {
-        entitiesSelectionMap.clear();
-        when(entitiesSelectionService.write(any(String[].class))).thenAnswer(invocation -> {
-            EntitiesSelection entitiesSelection = new EntitiesSelection("username", "domain", "appid", "asuser",
-                    (String[])invocation.getArguments()[0]);
-            if (entitiesSelection.getId() == null) {
+    private void mockVirtualDataInstanceService() {
+        serializableDataInstanceMap.clear();
+        when(virtualDataInstanceService.write(any(VirtualDataInstance.class))).thenAnswer(invocation -> {
+            VirtualDataInstance virtualDataInstance = (VirtualDataInstance)invocation.getArguments()[0];
+            SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
+                    virtualDataInstance.getInstanceId(),
+                    "username", "domain", "appid", "asuser",
+                    (TreeElement)virtualDataInstance.getRoot());
+            if (serializableDataInstance.getId() == null) {
                 // this is normally taken care of by Hibernate
-                ReflectionTestUtils.setField(entitiesSelection, "id", UUID.randomUUID());
+                ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
             }
-            entitiesSelectionMap.put(entitiesSelection.getId(), entitiesSelection);
-            return entitiesSelection.getId();
+            serializableDataInstanceMap.put(serializableDataInstance.getId(), serializableDataInstance);
+            return serializableDataInstance.getId();
         });
 
-        when(entitiesSelectionService.read(any(UUID.class))).thenAnswer(invocation -> {
+        when(virtualDataInstanceService.read(any(UUID.class))).thenAnswer(invocation -> {
             UUID key = (UUID)invocation.getArguments()[0];
-            if (entitiesSelectionMap.containsKey(key)) {
-                return entitiesSelectionMap.get(key).getEntities();
+            if (serializableDataInstanceMap.containsKey(key)) {
+                SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
+                return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
+                        serializableDataInstance.getInstanceXml());
             }
             return null;
         });
 
-        when(entitiesSelectionService.contains(any(UUID.class))).thenAnswer(invocation -> {
+        when(virtualDataInstanceService.contains(any(UUID.class))).thenAnswer(invocation -> {
             UUID key = (UUID)invocation.getArguments()[0];
-            return entitiesSelectionMap.containsKey(key);
+            return serializableDataInstanceMap.containsKey(key);
         });
     }
 
@@ -1140,7 +1152,7 @@ public class BaseTestClass {
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
                 menuSessionRunnerService.getCaseSearchHelper(),
-                entitiesSelectionService);
+                virtualDataInstanceService);
     }
 
     @Nullable

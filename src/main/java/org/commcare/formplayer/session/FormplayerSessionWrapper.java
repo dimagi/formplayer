@@ -1,6 +1,6 @@
 package org.commcare.formplayer.session;
 
-import org.commcare.core.interfaces.EntitiesSelectionCache;
+import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -15,30 +15,30 @@ import org.commcare.util.CommCarePlatform;
  */
 class FormplayerSessionWrapper extends SessionWrapper {
     private RemoteInstanceFetcher remoteInstanceFetcher;
-    private EntitiesSelectionCache entitiesSelectionCache;
+    private VirtualDataInstanceCache virtualDataInstanceCache;
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox,
-            RemoteInstanceFetcher remoteInstanceFetcher, EntitiesSelectionCache entitiesSelectionCache)
+            RemoteInstanceFetcher remoteInstanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache)
             throws RemoteInstanceFetcher.RemoteInstanceException {
-        this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher, entitiesSelectionCache);
+        this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher, virtualDataInstanceCache);
     }
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame,
-            RemoteInstanceFetcher remoteInstanceFetcher, EntitiesSelectionCache entitiesSelectionCache)
+            RemoteInstanceFetcher remoteInstanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         super(platform, sandbox);
         this.frame = sessionFrame;
         this.remoteInstanceFetcher = remoteInstanceFetcher;
-        this.entitiesSelectionCache = entitiesSelectionCache;
+        this.virtualDataInstanceCache = virtualDataInstanceCache;
         prepareExternalSources(remoteInstanceFetcher);
     }
 
     public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox,
-            RemoteInstanceFetcher remoteInstanceFetcher, EntitiesSelectionCache entitiesSelectionCache)
+            RemoteInstanceFetcher remoteInstanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         super(session, platform, sandbox);
         this.remoteInstanceFetcher = remoteInstanceFetcher;
-        this.entitiesSelectionCache = entitiesSelectionCache;
+        this.virtualDataInstanceCache = virtualDataInstanceCache;
         prepareExternalSources(remoteInstanceFetcher);
     }
 
@@ -47,7 +47,7 @@ class FormplayerSessionWrapper extends SessionWrapper {
     public CommCareInstanceInitializer getIIF() {
         if (initializer == null) {
             initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox)mSandbox, mPlatform,
-                    entitiesSelectionCache);
+                    virtualDataInstanceCache);
         }
         return initializer;
     }

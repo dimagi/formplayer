@@ -30,7 +30,7 @@ public class ScheduledTasks {
     private FormSessionService formSessionService;
 
     @Autowired
-    private EntitiesSelectionService entitiesSelectionService;
+    private VirtualDataInstanceService virtualDataInstanceService;
 
     // the default "0 0 0 * * *" schedule means midnight each night
     @Scheduled(cron = "${commcare.formplayer.scheduledTasks.purge.cron:0 0 0 * * *}")
@@ -40,7 +40,7 @@ public class ScheduledTasks {
     public void purge() {
         log.info("Starting purge scheduled task.");
         doTimedPurge("formSession", formSessionService::purge);
-        doTimedPurge("entitiesSelections", entitiesSelectionService::purge);
+        doTimedPurge("virtualDataInstance", virtualDataInstanceService::purge);
         datadogStatsDClient.increment(
                 String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "timesRun")
         );

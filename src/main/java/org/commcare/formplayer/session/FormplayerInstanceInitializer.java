@@ -2,9 +2,8 @@ package org.commcare.formplayer.session;
 
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
-import org.commcare.core.interfaces.EntitiesSelectionCache;
+import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.process.CommCareInstanceInitializer;
-import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
@@ -17,8 +16,8 @@ import org.javarosa.core.model.instance.ConcreteInstanceRoot;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.VirtualDataInstance;
 
-import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.UUID;
 
@@ -28,16 +27,17 @@ import java.util.UUID;
 public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
 
-    private EntitiesSelectionCache entitiesSelectionCache;
+    private VirtualDataInstanceCache virtualDataInstanceCache;
 
     public FormplayerInstanceInitializer(UserSqlSandbox sandbox) {
         super(sandbox);
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-            UserSqlSandbox mSandbox, CommCarePlatform mPlatform, EntitiesSelectionCache entitiesSelectionCache) {
+            UserSqlSandbox mSandbox, CommCarePlatform mPlatform,
+            VirtualDataInstanceCache virtualDataInstanceCache) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
-        this.entitiesSelectionCache = entitiesSelectionCache;
+        this.virtualDataInstanceCache = virtualDataInstanceCache;
     }
 
     @Override
@@ -93,10 +93,10 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     protected InstanceRoot setupSelectedCases(ExternalDataInstance instance) {
         String guid = getGuidForSelectedCasesInstance(instance);
         if (guid != null) {
-            String[] selectedValues = entitiesSelectionCache.read(UUID.fromString(guid));
-            if (selectedValues != null) {
-                return new ConcreteInstanceRoot(
-                        VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
+            VirtualDataInstance virtualDataInstance =
+                    virtualDataInstanceCache.read(UUID.fromString(guid));
+            if (virtualDataInstance != null) {
+                return new ConcreteInstanceRoot(virtualDataInstance.getRoot());
             }
         }
         return ConcreteInstanceRoot.NULL;

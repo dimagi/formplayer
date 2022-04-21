@@ -1,7 +1,9 @@
 package org.commcare.formplayer.objects;
 
+import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.javarosa.core.model.instance.TreeElement;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -13,17 +15,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-/**
- * Entity to represent entities selected on the multi-select Entity Screen
- */
 @Entity
-@Table(name = "entities_selection")
-public class EntitiesSelection {
+@Table(name = Constants.POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME)
+public class SerializableDataInstance {
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
+
+    @Column(name = "instanceid", updatable = false)
+    private String instanceId;
 
     @Column(updatable = false)
     private String username;
@@ -37,36 +39,38 @@ public class EntitiesSelection {
     @Column(name = "asuser", updatable = false)
     private String asUser;
 
-    @Column(updatable = false)
-    @Convert(converter = ByteArrayConverter.class)
-    private String[] entities;
+    @Column(name = "instancexml", updatable = false)
+    @Convert(converter=TreeElementConverter.class)
+    private TreeElement instanceXml;
 
     @CreationTimestamp
     @Column(name = "datecreated")
     private Instant dateCreated;
 
     @SuppressWarnings("unused")
-    public EntitiesSelection() {
+    public SerializableDataInstance() {
     }
 
-    public EntitiesSelection(String username, String domain, String appId, String asUser, String[] entities) {
-        this.entities = entities;
+    public SerializableDataInstance(String instanceId, String username, String domain, String appId,
+            String asUser, TreeElement instanceXml) {
+        this.instanceId = instanceId;
         this.username = username;
         this.domain = domain;
         this.appId = appId;
         this.asUser = asUser;
+        this.instanceXml = instanceXml;
     }
 
-    public String[] getEntities() {
-        return entities;
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public TreeElement getInstanceXml() {
+        return instanceXml;
     }
 
     public UUID getId() {
         return id;
-    }
-
-    public Instant getDateCreated() {
-        return dateCreated;
     }
 
     public String getUsername() {
@@ -83,5 +87,9 @@ public class EntitiesSelection {
 
     public String getAsUser() {
         return asUser;
+    }
+
+    public Instant getDateCreated() {
+        return dateCreated;
     }
 }
