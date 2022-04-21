@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 /**
  * Created by benrudolph on 9/8/16.
  */
-public class SessionRequestBean extends AuthenticatedRequestBean {
+public class SessionRequestBean extends InstallRequestBean {
     protected String sessionId;
 
     @JsonGetter(value = "session_id")

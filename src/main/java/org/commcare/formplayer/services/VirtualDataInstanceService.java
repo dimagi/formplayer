@@ -54,9 +54,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
                 serializableDataInstance = optionalSerializableDataInstance.get();
             }
         }
-        if (serializableDataInstance != null
-                && serializableDataInstance.getUsername().equals(storageFactory.getUsername())
-                && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
+        if (serializableDataInstance != null) {
             return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
                     serializableDataInstance.getInstanceXml());
         }
