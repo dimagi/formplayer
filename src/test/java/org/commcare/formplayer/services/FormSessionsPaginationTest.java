@@ -22,6 +22,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.time.Instant;
 import java.util.List;
 
 @ContextConfiguration
@@ -61,7 +62,7 @@ public class FormSessionsPaginationTest {
             // first 3 records in latest first order
             assertEquals(formSessions.get(i).getTitle(), "More momo " + (2 - i));
         }
-        formSessionService.purge();
+        formSessionService.purge(Instant.now());
     }
 
     // only include the service under test and it's dependencies
