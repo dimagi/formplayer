@@ -15,6 +15,8 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
 import org.javarosa.core.services.locale.Localization;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -50,6 +52,9 @@ public class NewFormResponseFactory {
 
     @Autowired
     private FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
@@ -118,6 +123,9 @@ public class NewFormResponseFactory {
 
         SerializableFormSession serializedSession = formEntrySession.serialize();
         formSessionService.saveSession(serializedSession);
+        // prime the form def cache for this session
+        Cache cache = this.cacheManager.getCache("form_definition");
+        cache.put(formEntrySession.getSessionId(), formEntrySession.getFormDef());
         NewFormResponse response = new NewFormResponse(
                 formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
                 serializedSession.getId(), serializedSession.getVersion(),
@@ -146,7 +154,14 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, commCareSession, caseSearchHelper);
+        return new FormSession(serializableFormSession,
+                restoreFactory,
+                formSendCalloutHandler,
+                storageFactory,
+                commCareSession,
+                caseSearchHelper,
+                formDefinitionService
+        );
     }
 
     private String getFormXml(String formUrl) {
