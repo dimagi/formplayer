@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
@@ -69,6 +70,7 @@ public class FormController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
+    @AppInstall
     public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
@@ -79,6 +81,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryResponseBean changeLocale(@RequestBody ChangeLocaleRequestBean changeLocaleBean,
                                               @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(changeLocaleBean.getSessionId());
@@ -94,6 +97,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
 
@@ -181,6 +185,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(newRepeatRequestBean.getSessionId());
@@ -200,6 +205,7 @@ public class FormController extends AbstractBaseController {
     @ResponseBody
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean,
                                               @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(deleteRepeatRequestBean.getSessionId());
@@ -219,6 +225,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean,
                                                    @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(requestBean.getSessionId());
@@ -234,6 +241,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryNavigationResponseBean getNextSms(@RequestBody SessionRequestBean requestBean,
                                                       @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(requestBean.getSessionId());
@@ -248,6 +256,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean,
                                                        @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(requestBean.getSessionId());
@@ -267,6 +276,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public GetInstanceResponseBean getRawInstance(@RequestBody SessionRequestBean requestBean,
                                                   @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(requestBean.getSessionId());
@@ -280,6 +290,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public FormEntryNavigationResponseBean getCurrent(@RequestBody SessionRequestBean requestBean,
                                                       @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         org.commcare.formplayer.objects.SerializableFormSession serializableFormSession = formSessionService.getSessionById(requestBean.getSessionId());

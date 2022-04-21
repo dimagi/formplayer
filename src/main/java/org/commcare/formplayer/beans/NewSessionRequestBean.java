@@ -13,7 +13,7 @@ import java.util.Map;
  * incomplete forms
  */
 @JsonIgnoreProperties
-public class NewSessionRequestBean extends AuthenticatedRequestBean {
+public class NewSessionRequestBean extends InstallRequestBean {
     private String formUrl;
     private String lang;
     private SessionData sessionData;

@@ -4,6 +4,7 @@ import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
+import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
@@ -80,6 +81,7 @@ public class FormSubmissionController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @AppInstall
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                          @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
                                          HttpServletRequest request) throws Exception {
