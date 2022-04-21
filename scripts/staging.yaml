@@ -51,6 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - multiSelectList # Shubham/Jenny April 11
+  - tempFixForMultiSelect # Shubham April 21
   # - gh/form-def/cache-by-session-id # Graham April 20 (I'm just gonna wait)
 submodules:
   libs/commcare:
