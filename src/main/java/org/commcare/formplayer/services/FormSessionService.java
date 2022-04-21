@@ -47,17 +47,8 @@ public class FormSessionService {
     private StatsDClient datadogStatsDClient;
 
     @CacheEvict(allEntries = true)
-    public int purge() {
-        Instant cutoff = Instant.now().minus(7, ChronoUnit.DAYS);
-        log.info("Beginning state form session purge");
-        long start = System.currentTimeMillis();
-        int deletedRows = formSessionRepo.deleteSessionsOlderThan(cutoff);
-        long elapsed = System.currentTimeMillis() - start;
-        log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
-        if (datadogStatsDClient != null) {
-            datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
-        }
-        return deletedRows;
+    public int purge(Instant cutoff) {
+        return formSessionRepo.deleteSessionsOlderThan(cutoff);
     }
 
     @Cacheable

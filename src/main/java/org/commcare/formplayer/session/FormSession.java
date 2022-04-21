@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.formplayer.api.json.JsonActionUtils;
@@ -17,6 +18,7 @@ import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
@@ -97,7 +99,9 @@ public class FormSession {
             FormSendCalloutHandler formSendCalloutHandler,
             FormplayerStorageFactory storageFactory,
             @Nullable CommCareSession commCareSession,
-            RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RemoteInstanceFetcher instanceFetcher,
+            FormDefinitionService formDefinitionService,
+            VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -108,7 +112,9 @@ public class FormSession {
         this.sandbox = restoreFactory.getSandbox();
 
         if (session.getFormDefinition() != null) {
-            this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+            this.formDef = formDefinitionService.getFormDef(
+                    session.getId(),
+                    session.getFormDefinition().getSerializedFormDef());
         } else {
             // DEPRECATED: leave to allow rollback if needed
             // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe
@@ -131,7 +137,8 @@ public class FormSession {
         if (sessionFrame == null) {
             sessionFrame = createSessionFrame(session.getSessionData());
         }
-        initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
+        initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher,
+                virtualDataInstanceCache);
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -153,7 +160,8 @@ public class FormSession {
             boolean inPromptMode,
             String caseId,
             @Nullable SessionFrame sessionFrame,
-            RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RemoteInstanceFetcher instanceFetcher,
+            VirtualDataInstanceCache virtualDataInstanceCache) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
         this.session = new SerializableFormSession(
@@ -177,9 +185,11 @@ public class FormSession {
 
         if (instanceContent != null) {
             loadInstanceXml(this.formDef, instanceContent);
-            initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
+            initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher,
+                    virtualDataInstanceCache);
         } else {
-            initialize(true, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
+            initialize(true, storageFactory.getStorageManager(), sessionFrame, instanceFetcher,
+                    virtualDataInstanceCache);
         }
 
         if (oneQuestionPerScreen) {
@@ -255,13 +265,14 @@ public class FormSession {
 
     @Trace
     private void initialize(boolean newInstance, StorageManager storageManager,
-            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher)
+            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher,
+            VirtualDataInstanceCache virtualDataInstanceCache)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION,
                 storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(
-                platform, this.sandbox, sessionFrame, instanceFetcher);
+                platform, this.sandbox, sessionFrame, instanceFetcher, virtualDataInstanceCache);
 
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
@@ -642,5 +653,9 @@ public class FormSession {
 
     public SerializableFormSession getSerializableSession() {
         return session;
+    }
+
+    public FormDef getFormDef() {
+        return formDef;
     }
 }
