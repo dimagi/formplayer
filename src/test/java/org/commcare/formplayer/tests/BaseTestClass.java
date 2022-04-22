@@ -347,7 +347,6 @@ public class BaseTestClass {
                 SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(
                         appId, appVersion, xmlns, serializedFormDef
                 );
-                serializableFormDef.setFormDef(((FormDef)invocation.getArguments()[3]));
                 if (serializableFormDef.getId() == null) {
                     // this is normally taken care of by Hibernate
                     ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
