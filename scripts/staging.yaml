@@ -52,7 +52,6 @@ name: autostaging
 branches:
   - gh/form-def/cache-by-session-id+multiSelectList # Graham April 21
   - multiSelectList # Shubham/Jenny April 11
-  - usernameMatchFix # Shubham April 22
   - gh/form-def/cache-by-session-id # Graham April 21
 submodules:
   libs/commcare:
