@@ -359,7 +359,7 @@ public class BaseTestClass {
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
 
-        when(this.formDefinitionService.getFormDef(anyString(), anyString())).thenCallRealMethod();
+        when(this.formDefinitionService.getFormDef(any(SerializableFormSession.class))).thenCallRealMethod();
     }
 
     private void mockMenuSessionService() {

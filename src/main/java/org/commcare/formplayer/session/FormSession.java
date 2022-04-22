@@ -109,10 +109,8 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
 
-        if (session.getFormDefinition() != null) {
-            this.formDef = formDefinitionService.getFormDef(
-                    session.getId(),
-                    session.getFormDefinition().getSerializedFormDef());
+        if (this.session.getFormDefinition() != null) {
+            this.formDef = formDefinitionService.getFormDef(this.session);
         } else {
             // DEPRECATED: leave to allow rollback if needed
             // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe

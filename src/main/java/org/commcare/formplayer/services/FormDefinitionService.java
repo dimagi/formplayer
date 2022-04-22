@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import org.commcare.formplayer.objects.SerializableFormDefinition;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.javarosa.core.log.WrappedException;
@@ -60,15 +61,14 @@ public class FormDefinitionService {
      * Deserializing a serialized FormDef object is costly, and this avoids doing so in between requests
      * within the same session
      *
-     * @param sessionId form session id
-     * @param serializedFormDef serialized FormDef object
+     * @param session session that contains session id and serialized formDef
      * @return deserialized FormDef object
      */
-    @Cacheable(key = "#sessionId")
-    public FormDef getFormDef(String sessionId, String serializedFormDef) {
+    @Cacheable(key = "#session.id")
+    public FormDef getFormDef(SerializableFormSession session) {
         FormDef formDef;
         try {
-            formDef = FormDefStringSerializer.deserialize(serializedFormDef);
+            formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
         } catch (Exception e) {
             formDef = null;
         }
