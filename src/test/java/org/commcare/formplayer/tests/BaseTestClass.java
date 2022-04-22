@@ -360,6 +360,7 @@ public class BaseTestClass {
         );
 
         when(this.formDefinitionService.getFormDef(any(SerializableFormSession.class))).thenCallRealMethod();
+        when(this.formDefinitionService.cacheFormDef(any(FormSession.class))).thenCallRealMethod();
     }
 
     private void mockMenuSessionService() {

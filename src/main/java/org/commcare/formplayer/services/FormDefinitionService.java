@@ -3,11 +3,13 @@ package org.commcare.formplayer.services;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
+import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.javarosa.core.log.WrappedException;
 import org.javarosa.core.model.FormDef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -73,5 +75,16 @@ public class FormDefinitionService {
             formDef = null;
         }
         return formDef;
+    }
+
+    /**
+     * Cache the form def for future requests in this session
+     *
+     * @param session grab the id to cache on and the deserialized form def from the session
+     * @return deserialized FormDef object
+     */
+    @CachePut(key = "#session.getSessionId()")
+    public FormDef cacheFormDef(FormSession session) {
+        return session.getFormDef();
     }
 }
