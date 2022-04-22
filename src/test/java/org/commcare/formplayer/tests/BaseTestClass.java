@@ -361,7 +361,6 @@ public class BaseTestClass {
                 SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(
                         appId, appVersion, xmlns, serializedFormDef
                 );
-                serializableFormDef.setFormDef(((FormDef)invocation.getArguments()[3]));
                 if (serializableFormDef.getId() == null) {
                     // this is normally taken care of by Hibernate
                     ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
@@ -374,7 +373,8 @@ public class BaseTestClass {
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
 
-        when(this.formDefinitionService.getFormDef(anyString(), anyString())).thenCallRealMethod();
+        when(this.formDefinitionService.getFormDef(any(SerializableFormSession.class))).thenCallRealMethod();
+        when(this.formDefinitionService.cacheFormDef(any(FormSession.class))).thenCallRealMethod();
     }
 
     private void mockVirtualDataInstanceService() {
