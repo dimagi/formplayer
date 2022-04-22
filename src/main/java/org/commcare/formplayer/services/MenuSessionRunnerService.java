@@ -485,8 +485,9 @@ public class MenuSessionRunnerService {
     }
 
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
+        Boolean shouldSync = true;
         try {
-            webClient.post(screen.getUrl(), screen.getQueryParams());
+            shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
         } catch (RestClientResponseException e) {
             return new NotificationMessage(
                     String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true,
@@ -495,7 +496,9 @@ public class MenuSessionRunnerService {
             return new NotificationMessage("Unknown error performing case claim", true,
                     NotificationMessage.Tag.sync);
         }
-        restoreFactory.performTimedSync(false, false, false);
+        if (shouldSync) {
+            restoreFactory.performTimedSync(false, false, false);
+        }
         return null;
     }
 
