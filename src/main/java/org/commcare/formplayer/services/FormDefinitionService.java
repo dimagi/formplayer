@@ -1,12 +1,15 @@
 package org.commcare.formplayer.services;
 
 import org.commcare.formplayer.objects.SerializableFormDefinition;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
+import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.javarosa.core.log.WrappedException;
 import org.javarosa.core.model.FormDef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -53,5 +56,35 @@ public class FormDefinitionService {
             );
             return this.formDefinitionRepo.save(newFormDef);
         });
+    }
+
+    /**
+     * This method uses the sessionId to cache deserialized FormDefs
+     * Deserializing a serialized FormDef object is costly, and this avoids doing so in between requests
+     * within the same session
+     *
+     * @param session session that contains session id and serialized formDef
+     * @return deserialized FormDef object
+     */
+    @Cacheable(key = "#session.id")
+    public FormDef getFormDef(SerializableFormSession session) {
+        FormDef formDef;
+        try {
+            formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+        } catch (Exception e) {
+            formDef = null;
+        }
+        return formDef;
+    }
+
+    /**
+     * Cache the form def for future requests in this session
+     *
+     * @param session grab the id to cache on and the deserialized form def from the session
+     * @return deserialized FormDef object
+     */
+    @CachePut(key = "#session.getSessionId()")
+    public FormDef cacheFormDef(FormSession session) {
+        return session.getFormDef();
     }
 }
