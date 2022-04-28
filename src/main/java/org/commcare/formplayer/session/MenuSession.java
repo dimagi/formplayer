@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import datadog.trace.api.Trace;
 
@@ -215,18 +216,41 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     private void addTitle(String input, Screen previousScreen) {
-        if (previousScreen instanceof EntityScreen) {
-            try {
-                String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
+        if (previousScreen instanceof MultiSelectEntityScreen) {
+            UUID referenceId = ((MultiSelectEntityScreen)previousScreen).getStorageReferenceId();
+            String[] values = entitiesSelectionCache.read(referenceId);
+            if (values.length > 0) {
+                String caseName = getCaseName(values[0]);
                 if (caseName != null) {
-                    breadcrumbs.add(caseName);
+                    if (values.length > 1) {
+                        breadcrumbs.add("(" + values.length + ") " + caseName + ", ...");
+                    } else {
+                        breadcrumbs.add(caseName);
+                    }
                     return;
                 }
-            } catch (NoSuchElementException e) {
-                // That's ok, just fallback quietly
+            }
+        } else if (previousScreen instanceof EntityScreen) {
+            String caseName = getCaseName(input);
+            if (caseName != null) {
+                breadcrumbs.add(caseName);
+                return;
             }
         }
+        // Menu name will also be fallback if no case is found
         breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
+    }
+
+    private String getCaseName(String caseId) {
+        try {
+            String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), caseId);
+            if (caseName != null) {
+                return caseName;
+            }
+        } catch (NoSuchElementException e) {
+            // do nothing
+        }
+        return null;
     }
 
     /**
