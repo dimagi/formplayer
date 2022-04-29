@@ -42,6 +42,8 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
+import org.javarosa.core.model.instance.AbstractTreeElement;
+import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.javarosa.core.util.MD5;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xpath.XPathParseTool;
@@ -53,7 +55,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 import datadog.trace.api.Trace;
 
@@ -217,13 +218,14 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     private void addTitle(String input, Screen previousScreen) {
         if (previousScreen instanceof MultiSelectEntityScreen) {
-            UUID referenceId = ((MultiSelectEntityScreen)previousScreen).getStorageReferenceId();
-            String[] values = entitiesSelectionCache.read(referenceId);
-            if (values.length > 0) {
-                String caseName = getCaseName(values[0]);
+            VirtualDataInstance instance = ((MultiSelectEntityScreen)previousScreen).getVirtualInstance();
+            AbstractTreeElement root = instance.getRoot();
+            int caseCount = root.getNumChildren();
+            if (caseCount > 0) {
+                String caseName = getCaseName(root.getChildAt(0).getValue().getDisplayText());
                 if (caseName != null) {
-                    if (values.length > 1) {
-                        breadcrumbs.add("(" + values.length + ") " + caseName + ", ...");
+                    if (caseCount > 1) {
+                        breadcrumbs.add("(" + caseCount + ") " + caseName + ", ...");
                     } else {
                         breadcrumbs.add(caseName);
                     }
