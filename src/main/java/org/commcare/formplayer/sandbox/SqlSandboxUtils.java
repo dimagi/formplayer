@@ -1,8 +1,12 @@
 package org.commcare.formplayer.sandbox;
 
+import org.javarosa.core.services.Logger;
 import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * Methods that mostly are used around the mocks that replicate stuff from
@@ -51,6 +55,24 @@ public class SqlSandboxUtils {
             return dataSource;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void execSql(Connection connection, String query) {
+        PreparedStatement preparedStatement = null;
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    Logger.exception("Exception closing connection ", e);
+                }
+            }
         }
     }
 }
