@@ -39,7 +39,7 @@ public class FormplayerSyncScreen extends SyncScreen {
         if (commandEntry instanceof RemoteRequestEntry) {
             PostRequest syncPost = ((RemoteRequestEntry)commandEntry).getPostRequest();
             url = syncPost.getUrl().toString();
-            Multimap<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
+            Multimap<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext(), false);
             queryParams = new LinkedMultiValueMap<String, String>();
             if (asUser != null) {
                 queryParams.add("commcare_login_as", asUser);

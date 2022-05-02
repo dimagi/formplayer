@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile version="5"
+         update="http://localhost:8000/a/test-3/apps/download/e098d60e96264778971fa9640b685b97/media_profile.ccpr?latest=true&amp;profile=None"
+         requiredMajor="2"
+         requiredMinor="53"
+         requiredMinimal="0"
+         uniqueid="81f8eadff7deee18b8e5ebaf73008923"
+         name="Multi-Select Case List"
+         descriptor="Profile File"
+         buildProfileID="">
+    <property key="BackupMode" value="file_mode" force="true"/>
+    <property key="backup-url" value="file:///E:/CommCare.Backup" force="true"/>
+    <property key="restore-url" value="file:///E:/CommCare.Backup" force="true"/>
+    <property key="ota-restore-url" value="http://localhost:8000/a/test-3/phone/restore/e098d60e96264778971fa9640b685b97/" force="true"/>
+    <property key="ota-restore-url-testing" value="http://localhost:8000/a/test-3/phone/restore/e098d60e96264778971fa9640b685b97/" force="true"/>
+    <property key="PostURL" value="http://localhost:8000/a/test-3/receiver/secure/e098d60e96264778971fa9640b685b97/" force="true"/>
+    <property key="PostTestURL" value="http://localhost:8000/a/test-3/receiver/secure/e098d60e96264778971fa9640b685b97/" force="true"/>
+    <property key="key_server" value="http://localhost:8000/a/test-3/phone/keys/" force="true"/>
+    <property key="cur_locale" value="en" force="false"/>
+    <property key="cc_user_domain" value="test-3.commcarehq.org" force="true"/>
+    <property key="jr_openrosa_api" value="1.0" force="true"/>
+    
+    <property key="heartbeat-url" value="http://localhost:8000/a/test-3/phone/heartbeat/e098d60e96264778971fa9640b685b97/?build_profile_id=" force="true"/>
+    
+    
+    
+
+    <!-- Properties configured on CommCare HQ 1.0 -->
+    
+        <property key="log_prop_weekly" value="log_short" force="true"/>
+    
+        <property key="cc-user-mode" value="cc-u-normal" force="true"/>
+    
+        <property key="cc-send-unsent" value="cc-su-auto" force="true"/>
+    
+        <property key="extra_key_action" value="audio" force="true"/>
+    
+        <property key="cc-show-saved" value="no" force="true"/>
+    
+        <property key="cc-show-incomplete" value="no" force="true"/>
+    
+
+    <!-- end -->
+
+    
+
+    <features>
+        <checkoff active="true"/>
+        <reminders active="false">
+            <time>0</time>
+        </reminders>
+        <package active="false"/>
+        
+        <users active="true">
+        </users>
+    </features>
+
+    <suite><resource id="suite" version="5">
+        
+            <location authority="local">./suite.xml</location>
+        
+        <location authority="remote">http://localhost:8000/a/test-3/apps/download/e098d60e96264778971fa9640b685b97/suite.xml</location>
+    </resource></suite>
+    
+    <suite><resource id="media-suite" version="5">
+        
+            <location authority="local">./media_suite.xml</location>
+        
+        <location authority="remote">http://localhost:8000/a/test-3/apps/download/e098d60e96264778971fa9640b685b97/media_suite.xml</location>
+    </resource></suite>
+    
+</profile>
