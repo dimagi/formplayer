@@ -87,6 +87,7 @@ public class Constants {
     public static final String POSTGRES_AUTH_TOKEN_TABLE_NAME = "authtoken_token";
     public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
+    public static final String POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME = "virtual_data_instance";
 
     public static final String SESSION_DETAILS_VIEW = "/hq/admin/session_details/";
 
@@ -159,6 +160,9 @@ public class Constants {
     public static final String DATADOG_ERRORS_CRASH = "errors.crash";
     public static final String DATADOG_ERRORS_LOCK = "errors.lock";
     public static final String DATADOG_ERRORS_NOTIFICATIONS = "errors.notifications";
+
+    // Cache Names
+    public static final String VIRTUAL_DATA_INSTANCES_CACHE = "virtual_data_instances";
 
     // End Datadog metrics
 
