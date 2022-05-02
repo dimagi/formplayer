@@ -50,9 +50,9 @@
 trunk: master
 name: autostaging
 branches:
-  #- gh/form-def/cache-by-session-id+multiSelectList # Graham April 21
+  - gh/form-def/cache-by-session-id+multiSelectList # Graham April 21
   - multiSelectList # Shubham/Jenny April 11
-  #- gh/form-def/cache-by-session-id # Graham April 21
+  - gh/form-def/cache-by-session-id # Graham April 21
   - jls/multi-select-breadcrumbs # Jenny April 29
 submodules:
   libs/commcare:
