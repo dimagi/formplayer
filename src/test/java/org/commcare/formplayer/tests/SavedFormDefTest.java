@@ -63,8 +63,15 @@ public class SavedFormDefTest extends BaseTestClass {
 
         SerializableFormSession session = this.formSessionService.getSessionById(
                 newSessionResponse.getSessionId());
-        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null,
-                this.storageFactoryMock, null, this.remoteInstanceFetcherMock);
+        FormSession formSession = new FormSession(session,
+                this.restoreFactoryMock,
+                null,
+                this.storageFactoryMock,
+                null,
+                this.remoteInstanceFetcherMock,
+                this.formDefinitionService,
+                this.virtualDataInstanceService
+        );
         assertEquals(formSession.getInstanceXml(true), session.getInstanceXml());
     }
 
@@ -80,8 +87,15 @@ public class SavedFormDefTest extends BaseTestClass {
         answerQuestionGetResult("0", "9", sessionId);
         SerializableFormSession session = this.formSessionService.getSessionById(
                 newSessionResponse.getSessionId());
-        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null,
-                this.storageFactoryMock, null, this.remoteInstanceFetcherMock);
+        FormSession formSession = new FormSession(session,
+                this.restoreFactoryMock,
+                null,
+                this.storageFactoryMock,
+                null,
+                this.remoteInstanceFetcherMock,
+                this.formDefinitionService,
+                this.virtualDataInstanceService);
+
         SubmitResponseBean submitResponseBean = submitForm(
                 "requests/submit/submit_hidden_value_form.json", sessionId);
         assertEquals("success", submitResponseBean.getStatus());
