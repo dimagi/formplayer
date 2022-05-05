@@ -31,7 +31,7 @@ import java.util.Hashtable;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class CaseClaimNavigationTests extends BaseTestClass {
+public class CaseClaimNavigationParentChildTests extends BaseTestClass {
 
     private static final String PARENT_CASE_ID = "192262cb-fbfa-46a4-ba91-a9d13659b0e0";
     private static final String CHILD_CASE_ID = "d29c08f5-943c-42ca-b0a5-f64cbddba087";
