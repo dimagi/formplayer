@@ -14,6 +14,7 @@ import org.commcare.formplayer.beans.SubmitRequestBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
+import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -251,7 +252,7 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
-    private SubmitResponseBean performSync(FormSubmissionContext context) throws Exception {
+    private SubmitResponseBean performSync(FormSubmissionContext context) throws SyncRestoreException {
         boolean suppressAutosync = context.getFormEntrySession().getSuppressAutosync();
 
         if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {

@@ -17,6 +17,7 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
@@ -484,7 +485,7 @@ public class MenuSessionRunnerService {
         }
     }
 
-    private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
+    private NotificationMessage doSync(FormplayerSyncScreen screen) throws SyncRestoreException {
         Boolean shouldSync = true;
         try {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
