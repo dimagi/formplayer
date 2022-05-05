@@ -768,11 +768,12 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            Screen s = menuSession.getNextScreen();
-            if (s instanceof FormplayerSyncScreen) {
+            Screen screen = menuSession.getNextScreen();
+            if (screen instanceof FormplayerSyncScreen) {
                 try {
-                    s.init(sessionWrapper);
-                    doSyncGetNext((FormplayerSyncScreen)s, menuSession);
+                    screen.init(sessionWrapper);
+                    doSync((FormplayerSyncScreen)screen);
+                    executeAndRebuildSession(menuSession);
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
                 }
