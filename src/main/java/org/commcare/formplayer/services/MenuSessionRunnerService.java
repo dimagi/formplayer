@@ -288,15 +288,18 @@ public class MenuSessionRunnerService {
                 break;
             }
 
-            if (nextScreen instanceof FormplayerSyncScreen) {
-                return doSyncGetNext((FormplayerSyncScreen)nextScreen, menuSession);
-            }
-
+            menuSession.addSelection(selection);
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
-                // we don't have a resolution, try rebuilding session to execute any pending ops
-                executeAndRebuildSession(menuSession);
-            } else {
-                menuSession.addSelection(selection);
+                // TODO: maybe check that there are more selections?
+                //  If there are rebuild the session and keep going?
+                BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+                if (postSyncResponse == null) {
+                    // Return use to the app root
+                    postSyncResponse = new BaseResponseBean(null,
+                            new NotificationMessage("Redirecting after sync", false, NotificationMessage.Tag.sync),
+                            true);
+                }
+                return postSyncResponse;
             }
         }
 
