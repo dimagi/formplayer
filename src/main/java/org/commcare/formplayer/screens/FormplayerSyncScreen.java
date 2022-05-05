@@ -27,7 +27,6 @@ public class FormplayerSyncScreen extends SyncScreen {
     private MultiValueMap<String, String> queryParams;
 
     public FormplayerSyncScreen(String asUser) {
-        super(null, null, System.out);
         this.asUser = asUser;
     }
 
