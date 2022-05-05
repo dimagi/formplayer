@@ -15,6 +15,7 @@ import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -122,8 +123,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 queryData,
                 EntityListResponse.class);
 
-        assert entityListResponse.getEntities().length == 1;
-        assert entityListResponse.getEntities()[0].getId().equals(PARENT_CASE_ID);
+        Assertions.assertEquals(1, entityListResponse.getEntities().length);
+        Assertions.assertEquals(PARENT_CASE_ID, entityListResponse.getEntities()[0].getId());
 
         selections.add(PARENT_CASE_ID);
         sessionNavigateWithQuery(selections,
@@ -157,7 +158,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         // since the case claim has happened already, this should not redo the search and trigger
         // the query above
-        // If that happens, it would result into a Entity Screen selection error
+        // If that happens, it would result into an Entity Screen selection error
         sessionNavigateWithQuery(selections,
                 appName,
                 queryData,
@@ -267,8 +268,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 queryData,
                 EntityListResponse.class);
 
-        assert entityListResponse.getEntities().length == 1;
-        assert entityListResponse.getEntities()[0].getId().equals(PARENT_CASE_ID);
+        Assertions.assertEquals(1, entityListResponse.getEntities().length);
+        Assertions.assertEquals(PARENT_CASE_ID, entityListResponse.getEntities()[0].getId());
     }
 
     private void testParentSelection(String appName, QueryData queryData,
@@ -339,8 +340,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 queryData,
                 EntityListResponse.class);
 
-        assert entityListResponse.getEntities().length == 1;
-        assert entityListResponse.getEntities()[0].getId().equals(subCaseSelectionId);
+        Assertions.assertEquals(1, entityListResponse.getEntities().length);
+        Assertions.assertEquals(subCaseSelectionId, entityListResponse.getEntities()[0].getId());
     }
 
     // selecting child should show child update form
@@ -352,7 +353,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 queryData,
                 CommandListResponseBean.class);
 
-        assert commandListResponseBean.getCommands().length == 1;
+        Assertions.assertEquals(1, commandListResponseBean.getCommands().length);
 
         selections.add(INDEX_CHILD_FORM);
         sessionNavigateWithQuery(selections,
