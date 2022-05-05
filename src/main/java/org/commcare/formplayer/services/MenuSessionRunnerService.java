@@ -468,39 +468,6 @@ public class MenuSessionRunnerService {
         screen.refreshItemSetChoices();
     }
 
-
-    /**
-     * Perform the sync and update the notification and screen accordingly.
-     * After a sync, we can either pop another menu/form to begin
-     * or just return to the app menu.
-     */
-    @Trace
-    private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
-            MenuSession menuSession) throws Exception {
-        NotificationMessage notificationMessage = null;
-        try {
-            doSync(nextScreen);
-        } catch (SyncRestoreException e) {
-            notificationMessage = new NotificationMessage(
-                    e.getMessage(), true, NotificationMessage.Tag.sync);
-        }
-
-        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-        if (postSyncResponse != null) {
-            // If not null, we have a form or menu to redirect to
-            if (notificationMessage != null) {
-                postSyncResponse.setNotification(notificationMessage);
-            }
-            return postSyncResponse;
-        } else {
-            // Otherwise, return use to the app root
-            postSyncResponse = new BaseResponseBean(null,
-                    new NotificationMessage("Redirecting after sync", false, NotificationMessage.Tag.sync),
-                    true);
-            return postSyncResponse;
-        }
-    }
-
     private void doSync(FormplayerSyncScreen screen) throws SyncRestoreException {
         Boolean shouldSync = true;
         try {
