@@ -7,4 +7,8 @@ public class SyncRestoreException extends Exception {
     public SyncRestoreException(Throwable throwable) {
         super(throwable);
     }
+
+    public SyncRestoreException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }

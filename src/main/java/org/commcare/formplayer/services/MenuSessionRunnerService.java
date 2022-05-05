@@ -467,7 +467,13 @@ public class MenuSessionRunnerService {
     @Trace
     private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
             MenuSession menuSession) throws Exception {
-        NotificationMessage notificationMessage = doSync(nextScreen);
+        NotificationMessage notificationMessage = null;
+        try {
+            doSync(nextScreen);
+        } catch (SyncRestoreException e) {
+            notificationMessage = new NotificationMessage(
+                    e.getMessage(), true, NotificationMessage.Tag.sync);
+        }
 
         BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
         if (postSyncResponse != null) {
@@ -485,22 +491,19 @@ public class MenuSessionRunnerService {
         }
     }
 
-    private NotificationMessage doSync(FormplayerSyncScreen screen) throws SyncRestoreException {
+    private void doSync(FormplayerSyncScreen screen) throws SyncRestoreException {
         Boolean shouldSync = true;
         try {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
         } catch (RestClientResponseException e) {
-            return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true,
-                    NotificationMessage.Tag.sync);
+            throw new SyncRestoreException(
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
         } catch (RestClientException e) {
-            return new NotificationMessage("Unknown error performing case claim", true,
-                    NotificationMessage.Tag.sync);
+            throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
             restoreFactory.performTimedSync(false, false, false);
         }
-        return null;
     }
 
     /**
