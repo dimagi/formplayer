@@ -384,7 +384,7 @@ public class MenuSessionRunnerService {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
-                    doSync((FormplayerSyncScreen) nextScreen);
+                    doPostAndSync((FormplayerSyncScreen) nextScreen);
                 } catch (SyncRestoreException e) {
                     throw new CommCareSessionException(e.getMessage(), e);
                 }
@@ -468,7 +468,10 @@ public class MenuSessionRunnerService {
         screen.refreshItemSetChoices();
     }
 
-    private void doSync(FormplayerSyncScreen screen) throws SyncRestoreException {
+    /**
+     * Execute the post request associated with the sync screen and perform a sync if necessary.
+     */
+    private void doPostAndSync(FormplayerSyncScreen screen) throws SyncRestoreException {
         Boolean shouldSync = true;
         try {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
@@ -739,7 +742,7 @@ public class MenuSessionRunnerService {
             if (screen instanceof FormplayerSyncScreen) {
                 try {
                     screen.init(sessionWrapper);
-                    doSync((FormplayerSyncScreen)screen);
+                    doPostAndSync((FormplayerSyncScreen)screen);
                     executeAndRebuildSession(menuSession);
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
