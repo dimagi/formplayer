@@ -379,6 +379,13 @@ public class MenuSessionRunnerService {
                 );
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
+            } else if (nextScreen instanceof FormplayerSyncScreen) {
+                try {
+                    doSync((FormplayerSyncScreen) nextScreen);
+                } catch (SyncRestoreException e) {
+                    throw new CommCareSessionException(e.getMessage(), e);
+                }
+                sessionAdvanced = true;
             }
         } while (!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
 
@@ -495,6 +502,7 @@ public class MenuSessionRunnerService {
         Boolean shouldSync = true;
         try {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
+            screen.updateSessionOnSuccess();
         } catch (RestClientResponseException e) {
             throw new SyncRestoreException(
                     String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
