@@ -290,16 +290,23 @@ public class MenuSessionRunnerService {
 
             menuSession.addSelection(selection);
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
-                // TODO: maybe check that there are more selections?
-                //  If there are rebuild the session and keep going?
-                BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-                if (postSyncResponse == null) {
-                    // Return use to the app root
-                    postSyncResponse = new BaseResponseBean(null,
-                            new NotificationMessage("Redirecting after sync", false, NotificationMessage.Tag.sync),
-                            true);
+                // we've reached the end of this navigation path and no form in sight
+                // this usually means a RemoteRequestEntry was involved
+                if (nextInput != NO_SELECTION) {
+                    // still more nav to do so rebuild the session and continue
+                    executeAndRebuildSession(menuSession);
+                } else {
+                    // no more nav, we're done
+                    BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+                    if (postSyncResponse == null) {
+                        // Return use to the app root
+                        postSyncResponse = new BaseResponseBean(null,
+                                new NotificationMessage("Redirecting after sync", false,
+                                        NotificationMessage.Tag.sync),
+                                true);
+                    }
+                    return postSyncResponse;
                 }
-                return postSyncResponse;
             }
         }
 
