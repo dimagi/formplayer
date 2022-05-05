@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.Entry;
 import org.commcare.suite.model.PostRequest;
-import org.commcare.suite.model.RemoteRequestEntry;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.SyncScreen;
 import org.springframework.util.LinkedMultiValueMap;
@@ -33,21 +32,14 @@ public class FormplayerSyncScreen extends SyncScreen {
     @Override
     public void init (SessionWrapper sessionWrapper) throws CommCareSessionException {
         this.sessionWrapper = sessionWrapper;
-        String command = sessionWrapper.getCommand();
-        Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
-        if (commandEntry instanceof RemoteRequestEntry) {
-            PostRequest syncPost = ((RemoteRequestEntry)commandEntry).getPostRequest();
-            url = syncPost.getUrl().toString();
-            Multimap<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
-            queryParams = new LinkedMultiValueMap<String, String>();
-            if (asUser != null) {
-                queryParams.add("commcare_login_as", asUser);
-            }
-            params.forEach(queryParams::add);
-        } else {
-            // expected a sync entry; clear session and show vague 'session error' message to user
-            throw new RuntimeException("Initialized sync request while not on sync screen");
+        PostRequest postRequest = getPostRequest();
+        url = postRequest.getUrl().toString();
+        Multimap<String, String> params = postRequest.getEvaluatedParams(sessionWrapper.getEvaluationContext());
+        queryParams = new LinkedMultiValueMap<>();
+        if (asUser != null) {
+            queryParams.add("commcare_login_as", asUser);
         }
+        params.forEach(queryParams::add);
     }
 
     public MultiValueMap<String, String> getQueryParams() {
@@ -57,4 +49,5 @@ public class FormplayerSyncScreen extends SyncScreen {
     public String getUrl() {
         return url;
     }
+
 }
