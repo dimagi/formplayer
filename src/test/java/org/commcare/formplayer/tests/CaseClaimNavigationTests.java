@@ -380,7 +380,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(webClientMock.caseClaimPost(anyString(), any())).thenReturn(true);
+        when(webClientMock.caseClaimPost(anyString(), any())).thenThrow(
+                new RuntimeException("not expecting a claim request"));
     }
 
     private void configureQueryMock() {
