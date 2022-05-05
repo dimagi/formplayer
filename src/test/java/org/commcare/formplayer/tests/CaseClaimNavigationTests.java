@@ -67,16 +67,32 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     }
 
     @Test
-    public void testSpfOtherWithSameCaseType() throws Exception {
+    public void testSpfOtherWithSameCaseType_SearchFirst() throws Exception {
         testParentSearchFirst(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
+    }
+
+    @Test
+    public void testSpfOtherWithSameCaseType_SeeMore() throws Exception {
         testParentSeeMore(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
+    }
+
+    @Test
+    public void testSpfOtherWithSameCaseType_SkipToSearchResults() throws Exception {
         testParentSkipToSearchResults(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
     }
 
     @Test
-    public void testSpfParentWithChildCase() throws Exception {
+    public void testSpfParentWithChildCase_SearchFirst() throws Exception {
         testParentSearchFirst(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
+    }
+
+    @Test
+    public void testSpfParentWithChildCase_SeeMore() throws Exception {
         testParentSeeMore(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
+    }
+
+    @Test
+    public void testSpfParentWithChildCase_SkipToSearchResults() throws Exception {
         testParentSkipToSearchResults(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
     }
 
@@ -238,8 +254,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 appName,
                 queryData,
                 QueryResponseBean.class);
-        queryData.setExecute(searchKey, true);
 
+        queryData.setExecute(searchKey, true);
         testChildSearchResult(appName, queryData, selections, subCaseSelectionId);
         testChildSelection(appName, queryData, selections, subCaseSelectionId);
     }
