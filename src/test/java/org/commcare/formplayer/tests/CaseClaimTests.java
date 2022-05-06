@@ -327,8 +327,8 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(webClientMock.post(anyString(), any()))
-                .thenReturn("");
+        when(webClientMock.caseClaimPost(anyString(), any()))
+                .thenReturn(true);
     }
 
     private void configureQueryMock() {

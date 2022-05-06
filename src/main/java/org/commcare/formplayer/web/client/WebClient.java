@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +63,20 @@ public class WebClient {
                         .body(postData),
                 String.class
         ).getBody();
+    }
+
+    public <T> Boolean caseClaimPost(String url, T body) {
+        checkHmac();
+        URI uri = URI.create(url);
+        ResponseEntity<String> entity = restTemplate.exchange(
+                RequestEntity.post(uri).headers(restoreFactory.getRequestHeaders(uri)).body(body),
+                String.class
+        );
+        Boolean shouldSync = true;
+        if (entity != null && entity.getStatusCode() == HttpStatus.NO_CONTENT) {
+            shouldSync = false;
+        }
+        return shouldSync;
     }
 
     /**
