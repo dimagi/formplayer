@@ -14,31 +14,25 @@ import org.commcare.util.CommCarePlatform;
  * Created by willpride on 1/29/16.
  */
 class FormplayerSessionWrapper extends SessionWrapper {
-    private RemoteInstanceFetcher remoteInstanceFetcher;
-    private VirtualDataInstanceCache virtualDataInstanceCache;
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox,
-            RemoteInstanceFetcher remoteInstanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache)
+                                    RemoteInstanceFetcher remoteInstanceFetcher)
             throws RemoteInstanceFetcher.RemoteInstanceException {
-        this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher, virtualDataInstanceCache);
+        this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher);
     }
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame,
-            RemoteInstanceFetcher remoteInstanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache)
+                                    RemoteInstanceFetcher remoteInstanceFetcher)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         super(platform, sandbox);
         this.frame = sessionFrame;
-        this.remoteInstanceFetcher = remoteInstanceFetcher;
-        this.virtualDataInstanceCache = virtualDataInstanceCache;
         prepareExternalSources(remoteInstanceFetcher);
     }
 
     public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox,
-            RemoteInstanceFetcher remoteInstanceFetcher, VirtualDataInstanceCache virtualDataInstanceCache)
+                                    RemoteInstanceFetcher remoteInstanceFetcher)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         super(session, platform, sandbox);
-        this.remoteInstanceFetcher = remoteInstanceFetcher;
-        this.virtualDataInstanceCache = virtualDataInstanceCache;
         prepareExternalSources(remoteInstanceFetcher);
     }
 
@@ -46,8 +40,7 @@ class FormplayerSessionWrapper extends SessionWrapper {
     @Override
     public CommCareInstanceInitializer getIIF() {
         if (initializer == null) {
-            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox)mSandbox, mPlatform,
-                    virtualDataInstanceCache);
+            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox)mSandbox, mPlatform);
         }
         return initializer;
     }

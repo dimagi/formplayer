@@ -1,9 +1,9 @@
 package org.commcare.formplayer.services;
 
 import com.google.common.collect.Multimap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -17,10 +17,9 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayInputStream;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 
 @CacheConfig(cacheNames = "case_search")
 @Component
-public class CaseSearchHelper implements RemoteInstanceFetcher {
+public class CaseSearchHelper {
 
     @Autowired
     CacheManager cacheManager;
@@ -42,7 +41,6 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    @Override
     public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
@@ -82,14 +80,13 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
     public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url, Multimap<String, String> requestData)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
-        ExternalDataInstanceSource source = new ExternalDataInstanceSource(instanceId, url.toString(), requestData, useCaseTemplate);
+        ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemoteDataInstanceSource(
+                instanceId, null, useCaseTemplate, url.toString(), requestData);
 
         TreeElement root = getExternalRoot(instanceId, source);
         source.init(root);
 
-        return ExternalDataInstance.buildFromRemote(
-                instanceId,
-                source);
+        return ExternalDataInstance.buildInstance(source);
     }
 
     private String getCacheKey(URI url, Multimap<String, String> queryParams) {

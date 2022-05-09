@@ -152,12 +152,12 @@ public class MenuSessionFactory {
                                     boolean preview) throws Exception {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
-                caseSearchHelper, virtualDataInstanceService);
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
     }
 
     @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper,
-                virtualDataInstanceService);
+        return new MenuSession(serializableMenuSession, installService, restoreFactory,
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
     }
 }
