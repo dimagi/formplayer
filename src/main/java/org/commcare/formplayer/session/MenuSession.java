@@ -174,7 +174,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
                 } else {
-                    sessionWrapper.setEntityDatum(sessionWrapper.getNeededDatum(), input);
+                    entityScreen.updateDatum(sessionWrapper, input);
                 }
             } else {
                 screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
