@@ -27,6 +27,9 @@ public class SerializableDataInstance {
     @Column(name = "instanceid", updatable = false)
     private String instanceId;
 
+    @Column(name = "reference", updatable = false)
+    private String reference;
+
     @Column(updatable = false)
     private String username;
 
@@ -40,7 +43,7 @@ public class SerializableDataInstance {
     private String asUser;
 
     @Column(name = "instancexml", updatable = false)
-    @Convert(converter=TreeElementConverter.class)
+    @Convert(converter = TreeElementConverter.class)
     private TreeElement instanceXml;
 
     @CreationTimestamp
@@ -51,9 +54,11 @@ public class SerializableDataInstance {
     public SerializableDataInstance() {
     }
 
-    public SerializableDataInstance(String instanceId, String username, String domain, String appId,
-            String asUser, TreeElement instanceXml) {
+    public SerializableDataInstance(String instanceId, String reference, String username,
+                                    String domain, String appId,
+                                    String asUser, TreeElement instanceXml) {
         this.instanceId = instanceId;
+        this.reference = reference;
         this.username = username;
         this.domain = domain;
         this.appId = appId;
@@ -91,5 +96,9 @@ public class SerializableDataInstance {
 
     public Instant getDateCreated() {
         return dateCreated;
+    }
+
+    public String getReference() {
+        return reference;
     }
 }

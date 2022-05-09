@@ -7,15 +7,20 @@ import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.model.instance.RemoteDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.VirtualDataInstance;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,7 +41,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
     @Override
     public UUID write(VirtualDataInstance dataInstance) {
         SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
-                dataInstance.getInstanceId(), storageFactory.getUsername(),
+                dataInstance.getInstanceId(), dataInstance.getReference(), storageFactory.getUsername(),
                 storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(),
                 (TreeElement)dataInstance.getRoot());
         SerializableDataInstance savedDataInstance = dataInstanceRepo.save(serializableDataInstance);
@@ -58,7 +63,8 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
         if (serializableDataInstance != null
                 && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
                 && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
-            return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
+            return new VirtualDataInstance(serializableDataInstance.getReference(),
+                    serializableDataInstance.getInstanceId(),
                     serializableDataInstance.getInstanceXml());
         }
         throw new InstanceNotFoundException(key);
