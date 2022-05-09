@@ -30,6 +30,9 @@ public class SerializableDataInstance {
     @Column(name = "reference", updatable = false)
     private String reference;
 
+    @Column(name = "usecasetemplate", updatable = false)
+    private boolean useCaseTemplate;
+
     @Column(updatable = false)
     private String username;
 
@@ -55,8 +58,7 @@ public class SerializableDataInstance {
     }
 
     public SerializableDataInstance(String instanceId, String reference, String username,
-                                    String domain, String appId,
-                                    String asUser, TreeElement instanceXml) {
+            String domain, String appId, String asUser, TreeElement instanceXml, boolean useCaseTemplate) {
         this.instanceId = instanceId;
         this.reference = reference;
         this.username = username;
@@ -64,6 +66,7 @@ public class SerializableDataInstance {
         this.appId = appId;
         this.asUser = asUser;
         this.instanceXml = instanceXml;
+        this.useCaseTemplate = useCaseTemplate;
     }
 
     public String getInstanceId() {
@@ -100,5 +103,9 @@ public class SerializableDataInstance {
 
     public String getReference() {
         return reference;
+    }
+
+    public boolean useCaseTemplate() {
+        return useCaseTemplate;
     }
 }

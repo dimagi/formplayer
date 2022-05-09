@@ -17,6 +17,7 @@ public class V23__init_virtual_data_instance extends BaseFormplayerMigration {
                         "    appid varchar NOT NULL,\n" +
                         "    instanceid varchar NOT NULL,\n" +
                         "    reference varchar NOT NULL,\n" +
+                        "    usecasetemplate boolean DEFAULT false,\n" +
                         "    instancexml bytea NOT NULL,\n" +
                         "    datecreated timestamptz NOT NULL,\n" +
                         "    CONSTRAINT virtual_data_instance_pkey PRIMARY KEY (id)\n" +
