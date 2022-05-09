@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.application.DebuggerController;
 import org.commcare.formplayer.application.FormController;
 import org.commcare.formplayer.application.FormSubmissionController;
@@ -57,6 +58,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.FormplayerRemoteInstanceFetcher;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.MenuSessionFactory;
@@ -380,8 +382,9 @@ public class BaseTestClass {
             VirtualDataInstance virtualDataInstance = (VirtualDataInstance)invocation.getArguments()[0];
             SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
                     virtualDataInstance.getInstanceId(),
+                    VirtualInstances.JR_SELECTED_VALUES_REFERENCE,
                     "username", "domain", "appid", "asuser",
-                    (TreeElement)virtualDataInstance.getRoot());
+                    (TreeElement)virtualDataInstance.getRoot(), virtualDataInstance.useCaseTemplate());
             if (serializableDataInstance.getId() == null) {
                 // this is normally taken care of by Hibernate
                 ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
@@ -394,7 +397,8 @@ public class BaseTestClass {
             UUID key = (UUID)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
-                return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
+                return new VirtualDataInstance(VirtualInstances.JR_SELECTED_VALUES_REFERENCE,
+                        serializableDataInstance.getInstanceId(),
                         serializableDataInstance.getInstanceXml());
             }
             return null;
@@ -1146,13 +1150,16 @@ public class BaseTestClass {
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession)
             throws Exception {
+        FormplayerRemoteInstanceFetcher remoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
+                menuSessionRunnerService.getCaseSearchHelper(),
+                virtualDataInstanceService);
         return new FormSession(serializableFormSession,
                 restoreFactoryMock,
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper(),
-                virtualDataInstanceService);
+                remoteInstanceFetcher
+        );
     }
 
     @Nullable

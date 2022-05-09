@@ -12,6 +12,7 @@ import static java.util.Optional.ofNullable;
 
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +87,7 @@ public class VirtualDataInstanceServiceTest {
         assertEquals(virtualDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
 
         // get Record hits the cache (repo is mocked)
-        VirtualDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
+        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
         assertEquals(virtualDataInstance.getRoot(), fetchedRecord.getRoot());
     }
 

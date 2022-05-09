@@ -5,6 +5,7 @@ import static org.commcare.formplayer.util.Constants.POSTGRES_VIRTUAL_DATA_INSTA
 
 import org.commcare.data.xml.SimpleNode;
 import org.commcare.data.xml.TreeBuilder;
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.utils.JpaTestUtils;
@@ -60,7 +61,9 @@ public class VirtualDataInstanceRepoTest {
                 virtualDataInstanceRepo.getById(savedInstance.getId())
         );
         // Reattach parent
-        VirtualDataInstance loadedVirtualDataInstance = new VirtualDataInstance("selected_cases",
+        VirtualDataInstance loadedVirtualDataInstance = new VirtualDataInstance(
+                VirtualInstances.JR_SELECTED_VALUES_REFERENCE,
+                "selected_cases",
                 loaded.getInstanceXml());
         assertThat(loadedVirtualDataInstance.getRoot()).isEqualTo(savedInstance.getInstanceXml());
         Assertions.assertNotNull(loaded.getDateCreated());
@@ -105,8 +108,14 @@ public class VirtualDataInstanceRepoTest {
 
     private SerializableDataInstance getSerializableDataInstance(String[] selections) {
         VirtualDataInstance selectedCasesInstance = buildSelectedCasesInstance(selections);
-        return new SerializableDataInstance(selectedCasesInstance.getInstanceId(), "username", "domain", "appid",
-                "asUser", (TreeElement)selectedCasesInstance.getRoot());
+        return new SerializableDataInstance(selectedCasesInstance.getInstanceId(),
+                VirtualInstances.JR_SELECTED_VALUES_REFERENCE,
+                "username",
+                "domain",
+                "appid",
+                "asUser",
+                (TreeElement)selectedCasesInstance.getRoot(),
+                selectedCasesInstance.useCaseTemplate());
     }
 
     public static VirtualDataInstance buildSelectedCasesInstance(String[] selections) {
@@ -115,7 +124,7 @@ public class VirtualDataInstanceRepoTest {
             nodes.add(SimpleNode.textNode("value", Collections.emptyMap(), selection));
         }
         TreeElement root = TreeBuilder.buildTree("selected_cases", "results", nodes);
-        return new VirtualDataInstance("selected_cases", root);
+        return new VirtualDataInstance(VirtualInstances.JR_SELECTED_VALUES_REFERENCE, "selected_cases", root);
     }
 }
 
