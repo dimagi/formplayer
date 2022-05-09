@@ -8,6 +8,7 @@ import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.session.SessionFrame;
 import org.commcare.session.SessionInstanceBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
@@ -16,10 +17,8 @@ import org.javarosa.core.model.instance.ConcreteInstanceRoot;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.VirtualDataInstance;
 
 import java.util.Hashtable;
-import java.util.UUID;
 
 /**
  * Created by willpride on 1/29/16.
@@ -27,17 +26,13 @@ import java.util.UUID;
 public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
 
-    private VirtualDataInstanceCache virtualDataInstanceCache;
-
     public FormplayerInstanceInitializer(UserSqlSandbox sandbox) {
         super(sandbox);
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-            UserSqlSandbox mSandbox, CommCarePlatform mPlatform,
-            VirtualDataInstanceCache virtualDataInstanceCache) {
+                                         UserSqlSandbox mSandbox, CommCarePlatform mPlatform) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
-        this.virtualDataInstanceCache = virtualDataInstanceCache;
     }
 
     @Override
@@ -91,15 +86,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
     @Override
     protected InstanceRoot setupSelectedCases(ExternalDataInstance instance) {
-        String guid = getGuidForSelectedCasesInstance(instance);
-        if (guid != null) {
-            VirtualDataInstance virtualDataInstance =
-                    virtualDataInstanceCache.read(UUID.fromString(guid));
-            if (virtualDataInstance != null) {
-                return new ConcreteInstanceRoot(virtualDataInstance.getRoot());
-            }
-        }
-        return ConcreteInstanceRoot.NULL;
+        return getExternalDataInstanceSource(instance, SessionFrame.STATE_MULTIPLE_DATUM_VAL);
     }
 
     public String getVersionString() {
