@@ -83,6 +83,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     public void testPostInEntry() throws Exception {
         ArrayList<String> selections = new ArrayList<>();
         selections.add("2");  // m2
+        selections.add("0");  // 1st form
 
         QueryData queryData = new QueryData();
 
@@ -95,22 +96,83 @@ public class CaseClaimNavigationTests extends BaseTestClass {
             return e.getId().equals("56306779-26a2-4aa5-a952-70c9d8b21e39");
         });
 
-        selections.add("56306779-26a2-4aa5-a952-70c9d8b21e39");
-        CommandListResponseBean response = sessionNavigateWithQuery(selections,
-                APP_PATH,
-                queryData,
-                CommandListResponseBean.class);
-        assertEquals(1, response.getCommands().length);
-        assertEquals("Visit after post", response.getCommands()[0].getDisplayText());
         verifyNoInteractions(webClientMock);  // post should only be executed once form is selected
 
-        selections.add("0");  // select form
+        selections.add("56306779-26a2-4aa5-a952-70c9d8b21e39");
         try(VerifiedMock ignored = mockPost(false)) {
             sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
                     NewFormResponse.class);
         }
+    }
+
+    @Test
+    public void testPostInEntryWithQuery_RelevantFalse() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("1");  // 2nd form
+
+        QueryData queryData = new QueryData();
+
+        try(VerifiedMock ignored = mockQuery("query_responses/case_claim_response_owned.xml")) {
+            EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+
+            assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+                return e.getId().equals("3512eb7c-7a58-4a95-beda-205eb0d7f163");
+            });
+        }
+
+        Mockito.reset(webClientMock);
+        selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
+        sessionNavigateWithQuery(selections,
+                APP_PATH,
+                queryData,
+                NewFormResponse.class);
+        // post should not be fired due to relevant condition evaluating to false
+        verifyNoInteractions(webClientMock);
+    }
+
+    @Test
+    public void testPostInEntryWithQuery_RelevantTrue() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("1");  // 2nd form
+
+        QueryData queryData = new QueryData();
+
+        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response.xml")) {
+            EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+
+            assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+                return e.getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+            });
+        }
+
+        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse;
+        try (
+                VerifiedMock ignoredPostMock = mockPost(true);
+                VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
+        ) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+
+        // case was included in restore and is now in the case DB
+        checkXpath(
+                formResponse.getSessionId(),
+                "count(instance('casedb')/casedb/case[@case_id='0156fa3e-093e-4136-b95c-01b13dae66c6'])",
+                "1"
+        );
     }
 
     /**
