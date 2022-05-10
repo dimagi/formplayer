@@ -11,6 +11,7 @@ import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.utils.JpaTestUtils;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.VirtualDataInstance;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,8 +72,8 @@ public class VirtualDataInstanceRepoTest {
 
     @Test
     public void testDeleteByDateCreatedLessThan() {
+        virtualDataInstanceRepo.deleteAll();
         Instant now = Instant.now();
-
         List<SerializableDataInstance> serializableDataInstances = IntStream.range(0, 5)
                 .mapToObj(this::getSerializableDataInstance)
                 .collect(Collectors.toList());
