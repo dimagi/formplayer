@@ -43,6 +43,7 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.AbstractTreeElement;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.javarosa.core.util.MD5;
 import org.javarosa.core.util.OrderedHashtable;
@@ -216,18 +217,20 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     private void addTitle(String input, Screen previousScreen) {
         if (previousScreen instanceof MultiSelectEntityScreen) {
-            VirtualDataInstance instance = ((MultiSelectEntityScreen)previousScreen).getVirtualInstance();
-            AbstractTreeElement root = instance.getRoot();
-            int caseCount = root.getNumChildren();
-            if (caseCount > 0) {
-                String caseName = getCaseName(root.getChildAt(0).getValue().getDisplayText());
-                if (caseName != null) {
-                    if (caseCount > 1) {
-                        breadcrumbs.add("(" + caseCount + ") " + caseName + ", ...");
-                    } else {
-                        breadcrumbs.add(caseName);
+            ExternalDataInstance instance = ((MultiSelectEntityScreen)previousScreen).getVirtualInstance();
+            if (instance != null) {
+                AbstractTreeElement root = instance.getRoot();
+                int caseCount = root.getNumChildren();
+                if (caseCount > 0) {
+                    String caseName = getCaseName(root.getChildAt(0).getValue().getDisplayText());
+                    if (caseName != null) {
+                        if (caseCount > 1) {
+                            breadcrumbs.add("(" + caseCount + ") " + caseName + ", ...");
+                        } else {
+                            breadcrumbs.add(caseName);
+                        }
+                        return;
                     }
-                    return;
                 }
             }
         } else if (previousScreen instanceof EntityScreen) {
