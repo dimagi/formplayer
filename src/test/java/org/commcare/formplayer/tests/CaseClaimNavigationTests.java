@@ -26,6 +26,8 @@ import java.util.ArrayList;
 @ContextConfiguration(classes = TestContext.class)
 public class CaseClaimNavigationTests extends BaseTestClass {
 
+    private static final String APP_PATH = "archives/caseclaim";
+
     @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -41,7 +43,6 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
     @Test
     public void testNormalClaim() throws Exception {
-        String appName = "caseclaim";
         ArrayList<String> selections = new ArrayList<>();
         selections.add("1");  // select menu
         selections.add("action 1");  // load case search
@@ -51,7 +52,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         try (VerifiedMock ignore = mockQuery("query_responses/case_claim_response.xml")) {
             EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                    appName,
+                    APP_PATH,
                     queryData,
                     EntityListResponse.class);
 
@@ -67,7 +68,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
         ) {
             CommandListResponseBean commandListResponseBean = sessionNavigateWithQuery(selections,
-                    appName,
+                    APP_PATH,
                     queryData,
                     CommandListResponseBean.class);
             Assertions.assertEquals(2, commandListResponseBean.getCommands().length);
