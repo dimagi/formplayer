@@ -21,7 +21,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.verification.VerificationMode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
@@ -32,11 +34,15 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
     private static final String APP_PATH = "archives/caseclaim";
 
+    @Autowired
+    CacheManager cacheManager;
+
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
+        cacheManager.getCache("case_search").clear();
     }
 
     @Override
