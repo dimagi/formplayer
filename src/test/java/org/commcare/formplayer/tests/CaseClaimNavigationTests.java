@@ -54,29 +54,30 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         QueryData queryData = new QueryData();
         queryData.setExecute("case_search.m1", true);
 
+        EntityListResponse entityListResponse;
         try (VerifiedMock ignore = mockQuery("query_responses/case_claim_response.xml")) {
-            EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
+            entityListResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
                     EntityListResponse.class);
-
-            assertEquals(1, entityListResponse.getEntities().length);
-            assertEquals("0156fa3e-093e-4136-b95c-01b13dae66c6",
-                    entityListResponse.getEntities()[0].getId());
         }
+        assertEquals(1, entityListResponse.getEntities().length);
+        assertEquals("0156fa3e-093e-4136-b95c-01b13dae66c6",
+                entityListResponse.getEntities()[0].getId());
 
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
 
-        try(
+        CommandListResponseBean commandListResponseBean;
+        try (
                 VerifiedMock ignoredPostMock = mockPost(true);
                 VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
         ) {
-            CommandListResponseBean commandListResponseBean = sessionNavigateWithQuery(selections,
+            commandListResponseBean = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
                     CommandListResponseBean.class);
-            assertEquals(2, commandListResponseBean.getCommands().length);
         }
+        assertEquals(2, commandListResponseBean.getCommands().length);
     }
 
     @Test
@@ -115,16 +116,17 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         QueryData queryData = new QueryData();
 
-        try(VerifiedMock ignored = mockQuery("query_responses/case_claim_response_owned.xml")) {
-            EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
+        EntityListResponse entityListResponse;
+        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response_owned.xml")) {
+            entityListResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
                     EntityListResponse.class);
-
-            assertThat(entityListResponse.getEntities()).anyMatch(e -> {
-                return e.getId().equals("3512eb7c-7a58-4a95-beda-205eb0d7f163");
-            });
         }
+
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("3512eb7c-7a58-4a95-beda-205eb0d7f163");
+        });
 
         Mockito.reset(webClientMock);
         selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
@@ -144,16 +146,16 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         QueryData queryData = new QueryData();
 
+        EntityListResponse entityListResponse;
         try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response.xml")) {
-            EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
+            entityListResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
                     EntityListResponse.class);
-
-            assertThat(entityListResponse.getEntities()).anyMatch(e -> {
-                return e.getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
-            });
         }
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        });
 
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
         NewFormResponse formResponse;
