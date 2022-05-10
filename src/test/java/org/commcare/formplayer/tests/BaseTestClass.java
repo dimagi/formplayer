@@ -275,7 +275,7 @@ public class BaseTestClass {
         restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupThreadLocalPrototypes();
         LocalizerManager.setUseThreadLocalStrategy(true);
-        LocalizerManager.getGlobalLocalizer().addAvailableLocale("default");
+        Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
         Localization.setLocale("default");
         new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
@@ -285,10 +285,6 @@ public class BaseTestClass {
         mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-
-        if (useCommCareArchiveReference()) {
-            ReferenceHandler.clearInstance();
-        }
     }
 
     /*
@@ -472,6 +468,8 @@ public class BaseTestClass {
         if (removeDatabaseFoldersAfterTests()) {
             SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
         }
+        ReferenceHandler.clearInstance();
+        LocalizerManager.clearInstance();
     }
 
     private UserDB customConnector;
