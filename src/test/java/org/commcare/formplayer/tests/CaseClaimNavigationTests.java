@@ -1,18 +1,22 @@
 package org.commcare.formplayer.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Multimap;
 
+import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -56,35 +60,69 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                     queryData,
                     EntityListResponse.class);
 
-            Assertions.assertEquals(1, entityListResponse.getEntities().length);
-            Assertions.assertEquals("0156fa3e-093e-4136-b95c-01b13dae66c6",
+            assertEquals(1, entityListResponse.getEntities().length);
+            assertEquals("0156fa3e-093e-4136-b95c-01b13dae66c6",
                     entityListResponse.getEntities()[0].getId());
         }
 
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
 
         try(
-                VerifiedMock ignoredPostMock = mockPost();
+                VerifiedMock ignoredPostMock = mockPost(true);
                 VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
         ) {
             CommandListResponseBean commandListResponseBean = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
                     CommandListResponseBean.class);
-            Assertions.assertEquals(2, commandListResponseBean.getCommands().length);
+            assertEquals(2, commandListResponseBean.getCommands().length);
+        }
+    }
+
+    @Test
+    public void testPostInEntry() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+
+        QueryData queryData = new QueryData();
+
+        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
+                APP_PATH,
+                queryData,
+                EntityListResponse.class);
+
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("56306779-26a2-4aa5-a952-70c9d8b21e39");
+        });
+
+        selections.add("56306779-26a2-4aa5-a952-70c9d8b21e39");
+        CommandListResponseBean response = sessionNavigateWithQuery(selections,
+                APP_PATH,
+                queryData,
+                CommandListResponseBean.class);
+        assertEquals(1, response.getCommands().length);
+        assertEquals("Visit after post", response.getCommands()[0].getDisplayText());
+        verifyNoInteractions(webClientMock);  // post should only be executed once form is selected
+
+        selections.add("0");  // select form
+        try(VerifiedMock ignored = mockPost(false)) {
+            sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
         }
     }
 
     /**
      * Mock the post request and verify it happened
      */
-    private VerifiedMock mockPost() {
+    private VerifiedMock mockPost(boolean returnValue) {
         Mockito.reset(webClientMock);
-        when(webClientMock.caseClaimPost(anyString(), any())).thenReturn(true);
+        when(webClientMock.caseClaimPost(anyString(), any())).thenReturn(returnValue);
 
         return () -> {
             VerificationMode once = Mockito.times(1);
-            Mockito.verify(webClientMock, once).caseClaimPost(anyString(), any());
+            verify(webClientMock, once).caseClaimPost(anyString(), any());
         };
     }
 
@@ -98,7 +136,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         return () -> {
             VerificationMode once = Mockito.times(1);
-            Mockito.verify(restoreFactoryMock, once).getRestoreXml(anyBoolean());
+            verify(restoreFactoryMock, once).getRestoreXml(anyBoolean());
         };
     }
 
@@ -110,7 +148,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         when(webClientMock.postFormData(anyString(), any(Multimap.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), queryFile));
 
-        return () -> Mockito.verify(
+        return () -> verify(
                 webClientMock, Mockito.times(1)).postFormData(
                         anyString(), any(Multimap.class));
     }

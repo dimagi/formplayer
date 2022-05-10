@@ -236,6 +236,22 @@
       <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <command id="m2-f0">
+      <text>
+        <locale id="forms.m2f0"/>
+      </text>
+    </command>
+    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="true()">
+      <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
+    </post>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
+    </session>
+  </entry>
   <menu id="root">
     <text>
       <locale id="modules.m0"/>
@@ -248,6 +264,12 @@
     </text>
     <command id="m1-f0"/>
     <command id="m1-f1"/>
+  </menu>
+  <menu id="m2">
+    <text>
+      <locale id="modules.m2"/>
+    </text>
+    <command id="m2-f0"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
