@@ -84,11 +84,6 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         }
     }
 
-    @Override
-    protected InstanceRoot setupSelectedCases(ExternalDataInstance instance) {
-        return getExternalDataInstanceSource(instance, SessionFrame.STATE_MULTIPLE_DATUM_VAL);
-    }
-
     public String getVersionString() {
         return "Formplayer Version: " + mPlatform.getMajorVersion() + "." + mPlatform.getMinorVersion();
     }
