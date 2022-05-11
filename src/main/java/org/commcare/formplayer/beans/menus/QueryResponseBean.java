@@ -76,7 +76,8 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.getHidden(),
                     currentAnswer,
                     choiceLabels,
-                    queryPromptItem.isAllowBlankValue());
+                    queryPromptItem.isAllowBlankValue(),
+                    queryPromptItem.getRequired());
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
