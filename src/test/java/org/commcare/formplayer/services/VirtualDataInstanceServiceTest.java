@@ -13,7 +13,6 @@ import static java.util.Optional.ofNullable;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,7 +79,7 @@ public class VirtualDataInstanceServiceTest {
     public void testGetRecordById_cached() {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
-        VirtualDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
+        ExternalDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
         UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
 
         // cache is populated on save
@@ -94,7 +93,7 @@ public class VirtualDataInstanceServiceTest {
     @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
-        VirtualDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
+        ExternalDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
         UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
         assertTrue(getCachedRecord(recordId).isPresent());
         virtualDataInstanceService.purge(Instant.now());

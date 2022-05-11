@@ -4,7 +4,6 @@ import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;

@@ -10,7 +10,6 @@ import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
