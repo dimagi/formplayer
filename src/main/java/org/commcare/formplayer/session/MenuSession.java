@@ -335,7 +335,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             throws CommCareSessionException {
         if (datum instanceof MultiSelectEntityDatum) {
             return new MultiSelectEntityScreen(false, needsDetail,
-                    sessionWrapper, instanceFetcher.getVirtualDataInstanceService());
+                    sessionWrapper, instanceFetcher.getVirtualDataInstanceCache());
         } else {
             return new EntityScreen(false, needsDetail, sessionWrapper);
         }
