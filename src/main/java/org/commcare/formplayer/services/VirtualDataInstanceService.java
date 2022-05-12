@@ -60,10 +60,10 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
                 && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
                 && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
             ExternalDataInstanceSource instanceSource =
-                    ExternalDataInstanceSource.buildStorageBackedDataInstanceSource(
+                    ExternalDataInstanceSource.buildVirtual(
                             serializableDataInstance.getInstanceId(), serializableDataInstance.getInstanceXml(),
                             serializableDataInstance.getReference(), serializableDataInstance.useCaseTemplate(), key);
-            return ExternalDataInstance.buildInstance(instanceSource);
+            return instanceSource.toInstance();
         }
         throw new InstanceNotFoundException(key);
     }

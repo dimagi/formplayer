@@ -215,7 +215,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     private void addTitle(String input, Screen previousScreen) {
         if (previousScreen instanceof MultiSelectEntityScreen) {
-            ExternalDataInstance instance = ((MultiSelectEntityScreen)previousScreen).getVirtualInstance();
+            ExternalDataInstance instance = ((MultiSelectEntityScreen)previousScreen).getSelectedValuesInstance();
             if (instance != null) {
                 AbstractTreeElement root = instance.getRoot();
                 int caseCount = root.getNumChildren();

@@ -80,13 +80,13 @@ public class CaseSearchHelper {
     public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url, Multimap<String, String> requestData)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
-        ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemoteDataInstanceSource(
+        ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemote(
                 instanceId, null, useCaseTemplate, url.toString(), requestData);
 
         TreeElement root = getExternalRoot(instanceId, source);
         source.init(root);
 
-        return ExternalDataInstance.buildInstance(source);
+        return source.toInstance();
     }
 
     private String getCacheKey(URI url, Multimap<String, String> queryParams) {
