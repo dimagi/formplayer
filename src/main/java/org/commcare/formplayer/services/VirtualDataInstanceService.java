@@ -2,7 +2,7 @@ package org.commcare.formplayer.services;
 
 import static org.commcare.formplayer.util.Constants.VIRTUAL_DATA_INSTANCES_CACHE;
 
-import org.commcare.core.interfaces.VirtualDataInstanceCache;
+import org.commcare.core.interfaces.VirtualDataInstanceStorage;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @Service
 @CacheConfig(cacheNames = {VIRTUAL_DATA_INSTANCES_CACHE})
-public class VirtualDataInstanceService implements VirtualDataInstanceCache {
+public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
 
     @Autowired
     private VirtualDataInstanceRepo dataInstanceRepo;

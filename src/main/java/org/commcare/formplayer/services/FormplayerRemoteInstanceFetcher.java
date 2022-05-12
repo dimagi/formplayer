@@ -1,7 +1,7 @@
 package org.commcare.formplayer.services;
 
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.core.interfaces.VirtualDataInstanceCache;
+import org.commcare.core.interfaces.VirtualDataInstanceStorage;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
@@ -17,12 +17,12 @@ import java.io.IOException;
 public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
 
     private final CaseSearchHelper caseSearchHelper;
-    private final VirtualDataInstanceCache virtualDataInstanceCache;
+    private final VirtualDataInstanceStorage mVirtualDataInstanceStorage;
 
     public FormplayerRemoteInstanceFetcher(CaseSearchHelper caseSearchHelper,
-            VirtualDataInstanceCache virtualDataInstanceCache) {
+            VirtualDataInstanceStorage virtualDataInstanceStorage) {
         this.caseSearchHelper = caseSearchHelper;
-        this.virtualDataInstanceCache = virtualDataInstanceCache;
+        this.mVirtualDataInstanceStorage = virtualDataInstanceStorage;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
                         + instanceId + ". Please try opening the form again.", e);
             }
         } else if (source.getStorageReferenceId() != null) {
-            ExternalDataInstance instance = virtualDataInstanceCache.read(source.getStorageReferenceId());
+            ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId());
             return (TreeElement)instance.getRoot();
         }
         throw new RemoteInstanceException("Could not retrieve data for instance " + instanceId
@@ -47,7 +47,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
                 + "storageRefernceId");
     }
 
-    public VirtualDataInstanceCache getVirtualDataInstanceCache() {
-        return virtualDataInstanceCache;
+    public VirtualDataInstanceStorage getVirtualDataInstanceCache() {
+        return mVirtualDataInstanceStorage;
     }
 }

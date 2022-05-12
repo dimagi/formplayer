@@ -1,6 +1,5 @@
 package org.commcare.formplayer.session;
 
-import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
