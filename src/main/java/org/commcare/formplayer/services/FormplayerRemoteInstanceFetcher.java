@@ -11,6 +11,9 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 
+/**
+ * Used to get external instances either by making a HTTP call or fetching them from DB
+ */
 public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
 
     private final CaseSearchHelper caseSearchHelper;
@@ -23,7 +26,8 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
     }
 
     @Override
-    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source) throws RemoteInstanceException {
+    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
+            throws RemoteInstanceException {
         if (source.getSourceUri() != null) {
             try {
                 return caseSearchHelper.getExternalRoot(instanceId, (source));
@@ -39,7 +43,8 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
             return (TreeElement)instance.getRoot();
         }
         throw new RemoteInstanceException("Could not retrieve data for instance " + instanceId
-                + ". Implementations for ExternalDataInstanceSource must define one of sourceUri or storageRefernceId");
+                + ". Implementations for ExternalDataInstanceSource must define one of sourceUri or "
+                + "storageRefernceId");
     }
 
     public VirtualDataInstanceCache getVirtualDataInstanceCache() {
