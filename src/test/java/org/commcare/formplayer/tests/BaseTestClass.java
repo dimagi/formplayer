@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_VALUES_REFERENCE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -374,13 +375,13 @@ public class BaseTestClass {
 
     private void mockVirtualDataInstanceService() {
         serializableDataInstanceMap.clear();
-        when(virtualDataInstanceService.write(any(VirtualDataInstance.class))).thenAnswer(invocation -> {
-            VirtualDataInstance virtualDataInstance = (VirtualDataInstance)invocation.getArguments()[0];
+        when(virtualDataInstanceService.write(any(ExternalDataInstance.class))).thenAnswer(invocation -> {
+            ExternalDataInstance externalDataInstance = (ExternalDataInstance)invocation.getArguments()[0];
             SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
-                    virtualDataInstance.getInstanceId(),
-                    VirtualInstances.JR_SELECTED_VALUES_REFERENCE,
+                    externalDataInstance.getInstanceId(),
+                    JR_SELECTED_VALUES_REFERENCE,
                     "username", "domain", "appid", "asuser",
-                    (TreeElement)virtualDataInstance.getRoot(), virtualDataInstance.useCaseTemplate());
+                    (TreeElement)externalDataInstance.getRoot(), externalDataInstance.useCaseTemplate());
             if (serializableDataInstance.getId() == null) {
                 // this is normally taken care of by Hibernate
                 ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
@@ -393,7 +394,7 @@ public class BaseTestClass {
             UUID key = (UUID)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
-                return new ExternalDataInstance(VirtualInstances.JR_SELECTED_VALUES_REFERENCE,
+                return new ExternalDataInstance(JR_SELECTED_VALUES_REFERENCE,
                         serializableDataInstance.getInstanceId(),
                         serializableDataInstance.getInstanceXml());
             }

@@ -79,22 +79,22 @@ public class VirtualDataInstanceServiceTest {
     public void testGetRecordById_cached() {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
-        ExternalDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
-        UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
+        ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
+        UUID recordId = virtualDataInstanceService.write(externalDataInstance);
 
         // cache is populated on save
-        assertEquals(virtualDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
+        assertEquals(externalDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
 
         // get Record hits the cache (repo is mocked)
         ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
-        assertEquals(virtualDataInstance.getRoot(), fetchedRecord.getRoot());
+        assertEquals(externalDataInstance.getRoot(), fetchedRecord.getRoot());
     }
 
     @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
-        ExternalDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
-        UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
+        ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
+        UUID recordId = virtualDataInstanceService.write(externalDataInstance);
         assertTrue(getCachedRecord(recordId).isPresent());
         virtualDataInstanceService.purge(Instant.now());
         assertFalse(getCachedRecord(recordId).isPresent());
