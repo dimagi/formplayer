@@ -14,9 +14,6 @@ import java.util.Hashtable;
  */
 public class TestStorageUtils {
 
-    public static final String CASE_INSTANCE = "jr://instance/casedb";
-    public static final String LEDGER_INSTANCE = "jr://instance/ledgerdb";
-
     /**
      * @return An evaluation context which is capable of evaluating against the connected storage
      * instances: casedb is the only one supported for now
@@ -27,10 +24,10 @@ public class TestStorageUtils {
     }
 
     private static EvaluationContext buildEvaluationContext(FormplayerInstanceInitializer iif) {
-        ExternalDataInstance edi = new ExternalDataInstance(CASE_INSTANCE, "casedb");
+        ExternalDataInstance edi = new ExternalDataInstance(ExternalDataInstance.JR_CASE_DB_REFERENCE, "casedb");
         DataInstance specializedDataInstance = edi.initialize(iif, "casedb");
 
-        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(LEDGER_INSTANCE,
+        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(ExternalDataInstance.JR_LEDGER_DB_REFERENCE,
                 "ledgerdb");
         DataInstance ledgerDataInstance = ledgerDataInstanceRaw.initialize(iif, "ledger");
 
