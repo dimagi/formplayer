@@ -245,7 +245,7 @@ public class BaseTestClass {
     final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
-    final Map<UUID, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
+    final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
 
     protected Long currentFormDefinitionId = 1L;
 
@@ -390,14 +390,14 @@ public class BaseTestClass {
                     (TreeElement)externalDataInstance.getRoot(), externalDataInstance.useCaseTemplate());
             if (serializableDataInstance.getId() == null) {
                 // this is normally taken care of by Hibernate
-                ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
+                ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());
             }
             serializableDataInstanceMap.put(serializableDataInstance.getId(), serializableDataInstance);
             return serializableDataInstance.getId();
         });
 
-        when(virtualDataInstanceService.read(any(UUID.class))).thenAnswer(invocation -> {
-            UUID key = (UUID)invocation.getArguments()[0];
+        when(virtualDataInstanceService.read(any(String.class))).thenAnswer(invocation -> {
+            String key = (String)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
                 return new ExternalDataInstance(JR_SELECTED_VALUES_REFERENCE,
@@ -407,8 +407,8 @@ public class BaseTestClass {
             return null;
         });
 
-        when(virtualDataInstanceService.contains(any(UUID.class))).thenAnswer(invocation -> {
-            UUID key = (UUID)invocation.getArguments()[0];
+        when(virtualDataInstanceService.contains(any(String.class))).thenAnswer(invocation -> {
+            String key = (String)invocation.getArguments()[0];
             return serializableDataInstanceMap.containsKey(key);
         });
     }

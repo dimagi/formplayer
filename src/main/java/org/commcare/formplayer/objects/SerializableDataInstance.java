@@ -22,7 +22,7 @@ public class SerializableDataInstance {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID id;
+    private String id;
 
     @Column(name = "instanceid", updatable = false)
     private String instanceId;
@@ -77,7 +77,7 @@ public class SerializableDataInstance {
         return instanceXml;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 

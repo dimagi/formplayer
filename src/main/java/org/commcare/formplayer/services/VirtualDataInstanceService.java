@@ -35,7 +35,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     CacheManager cacheManager;
 
     @Override
-    public UUID write(ExternalDataInstance dataInstance) {
+    public String write(ExternalDataInstance dataInstance) {
         SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
                 dataInstance.getInstanceId(), dataInstance.getReference(), storageFactory.getUsername(),
                 storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(),
@@ -47,7 +47,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     }
 
     @Override
-    public ExternalDataInstance read(UUID key) {
+    public ExternalDataInstance read(String key) {
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance serializableDataInstance = cache.get(key, SerializableDataInstance.class);
         if (serializableDataInstance == null) {
@@ -72,7 +72,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
         return TableBuilder.scrubName(username1).contentEquals(TableBuilder.scrubName(username2));
     }
 
-    public boolean contains(UUID key) {
+    public boolean contains(String key) {
         return dataInstanceRepo.existsById(key);
     }
 

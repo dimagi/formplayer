@@ -64,7 +64,7 @@ public class VirtualDataInstanceServiceTest {
         when(virtualDataInstanceRepo.save(any())).thenAnswer(
                 (Answer<SerializableDataInstance>)invocation -> {
                     SerializableDataInstance serializableDataInstance = (SerializableDataInstance)invocation.getArguments()[0];
-                    ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
+                    ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());
                     return serializableDataInstance;
                 });
     }
@@ -80,7 +80,7 @@ public class VirtualDataInstanceServiceTest {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
         ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
-        UUID recordId = virtualDataInstanceService.write(externalDataInstance);
+        String recordId = virtualDataInstanceService.write(externalDataInstance);
 
         // cache is populated on save
         assertEquals(externalDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
@@ -94,13 +94,13 @@ public class VirtualDataInstanceServiceTest {
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
         ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
-        UUID recordId = virtualDataInstanceService.write(externalDataInstance);
+        String recordId = virtualDataInstanceService.write(externalDataInstance);
         assertTrue(getCachedRecord(recordId).isPresent());
         virtualDataInstanceService.purge(Instant.now());
         assertFalse(getCachedRecord(recordId).isPresent());
     }
 
-    private Optional<SerializableDataInstance> getCachedRecord(UUID recordId) {
+    private Optional<SerializableDataInstance> getCachedRecord(String recordId) {
         return ofNullable(cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE)).map(
                 c -> c.get(recordId, SerializableDataInstance.class)
         );

@@ -10,7 +10,7 @@ public class V23__init_virtual_data_instance extends BaseFormplayerMigration {
     public Iterable<String> getSqlStatements() {
         return Arrays.asList(
                 "CREATE TABLE " + Constants.POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME + " (\n" +
-                        "    id uuid NOT NULL,\n" +
+                        "    id varchar NOT NULL,\n" +
                         "    username varchar NOT NULL,\n" +
                         "    asUser varchar,\n" +
                         "    domain varchar NOT NULL,\n" +

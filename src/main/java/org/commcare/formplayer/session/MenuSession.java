@@ -183,7 +183,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
             if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
                     USE_SELECTED_VALUES)) {
-                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId().toString());
+                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId());
             }
 
             if (addBreadcrumb) {
