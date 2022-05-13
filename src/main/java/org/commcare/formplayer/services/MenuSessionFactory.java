@@ -1,16 +1,14 @@
 package org.commcare.formplayer.services;
 
-import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMultimap;
-import org.commcare.suite.model.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.session.MenuSession;
 import org.commcare.suite.model.MenuDisplayable;
+import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
@@ -18,17 +16,20 @@ import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.session.MenuSession;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Vector;
+
+import datadog.trace.api.Trace;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -50,6 +51,9 @@ public class MenuSessionFactory {
 
     @Autowired
     protected FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    private VirtualDataInstanceService virtualDataInstanceService;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -128,7 +132,7 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, false, true, false);
+                menuSession.handleInput(currentStep, false, true, false, null);
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
             }
@@ -148,11 +152,12 @@ public class MenuSessionFactory {
                                     boolean preview) throws Exception {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
-                caseSearchHelper);
+                caseSearchHelper, virtualDataInstanceService);
     }
 
     @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper);
+        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper,
+                virtualDataInstanceService);
     }
 }
