@@ -76,6 +76,7 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId());
 
         FormDef formDef = parseFormDef(formXml);
+        this.formDefinitionService.writeToLocalStorage(formDef);
         SerializableFormDefinition serializableFormDefinition = this.formDefinitionService
                 .getOrCreateFormDefinition(
                         bean.getSessionData().getAppId(),
@@ -87,7 +88,7 @@ public class NewFormResponseFactory {
         FormSession formSession = new FormSession(
                 sandbox,
                 serializableFormDefinition,
-                parseFormDef(formXml),
+                formDef,
                 bean.getUsername(),
                 bean.getDomain(),
                 bean.getSessionData().getData(),

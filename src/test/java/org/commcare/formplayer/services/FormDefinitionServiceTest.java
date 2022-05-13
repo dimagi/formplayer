@@ -200,5 +200,8 @@ public class FormDefinitionServiceTest {
         public CacheManager cacheManager() {
             return new ConcurrentMapCacheManager("form_definition");
         }
+
+        @MockBean
+        public FormplayerStorageFactory storageFactory;
     }
 }
