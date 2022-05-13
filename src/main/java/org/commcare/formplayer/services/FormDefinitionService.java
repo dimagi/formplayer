@@ -66,8 +66,18 @@ public class FormDefinitionService {
      * @param session session that contains session id and serialized formDef
      * @return deserialized FormDef object
      */
-    @Cacheable(key = "#session.id")
     public FormDef getFormDef(SerializableFormSession session) {
+        FormDef formDef = this.internalGetFormDef(session);
+        // ensure previous tree references are cleared (only necessary when retrieving from cache)
+        formDef.getMainInstance().cleanCache();
+        return formDef;
+    }
+
+    /**
+     * Always use public getFormDef to ensure internal FormDef cached references are cleared
+     */
+    @Cacheable(key = "#session.id")
+    private FormDef internalGetFormDef(SerializableFormSession session) {
         FormDef formDef;
         try {
             formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
