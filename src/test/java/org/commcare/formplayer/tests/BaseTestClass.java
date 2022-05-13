@@ -289,10 +289,7 @@ public class BaseTestClass {
         mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-
-        if (useCommCareArchiveReference()) {
-            ReferenceHandler.clearInstance();
-        }
+        ReferenceHandler.clearInstance();
     }
 
     /*
@@ -843,13 +840,6 @@ public class BaseTestClass {
                 clazz);
     }
 
-    /**
-     * @return whether to use a ccz file reference for the test
-     */
-    protected boolean useCommCareArchiveReference() {
-        return true;
-    }
-
     <T> T sessionNavigate(String[] selections, String testName, int sortIndex, Class<T> clazz)
             throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
@@ -1172,10 +1162,10 @@ public class BaseTestClass {
      * Turn a test name or relative path into an app install reference.
      *
      * Accepts:
-     *   * an archive name in `src/test/resources/archives`
-     *   * an exploded archive directly in `src/test/resources/archives`
-     *   * any path relative to src/test/resources` that points to an exploded archive directory
-     *   * any path relative to src/test/resources` that points to a CCZ or profile.ccpr file
+     * * an archive name in `src/test/resources/archives`
+     * * an exploded archive directly in `src/test/resources/archives`
+     * * any path relative to src/test/resources` that points to an exploded archive directory
+     * * any path relative to src/test/resources` that points to a CCZ or profile.ccpr file
      */
     private String getInstallReference(String nameOrPath) {
         if (checkInstallReference(nameOrPath)) {
