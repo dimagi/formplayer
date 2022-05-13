@@ -53,11 +53,9 @@ branches:
   - gh/form-def/cache-by-session-id+multiSelectList # Graham April 21
   - multiSelectList # Shubham/Jenny April 11
   - gh/form-def/cache-by-session-id # Graham April 21
-  - jls/conditional-case-search # Jenny May 3
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - ce/ensure-session # Cal Nov 20 2021
       - multiSelectList # Shubham/Jenny April 11
-      - jls/conditional-case-search # Jenny May 3
