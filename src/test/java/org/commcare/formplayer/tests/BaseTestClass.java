@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.application.DebuggerController;
 import org.commcare.formplayer.application.FormController;
@@ -117,11 +118,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,9 +134,12 @@ import java.util.UUID;
 
 import javax.servlet.http.Cookie;
 
+import lombok.extern.apachecommons.CommonsLog;
+
 /**
  * Created by willpride on 2/3/16.
  */
+@CommonsLog
 @ContextConfiguration(classes = TestContext.class)
 public class BaseTestClass {
 
@@ -283,10 +289,7 @@ public class BaseTestClass {
         mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-
-        if (useCommCareArchiveReference()) {
-            ReferenceHandler.clearInstance();
-        }
+        ReferenceHandler.clearInstance();
     }
 
     /*
@@ -840,21 +843,6 @@ public class BaseTestClass {
                 clazz);
     }
 
-    private String getInstallReference(String testName) {
-        if (useCommCareArchiveReference()) {
-            return "archives/" + testName + ".ccz";
-        } else {
-            return "archives/" + testName + "/profile.ccpr";
-        }
-    }
-
-    /**
-     * @return whether to use a ccz file reference for the test
-     */
-    protected boolean useCommCareArchiveReference() {
-        return true;
-    }
-
     <T> T sessionNavigate(String[] selections, String testName, int sortIndex, Class<T> clazz)
             throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
@@ -1172,5 +1160,48 @@ public class BaseTestClass {
                 serializableMenuSession.isPreview()).first;
         return SessionSerializer.deserialize(engine.getPlatform(),
                 serializableMenuSession.getCommcareSession());
+    }
+
+    /**
+     * Turn a test name or relative path into an app install reference.
+     *
+     * Accepts:
+     * * an archive name in `src/test/resources/archives`
+     * * an exploded archive directly in `src/test/resources/archives`
+     * * any path relative to src/test/resources` that points to an exploded archive directory
+     * * any path relative to src/test/resources` that points to a CCZ or profile.ccpr file
+     */
+    private String getInstallReference(String nameOrPath) {
+        if (checkInstallReference(nameOrPath)) {
+            return nameOrPath;
+        }
+        String[] paths = {
+                "%s/profile.ccpr",
+                "archives/%s.ccz",
+                "archives/%s/profile.ccpr"
+        };
+        for (String template : paths) {
+            String path = String.format(template, nameOrPath);
+            if (checkInstallReference(path)) {
+                log.info(String.format("Found install reference at %s", path));
+                return path;
+            }
+        }
+        throw new RuntimeException(String.format("Unable to find install reference for %s", nameOrPath));
+    }
+
+    private boolean checkInstallReference(String path) {
+        URL resource = this.getClass().getClassLoader().getResource(path);
+        if (resource == null) {
+            return false;
+        }
+        File file = new File(resource.getFile());
+        if (file.isDirectory()) {
+            return false;
+        }
+        Assertions.assertThat(new String[]{".ccz", ".ccpr"})
+                .as("check file extension: %s", path)
+                .anyMatch(path::endsWith);
+        return true;
     }
 }

@@ -122,9 +122,4 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
         checkForSelectedCasesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections());
     }
-
-    @Override
-    protected boolean useCommCareArchiveReference() {
-        return false;
-    }
 }
