@@ -7,6 +7,7 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.javarosa.core.log.WrappedException;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
@@ -25,6 +26,9 @@ public class FormDefinitionService {
 
     @Autowired
     private FormDefinitionRepo formDefinitionRepo;
+
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
 
     /**
      * Checks if an entry for this (appId, formXmlns, formVersion) combination already exists, and returns if so
@@ -59,6 +63,18 @@ public class FormDefinitionService {
     }
 
     /**
+     * Ensure raw xml is accessible locally in case serialization changes which would break the ability to
+     * deserialize the serialized form def in postgres
+     */
+    public void writeToLocalStorage(FormDef formDef) {
+        IStorageUtilityIndexed<FormDef> formStorage = this.getFormDefStorage();
+        String xmlns = formDef.getMainInstance().schema;
+        if (formStorage.getRecordForValue("XMLNS", xmlns) == null) {
+            formStorage.write(formDef);
+        }
+    }
+
+    /**
      * This method uses the sessionId to cache deserialized FormDefs
      * Deserializing a serialized FormDef object is costly, and this avoids doing so in between requests
      * within the same session
@@ -82,7 +98,8 @@ public class FormDefinitionService {
         try {
             formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
         } catch (Exception e) {
-            formDef = null;
+            String xmlns = session.getFormDefinition().getFormXmlns();
+            formDef = this.getFormDefStorage().getRecordForValue(FormDef.STORAGE_KEY, xmlns);
         }
         return formDef;
     }
@@ -96,5 +113,9 @@ public class FormDefinitionService {
     @CachePut(key = "#session.getSessionId()")
     public FormDef cacheFormDef(FormSession session) {
         return session.getFormDef();
+    }
+
+    private IStorageUtilityIndexed<FormDef> getFormDefStorage() {
+        return this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
     }
 }
