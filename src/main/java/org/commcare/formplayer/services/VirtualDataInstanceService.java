@@ -6,6 +6,7 @@ import org.commcare.core.interfaces.VirtualDataInstanceCache;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
+import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,12 +56,16 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
             }
         }
         if (serializableDataInstance != null
-                && serializableDataInstance.getUsername().equals(storageFactory.getUsername())
+                && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
                 && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
             return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
                     serializableDataInstance.getInstanceXml());
         }
         throw new InstanceNotFoundException(key);
+    }
+
+    private boolean ifUsernameMatches(String username1, String username2) {
+        return TableBuilder.scrubName(username1).contentEquals(TableBuilder.scrubName(username2));
     }
 
     public boolean contains(UUID key) {
