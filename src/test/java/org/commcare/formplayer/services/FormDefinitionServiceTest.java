@@ -11,9 +11,12 @@ import static java.util.Optional.ofNullable;
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
+import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.utils.FileUtils;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xform.util.XFormUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -57,6 +60,10 @@ public class FormDefinitionServiceTest {
     CacheManager cacheManager;
     @Autowired
     private FormDefinitionRepo formDefinitionRepo;
+
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
+
     private String appId;
     private String formXmlns;
     private String formVersion;
@@ -107,6 +114,8 @@ public class FormDefinitionServiceTest {
         this.formXmlns = "abc-123";
         this.formVersion = "1";
         this.formDef = loadFormDef();
+
+        PrototypeUtils.setupThreadLocalPrototypes();
     }
 
     @AfterEach
@@ -162,6 +171,15 @@ public class FormDefinitionServiceTest {
         assertNotEquals(formDefinitionV1, formDefinitionV2);
     }
 
+    @Test
+    public void testWrite() {
+        this.formDefinitionService.writeToLocalStorage(this.formDef);
+        IStorageUtilityIndexed storage = this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
+        Externalizable formDef = storage.getRecordForValue("XMLNS",
+                "http://openrosa.org/formdesigner/962C095E-3AB0-4D92-B9BA-08478FF94475");
+        assertNotNull(formDef);
+    }
+
     private Optional<SerializableFormDefinition> getCachedFormDefinition(
             String appId, String formXmlns, String formVersion) {
         List<String> idArray = Arrays.asList(appId, formXmlns, formVersion);
@@ -194,6 +212,9 @@ public class FormDefinitionServiceTest {
         public FormDefinitionRepo formDefinitionRepo;
 
         @MockBean
+        public FormSessionService FormSessionService;
+
+        @MockBean
         public JdbcTemplate jdbcTemplate;
 
         @Bean
@@ -201,7 +222,12 @@ public class FormDefinitionServiceTest {
             return new ConcurrentMapCacheManager("form_definition");
         }
 
-        @MockBean
-        public FormplayerStorageFactory storageFactory;
+        @Bean
+        public FormplayerStorageFactory storageFactory() {
+            FormplayerStorageFactory storageFactory = new FormplayerStorageFactory();
+            storageFactory.configure("test", "test", "app_id", "");
+            storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
+            return storageFactory;
+        };
     }
 }
