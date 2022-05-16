@@ -18,7 +18,6 @@ import org.commcare.formplayer.utils.FileUtils;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
-import org.javarosa.core.util.externalizable.Externalizable;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xform.util.XFormUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -40,6 +39,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -114,7 +114,7 @@ public class FormDefinitionServiceTest {
         this.mockFormDefinitionRepo();
 
         this.appId = "123456789";
-        this.formXmlns = "abc-123";
+        this.formXmlns = "http://openrosa.org/formdesigner/962C095E-3AB0-4D92-B9BA-08478FF94475";
         this.formVersion = "1";
         this.formDef = loadFormDef();
 
@@ -124,6 +124,7 @@ public class FormDefinitionServiceTest {
     @AfterEach
     public void cleanup() {
         this.cacheManager.getCache("form_definition").clear();
+        getFormDefStorage().removeAll();
     }
 
     @Test
@@ -177,16 +178,13 @@ public class FormDefinitionServiceTest {
     @Test
     public void testWriteToLocalStorage() {
         this.formDefinitionService.writeToLocalStorage(this.formDef);
-        IStorageUtilityIndexed storage = this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
-        Externalizable formDef = storage.getRecordForValue("XMLNS",
-                "http://openrosa.org/formdesigner/962C095E-3AB0-4D92-B9BA-08478FF94475");
+        FormDef formDef = getFormDefStorage().getRecordForValue("XMLNS", this.formXmlns);
         assertThat(formDef).isNotNull();
     }
 
     @Test
     public void testWriteToLocalStorage_FormDefExists() {
-        IStorageUtilityIndexed storage = this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
-        storage.write(formDef);
+        getFormDefStorage().write(formDef);
         boolean valueWritten = this.formDefinitionService.writeToLocalStorage(this.formDef);
         assertThat(valueWritten).isFalse();
     }
@@ -203,6 +201,29 @@ public class FormDefinitionServiceTest {
         assertThat(getCachedFormDefinition(sessionId)).isEmpty();
         this.formDefinitionService.getFormDef(session);
         assertThat(getCachedFormDefinition(sessionId)).isNotEmpty();
+    }
+
+    @Test
+    public void testGetFormDefBrokenSerialization() {
+        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+
+        // put a bad value in `serializedFormDef` to trigger a serialization error
+        ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
+        SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
+        session.setFormDefinition(formDef);
+
+        // make sure we're not going to hit the cache
+        assertThat(getCachedFormDefinition(session.getId())).isEmpty();
+
+        // write the formDef to storage so that we can read it back
+        getFormDefStorage().write(this.formDef);
+        assertThat(this.formDef.getID()).isNotNull();
+
+        FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
+        assertThat(reSerializedFormDef.getID()).isEqualTo(this.formDef.getID());
+
     }
 
     private Optional<SerializableFormDefinition> getCachedFormDefinitionModel(
@@ -223,6 +244,10 @@ public class FormDefinitionServiceTest {
         String formXml = FileUtils.getFile(this.getClass(), "xforms/hidden_value_form.xml");
         return XFormUtils.getFormRaw(
                 new InputStreamReader(IOUtils.toInputStream(formXml, "UTF-8")));
+    }
+
+    private IStorageUtilityIndexed<FormDef> getFormDefStorage() {
+        return this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
     }
 
     /**
