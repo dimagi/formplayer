@@ -12,7 +12,7 @@ import static java.util.Optional.ofNullable;
 
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
-import org.javarosa.core.model.instance.VirtualDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +64,7 @@ public class VirtualDataInstanceServiceTest {
         when(virtualDataInstanceRepo.save(any())).thenAnswer(
                 (Answer<SerializableDataInstance>)invocation -> {
                     SerializableDataInstance serializableDataInstance = (SerializableDataInstance)invocation.getArguments()[0];
-                    ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
+                    ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());
                     return serializableDataInstance;
                 });
     }
@@ -79,28 +79,28 @@ public class VirtualDataInstanceServiceTest {
     public void testGetRecordById_cached() {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
-        VirtualDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
-        UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
+        ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
+        String recordId = virtualDataInstanceService.write(externalDataInstance);
 
         // cache is populated on save
-        assertEquals(virtualDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
+        assertEquals(externalDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
 
         // get Record hits the cache (repo is mocked)
-        VirtualDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
-        assertEquals(virtualDataInstance.getRoot(), fetchedRecord.getRoot());
+        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
+        assertEquals(externalDataInstance.getRoot(), fetchedRecord.getRoot());
     }
 
     @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
-        VirtualDataInstance virtualDataInstance = buildSelectedCasesInstance(selectedValues);
-        UUID recordId = virtualDataInstanceService.write(virtualDataInstance);
+        ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
+        String recordId = virtualDataInstanceService.write(externalDataInstance);
         assertTrue(getCachedRecord(recordId).isPresent());
         virtualDataInstanceService.purge(Instant.now());
         assertFalse(getCachedRecord(recordId).isPresent());
     }
 
-    private Optional<SerializableDataInstance> getCachedRecord(UUID recordId) {
+    private Optional<SerializableDataInstance> getCachedRecord(String recordId) {
         return ofNullable(cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE)).map(
                 c -> c.get(recordId, SerializableDataInstance.class)
         );

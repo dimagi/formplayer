@@ -2,14 +2,15 @@ package org.commcare.formplayer.repo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.commcare.formplayer.util.Constants.POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME;
+import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_VALUES_REFERENCE;
 
 import org.commcare.data.xml.SimpleNode;
 import org.commcare.data.xml.TreeBuilder;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.utils.JpaTestUtils;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,16 +61,18 @@ public class VirtualDataInstanceRepoTest {
                 virtualDataInstanceRepo.getById(savedInstance.getId())
         );
         // Reattach parent
-        VirtualDataInstance loadedVirtualDataInstance = new VirtualDataInstance("selected_cases",
+        ExternalDataInstance loadedExternalDataInstance = new ExternalDataInstance(
+                JR_SELECTED_VALUES_REFERENCE,
+                "selected_cases",
                 loaded.getInstanceXml());
-        assertThat(loadedVirtualDataInstance.getRoot()).isEqualTo(savedInstance.getInstanceXml());
+        assertThat(loadedExternalDataInstance.getRoot()).isEqualTo(savedInstance.getInstanceXml());
         Assertions.assertNotNull(loaded.getDateCreated());
     }
 
     @Test
     public void testDeleteByDateCreatedLessThan() {
+        virtualDataInstanceRepo.deleteAll();
         Instant now = Instant.now();
-
         List<SerializableDataInstance> serializableDataInstances = IntStream.range(0, 5)
                 .mapToObj(this::getSerializableDataInstance)
                 .collect(Collectors.toList());
@@ -104,18 +107,24 @@ public class VirtualDataInstanceRepoTest {
     }
 
     private SerializableDataInstance getSerializableDataInstance(String[] selections) {
-        VirtualDataInstance selectedCasesInstance = buildSelectedCasesInstance(selections);
-        return new SerializableDataInstance(selectedCasesInstance.getInstanceId(), "username", "domain", "appid",
-                "asUser", (TreeElement)selectedCasesInstance.getRoot());
+        ExternalDataInstance selectedCasesInstance = buildSelectedCasesInstance(selections);
+        return new SerializableDataInstance(selectedCasesInstance.getInstanceId(),
+                JR_SELECTED_VALUES_REFERENCE,
+                "username",
+                "domain",
+                "appid",
+                "asUser",
+                (TreeElement)selectedCasesInstance.getRoot(),
+                selectedCasesInstance.useCaseTemplate());
     }
 
-    public static VirtualDataInstance buildSelectedCasesInstance(String[] selections) {
+    public static ExternalDataInstance buildSelectedCasesInstance(String[] selections) {
         List<SimpleNode> nodes = new ArrayList<>();
         for (String selection : selections) {
             nodes.add(SimpleNode.textNode("value", Collections.emptyMap(), selection));
         }
         TreeElement root = TreeBuilder.buildTree("selected_cases", "results", nodes);
-        return new VirtualDataInstance("selected_cases", root);
+        return new ExternalDataInstance(JR_SELECTED_VALUES_REFERENCE, "selected_cases", root);
     }
 }
 

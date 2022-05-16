@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.UUID;
 
-public interface VirtualDataInstanceRepo extends JpaRepository<SerializableDataInstance, UUID> {
+public interface VirtualDataInstanceRepo extends JpaRepository<SerializableDataInstance, String> {
 
     @Modifying
     @Transactional

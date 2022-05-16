@@ -22,10 +22,16 @@ public class SerializableDataInstance {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID id;
+    private String id;
 
     @Column(name = "instanceid", updatable = false)
     private String instanceId;
+
+    @Column(name = "reference", updatable = false)
+    private String reference;
+
+    @Column(name = "usecasetemplate", updatable = false)
+    private boolean useCaseTemplate;
 
     @Column(updatable = false)
     private String username;
@@ -40,7 +46,7 @@ public class SerializableDataInstance {
     private String asUser;
 
     @Column(name = "instancexml", updatable = false)
-    @Convert(converter=TreeElementConverter.class)
+    @Convert(converter = TreeElementConverter.class)
     private TreeElement instanceXml;
 
     @CreationTimestamp
@@ -51,14 +57,16 @@ public class SerializableDataInstance {
     public SerializableDataInstance() {
     }
 
-    public SerializableDataInstance(String instanceId, String username, String domain, String appId,
-            String asUser, TreeElement instanceXml) {
+    public SerializableDataInstance(String instanceId, String reference, String username,
+            String domain, String appId, String asUser, TreeElement instanceXml, boolean useCaseTemplate) {
         this.instanceId = instanceId;
+        this.reference = reference;
         this.username = username;
         this.domain = domain;
         this.appId = appId;
         this.asUser = asUser;
         this.instanceXml = instanceXml;
+        this.useCaseTemplate = useCaseTemplate;
     }
 
     public String getInstanceId() {
@@ -69,7 +77,7 @@ public class SerializableDataInstance {
         return instanceXml;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
@@ -91,5 +99,13 @@ public class SerializableDataInstance {
 
     public Instant getDateCreated() {
         return dateCreated;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public boolean useCaseTemplate() {
+        return useCaseTemplate;
     }
 }

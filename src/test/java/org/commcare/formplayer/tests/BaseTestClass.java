@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_VALUES_REFERENCE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.application.DebuggerController;
 import org.commcare.formplayer.application.FormController;
 import org.commcare.formplayer.application.FormSubmissionController;
@@ -58,6 +60,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.FormplayerRemoteInstanceFetcher;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.MenuSessionFactory;
@@ -85,8 +88,8 @@ import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
@@ -242,7 +245,7 @@ public class BaseTestClass {
     final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
-    final Map<UUID, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
+    final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
 
     protected Long currentFormDefinitionId = 1L;
 
@@ -279,7 +282,7 @@ public class BaseTestClass {
         restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupThreadLocalPrototypes();
         LocalizerManager.setUseThreadLocalStrategy(true);
-        LocalizerManager.getGlobalLocalizer().addAvailableLocale("default");
+        Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
         Localization.setLocale("default");
         new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
@@ -289,7 +292,6 @@ public class BaseTestClass {
         mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-        ReferenceHandler.clearInstance();
     }
 
     /*
@@ -379,32 +381,34 @@ public class BaseTestClass {
 
     private void mockVirtualDataInstanceService() {
         serializableDataInstanceMap.clear();
-        when(virtualDataInstanceService.write(any(VirtualDataInstance.class))).thenAnswer(invocation -> {
-            VirtualDataInstance virtualDataInstance = (VirtualDataInstance)invocation.getArguments()[0];
+        when(virtualDataInstanceService.write(any(ExternalDataInstance.class))).thenAnswer(invocation -> {
+            ExternalDataInstance externalDataInstance = (ExternalDataInstance)invocation.getArguments()[0];
             SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
-                    virtualDataInstance.getInstanceId(),
+                    externalDataInstance.getInstanceId(),
+                    JR_SELECTED_VALUES_REFERENCE,
                     "username", "domain", "appid", "asuser",
-                    (TreeElement)virtualDataInstance.getRoot());
+                    (TreeElement)externalDataInstance.getRoot(), externalDataInstance.useCaseTemplate());
             if (serializableDataInstance.getId() == null) {
                 // this is normally taken care of by Hibernate
-                ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID());
+                ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());
             }
             serializableDataInstanceMap.put(serializableDataInstance.getId(), serializableDataInstance);
             return serializableDataInstance.getId();
         });
 
-        when(virtualDataInstanceService.read(any(UUID.class))).thenAnswer(invocation -> {
-            UUID key = (UUID)invocation.getArguments()[0];
+        when(virtualDataInstanceService.read(any(String.class))).thenAnswer(invocation -> {
+            String key = (String)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
-                return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
+                return new ExternalDataInstance(JR_SELECTED_VALUES_REFERENCE,
+                        serializableDataInstance.getInstanceId(),
                         serializableDataInstance.getInstanceXml());
             }
             return null;
         });
 
-        when(virtualDataInstanceService.contains(any(UUID.class))).thenAnswer(invocation -> {
-            UUID key = (UUID)invocation.getArguments()[0];
+        when(virtualDataInstanceService.contains(any(String.class))).thenAnswer(invocation -> {
+            String key = (String)invocation.getArguments()[0];
             return serializableDataInstanceMap.containsKey(key);
         });
     }
@@ -471,6 +475,8 @@ public class BaseTestClass {
         if (removeDatabaseFoldersAfterTests()) {
             SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
         }
+        ReferenceHandler.clearInstance();
+        LocalizerManager.clearInstance();
     }
 
     private UserDB customConnector;
@@ -1134,13 +1140,16 @@ public class BaseTestClass {
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession)
             throws Exception {
+        FormplayerRemoteInstanceFetcher remoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
+                menuSessionRunnerService.getCaseSearchHelper(),
+                virtualDataInstanceService);
         return new FormSession(serializableFormSession,
                 restoreFactoryMock,
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper(),
-                virtualDataInstanceService);
+                remoteInstanceFetcher
+        );
     }
 
     @Nullable

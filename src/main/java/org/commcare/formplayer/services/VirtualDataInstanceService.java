@@ -2,13 +2,14 @@ package org.commcare.formplayer.services;
 
 import static org.commcare.formplayer.util.Constants.VIRTUAL_DATA_INSTANCES_CACHE;
 
-import org.commcare.core.interfaces.VirtualDataInstanceCache;
+import org.commcare.core.interfaces.VirtualDataInstanceStorage;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.VirtualDataInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -22,7 +23,7 @@ import java.util.UUID;
 
 @Service
 @CacheConfig(cacheNames = {VIRTUAL_DATA_INSTANCES_CACHE})
-public class VirtualDataInstanceService implements VirtualDataInstanceCache {
+public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
 
     @Autowired
     private VirtualDataInstanceRepo dataInstanceRepo;
@@ -34,11 +35,11 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
     CacheManager cacheManager;
 
     @Override
-    public UUID write(VirtualDataInstance dataInstance) {
+    public String write(ExternalDataInstance dataInstance) {
         SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
-                dataInstance.getInstanceId(), storageFactory.getUsername(),
+                dataInstance.getInstanceId(), dataInstance.getReference(), storageFactory.getUsername(),
                 storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(),
-                (TreeElement)dataInstance.getRoot());
+                (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate());
         SerializableDataInstance savedDataInstance = dataInstanceRepo.save(serializableDataInstance);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         cache.put(savedDataInstance.getId(), savedDataInstance);
@@ -46,7 +47,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
     }
 
     @Override
-    public VirtualDataInstance read(UUID key) {
+    public ExternalDataInstance read(String key) {
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance serializableDataInstance = cache.get(key, SerializableDataInstance.class);
         if (serializableDataInstance == null) {
@@ -58,8 +59,11 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
         if (serializableDataInstance != null
                 && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
                 && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
-            return new VirtualDataInstance(serializableDataInstance.getInstanceId(),
-                    serializableDataInstance.getInstanceXml());
+            ExternalDataInstanceSource instanceSource =
+                    ExternalDataInstanceSource.buildVirtual(
+                            serializableDataInstance.getInstanceId(), serializableDataInstance.getInstanceXml(),
+                            serializableDataInstance.getReference(), serializableDataInstance.useCaseTemplate(), key);
+            return instanceSource.toInstance();
         }
         throw new InstanceNotFoundException(key);
     }
@@ -68,7 +72,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceCache {
         return TableBuilder.scrubName(username1).contentEquals(TableBuilder.scrubName(username2));
     }
 
-    public boolean contains(UUID key) {
+    public boolean contains(String key) {
         return dataInstanceRepo.existsById(key);
     }
 

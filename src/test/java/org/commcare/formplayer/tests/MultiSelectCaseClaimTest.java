@@ -83,7 +83,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         Assertions.assertNotEquals(selections, commandResponse.getSelections());
 
         // Verify case claim request
-        verify(webClientMock, times(1)).post(urlCaptor.capture(), requestDataCaptor.capture());
+        verify(webClientMock, times(1)).caseClaimPost(urlCaptor.capture(), requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/claim-case/", urlCaptor.getAllValues().get(0));
         MultiValueMap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
 

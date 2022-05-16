@@ -100,13 +100,16 @@ public abstract class AbstractBaseController {
     }
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
+        FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
+                runnerService.getCaseSearchHelper(),
+                virtualDataInstanceService);
         return new FormSession(serializableFormSession,
                 restoreFactory,
                 formSendCalloutHandler,
                 storageFactory,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                runnerService.getCaseSearchHelper(),
-                virtualDataInstanceService);
+                formplayerRemoteInstanceFetcher
+        );
     }
 
 }

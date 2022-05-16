@@ -83,7 +83,9 @@ public class NewFormResponseFactory {
                         bean.getSessionData().getAppVersion(),
                         formDef
                 );
-
+        FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
+                caseSearchHelper,
+                virtualDataInstanceService);
         FormSession formSession = new FormSession(
                 sandbox,
                 serializableFormDefinition,
@@ -104,8 +106,7 @@ public class NewFormResponseFactory {
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
                 bean.getRestoreAsCaseId(),
                 null,
-                caseSearchHelper,
-                virtualDataInstanceService
+                formplayerRemoteInstanceFetcher
         );
 
         NewFormResponse response = getResponse(formSession);
@@ -150,8 +151,10 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
+        FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher =
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService);
         return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory,
-                commCareSession, caseSearchHelper, virtualDataInstanceService);
+                commCareSession, formplayerRemoteInstanceFetcher);
     }
 
     private String getFormXml(String formUrl) {
