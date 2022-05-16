@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.application.DebuggerController;
 import org.commcare.formplayer.application.FormController;
 import org.commcare.formplayer.application.FormSubmissionController;
@@ -131,8 +130,11 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.Cookie;
@@ -246,6 +248,7 @@ public class BaseTestClass {
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
     final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
+    final Set<String> sessionSelectionsCache = new HashSet<>();
 
     protected Long currentFormDefinitionId = 1L;
 
@@ -272,11 +275,8 @@ public class BaseTestClass {
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
-        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        setupRestoreFactoryMock();
         setupSubmitServiceMock();
-        Mockito.doReturn(false)
-                .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
@@ -292,6 +292,24 @@ public class BaseTestClass {
         mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
+    }
+
+    private void setupRestoreFactoryMock() {
+        sessionSelectionsCache.clear();
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doReturn(false)
+                .when(restoreFactoryMock).isRestoreXmlExpired();
+        doAnswer(invocation -> {
+            String[] selections = (String[])invocation.getArguments()[0];
+            sessionSelectionsCache.add(String.join("|",selections));
+            return null;
+        }).when(restoreFactoryMock).cacheSessionSelections(any(String[].class));
+
+        doAnswer(invocation -> {
+            String[] selections = (String[])invocation.getArguments()[0];
+            return sessionSelectionsCache.contains(String.join("|",selections));
+        }).when(restoreFactoryMock).isConfirmedSelection(any(String[].class));
     }
 
     /*

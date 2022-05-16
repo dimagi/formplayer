@@ -314,7 +314,7 @@ public class MenuSessionRunnerService {
                 casesPerPage,
                 smartLinkTemplate
         );
-        restoreFactory.cacheSessionSelections(selections);
+        restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
         if (nextResponse != null) {
             if (nextResponse.getNotification() == null && notificationMessage != null) {
