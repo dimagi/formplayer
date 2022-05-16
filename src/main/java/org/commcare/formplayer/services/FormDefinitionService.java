@@ -15,6 +15,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -69,7 +70,13 @@ public class FormDefinitionService {
     public void writeToLocalStorage(FormDef formDef) {
         IStorageUtilityIndexed<FormDef> formStorage = this.getFormDefStorage();
         String xmlns = formDef.getMainInstance().schema;
-        if (formStorage.getRecordForValue("XMLNS", xmlns) == null) {
+        FormDef existing;
+        try {
+            existing = formStorage.getRecordForValue("XMLNS", xmlns);
+        } catch (NoSuchElementException e) {
+            existing = null;
+        }
+        if (existing == null) {
             formStorage.write(formDef);
         }
     }

@@ -172,7 +172,7 @@ public class FormDefinitionServiceTest {
     }
 
     @Test
-    public void testWrite() {
+    public void testWriteToLocalStorage() {
         this.formDefinitionService.writeToLocalStorage(this.formDef);
         IStorageUtilityIndexed storage = this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
         Externalizable formDef = storage.getRecordForValue("XMLNS",
