@@ -73,6 +73,7 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId());
 
         FormDef formDef = parseFormDef(formXml);
+        // TODO: setup local form storage
         this.formDefinitionService.writeToLocalStorage(formDef);
         SerializableFormDefinition serializableFormDefinition = this.formDefinitionService
                 .getOrCreateFormDefinition(

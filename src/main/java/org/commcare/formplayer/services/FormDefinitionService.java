@@ -99,7 +99,8 @@ public class FormDefinitionService {
             formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
         } catch (Exception e) {
             String xmlns = session.getFormDefinition().getFormXmlns();
-            formDef = this.getFormDefStorage().getRecordForValue(FormDef.STORAGE_KEY, xmlns);
+            // TODO: getStorageManager() returns different instance that does not have FORMDEF registered
+            formDef = this.getFormDefStorage().getRecordForValue("XMLNS", xmlns);
         }
         return formDef;
     }
