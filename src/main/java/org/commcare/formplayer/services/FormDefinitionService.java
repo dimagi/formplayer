@@ -75,19 +75,12 @@ public class FormDefinitionService {
      * @return True if the value was written to storage or False if it already exists in storage.
      */
     public boolean writeToLocalStorage(FormDef formDef) {
-        IStorageUtilityIndexed<FormDef> formStorage = this.getFormDefStorage();
         String xmlns = formDef.getMainInstance().schema;
-        FormDef existing;
-        try {
-            existing = formStorage.getRecordForValue("XMLNS", xmlns);
-        } catch (NoSuchElementException e) {
-            existing = null;
+        if (getFormDefFromStorage(xmlns).isPresent()) {
+            return false;
         }
-        if (existing == null) {
-            formStorage.write(formDef);
-            return true;
-        }
-        return false;
+        writeFormDefToStorage(formDef);
+        return true;
     }
 
     /**
@@ -99,7 +92,7 @@ public class FormDefinitionService {
      * @return deserialized FormDef object
      */
     public FormDef getFormDef(SerializableFormSession session) {
-        FormDef formDef = this.internalGetFormDef(session);
+        FormDef formDef = this.getFormDefWithCache(session);
         // ensure previous tree references are cleared (only necessary when retrieving from cache)
         formDef.getMainInstance().cleanCache();
         return formDef;
@@ -110,18 +103,20 @@ public class FormDefinitionService {
      *
      * We can't use @{@link Cacheable} here since we want to keep this method private.
      */
-    private FormDef internalGetFormDef(SerializableFormSession session) {
+    private FormDef getFormDefWithCache(SerializableFormSession session) {
         Cache cache = caches.getCache("form_definition");
-        FormDef formDef = cache.get(session.getId(), () -> {
-            try {
-                return FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
-            } catch (Exception e) {
-                String xmlns = session.getFormDefinition().getFormXmlns();
-                // TODO: getStorageManager() returns different instance that does not have FORMDEF registered
-                return this.getFormDefStorage().getRecordForValue("XMLNS", xmlns);
-            }
-        });
-        return formDef;
+        return cache.get(session.getId(), () -> getFormDefFromSession(session));
+    }
+
+    private FormDef getFormDefFromSession(SerializableFormSession session) {
+        try {
+            return FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+        } catch (Exception e) {
+            String xmlns = session.getFormDefinition().getFormXmlns();
+            return getFormDefFromStorage(xmlns).orElseThrow(() -> {
+                return new WrappedException("Unable to load form def after serialization error", e);
+            });
+        }
     }
 
     /**
@@ -135,7 +130,21 @@ public class FormDefinitionService {
         return session.getFormDef();
     }
 
+    private Optional<FormDef> getFormDefFromStorage(String xmlns) {
+        // TODO: getStorageManager() returns different instance that does not have FORMDEF registered
+        try {
+            return Optional.of(getFormDefStorage().getRecordForValue("XMLNS", xmlns));
+        } catch (NoSuchElementException e) {
+            return Optional.empty();
+        }
+    }
+
+    private void writeFormDefToStorage(FormDef formDef) {
+        getFormDefStorage().write(formDef);
+    }
+
     private IStorageUtilityIndexed<FormDef> getFormDefStorage() {
         return this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
     }
+
 }
