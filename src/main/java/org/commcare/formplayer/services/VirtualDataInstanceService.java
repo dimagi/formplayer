@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @CacheConfig(cacheNames = {VIRTUAL_DATA_INSTANCES_CACHE})
@@ -56,14 +55,21 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
                 serializableDataInstance = optionalSerializableDataInstance.get();
             }
         }
-        if (serializableDataInstance != null
-                && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
-                && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
+        if (validateInstance(serializableDataInstance, key)) {
             ExternalDataInstanceSource instanceSource =
                     ExternalDataInstanceSource.buildVirtual(
                             serializableDataInstance.getInstanceId(), serializableDataInstance.getInstanceXml(),
                             serializableDataInstance.getReference(), serializableDataInstance.useCaseTemplate(), key);
             return instanceSource.toInstance();
+        }
+        throw new InstanceNotFoundException(key);
+    }
+
+    private boolean validateInstance(SerializableDataInstance serializableDataInstance, String key) {
+        if (serializableDataInstance != null
+                && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
+                && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
+            return true;
         }
         throw new InstanceNotFoundException(key);
     }
