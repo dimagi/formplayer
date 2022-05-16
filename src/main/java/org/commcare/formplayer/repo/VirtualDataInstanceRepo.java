@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * JpaRepository interface for {@link SerializableDataInstance}
+ */
 public interface VirtualDataInstanceRepo extends JpaRepository<SerializableDataInstance, String> {
 
     @Modifying

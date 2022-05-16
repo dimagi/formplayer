@@ -15,6 +15,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * Model class representing a postgress entry for virtual data instances table
+ */
 @Entity
 @Table(name = Constants.POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME)
 public class SerializableDataInstance {

@@ -38,6 +38,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Tests for {@link VirtualDataInstanceService}
+ */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
 public class VirtualDataInstanceServiceTest {
@@ -63,7 +66,8 @@ public class VirtualDataInstanceServiceTest {
         // the repo always returns the saved object so simulate that in the mock
         when(virtualDataInstanceRepo.save(any())).thenAnswer(
                 (Answer<SerializableDataInstance>)invocation -> {
-                    SerializableDataInstance serializableDataInstance = (SerializableDataInstance)invocation.getArguments()[0];
+                    SerializableDataInstance serializableDataInstance =
+                            (SerializableDataInstance)invocation.getArguments()[0];
                     ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());
                     return serializableDataInstance;
                 });

@@ -27,7 +27,8 @@ public class TestStorageUtils {
         ExternalDataInstance edi = new ExternalDataInstance(ExternalDataInstance.JR_CASE_DB_REFERENCE, "casedb");
         DataInstance specializedDataInstance = edi.initialize(iif, "casedb");
 
-        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(ExternalDataInstance.JR_LEDGER_DB_REFERENCE,
+        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(
+                ExternalDataInstance.JR_LEDGER_DB_REFERENCE,
                 "ledgerdb");
         DataInstance ledgerDataInstance = ledgerDataInstanceRaw.initialize(iif, "ledger");
 

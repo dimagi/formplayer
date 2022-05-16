@@ -131,7 +131,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -302,13 +301,13 @@ public class BaseTestClass {
                 .when(restoreFactoryMock).isRestoreXmlExpired();
         doAnswer(invocation -> {
             String[] selections = (String[])invocation.getArguments()[0];
-            sessionSelectionsCache.add(String.join("|",selections));
+            sessionSelectionsCache.add(String.join("|", selections));
             return null;
         }).when(restoreFactoryMock).cacheSessionSelections(any(String[].class));
 
         doAnswer(invocation -> {
             String[] selections = (String[])invocation.getArguments()[0];
-            return sessionSelectionsCache.contains(String.join("|",selections));
+            return sessionSelectionsCache.contains(String.join("|", selections));
         }).when(restoreFactoryMock).isConfirmedSelection(any(String[].class));
     }
 

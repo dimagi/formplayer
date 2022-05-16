@@ -59,7 +59,8 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
             ExternalDataInstanceSource instanceSource =
                     ExternalDataInstanceSource.buildVirtual(
                             serializableDataInstance.getInstanceId(), serializableDataInstance.getInstanceXml(),
-                            serializableDataInstance.getReference(), serializableDataInstance.useCaseTemplate(), key);
+                            serializableDataInstance.getReference(), serializableDataInstance.useCaseTemplate(),
+                            key);
             return instanceSource.toInstance();
         }
         throw new InstanceNotFoundException(key);

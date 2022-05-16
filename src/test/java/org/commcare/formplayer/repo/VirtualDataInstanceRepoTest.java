@@ -31,6 +31,9 @@ import java.util.stream.IntStream;
 
 import javax.persistence.EntityManager;
 
+/**
+ * Tests for {@link VirtualDataInstanceRepo}
+ */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing
