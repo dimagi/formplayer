@@ -3,6 +3,7 @@ package org.commcare.formplayer.services;
 import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -85,6 +86,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
             throw new RuntimeException(String.format("Cannot configure FormplayerStorageFactory with null arguments. " +
                     "username = %s, domain = %s, appId = %s", username, domain, appId));
         }
+        username = TableBuilder.scrubName(username);
         this.username = username;
         this.asUsername = asUsername;
         this.domain = domain;
