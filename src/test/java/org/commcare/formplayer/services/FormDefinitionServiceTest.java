@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -177,7 +178,15 @@ public class FormDefinitionServiceTest {
         IStorageUtilityIndexed storage = this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
         Externalizable formDef = storage.getRecordForValue("XMLNS",
                 "http://openrosa.org/formdesigner/962C095E-3AB0-4D92-B9BA-08478FF94475");
-        assertNotNull(formDef);
+        assertThat(formDef).isNotNull();
+    }
+
+    @Test
+    public void testWriteToLocalStorage_FormDefExists() {
+        IStorageUtilityIndexed storage = this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
+        storage.write(formDef);
+        boolean valueWritten = this.formDefinitionService.writeToLocalStorage(this.formDef);
+        assertThat(valueWritten).isFalse();
     }
 
     private Optional<SerializableFormDefinition> getCachedFormDefinition(

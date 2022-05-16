@@ -66,8 +66,10 @@ public class FormDefinitionService {
     /**
      * Ensure raw xml is accessible locally in case serialization changes which would break the ability to
      * deserialize the serialized form def in postgres
+     *
+     * @return True if the value was written to storage or False if it already exists in storage.
      */
-    public void writeToLocalStorage(FormDef formDef) {
+    public boolean writeToLocalStorage(FormDef formDef) {
         IStorageUtilityIndexed<FormDef> formStorage = this.getFormDefStorage();
         String xmlns = formDef.getMainInstance().schema;
         FormDef existing;
@@ -78,7 +80,9 @@ public class FormDefinitionService {
         }
         if (existing == null) {
             formStorage.write(formDef);
+            return true;
         }
+        return false;
     }
 
     /**
