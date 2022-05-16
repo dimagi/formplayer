@@ -11,6 +11,7 @@ import static java.util.Optional.ofNullable;
 
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.utils.FileUtils;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Tests for FormDefinitionService
@@ -148,14 +150,14 @@ public class FormDefinitionServiceTest {
 
     @Test
     public void testGetOrCreateFormDefinitionCachesSuccessfully() {
-        assertEquals(Optional.empty(), getCachedFormDefinition(this.appId, this.formXmlns, this.formVersion));
+        assertEquals(Optional.empty(), getCachedFormDefinitionModel(this.appId, this.formXmlns, this.formVersion));
 
         SerializableFormDefinition formDefinition = this.formDefinitionService.getOrCreateFormDefinition(
                 this.appId, this.formXmlns, this.formVersion, this.formDef
         );
 
         assertEquals(Optional.of(formDefinition),
-                getCachedFormDefinition(this.appId, this.formXmlns, this.formVersion));
+                getCachedFormDefinitionModel(this.appId, this.formXmlns, this.formVersion));
     }
 
     @Test
@@ -189,11 +191,31 @@ public class FormDefinitionServiceTest {
         assertThat(valueWritten).isFalse();
     }
 
-    private Optional<SerializableFormDefinition> getCachedFormDefinition(
+    @Test
+    public void testGetFormDefCaching() {
+        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+        String sessionId = UUID.randomUUID().toString();
+        SerializableFormSession session = new SerializableFormSession(sessionId);
+        session.setFormDefinition(formDef);
+
+        assertThat(getCachedFormDefinition(sessionId)).isEmpty();
+        this.formDefinitionService.getFormDef(session);
+        assertThat(getCachedFormDefinition(sessionId)).isNotEmpty();
+    }
+
+    private Optional<SerializableFormDefinition> getCachedFormDefinitionModel(
             String appId, String formXmlns, String formVersion) {
         List<String> idArray = Arrays.asList(appId, formXmlns, formVersion);
         return ofNullable(this.cacheManager.getCache("form_definition")).map(
                 cache -> cache.get(idArray, SerializableFormDefinition.class)
+        );
+    }
+
+    private Optional<FormDef> getCachedFormDefinition(String sessionId) {
+        return ofNullable(this.cacheManager.getCache("form_definition")).map(
+                cache -> cache.get(sessionId, FormDef.class)
         );
     }
 

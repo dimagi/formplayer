@@ -9,6 +9,8 @@ import org.javarosa.core.log.WrappedException;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,6 +32,9 @@ public class FormDefinitionService {
 
     @Autowired
     private FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    private CacheManager caches;
 
     /**
      * Checks if an entry for this (appId, formXmlns, formVersion) combination already exists, and returns if so
@@ -101,18 +106,21 @@ public class FormDefinitionService {
     }
 
     /**
-     * Always use public getFormDef to ensure internal FormDef cached references are cleared
+     * Always use public getFormDef to ensure internal FormDef cached references are cleared.
+     *
+     * We can't use @{@link Cacheable} here since we want to keep this method private.
      */
-    @Cacheable(key = "#session.id")
     private FormDef internalGetFormDef(SerializableFormSession session) {
-        FormDef formDef;
-        try {
-            formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
-        } catch (Exception e) {
-            String xmlns = session.getFormDefinition().getFormXmlns();
-            // TODO: getStorageManager() returns different instance that does not have FORMDEF registered
-            formDef = this.getFormDefStorage().getRecordForValue("XMLNS", xmlns);
-        }
+        Cache cache = caches.getCache("form_definition");
+        FormDef formDef = cache.get(session.getId(), () -> {
+            try {
+                return FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+            } catch (Exception e) {
+                String xmlns = session.getFormDefinition().getFormXmlns();
+                // TODO: getStorageManager() returns different instance that does not have FORMDEF registered
+                return this.getFormDefStorage().getRecordForValue("XMLNS", xmlns);
+            }
+        });
         return formDef;
     }
 
