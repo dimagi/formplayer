@@ -161,7 +161,7 @@ public class TestContext {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("case_search");
+        return new ConcurrentMapCacheManager("case_search", "form_definition");
     }
 
     @Bean
