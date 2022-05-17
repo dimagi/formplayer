@@ -20,6 +20,7 @@ import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
@@ -79,6 +80,9 @@ public class TestContext {
 
     @MockBean
     public MenuSessionService menuSessionService;
+
+    @MockBean
+    public VirtualDataInstanceService virtualDataInstanceService;
 
     @MockBean
     public WebClient webClient;
