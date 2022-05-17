@@ -79,7 +79,7 @@ public class FormDefinitionService {
             throw new WrappedException("Error serializing form def", e);
         }
         formDefinition.setSerializedFormDef(serializedFormDef);
-        return this.formDefinitionRepo.save(formDefinition);
+        return formDefinitionRepo.save(formDefinition);
     }
 
     /**
@@ -160,7 +160,7 @@ public class FormDefinitionService {
     }
 
     private IStorageUtilityIndexed<FormDef> getFormDefStorage() {
-        return this.storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
+        return storageFactory.getStorageManager().getStorage(FormDef.STORAGE_KEY);
     }
 
 }
