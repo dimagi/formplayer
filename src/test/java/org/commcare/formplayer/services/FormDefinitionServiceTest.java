@@ -119,7 +119,6 @@ public class FormDefinitionServiceTest {
         this.formXmlns = "http://openrosa.org/formdesigner/962C095E-3AB0-4D92-B9BA-08478FF94475";
         this.formVersion = "1";
         this.formDef = loadFormDef();
-        getFormDefStorage().write(this.formDef);
 
         PrototypeUtils.setupThreadLocalPrototypes();
     }
@@ -237,6 +236,7 @@ public class FormDefinitionServiceTest {
         ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
         SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
         session.setFormDefinition(formDef);
+        getFormDefStorage().write(this.formDef);
 
         FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
 
@@ -256,7 +256,8 @@ public class FormDefinitionServiceTest {
         ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
         SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
         session.setFormDefinition(formDef);
-
+        getFormDefStorage().write(this.formDef);
+        
         FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
 
         Optional<SerializableFormDefinition> cachedFormDefinition = getCachedSerializableFormDefinition(
