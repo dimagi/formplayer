@@ -110,7 +110,6 @@ public class FormDefinitionService {
     }
 
     private FormDef getFormDefFromSession(SerializableFormSession session) {
-        this.storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
         try {
             return FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
         } catch (Exception e) {
@@ -133,7 +132,7 @@ public class FormDefinitionService {
     }
 
     private Optional<FormDef> getFormDefFromStorage(String xmlns) {
-        // TODO: getStorageManager() returns different instance that does not have FORMDEF registered
+        this.storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
         try {
             return Optional.of(getFormDefStorage().getRecordForValue("XMLNS", xmlns));
         } catch (NoSuchElementException e) {
