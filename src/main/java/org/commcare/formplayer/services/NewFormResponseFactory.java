@@ -73,8 +73,7 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId());
 
         FormDef formDef = parseFormDef(formXml);
-        // TODO: setup local form storage
-        this.formDefinitionService.writeToLocalStorage(formDef);
+
         SerializableFormDefinition serializableFormDefinition = this.formDefinitionService
                 .getOrCreateFormDefinition(
                         bean.getSessionData().getAppId(),
@@ -105,6 +104,10 @@ public class NewFormResponseFactory {
                 null,
                 caseSearchHelper
         );
+
+        // can only setup local storage once a form session has been created
+        this.storageFactory.configure(formSession.getSerializableSession());
+        this.formDefinitionService.writeToLocalStorage(formDef);
 
         NewFormResponse response = getResponse(formSession);
         if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
