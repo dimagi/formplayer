@@ -68,6 +68,20 @@ public class FormDefinitionService {
         });
     }
 
+
+    private SerializableFormDefinition updateFormDefinition(
+            SerializableFormDefinition formDefinition,
+            FormDef formDef) {
+        String serializedFormDef;
+        try {
+            serializedFormDef = FormDefStringSerializer.serialize(formDef);
+        } catch (IOException e) {
+            throw new WrappedException("Error serializing form def", e);
+        }
+        formDefinition.setSerializedFormDef(serializedFormDef);
+        return this.formDefinitionRepo.save(formDefinition);
+    }
+
     /**
      * Ensure raw xml is accessible locally in case serialization changes which would break the ability to
      * deserialize the serialized form def in postgres
@@ -110,13 +124,16 @@ public class FormDefinitionService {
     }
 
     private FormDef getFormDefFromSession(SerializableFormSession session) {
+        SerializableFormDefinition formDefinition = session.getFormDefinition();
         try {
-            return FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+            return FormDefStringSerializer.deserialize(formDefinition.getSerializedFormDef());
         } catch (Exception e) {
-            String xmlns = session.getFormDefinition().getFormXmlns();
-            return getFormDefFromStorage(xmlns).orElseThrow(() -> {
+            String xmlns = formDefinition.getFormXmlns();
+            FormDef formDef = getFormDefFromStorage(xmlns).orElseThrow(() -> {
                 return new WrappedException("Unable to load form def after serialization error", e);
             });
+            this.updateFormDefinition(formDefinition, formDef);
+            return formDef;
         }
     }
 

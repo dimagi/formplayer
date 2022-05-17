@@ -14,6 +14,7 @@ import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.util.PrototypeUtils;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.utils.FileUtils;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.FormDef;
@@ -224,6 +225,29 @@ public class FormDefinitionServiceTest {
         FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
         assertThat(reSerializedFormDef.getID()).isEqualTo(this.formDef.getID());
 
+    }
+
+    @Test
+    public void testGetFormDefFromStorageUpdatesSerializableFormDefinition() throws Exception {
+        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+
+        // put a bad value in `serializedFormDef` to trigger a serialization error
+        ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
+        SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
+        session.setFormDefinition(formDef);
+
+        // write the formDef to storage so that we can read it back
+        getFormDefStorage().write(this.formDef);
+        assertThat(this.formDef.getID()).isNotNull();
+
+        FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
+        SerializableFormDefinition updatedFormDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+        assertEquals(updatedFormDef.getSerializedFormDef(),
+                FormDefStringSerializer.serialize(reSerializedFormDef));
     }
 
     private Optional<SerializableFormDefinition> getCachedFormDefinitionModel(
