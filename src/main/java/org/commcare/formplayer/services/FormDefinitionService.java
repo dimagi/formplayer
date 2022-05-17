@@ -75,6 +75,7 @@ public class FormDefinitionService {
      * @return True if the value was written to storage or False if it already exists in storage.
      */
     public boolean writeToLocalStorage(FormDef formDef) {
+        this.storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
         String xmlns = formDef.getMainInstance().schema;
         if (getFormDefFromStorage(xmlns).isPresent()) {
             return false;
@@ -109,6 +110,7 @@ public class FormDefinitionService {
     }
 
     private FormDef getFormDefFromSession(SerializableFormSession session) {
+        this.storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
         try {
             return FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
         } catch (Exception e) {
