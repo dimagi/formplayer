@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -118,6 +119,7 @@ public class FormDefinitionServiceTest {
         this.formXmlns = "http://openrosa.org/formdesigner/962C095E-3AB0-4D92-B9BA-08478FF94475";
         this.formVersion = "1";
         this.formDef = loadFormDef();
+        getFormDefStorage().write(this.formDef);
 
         PrototypeUtils.setupThreadLocalPrototypes();
     }
@@ -232,22 +234,38 @@ public class FormDefinitionServiceTest {
         SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
                 this.appId, this.formXmlns, this.formVersion, this.formDef
         );
-
-        // put a bad value in `serializedFormDef` to trigger a serialization error
         ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
         SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
         session.setFormDefinition(formDef);
 
-        // write the formDef to storage so that we can read it back
-        getFormDefStorage().write(this.formDef);
-        assertThat(this.formDef.getID()).isNotNull();
-
         FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
+
         SerializableFormDefinition updatedFormDef = this.formDefinitionService.getOrCreateFormDefinition(
                 this.appId, this.formXmlns, this.formVersion, this.formDef
         );
         assertEquals(updatedFormDef.getSerializedFormDef(),
                 FormDefStringSerializer.serialize(reSerializedFormDef));
+
+    }
+
+    @Test
+    public void testGetFormDefFromStorageUpdatesCache() throws Exception {
+        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+        ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
+        SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
+        session.setFormDefinition(formDef);
+
+        FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
+
+        Optional<SerializableFormDefinition> cachedFormDefinition = getCachedSerializableFormDefinition(
+                appId, formXmlns, formVersion
+        );
+        assertTrue(cachedFormDefinition.isPresent());
+        assertEquals(cachedFormDefinition.get().getSerializedFormDef(),
+                FormDefStringSerializer.serialize(reSerializedFormDef));
+
     }
 
     private Optional<SerializableFormDefinition> getCachedFormDefinitionModel(
@@ -261,6 +279,17 @@ public class FormDefinitionServiceTest {
     private Optional<FormDef> getCachedFormDefinition(String sessionId) {
         return ofNullable(this.cacheManager.getCache("form_definition")).map(
                 cache -> cache.get(sessionId, FormDef.class)
+        );
+    }
+
+    private Optional<SerializableFormDefinition> getCachedSerializableFormDefinition(
+            String appId,
+            String formXmlns,
+            String formVersion
+    ) {
+        List<String> cacheKey = Arrays.asList(appId, formXmlns, formVersion);
+        return ofNullable(this.cacheManager.getCache("form_definition")).map(
+                cache -> cache.get(cacheKey, SerializableFormDefinition.class)
         );
     }
 
