@@ -292,7 +292,8 @@ public class MenuSession implements HereFunctionHandlerListener {
             computeDatum();
             return getNextScreen();
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen();
+            QueryScreen queryScreen = new FormplayerQueryScreen(
+                    this.instanceFetcher.getVirtualDataInstanceCache());
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
