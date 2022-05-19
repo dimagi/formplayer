@@ -106,9 +106,9 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     }
 
     /**
-     * Call after configuring factory if form def storage needs to be accessible
-     * Menu navigation requests setup form def storage as part of MenuSession initialization
-     * Form controller requests do not setup form def storage as part of FormSession initialization
+     * Call after configuring factory if form def storage needs to be accessible.
+     * Menu navigation requests setup form def storage as part of MenuSession initialization.
+     * Form controller requests do not setup form def storage as part of FormSession initialization.
      */
     public void registerFormDefStorage() {
         getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
