@@ -207,36 +207,19 @@ public class FormDefinitionServiceTest {
 
     @Test
     public void testGetFormDefBrokenSerialization() {
-        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
-                this.appId, this.formXmlns, this.formVersion, this.formDef
-        );
-
-        // put a bad value in `serializedFormDef` to trigger a serialization error
-        ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
-        SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
-        session.setFormDefinition(formDef);
+        SerializableFormSession session = createSessionWithBrokenFormDef();
 
         // make sure we're not going to hit the cache
         assertThat(getCachedFormDefinition(session.getId())).isEmpty();
-
-        // write the formDef to storage so that we can read it back
-        getFormDefStorage().write(this.formDef);
-        assertThat(this.formDef.getID()).isNotNull();
-
         FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
+
         assertThat(reSerializedFormDef.getID()).isEqualTo(this.formDef.getID());
 
     }
 
     @Test
     public void testGetFormDefFromStorageUpdatesSerializableFormDefinition() throws Exception {
-        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
-                this.appId, this.formXmlns, this.formVersion, this.formDef
-        );
-        ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
-        SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
-        session.setFormDefinition(formDef);
-        getFormDefStorage().write(this.formDef);
+        SerializableFormSession session = createSessionWithBrokenFormDef();
 
         FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
 
@@ -250,14 +233,8 @@ public class FormDefinitionServiceTest {
 
     @Test
     public void testGetFormDefFromStorageUpdatesCache() throws Exception {
-        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
-                this.appId, this.formXmlns, this.formVersion, this.formDef
-        );
-        ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
-        SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
-        session.setFormDefinition(formDef);
-        getFormDefStorage().write(this.formDef);
-        
+        SerializableFormSession session = createSessionWithBrokenFormDef();
+
         FormDef reSerializedFormDef = this.formDefinitionService.getFormDef(session);
 
         Optional<SerializableFormDefinition> cachedFormDefinition = getCachedSerializableFormDefinition(
@@ -267,6 +244,21 @@ public class FormDefinitionServiceTest {
         assertEquals(cachedFormDefinition.get().getSerializedFormDef(),
                 FormDefStringSerializer.serialize(reSerializedFormDef));
 
+    }
+
+    public SerializableFormSession createSessionWithBrokenFormDef() {
+        SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
+                this.appId, this.formXmlns, this.formVersion, this.formDef
+        );
+        ReflectionTestUtils.setField(formDef, "serializedFormDef", "not a form def");
+
+        formDefinitionRepo.save(formDef);
+
+        SerializableFormSession session = new SerializableFormSession(UUID.randomUUID().toString());
+        session.setFormDefinition(formDef);
+        getFormDefStorage().write(this.formDef);
+
+        return session;
     }
 
     private Optional<SerializableFormDefinition> getCachedFormDefinitionModel(
