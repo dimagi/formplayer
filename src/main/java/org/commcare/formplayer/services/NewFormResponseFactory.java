@@ -74,9 +74,11 @@ public class NewFormResponseFactory {
                 bean.getSessionData().getAppId(),
                 bean.getRestoreAs(),
                 bean.getRestoreAsCaseId());
+        storageFactory.registerFormDefStorage();
 
         FormDef formDef = parseFormDef(formXml);
-        SerializableFormDefinition serializableFormDefinition = this.formDefinitionService
+        formDefinitionService.writeToLocalStorage(formDef);
+        SerializableFormDefinition serializableFormDefinition = formDefinitionService
                 .getOrCreateFormDefinition(
                         bean.getSessionData().getAppId(),
                         formDef.getMainInstance().schema,
@@ -89,7 +91,7 @@ public class NewFormResponseFactory {
         FormSession formSession = new FormSession(
                 sandbox,
                 serializableFormDefinition,
-                parseFormDef(formXml),
+                formDef,
                 bean.getUsername(),
                 bean.getDomain(),
                 bean.getSessionData().getData(),
@@ -123,6 +125,8 @@ public class NewFormResponseFactory {
 
         SerializableFormSession serializedSession = formEntrySession.serialize();
         formSessionService.saveSession(serializedSession);
+        // cannot cache until session is saved
+        formDefinitionService.cacheFormDef(formEntrySession);
         NewFormResponse response = new NewFormResponse(
                 formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
                 serializedSession.getId(), serializedSession.getVersion(),
@@ -153,8 +157,15 @@ public class NewFormResponseFactory {
     public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
         FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher =
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService);
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory,
-                commCareSession, formplayerRemoteInstanceFetcher);
+
+        return new FormSession(serializableFormSession,
+                restoreFactory,
+                formSendCalloutHandler,
+                storageFactory,
+                commCareSession,
+                formplayerRemoteInstanceFetcher,
+                formDefinitionService
+        );
     }
 
     private String getFormXml(String formUrl) {
