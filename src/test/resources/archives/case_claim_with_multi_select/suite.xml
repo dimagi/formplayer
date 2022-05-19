@@ -118,6 +118,44 @@
       </stack>
     </action>
   </detail>
+  <detail id="m2_case_short">
+  <!--  Copy of m1_case_short but with action auto_launch set  -->
+    <title>
+      <text>
+        <locale id="m1.case_short.title"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <action auto_launch="true()">
+      <display>
+        <text>
+          <locale id="case_search.m1"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m1'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
   <detail id="m0_search_short">
     <title>
       <text>
@@ -218,6 +256,18 @@
       <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/52D111C9-79C6-403F-BF4C-D24B64A872E2</form>
+    <command id="m2-f0">
+      <text>
+        <locale id="forms.m1f0"/>
+      </text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <session>
+      <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m2_case_short" detail-confirm="m1_case_long"/>
+    </session>
+  </entry>
   <menu id="root">
     <text>
       <locale id="modules.m0"/>
@@ -230,6 +280,12 @@
     </text>
     <command id="m1-f0"/>
     <command id="m1-f1"/>
+  </menu>
+  <menu id="m2">
+    <text>
+      <locale id="modules.m1"/>
+    </text>
+    <command id="m2-f0"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="$case_id != ''">

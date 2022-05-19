@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -104,6 +105,41 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
                 CommandListResponseBean.class);
         // Verify case claim request should not fire if the selected cases were owned already
         verify(webClientMock, times(0)).post(any(), any());
+    }
+
+    @Test
+    public void testWithAutoLaunchSet() throws Exception {
+        // Select Dark Knight and make a navigation request
+        String[] selectedValues = new String[]{"0156fa3e-093e-4136-b95c-01b13dae66c7"};
+        String[] selections = new String[]{"2", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+        sessionNavigateWithQuery(selections,
+                APP_NAME,
+                null,
+                selectedValues,
+                CommandListResponseBean.class);
+
+        // Remove the dark knight from search results and make a navigation request. This should succeed due to
+        // search results being cached already
+        when(webClientMock.postFormData(anyString(), any(Multimap.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(),
+                        "query_responses/case_search_response_no_dark_knight.xml"));
+        sessionNavigateWithQuery(selections,
+                APP_NAME,
+                null,
+                selectedValues,
+                CommandListResponseBean.class);
+
+        // Now immitate a cache mishit by busting the cache and replay the session. This would fail because the
+        // new returned case search results don't have our selectes case anymore. This can happen in practice
+        // when number of search results are greater than what the ES search limit is, therefore it's currently
+        // vital to ensure that cache mishits don't happen with auto_launch set to 'true()'
+        cacheManager.getCache("case_search").clear();
+
+        assertThrows(Exception.class, () -> sessionNavigateWithQuery(selections,
+                APP_NAME,
+                null,
+                selectedValues,
+                CommandListResponseBean.class));
     }
 
     private void configureCaseSearchMock() {
