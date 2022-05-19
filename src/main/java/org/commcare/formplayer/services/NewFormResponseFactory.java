@@ -71,7 +71,7 @@ public class NewFormResponseFactory {
                 bean.getSessionData().getAppId(),
                 bean.getRestoreAs(),
                 bean.getRestoreAsCaseId());
-        storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
+        storageFactory.registerFormDefStorage();
 
         FormDef formDef = parseFormDef(formXml);
         formDefinitionService.writeToLocalStorage(formDef);

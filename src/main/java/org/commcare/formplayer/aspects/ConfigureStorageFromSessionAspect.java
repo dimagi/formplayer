@@ -28,6 +28,6 @@ public class ConfigureStorageFromSessionAspect {
         }
         final SessionRequestBean requestBean = (SessionRequestBean) args[0];
         storageFactory.configure(requestBean.getSessionId());
-        storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
+        storageFactory.registerFormDefStorage();
     }
 }

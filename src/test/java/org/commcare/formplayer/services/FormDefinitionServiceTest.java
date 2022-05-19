@@ -328,7 +328,7 @@ public class FormDefinitionServiceTest {
         public FormplayerStorageFactory storageFactory() {
             FormplayerStorageFactory storageFactory = new FormplayerStorageFactory();
             storageFactory.configure("test", "test", "app_id", "");
-            storageFactory.getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
+            storageFactory.registerFormDefStorage();
             return storageFactory;
         };
     }

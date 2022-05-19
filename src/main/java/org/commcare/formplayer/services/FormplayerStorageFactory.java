@@ -4,6 +4,7 @@ import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.model.FormDef;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -102,6 +103,15 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         if(sqLiteDB != null) {
             sqLiteDB.closeConnection();
         }
+    }
+
+    /**
+     * Call after configuring factory if form def storage needs to be accessible
+     * Menu navigation requests setup form def storage as part of MenuSession initialization
+     * Form controller requests do not setup form def storage as part of FormSession initialization
+     */
+    public void registerFormDefStorage() {
+        getStorageManager().registerStorage(FormDef.STORAGE_KEY, FormDef.class);
     }
 
 
