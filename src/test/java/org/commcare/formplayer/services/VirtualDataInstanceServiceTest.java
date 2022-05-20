@@ -1,6 +1,6 @@
 package org.commcare.formplayer.services;
 
-import static org.commcare.formplayer.repo.VirtualDataInstanceRepoTest.buildSelectedCasesInstance;
+import static org.commcare.formplayer.repo.VirtualDataInstanceRepoTest.buildSelectedEntitiesInstance;
 import static org.commcare.formplayer.util.Constants.VIRTUAL_DATA_INSTANCES_CACHE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -83,7 +83,7 @@ public class VirtualDataInstanceServiceTest {
     public void testGetRecordById_cached() {
         // save a Record
         String[] selectedValues = new String[]{"val1", "val2"};
-        ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
+        ExternalDataInstance externalDataInstance = buildSelectedEntitiesInstance(selectedValues);
         String recordId = virtualDataInstanceService.write(externalDataInstance);
 
         // cache is populated on save
@@ -97,7 +97,7 @@ public class VirtualDataInstanceServiceTest {
     @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
-        ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
+        ExternalDataInstance externalDataInstance = buildSelectedEntitiesInstance(selectedValues);
         String recordId = virtualDataInstanceService.write(externalDataInstance);
         assertTrue(getCachedRecord(recordId).isPresent());
         virtualDataInstanceService.purge(Instant.now());
