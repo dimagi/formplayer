@@ -1,6 +1,6 @@
 package org.commcare.formplayer.tests;
 
-import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_VALUES_REFERENCE;
+import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -402,7 +402,7 @@ public class BaseTestClass {
             ExternalDataInstance externalDataInstance = (ExternalDataInstance)invocation.getArguments()[0];
             SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
                     externalDataInstance.getInstanceId(),
-                    JR_SELECTED_VALUES_REFERENCE,
+                    JR_SELECTED_ENTITIES_REFERENCE,
                     "username", "domain", "appid", "asuser",
                     (TreeElement)externalDataInstance.getRoot(), externalDataInstance.useCaseTemplate());
             if (serializableDataInstance.getId() == null) {
@@ -417,7 +417,7 @@ public class BaseTestClass {
             String key = (String)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
-                return new ExternalDataInstance(JR_SELECTED_VALUES_REFERENCE,
+                return new ExternalDataInstance(JR_SELECTED_ENTITIES_REFERENCE,
                         serializableDataInstance.getInstanceId(),
                         serializableDataInstance.getInstanceXml());
             }

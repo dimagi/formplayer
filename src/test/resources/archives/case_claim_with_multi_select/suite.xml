@@ -246,7 +246,7 @@
     <instance id="commcaresession" src="jr://instance/session"/>
     <instance id="district" src="jr://fixture/item-list:district"/>
     <instance id="state" src="jr://fixture/item-list:state"/>
-    <instance id="search_cases" src="jr://instance/selected-cases"/>
+    <instance id="search_cases" src="jr://instance/selected-entities"/>
     <session>
       <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
         <data ref="'case1'" key="case_type"/>

@@ -2,7 +2,7 @@ package org.commcare.formplayer.repo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.commcare.formplayer.util.Constants.POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME;
-import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_VALUES_REFERENCE;
+import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import org.commcare.data.xml.SimpleNode;
 import org.commcare.data.xml.TreeBuilder;
@@ -65,7 +65,7 @@ public class VirtualDataInstanceRepoTest {
         );
         // Reattach parent
         ExternalDataInstance loadedExternalDataInstance = new ExternalDataInstance(
-                JR_SELECTED_VALUES_REFERENCE,
+                JR_SELECTED_ENTITIES_REFERENCE,
                 "selected_cases",
                 loaded.getInstanceXml());
         assertThat(loadedExternalDataInstance.getRoot()).isEqualTo(savedInstance.getInstanceXml());
@@ -110,24 +110,24 @@ public class VirtualDataInstanceRepoTest {
     }
 
     private SerializableDataInstance getSerializableDataInstance(String[] selections) {
-        ExternalDataInstance selectedCasesInstance = buildSelectedCasesInstance(selections);
-        return new SerializableDataInstance(selectedCasesInstance.getInstanceId(),
-                JR_SELECTED_VALUES_REFERENCE,
+        ExternalDataInstance selectedEntitiesInstance = buildSelectedEntitiesInstance(selections);
+        return new SerializableDataInstance(selectedEntitiesInstance.getInstanceId(),
+                JR_SELECTED_ENTITIES_REFERENCE,
                 "username",
                 "domain",
                 "appid",
                 "asUser",
-                (TreeElement)selectedCasesInstance.getRoot(),
-                selectedCasesInstance.useCaseTemplate());
+                (TreeElement)selectedEntitiesInstance.getRoot(),
+                selectedEntitiesInstance.useCaseTemplate());
     }
 
-    public static ExternalDataInstance buildSelectedCasesInstance(String[] selections) {
+    public static ExternalDataInstance buildSelectedEntitiesInstance(String[] selections) {
         List<SimpleNode> nodes = new ArrayList<>();
         for (String selection : selections) {
             nodes.add(SimpleNode.textNode("value", Collections.emptyMap(), selection));
         }
         TreeElement root = TreeBuilder.buildTree("selected_cases", "results", nodes);
-        return new ExternalDataInstance(JR_SELECTED_VALUES_REFERENCE, "selected_cases", root);
+        return new ExternalDataInstance(JR_SELECTED_ENTITIES_REFERENCE, "selected_cases", root);
     }
 }
 
