@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -95,6 +96,18 @@ public class VirtualDataInstanceRepoTest {
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         Optional<SerializableDataInstance> loaded = virtualDataInstanceRepo.findByKey(key);
         Assertions.assertTrue(loaded.isPresent());
+    }
+
+    @Test
+    public void testDuplicateKey() {
+        SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
+                getSerializableDataInstance(new String[]{"case1", "case3"}, null));
+
+        entityManager.clear(); // clear the EM cache to force a re-fetch from DB
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            virtualDataInstanceRepo.saveAndFlush(
+                    getSerializableDataInstance(new String[]{"case1", "case3"}, savedInstance.getKey()));
+        });
     }
 
     @Test
