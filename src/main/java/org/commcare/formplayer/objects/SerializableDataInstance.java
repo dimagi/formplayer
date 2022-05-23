@@ -15,17 +15,25 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Model class representing a postgress entry for virtual data instances table
  */
 @Entity
 @Table(name = Constants.POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME)
+@Getter
 public class SerializableDataInstance {
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
+
+    @Setter
+    @Column(name = "key", updatable = false)
+    private String key;
 
     @Column(name = "instanceid", updatable = false)
     private String instanceId;
@@ -70,45 +78,7 @@ public class SerializableDataInstance {
         this.asUser = asUser;
         this.instanceXml = instanceXml;
         this.useCaseTemplate = useCaseTemplate;
+        this.key = UUID.randomUUID().toString();
     }
 
-    public String getInstanceId() {
-        return instanceId;
-    }
-
-    public TreeElement getInstanceXml() {
-        return instanceXml;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public String getAsUser() {
-        return asUser;
-    }
-
-    public Instant getDateCreated() {
-        return dateCreated;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-
-    public boolean useCaseTemplate() {
-        return useCaseTemplate;
-    }
 }
