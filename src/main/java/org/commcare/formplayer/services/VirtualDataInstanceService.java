@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Optional;
 
+import javax.annotation.Nonnull;
+
 @Service
 @CacheConfig(cacheNames = {VIRTUAL_DATA_INSTANCES_CACHE})
 public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
@@ -35,14 +37,31 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
 
     @Override
     public String write(ExternalDataInstance dataInstance) {
+        SerializableDataInstance serializableDataInstance = getSerializableDataInstance(dataInstance);
+        return saveAndCacheInstance(serializableDataInstance);
+    }
+
+    @Override
+    public String write(String key, ExternalDataInstance dataInstance) {
+        SerializableDataInstance serializableDataInstance = getSerializableDataInstance(dataInstance);
+        serializableDataInstance.setKey(key);
+        return saveAndCacheInstance(serializableDataInstance);
+    }
+
+    private String saveAndCacheInstance(SerializableDataInstance serializableDataInstance) {
+        SerializableDataInstance savedDataInstance = dataInstanceRepo.save(serializableDataInstance);
+        Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
+        cache.put(savedDataInstance.getKey(), savedDataInstance);
+        return savedDataInstance.getKey();
+    }
+
+    @Nonnull
+    private SerializableDataInstance getSerializableDataInstance(ExternalDataInstance dataInstance) {
         SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
                 dataInstance.getInstanceId(), dataInstance.getReference(), storageFactory.getUsername(),
                 storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(),
                 (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate());
-        SerializableDataInstance savedDataInstance = dataInstanceRepo.save(serializableDataInstance);
-        Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
-        cache.put(savedDataInstance.getId(), savedDataInstance);
-        return savedDataInstance.getId();
+        return serializableDataInstance;
     }
 
     @Override
@@ -50,7 +69,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance serializableDataInstance = cache.get(key, SerializableDataInstance.class);
         if (serializableDataInstance == null) {
-            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findById(key);
+            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findByKey(key);
             if (optionalSerializableDataInstance.isPresent()) {
                 serializableDataInstance = optionalSerializableDataInstance.get();
             }
@@ -59,7 +78,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
             ExternalDataInstanceSource instanceSource =
                     ExternalDataInstanceSource.buildVirtual(
                             serializableDataInstance.getInstanceId(), serializableDataInstance.getInstanceXml(),
-                            serializableDataInstance.getReference(), serializableDataInstance.useCaseTemplate(),
+                            serializableDataInstance.getReference(), serializableDataInstance.isUseCaseTemplate(),
                             key);
             return instanceSource.toInstance();
         }
@@ -80,7 +99,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     }
 
     public boolean contains(String key) {
-        return dataInstanceRepo.existsById(key);
+        return dataInstanceRepo.existsByKey(key);
     }
 
     @CacheEvict(allEntries = true)
