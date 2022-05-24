@@ -17,6 +17,7 @@ import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -26,6 +27,9 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormSubmissionContext;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.ProcessingStep;
+import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.StackFrameStep;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +47,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import datadog.trace.api.Trace;
+import lombok.SneakyThrows;
 
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
@@ -91,7 +96,8 @@ public class FormSubmissionController extends AbstractBaseController {
                 stepFactory.makeStep("processFormXml", this::processFormXml, PROCESSED_XML),
                 stepFactory.makeStep("updateVolatility", this::updateVolatility),
                 stepFactory.makeStep("performSync", this::performSync),
-                stepFactory.makeStep("doEndOfFormNav", this::doEndOfFormNav, PROCESSED_STACK)
+                stepFactory.makeStep("doEndOfFormNav", this::doEndOfFormNav, PROCESSED_STACK),
+                stepFactory.makeStep("clearCaches", this::clearCaches)
         );
 
         // execute steps one at a time, only proceeding to the next step if the previous step was successful
@@ -248,6 +254,28 @@ public class FormSubmissionController extends AbstractBaseController {
             context.getMetricsTags()
         );
         context.getResponse().setNextScreen(nextScreen);
+        return context.success();
+    }
+
+    @Trace
+    @SneakyThrows
+    private SubmitResponseBean clearCaches(FormSubmissionContext context) {
+        FormSession formEntrySession = context.getFormEntrySession();
+        CommCareSession commCareSession = getCommCareSession(formEntrySession.getMenuSessionId());
+        if (commCareSession == null) {
+            return context.success();
+        }
+        try {
+            CaseSearchHelper caseSearchHelper = runnerService.getCaseSearchHelper();
+            SessionFrame frame = commCareSession.getFrame();
+            for (StackFrameStep step : frame.getSteps()) {
+                if (step.hasXmlInstance()) {
+                    caseSearchHelper.clearCacheForInstanceSource(step.getXmlInstanceSource());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Exception clearing cache during form submission processing", e);
+        }
         return context.success();
     }
 

@@ -88,6 +88,15 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
                 source);
     }
 
+    public void clearCacheForInstanceSource(ExternalDataInstanceSource source) throws InvalidStructureException {
+        if (source.getSourceUri() == null) {
+            return;
+        }
+        String cacheKey = getCacheKey(source.getSourceUri(), source.getRequestData());
+        Cache cache = cacheManager.getCache("case_search");
+        cache.evict(cacheKey);
+    }
+
     private String getCacheKey(String url, Multimap<String, String> queryParams) throws InvalidStructureException {
         URI uri = null;
         try {

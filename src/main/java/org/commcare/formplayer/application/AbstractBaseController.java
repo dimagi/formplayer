@@ -87,7 +87,7 @@ public abstract class AbstractBaseController {
 
     @Nullable
     protected CommCareSession getCommCareSession(String menuSessionId) throws Exception {
-        if (menuSessionId == null) {
+        if (menuSessionId == null || menuSessionId.trim().equals("")) {
             return null;
         }
 
