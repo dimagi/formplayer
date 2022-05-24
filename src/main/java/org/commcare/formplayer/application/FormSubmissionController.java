@@ -13,6 +13,7 @@ import org.commcare.formplayer.beans.OpenRosaResponse;
 import org.commcare.formplayer.beans.SubmitRequestBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -27,6 +28,7 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormSubmissionContext;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.ProcessingStep;
+import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
@@ -118,8 +120,25 @@ public class FormSubmissionController extends AbstractBaseController {
     }
 
     public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, SubmitRequestBean submitRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
-        FormSession formEntrySession = getFormSession(serializableFormSession);
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(
+                submitRequestBean.getSessionId());
+
+        String menuSessionId = serializableFormSession.getMenuSessionId();
+        SerializableMenuSession serializableMenuSession = null;
+        FormplayerConfigEngine engine = null;
+        CommCareSession commCareSession = null;
+        if (menuSessionId != null && !menuSessionId.trim().equals("")) {
+            serializableMenuSession = menuSessionService.getSessionById(menuSessionId);
+
+            engine = installService.configureApplication(
+                    serializableMenuSession.getInstallReference(),
+                    serializableMenuSession.isPreview()).first;
+
+            commCareSession = SessionSerializer.deserialize(engine.getPlatform(),
+                    serializableMenuSession.getCommcareSession());
+        }
+
+        FormSession formEntrySession = getFormSession(serializableFormSession, commCareSession);
 
         // add tags for future datadog/sentry requests
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
@@ -129,7 +148,14 @@ public class FormSubmissionController extends AbstractBaseController {
         Map<String, String> extras = new HashMap();
         extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
 
-        return new FormSubmissionContext(request, submitRequestBean, formEntrySession, extras);
+        return new FormSubmissionContext(
+                request,
+                submitRequestBean,
+                formEntrySession,
+                serializableMenuSession,
+                engine,
+                commCareSession,
+                extras);
     }
 
     /**
@@ -241,15 +267,17 @@ public class FormSubmissionController extends AbstractBaseController {
 
     @Trace
     private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {
-        FormSession formEntrySession = context.getFormEntrySession();
         Object nextScreen = categoryTimingHelper.timed(
             Constants.TimingCategories.END_OF_FORM_NAV,
             () -> {
-                if (formEntrySession.getMenuSessionId() != null &&
-                        !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                    return doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
+                if (context.getSerializableMenuSession() == null) {
+                    return null;
                 }
-                return null;
+                return doEndOfFormNav(
+                        context.getSerializableMenuSession(),
+                        context.getEngine(),
+                        context.getCommCareSession()
+                );
             },
             context.getMetricsTags()
         );
@@ -260,14 +288,12 @@ public class FormSubmissionController extends AbstractBaseController {
     @Trace
     @SneakyThrows
     private SubmitResponseBean clearCaches(FormSubmissionContext context) {
-        FormSession formEntrySession = context.getFormEntrySession();
-        CommCareSession commCareSession = getCommCareSession(formEntrySession.getMenuSessionId());
-        if (commCareSession == null) {
+        if (context.getCommCareSession() == null) {
             return context.success();
         }
         try {
             CaseSearchHelper caseSearchHelper = runnerService.getCaseSearchHelper();
-            SessionFrame frame = commCareSession.getFrame();
+            SessionFrame frame = context.getCommCareSession().getFrame();
             for (StackFrameStep step : frame.getSteps()) {
                 if (step.hasXmlInstance()) {
                     caseSearchHelper.clearCacheForInstanceSource(step.getXmlInstanceSource());
@@ -320,9 +346,10 @@ public class FormSubmissionController extends AbstractBaseController {
         }
     }
 
-    private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
+    private Object doEndOfFormNav(SerializableMenuSession serializedSession, FormplayerConfigEngine engine,
+            CommCareSession commCareSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
-        MenuSession menuSession = menuSessionFactory.buildSession(serializedSession);
+        MenuSession menuSession = menuSessionFactory.buildSession(serializedSession, engine, commCareSession);
         return runnerService.resolveFormGetNext(menuSession);
     }
 

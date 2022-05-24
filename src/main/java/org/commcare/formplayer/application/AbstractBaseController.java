@@ -15,6 +15,7 @@ import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 
@@ -92,16 +93,25 @@ public abstract class AbstractBaseController {
         }
 
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(menuSessionId);
-        FormplayerConfigEngine engine = installService.configureApplication(serializableMenuSession.getInstallReference(), serializableMenuSession.isPreview()).first;
+        FormplayerConfigEngine engine = installService.configureApplication(
+                serializableMenuSession.getInstallReference(),
+                serializableMenuSession.isPreview()).first;
         return SessionSerializer.deserialize(engine.getPlatform(), serializableMenuSession.getCommcareSession());
     }
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
+        CommCareSession commCareSession = getCommCareSession(serializableFormSession.getMenuSessionId());
+        return getFormSession(serializableFormSession, commCareSession);
+    }
+
+    @NotNull
+    protected FormSession getFormSession(SerializableFormSession serializableFormSession,
+            @Nullable CommCareSession commCareSession) throws Exception {
         return new FormSession(serializableFormSession,
                 restoreFactory,
                 formSendCalloutHandler,
                 storageFactory,
-                getCommCareSession(serializableFormSession.getMenuSessionId()),
+                commCareSession,
                 runnerService.getCaseSearchHelper());
     }
 

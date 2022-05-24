@@ -2,6 +2,9 @@ package org.commcare.formplayer.services;
 
 import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMultimap;
+
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.session.CommCareSession;
 import org.commcare.suite.model.*;
 
 import java.net.URI;
@@ -152,7 +155,8 @@ public class MenuSessionFactory {
     }
 
     @Trace
-    public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper);
+    public MenuSession buildSession(SerializableMenuSession serializableMenuSession, FormplayerConfigEngine engine,
+            CommCareSession commCareSession) throws Exception {
+        return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory, caseSearchHelper);
     }
 }
