@@ -50,26 +50,22 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
         String url = source.getSourceUri();
 
         Cache cache = cacheManager.getCache("case_search");
-        URI uri = null;
-        try {
-            uri = new URI(source.getSourceUri());
-        } catch (URISyntaxException e) {
-            throw new InvalidStructureException("Invalid URI in source: " + uri);
-        }
-        String cacheKey = getCacheKey(uri, requestData);
+        String cacheKey = getCacheKey(source.getSourceUri(), requestData);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
-            log.info(String.format("Using cached case search results for %s", uri));
+            log.info(String.format("Using cached case search results for %s", url));
             // Deep copy to avoid concurrency issues
-            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
+            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot),
+                    TreeElement.class);
             return copyOfRoot;
         }
 
-        log.info(String.format("Making case search request to url %s with data %s",  url, requestData));
+        log.info(String.format("Making case search request to url %s with data %s", url, requestData));
         String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {
-            TreeElement root = ExternalDataInstance.parseExternalTree(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
+            TreeElement root = ExternalDataInstance.parseExternalTree(
+                    new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
             if (root != null) {
                 cache.put(cacheKey, root);
             }
@@ -92,14 +88,21 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
                 source);
     }
 
-    private String getCacheKey(URI url, Multimap<String, String> queryParams) {
+    private String getCacheKey(String url, Multimap<String, String> queryParams) throws InvalidStructureException {
+        URI uri = null;
+        try {
+            uri = new URI(url);
+        } catch (URISyntaxException e) {
+            throw new InvalidStructureException("Invalid URI in source: " + url);
+        }
+
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());
         if (restoreFactory.getAsUsername() != null) {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
-        builder.append("_").append(url);
+        builder.append("_").append(uri);
         for (String key : queryParams.keySet()) {
             builder.append("_").append(key);
             for (String value : queryParams.get(key)) {
