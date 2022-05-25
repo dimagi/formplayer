@@ -421,8 +421,8 @@ public class BaseTestClass {
                 // this is normally taken care of by Hibernate
                 ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());
             }
-            serializableDataInstanceMap.put(serializableDataInstance.getId(), serializableDataInstance);
-            return serializableDataInstance.getId();
+            serializableDataInstanceMap.put(serializableDataInstance.getKey(), serializableDataInstance);
+            return serializableDataInstance.getKey();
         });
 
         when(virtualDataInstanceService.read(any(String.class))).thenAnswer(invocation -> {

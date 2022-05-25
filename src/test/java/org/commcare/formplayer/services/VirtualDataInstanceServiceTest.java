@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
@@ -95,6 +96,24 @@ public class VirtualDataInstanceServiceTest {
     }
 
     @Test
+    public void testWriteWithManualKey() {
+        // save a Record
+        String[] selectedValues = new String[]{"val1", "val2"};
+        ExternalDataInstance externalDataInstance = buildSelectedCasesInstance(selectedValues);
+        String key = "123";
+        String recordId = virtualDataInstanceService.write(key, externalDataInstance);
+
+        assertEquals(key, recordId);
+
+        // cache is populated on save
+        assertEquals(externalDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
+
+        // get Record hits the cache (repo is mocked)
+        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
+        assertEquals(externalDataInstance.getRoot(), fetchedRecord.getRoot());
+    }
+
+    @Test
     public void testPurgeClearsCache() {
         String[] selectedValues = new String[]{"val1", "val2"};
         ExternalDataInstance externalDataInstance = buildSelectedEntitiesInstance(selectedValues);
@@ -105,9 +124,8 @@ public class VirtualDataInstanceServiceTest {
     }
 
     private Optional<SerializableDataInstance> getCachedRecord(String recordId) {
-        return ofNullable(cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE)).map(
-                c -> c.get(recordId, SerializableDataInstance.class)
-        );
+        Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
+        return ofNullable(cache.get(recordId, SerializableDataInstance.class));
     }
 
     // only include the service under test and it's dependencies
