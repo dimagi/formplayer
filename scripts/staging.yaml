@@ -50,7 +50,7 @@
 trunk: master
 name: autostaging
 branches:
-  - sk/combine-remote-request-entry-view # Simon/Jenny May 25
+  - sk/form-entry-with-post # Simon/Jenny May 25
   - sk/search-input-instance # Simon/Jenny May 25
 submodules:
   libs/commcare:
