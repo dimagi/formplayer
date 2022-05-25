@@ -106,7 +106,8 @@ public class FormDefinitionService {
      * @return deserialized FormDef object
      */
     public FormDef getFormDef(SerializableFormSession session) {
-        FormDef formDef = this.getFormDefWithCache(session);
+        // TODO: skip cache due to issues that are actively being looked at
+        FormDef formDef = this.getFormDefFromSession(session);
         // ensure previous tree references are cleared (only necessary when retrieving from cache)
         formDef.getMainInstance().cleanCache();
         return formDef;

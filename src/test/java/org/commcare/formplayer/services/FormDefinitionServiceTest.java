@@ -192,7 +192,7 @@ public class FormDefinitionServiceTest {
     }
 
     @Test
-    public void testGetFormDefCaching() {
+    public void testGetFormDefCachingRemainsEmpty() {
         SerializableFormDefinition formDef = this.formDefinitionService.getOrCreateFormDefinition(
                 this.appId, this.formXmlns, this.formVersion, this.formDef
         );
@@ -202,7 +202,7 @@ public class FormDefinitionServiceTest {
 
         assertThat(getCachedFormDefinition(sessionId)).isEmpty();
         this.formDefinitionService.getFormDef(session);
-        assertThat(getCachedFormDefinition(sessionId)).isNotEmpty();
+        assertThat(getCachedFormDefinition(sessionId)).isEmpty();
     }
 
     @Test
