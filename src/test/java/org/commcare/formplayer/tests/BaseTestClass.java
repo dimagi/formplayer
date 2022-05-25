@@ -1,6 +1,6 @@
 package org.commcare.formplayer.tests;
 
-import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_VALUES_REFERENCE;
+import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -107,6 +107,7 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -165,6 +166,9 @@ public class BaseTestClass {
 
     @Autowired
     protected FormDefinitionService formDefinitionService;
+
+    @Autowired
+    protected CacheManager cacheManager;
 
     @Autowired
     private MenuSessionService menuSessionService;
@@ -394,6 +398,12 @@ public class BaseTestClass {
         }).when(this.formDefinitionService).getOrCreateFormDefinition(
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
+
+        when(this.formDefinitionService.getFormDef(any(SerializableFormSession.class))).thenCallRealMethod();
+        when(this.formDefinitionService.cacheFormDef(any(FormSession.class))).thenCallRealMethod();
+
+        // manually wire this in. The autowiring doesn't work here since we've made it a mock
+        ReflectionTestUtils.setField(this.formDefinitionService, "caches", cacheManager);
     }
 
     private void mockVirtualDataInstanceService() {
@@ -402,7 +412,7 @@ public class BaseTestClass {
             ExternalDataInstance externalDataInstance = (ExternalDataInstance)invocation.getArguments()[0];
             SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
                     externalDataInstance.getInstanceId(),
-                    JR_SELECTED_VALUES_REFERENCE,
+                    JR_SELECTED_ENTITIES_REFERENCE,
                     "username", "domain", "appid", "asuser",
                     (TreeElement)externalDataInstance.getRoot(), externalDataInstance.useCaseTemplate());
             if (serializableDataInstance.getId() == null) {
@@ -417,7 +427,7 @@ public class BaseTestClass {
             String key = (String)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
-                return new ExternalDataInstance(JR_SELECTED_VALUES_REFERENCE,
+                return new ExternalDataInstance(JR_SELECTED_ENTITIES_REFERENCE,
                         serializableDataInstance.getInstanceId(),
                         serializableDataInstance.getInstanceXml());
             }
@@ -1165,7 +1175,8 @@ public class BaseTestClass {
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                remoteInstanceFetcher
+                remoteInstanceFetcher,
+                formDefinitionService
         );
     }
 

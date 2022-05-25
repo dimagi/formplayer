@@ -64,7 +64,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         selections = formResp.getSelections();
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
-        checkForSelectedCasesInstance(formRespUsingGuid.getSessionId(), selections);
+        checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selections);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         }
     }
 
-    private void checkForSelectedCasesInstance(String sessionId, String[] selections) throws Exception {
+    private void checkForSelectedEntitiesInstance(String sessionId, String[] selections) throws Exception {
         // Ensure that the datum is set correctly to the guid
         EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('commcaresession')/session/data/selected_cases");
@@ -119,6 +119,6 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertTrue(submitResponse.getStatus().contentEquals("success"));
         NewFormResponse newFormResponse = getNextScreenForEofNavigation(submitResponse,
                 NewFormResponse.class);
-        checkForSelectedCasesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections());
+        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections());
     }
 }
