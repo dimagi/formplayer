@@ -30,11 +30,12 @@ public class FormplayerSyncScreen extends SyncScreen {
     }
 
     @Override
-    public void init (SessionWrapper sessionWrapper) throws CommCareSessionException {
+    public void init(SessionWrapper sessionWrapper) throws CommCareSessionException {
         this.sessionWrapper = sessionWrapper;
         PostRequest postRequest = getPostRequest();
         url = postRequest.getUrl().toString();
-        Multimap<String, String> params = postRequest.getEvaluatedParams(sessionWrapper.getEvaluationContext());
+        Multimap<String, String> params = postRequest.getEvaluatedParams(sessionWrapper.getEvaluationContext(),
+                false);
         queryParams = new LinkedMultiValueMap<>();
         if (asUser != null) {
             queryParams.add("commcare_login_as", asUser);
