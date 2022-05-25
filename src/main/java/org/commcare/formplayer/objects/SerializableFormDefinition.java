@@ -43,6 +43,10 @@ public class SerializableFormDefinition {
     @Column(name = "formdef")
     private String serializedFormDef;
 
+    public void setSerializedFormDef(String serializedFormDef) {
+        this.serializedFormDef = serializedFormDef;
+    }
+
     protected SerializableFormDefinition() {}
 
     public SerializableFormDefinition(String appId, String formXmlns, String formVersion, String formDef) {
