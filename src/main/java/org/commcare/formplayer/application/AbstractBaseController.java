@@ -30,6 +30,9 @@ public abstract class AbstractBaseController {
     protected FormSessionService formSessionService;
 
     @Autowired
+    private FormDefinitionService formDefinitionService;
+
+    @Autowired
     protected MenuSessionService menuSessionService;
 
     @Autowired
@@ -102,7 +105,8 @@ public abstract class AbstractBaseController {
                 formSendCalloutHandler,
                 storageFactory,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                runnerService.getCaseSearchHelper());
+                runnerService.getCaseSearchHelper(),
+                formDefinitionService);
     }
 
 }

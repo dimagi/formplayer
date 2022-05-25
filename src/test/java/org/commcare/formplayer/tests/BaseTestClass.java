@@ -100,6 +100,7 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -156,6 +157,9 @@ public class BaseTestClass {
 
     @Autowired
     protected FormDefinitionService formDefinitionService;
+
+    @Autowired
+    protected CacheManager cacheManager;
 
     @Autowired
     private MenuSessionService menuSessionService;
@@ -364,6 +368,12 @@ public class BaseTestClass {
         }).when(this.formDefinitionService).getOrCreateFormDefinition(
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
+
+        when(this.formDefinitionService.getFormDef(any(SerializableFormSession.class))).thenCallRealMethod();
+        when(this.formDefinitionService.cacheFormDef(any(FormSession.class))).thenCallRealMethod();
+
+        // manually wire this in. The autowiring doesn't work here since we've made it a mock
+        ReflectionTestUtils.setField(this.formDefinitionService, "caches", cacheManager);
     }
 
     private void mockMenuSessionService() {
@@ -1070,7 +1080,8 @@ public class BaseTestClass {
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper());
+                menuSessionRunnerService.getCaseSearchHelper(),
+                formDefinitionService);
     }
 
     @Nullable
