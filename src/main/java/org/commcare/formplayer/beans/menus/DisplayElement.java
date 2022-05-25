@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.DisplayUnit;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.xpath.expr.XPathExpression;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
@@ -40,6 +41,8 @@ public class DisplayElement {
 
     private boolean allowBlankValue;
 
+    private boolean required;
+
     public DisplayElement() {
     }
 
@@ -54,9 +57,10 @@ public class DisplayElement {
     }
 
 
-    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String input,
-                          @Nullable String receive, @Nullable String hidden, @Nullable String value,
-                          @Nullable String[] itemsetChoices, boolean allowBlankValue) {
+    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id,
+            @Nullable String input,
+            @Nullable String receive, @Nullable String hidden, @Nullable String value,
+            @Nullable String[] itemsetChoices, boolean allowBlankValue, XPathExpression required) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -75,6 +79,9 @@ public class DisplayElement {
             this.hint = displayUnit.getHintText().evaluate(ec);
         }
         this.allowBlankValue = allowBlankValue;
+        if (required != null) {
+            this.required = (boolean) required.eval(ec);
+        }
     }
 
     public String getText() {
@@ -110,8 +117,9 @@ public class DisplayElement {
     }
 
     @Override
-    public String toString(){
-        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri=" + imageUri
+    public String toString() {
+        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri="
+                + imageUri
                 + ", audioUri=" + audioUri + ", itemsetChoices=" + Arrays.toString(itemsetChoices);
     }
 
@@ -142,6 +150,11 @@ public class DisplayElement {
     @JsonGetter(value = "allow_blank_value")
     public boolean isAllowBlankValue() {
         return allowBlankValue;
+    }
+
+    @JsonGetter(value = "required")
+    public boolean isRequired() {
+        return required;
     }
 
     @Nullable

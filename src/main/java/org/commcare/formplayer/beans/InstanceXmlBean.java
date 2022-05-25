@@ -1,9 +1,6 @@
 package org.commcare.formplayer.beans;
 
-import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.XmlUtils;
-
-import java.io.IOException;
 
 /**
  * Created by willpride on 1/20/16.
@@ -12,7 +9,8 @@ public class InstanceXmlBean {
     private String output;
 
     // Jackson requires the default constructor be present
-    public InstanceXmlBean(){}
+    public InstanceXmlBean() {
+    }
 
     public InstanceXmlBean(String xml) {
         output = XmlUtils.indent(xml);
@@ -27,7 +25,7 @@ public class InstanceXmlBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "InstanceXmlBean: [output=" + output + "]";
     }
 }

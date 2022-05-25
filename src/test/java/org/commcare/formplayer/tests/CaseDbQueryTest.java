@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.utils.DbTestUtils.evaluate;
+
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.TestStorageUtils;
@@ -8,8 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
-
-import static org.commcare.formplayer.utils.DbTestUtils.evaluate;
 
 /**
  * @author wspride
@@ -39,9 +39,12 @@ public class CaseDbQueryTest extends BaseTestClass {
         UserSqlSandbox sandbox = getRestoreSandbox();
         EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         evaluate("count(instance('casedb')/casedb/case[@case_id = 'test_case_id'])", "1", ec);
-        evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/case_name", "Test Case", ec);
-        evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/case_name", "Test Case", ec);
-        evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/test_value", "initial", ec);
+        evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/case_name", "Test Case",
+                ec);
+        evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/case_name", "Test Case",
+                ec);
+        evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/test_value", "initial",
+                ec);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/missing_value", "", ec);
     }
 }

@@ -1,9 +1,18 @@
 package org.commcare.formplayer.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
+import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.services.HqUserDetailsService;
@@ -19,14 +28,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-
 @RestClientTest(components = {HqUserDetailsService.class})
 @AutoConfigureWebClient(registerRestTemplate = true)
 @TestPropertySource(properties = {
@@ -38,6 +39,10 @@ public class HqUserDetailsServiceTests {
     // mock this so we don't need to configure a DB
     @MockBean
     public FormSessionRepo formSessionRepo;
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    public FormDefinitionRepo formDefinitionRepo;
 
     // mock this so we don't need to configure a DB
     @MockBean

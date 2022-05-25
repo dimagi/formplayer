@@ -12,7 +12,7 @@ public class SubmitRequestBean extends SessionRequestBean {
     private boolean prevalidated;
     private Map<String, Object> answers;
 
-    public SubmitRequestBean(){
+    public SubmitRequestBean() {
 
     }
 
@@ -33,7 +33,7 @@ public class SubmitRequestBean extends SessionRequestBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "Submit Request Bean [sessionId: " + sessionId +
                 ", prevalidated=" + prevalidated + ", answers=" + answers + "]";
     }

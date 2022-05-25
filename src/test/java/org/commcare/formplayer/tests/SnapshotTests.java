@@ -11,8 +11,8 @@ import org.javarosa.core.util.Iterator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,8 +47,9 @@ public class SnapshotTests extends BaseTestClass {
     public void testUserSandbox() throws Exception {
         UserDB database = getUserDbConnector("snapshot", "snapshot_test", null);
         if (!database.databaseFileExists()) {
-            Assertions.fail("Snapshot UserDB Missing for tests you may need to rebuild the snapshot " +
-                    "with the CreateSnapshotDbs Gradle Task ");
+            Assertions.fail(
+                    "Snapshot UserDB Missing for tests you may need to rebuild the snapshot " +
+                            "with the CreateSnapshotDbs Gradle Task ");
         }
         //Try to enumerate records of each type
         UserSqlSandbox sandbox = new UserSqlSandbox(database);
@@ -74,16 +75,16 @@ public class SnapshotTests extends BaseTestClass {
     private void enumerate(String descriptor, IStorageUtilityIndexed<?> storage) throws Exception {
         try {
             System.out.println(String.format("%s: %d", descriptor, storage.getNumRecords()));
-            for (Iterator i = storage.iterate() ; i.hasMore();) {
+            for (Iterator i = storage.iterate(); i.hasMore(); ) {
                 Object p = i.nextRecord();
-                if(p instanceof IMetaData) {
-                    for (String metaField : ((IMetaData) p).getMetaDataFields()) {
-                        Object value = ((IMetaData) p).getMetaData(metaField);
+                if (p instanceof IMetaData) {
+                    for (String metaField : ((IMetaData)p).getMetaDataFields()) {
+                        Object value = ((IMetaData)p).getMetaData(metaField);
                         storage.getIDsForValue(metaField, value == null ? "" : value.toString());
                     }
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw generateSandboxException(descriptor, e);
         }
     }

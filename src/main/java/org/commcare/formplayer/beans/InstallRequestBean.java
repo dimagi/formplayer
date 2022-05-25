@@ -32,7 +32,8 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     }
 
     public String toString() {
-        return "InstallRequestBean: [username=" + username + ", domain=" + domain + ", appId=" + appId +
+        return "InstallRequestBean: [username=" + username + ", domain=" + domain + ", appId="
+                + appId +
                 ", oneQuestionPerScreen: " + oneQuestionPerScreen + "]";
     }
 

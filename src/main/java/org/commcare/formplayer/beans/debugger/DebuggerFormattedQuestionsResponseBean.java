@@ -1,7 +1,7 @@
 package org.commcare.formplayer.beans.debugger;
 
-import org.json.JSONArray;
 import org.commcare.formplayer.util.XmlUtils;
+import org.json.JSONArray;
 
 import java.util.HashSet;
 import java.util.List;
@@ -34,14 +34,16 @@ public class DebuggerFormattedQuestionsResponseBean {
         for (int i = 0; i < questionList.length(); i++) {
             autoCompletable.add(new AutoCompletableItem(questionList.getJSONObject(i)));
         }
-        for (String function: functionList) {
+        for (String function : functionList) {
             autoCompletable.add(new FunctionAutocompletable(function));
         }
-        for (String instanceId: instanceIds) {
+        for (String instanceId : instanceIds) {
             autoCompletable.add(new InstanceAutocompletableItem(instanceId));
         }
-        this.questionList = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);
-        this.recentXPathQueries = recentXPathQueries.toArray(new XPathQueryItem[recentXPathQueries.size()]);
+        this.questionList = autoCompletable.toArray(
+                new AutoCompletableItem[autoCompletable.size()]);
+        this.recentXPathQueries = recentXPathQueries.toArray(
+                new XPathQueryItem[recentXPathQueries.size()]);
     }
 
     public String getFormattedQuestions() {

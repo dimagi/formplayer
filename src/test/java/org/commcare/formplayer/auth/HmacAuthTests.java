@@ -1,11 +1,17 @@
 package org.commcare.formplayer.auth;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
@@ -26,13 +32,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.nio.charset.Charset;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 @WebMvcTest
 @ContextConfiguration(classes = {
@@ -43,7 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class HmacAuthTests {
 
-    private static final String FULL_AUTH_BODY = "{\"username\": \"citrus\", \"domain\":\"swallowtail\"}";
+    private static final String FULL_AUTH_BODY =
+            "{\"username\": \"citrus\", \"domain\":\"swallowtail\"}";
     private MediaType contentType = new MediaType(MediaType.APPLICATION_XML.getType(),
             MediaType.APPLICATION_XML.getSubtype(),
             Charset.forName("utf8"));
@@ -65,9 +65,9 @@ public class HmacAuthTests {
         MockHttpServletRequestBuilder builder = getRelaxedEndpointRequestBuilder()
                 .header(Constants.HMAC_HEADER, hmac);
         this.testEndpoint(builder,
-            jsonPath("$.validated", is(true)),
-            jsonPath("$.problems", hasSize(0)),
-            status().isOk()
+                jsonPath("$.validated", is(true)),
+                jsonPath("$.problems", hasSize(0)),
+                status().isOk()
         );
     }
 
@@ -113,11 +113,12 @@ public class HmacAuthTests {
         this.testEndpoint(builder, status().isOk());
     }
 
-    private void testEndpoint(MockHttpServletRequestBuilder requestBuilder, ResultMatcher... matchers) throws Exception {
+    private void testEndpoint(MockHttpServletRequestBuilder requestBuilder,
+            ResultMatcher... matchers) throws Exception {
         ResultActions actions = mvc.perform(requestBuilder)
                 .andDo(log());
 
-        for (ResultMatcher matcher : matchers   ) {
+        for (ResultMatcher matcher : matchers) {
             actions = actions.andExpect(matcher);
         }
     }
@@ -128,8 +129,8 @@ public class HmacAuthTests {
     }
 
     /**
-     * Use the 'validate_form' endpoint for 'relaxed auth' which only requires the HMAC
-     * header but not any user details.
+     * Use the 'validate_form' endpoint for 'relaxed auth' which only requires the HMAC header but
+     * not any user details.
      */
     private MockHttpServletRequestBuilder getRelaxedEndpointRequestBuilder() {
         return post(String.format("/%s", Constants.URL_VALIDATE_FORM))
