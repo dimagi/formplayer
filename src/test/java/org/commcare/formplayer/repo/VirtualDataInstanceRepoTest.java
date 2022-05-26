@@ -8,7 +8,6 @@ import org.commcare.data.xml.SimpleNode;
 import org.commcare.data.xml.TreeBuilder;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.util.PrototypeUtils;
-import org.commcare.formplayer.utils.JpaTestUtils;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.junit.jupiter.api.Assertions;
@@ -151,7 +150,7 @@ public class VirtualDataInstanceRepoTest {
         ExternalDataInstance selectedEntitiesInstance = buildSelectedEntitiesInstance(selections);
         SerializableDataInstance instance = new SerializableDataInstance(
                 selectedEntitiesInstance.getInstanceId(),
-                JR_SELECTED_VALUES_REFERENCE,
+                JR_SELECTED_ENTITIES_REFERENCE,
                 "username",
                 "domain",
                 "appid",
