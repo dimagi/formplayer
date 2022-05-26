@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -39,6 +40,7 @@ import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.RepeatRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.beans.SessionResponseBean;
 import org.commcare.formplayer.beans.SubmitRequestBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.SyncDbRequestBean;
@@ -800,6 +802,18 @@ public class BaseTestClass {
                 evaluateXPathRequestBean,
                 EvaluateXPathResponseBean.class
         );
+    }
+
+    /**
+     * Evaluate a XPath expression and check the result.
+     */
+    protected void checkXpath(String sessionId, String xpath, String expectedValue)
+            throws Exception {
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId, xpath);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXpathResponseBean.getStatus());
+        String result = String.format(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
+        assertEquals(result, evaluateXpathResponseBean.getOutput());
     }
 
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
