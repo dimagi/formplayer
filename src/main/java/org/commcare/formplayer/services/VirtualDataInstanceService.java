@@ -43,8 +43,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
 
     @Override
     public String write(String key, ExternalDataInstance dataInstance) {
-        SerializableDataInstance serializableDataInstance = getSerializableDataInstance(dataInstance, key);
-        saveAndCacheInstance(serializableDataInstance);
+        saveAndCacheInstance(getSerializableDataInstance(dataInstance, key));
         return key;
     }
 
@@ -67,28 +66,28 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     public ExternalDataInstance read(String key) {
         String namespaceKey = namespaceKey(key);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
-        SerializableDataInstance serializableDataInstance = cache.get(namespaceKey, SerializableDataInstance.class);
-        if (serializableDataInstance == null) {
+        SerializableDataInstance savedInstance = cache.get(namespaceKey, SerializableDataInstance.class);
+        if (savedInstance == null) {
             Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findByKey(namespaceKey);
             if (optionalSerializableDataInstance.isPresent()) {
-                serializableDataInstance = optionalSerializableDataInstance.get();
+                savedInstance = optionalSerializableDataInstance.get();
             }
         }
-        if (validateInstance(serializableDataInstance, key)) {
+        if (validateInstance(savedInstance, key)) {
             ExternalDataInstanceSource instanceSource =
                     ExternalDataInstanceSource.buildVirtual(
-                            serializableDataInstance.getInstanceId(), serializableDataInstance.getInstanceXml(),
-                            serializableDataInstance.getReference(), serializableDataInstance.isUseCaseTemplate(),
+                            savedInstance.getInstanceId(), savedInstance.getInstanceXml(),
+                            savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
                             key);
             return instanceSource.toInstance();
         }
         throw new InstanceNotFoundException(key, getNamespace());
     }
 
-    private boolean validateInstance(SerializableDataInstance serializableDataInstance, String key) {
-        if (serializableDataInstance != null
-                && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
-                && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
+    private boolean validateInstance(SerializableDataInstance savedInstance, String key) {
+        if (savedInstance != null
+                && ifUsernameMatches(savedInstance.getUsername(), storageFactory.getUsername())
+                && savedInstance.getAppId().equals(storageFactory.getAppId())) {
             return true;
         }
         throw new InstanceNotFoundException(key, getNamespace());
