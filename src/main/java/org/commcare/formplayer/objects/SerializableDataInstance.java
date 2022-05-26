@@ -6,7 +6,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.javarosa.core.model.instance.TreeElement;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -69,7 +68,8 @@ public class SerializableDataInstance {
     }
 
     public SerializableDataInstance(String instanceId, String reference, String username,
-            String domain, String appId, String asUser, TreeElement instanceXml, boolean useCaseTemplate) {
+            String domain, String appId, String asUser, TreeElement instanceXml, boolean useCaseTemplate,
+            String key) {
         this.instanceId = instanceId;
         this.reference = reference;
         this.username = username;
@@ -78,7 +78,7 @@ public class SerializableDataInstance {
         this.asUser = asUser;
         this.instanceXml = instanceXml;
         this.useCaseTemplate = useCaseTemplate;
-        this.key = UUID.randomUUID().toString();
+        this.key = key;
     }
 
 }

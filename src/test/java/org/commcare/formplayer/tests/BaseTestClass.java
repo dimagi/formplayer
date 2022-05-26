@@ -414,7 +414,9 @@ public class BaseTestClass {
                     externalDataInstance.getInstanceId(),
                     JR_SELECTED_ENTITIES_REFERENCE,
                     "username", "domain", "appid", "asuser",
-                    (TreeElement)externalDataInstance.getRoot(), externalDataInstance.useCaseTemplate());
+                    (TreeElement)externalDataInstance.getRoot(),
+                    externalDataInstance.useCaseTemplate(),
+                    UUID.randomUUID().toString());
             if (serializableDataInstance.getId() == null) {
                 // this is normally taken care of by Hibernate
                 ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());

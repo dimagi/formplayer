@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -57,7 +58,7 @@ public class VirtualDataInstanceRepoTest {
     @Test
     public void testSaveAndLoad() {
         SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
-                getSerializableDataInstance(new String[]{"case1", "case3"}, null));
+                getSerializableDataInstance(new String[]{"case1", "case3"}, UUID.randomUUID().toString()));
         Assertions.assertNotNull(savedInstance.getId());
         Assertions.assertNotNull(savedInstance.getKey());
 
@@ -100,7 +101,7 @@ public class VirtualDataInstanceRepoTest {
     @Test
     public void testDuplicateKey() {
         SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
-                getSerializableDataInstance(new String[]{"case1", "case3"}, null));
+                getSerializableDataInstance(new String[]{"case1", "case3"}, UUID.randomUUID().toString()));
 
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
@@ -143,7 +144,7 @@ public class VirtualDataInstanceRepoTest {
     }
 
     private SerializableDataInstance getSerializableDataInstance(int i) {
-        return getSerializableDataInstance(new String[]{"case" + i}, null);
+        return getSerializableDataInstance(new String[]{"case" + i}, UUID.randomUUID().toString());
     }
 
     private SerializableDataInstance getSerializableDataInstance(String[] selections, String key) {
@@ -156,7 +157,8 @@ public class VirtualDataInstanceRepoTest {
                 "appid",
                 "asUser",
                 (TreeElement)selectedEntitiesInstance.getRoot(),
-                selectedEntitiesInstance.useCaseTemplate());
+                selectedEntitiesInstance.useCaseTemplate(),
+                key);
         if (key != null) {
             instance.setKey(key);
         }
