@@ -90,7 +90,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
         // see if the instance is retained into the form session
         checkXpath(
-                formResponse,
+                formResponse.getSessionId(),
                 "instance('registry')/results/case[@case_type='case']/case_name",
                 "Burt Maclin"
         );
@@ -158,14 +158,14 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
         // check we can access the 'registry' instance in the form
         checkXpath(
-                formResponse,
+                formResponse.getSessionId(),
                 "instance('registry')/results/case[@case_type='case']/case_name",
                 "Burt Maclin"
         );
 
         // check we can access the 'duplicate' instance in the form
         checkXpath(
-                formResponse,
+                formResponse.getSessionId(),
                 "instance('duplicate')/results/case[@case_id='dupe_case_id']/case_name",
                 "Duplicate of Burt"
         );
@@ -208,17 +208,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
         assertEquals(formResponse.getTitle(), "Followup Form");
         verify(webClientMock, times(3)).postFormData(any(), any());
-    }
-
-    private void checkXpath(NewFormResponse formResponse, String xpath, String expectedValue)
-            throws Exception {
-        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(
-                formResponse.getSessionId(), xpath);
-        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE,
-                evaluateXpathResponseBean.getStatus());
-        String result = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
-        assertEquals(result, evaluateXpathResponseBean.getOutput());
     }
 
     @Override
