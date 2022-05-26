@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
+
+import javax.annotation.Nonnull;
 
 @Service
 @CacheConfig(cacheNames = {VIRTUAL_DATA_INSTANCES_CACHE})
@@ -35,44 +38,59 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
 
     @Override
     public String write(ExternalDataInstance dataInstance) {
-        SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
-                dataInstance.getInstanceId(), dataInstance.getReference(), storageFactory.getUsername(),
-                storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(),
-                (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate());
+        return write(UUID.randomUUID().toString(), dataInstance);
+    }
+
+    @Override
+    public String write(String key, ExternalDataInstance dataInstance) {
+        saveAndCacheInstance(getSerializableDataInstance(dataInstance, key));
+        return key;
+    }
+
+    private void saveAndCacheInstance(SerializableDataInstance serializableDataInstance) {
         SerializableDataInstance savedDataInstance = dataInstanceRepo.save(serializableDataInstance);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
-        cache.put(savedDataInstance.getId(), savedDataInstance);
-        return savedDataInstance.getId();
+        cache.put(savedDataInstance.getKey(), savedDataInstance);
+    }
+
+    @Nonnull
+    private SerializableDataInstance getSerializableDataInstance(ExternalDataInstance dataInstance, String key) {
+        String namespaceKey = namespaceKey(key);
+        return new SerializableDataInstance(
+                dataInstance.getInstanceId(), dataInstance.getReference(), storageFactory.getUsername(),
+                storageFactory.getDomain(), storageFactory.getAppId(), storageFactory.getAsUsername(),
+                (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate(), namespaceKey);
     }
 
     @Override
     public ExternalDataInstance read(String key) {
+        String namespaceKey = namespaceKey(key);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
-        SerializableDataInstance serializableDataInstance = cache.get(key, SerializableDataInstance.class);
-        if (serializableDataInstance == null) {
-            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findById(key);
+        SerializableDataInstance savedInstance = cache.get(namespaceKey, SerializableDataInstance.class);
+        if (savedInstance == null) {
+            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findByKey(namespaceKey);
             if (optionalSerializableDataInstance.isPresent()) {
-                serializableDataInstance = optionalSerializableDataInstance.get();
+                savedInstance = optionalSerializableDataInstance.get();
             }
         }
-        if (validateInstance(serializableDataInstance, key)) {
+        if (validateInstance(savedInstance, key)) {
             ExternalDataInstanceSource instanceSource =
                     ExternalDataInstanceSource.buildVirtual(
-                            serializableDataInstance.getInstanceId(), serializableDataInstance.getInstanceXml(),
-                            serializableDataInstance.getReference(), serializableDataInstance.useCaseTemplate(),
+                            savedInstance.getInstanceId(), savedInstance.getInstanceXml(),
+                            savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
                             key);
             return instanceSource.toInstance();
         }
-        throw new InstanceNotFoundException(key);
+        throw new InstanceNotFoundException(key, getNamespace());
     }
 
-    private boolean validateInstance(SerializableDataInstance serializableDataInstance, String key) {
-        if (serializableDataInstance != null
-                && ifUsernameMatches(serializableDataInstance.getUsername(), storageFactory.getUsername())
-                && serializableDataInstance.getAppId().equals(storageFactory.getAppId())) {
+    private boolean validateInstance(SerializableDataInstance savedInstance, String key) {
+        if (savedInstance != null
+                && ifUsernameMatches(savedInstance.getUsername(), storageFactory.getUsername())
+                && savedInstance.getAppId().equals(storageFactory.getAppId())) {
             return true;
         }
-        throw new InstanceNotFoundException(key);
+        throw new InstanceNotFoundException(key, getNamespace());
     }
 
     private boolean ifUsernameMatches(String username1, String username2) {
@@ -80,7 +98,19 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     }
 
     public boolean contains(String key) {
-        return dataInstanceRepo.existsById(key);
+        return dataInstanceRepo.existsByKey(key);
+    }
+
+    public String namespaceKey(String baseKey) {
+        return String.format("%s:%s", getNamespace(), baseKey);
+    }
+
+    public String getNamespace() {
+        String prefix = storageFactory.getDomain()
+                + storageFactory.getAppId()
+                + storageFactory.getUsername()
+                + storageFactory.getAsUsername();
+        return Integer.toString(prefix.hashCode());
     }
 
     @CacheEvict(allEntries = true)
