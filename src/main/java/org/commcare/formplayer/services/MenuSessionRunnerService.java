@@ -215,8 +215,8 @@ public class MenuSessionRunnerService {
 
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
-            String[] selections) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, null, null,
+            String[] selections, QueryData queryData) throws Exception {
+        return advanceSessionWithSelections(menuSession, selections, null, queryData,
                 0, null, 0, false, 0, null, null);
     }
 
@@ -773,7 +773,7 @@ public class MenuSessionRunnerService {
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections);
+        return advanceSessionWithSelections(menuSession, selections, null);
     }
 
     public CaseSearchHelper getCaseSearchHelper() {
