@@ -98,7 +98,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     }
 
     public boolean contains(String key) {
-        return dataInstanceRepo.existsByKey(key);
+        return dataInstanceRepo.existsByKey(namespaceKey(key));
     }
 
     public String namespaceKey(String baseKey) {
