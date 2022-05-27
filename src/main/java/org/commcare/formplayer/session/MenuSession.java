@@ -254,7 +254,8 @@ public class MenuSession implements HereFunctionHandlerListener {
             computeDatum();
             return getNextScreen();
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen();
+            QueryScreen queryScreen = new FormplayerQueryScreen(
+                    this.instanceFetcher.getVirtualDataInstanceStorage());
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
@@ -296,7 +297,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             throws CommCareSessionException {
         if (datum instanceof MultiSelectEntityDatum) {
             return new MultiSelectEntityScreen(false, needsDetail,
-                    sessionWrapper, instanceFetcher.getVirtualDataInstanceCache());
+                    sessionWrapper, instanceFetcher.getVirtualDataInstanceStorage());
         } else {
             return new EntityScreen(false, needsDetail, sessionWrapper);
         }
