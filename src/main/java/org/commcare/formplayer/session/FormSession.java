@@ -109,11 +109,7 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
 
-        if (this.session.getFormDefinition() != null) {
-            this.formDef = formDefinitionService.getFormDef(this.session);
-        } else {
-            this.log.error("No form definition attached to form session " + session.getId());
-        }
+        this.formDef = formDefinitionService.getFormDef(this.session);
 
         loadInstanceXml(this.formDef, session.getInstanceXml());
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
