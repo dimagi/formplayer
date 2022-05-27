@@ -27,7 +27,6 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
-import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
@@ -40,9 +39,9 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
+import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -180,7 +179,7 @@ public class MenuSessionRunnerService {
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
             // using getBestTitle to eliminate risk of showing private information
-            String caseListName = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+            String caseListName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
@@ -216,8 +215,8 @@ public class MenuSessionRunnerService {
 
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
-            String[] selections) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, null, null,
+            String[] selections, QueryData queryData) throws Exception {
+        return advanceSessionWithSelections(menuSession, selections, null, queryData,
                 0, null, 0, false, 0, null, null);
     }
 
@@ -766,7 +765,7 @@ public class MenuSessionRunnerService {
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections);
+        return advanceSessionWithSelections(menuSession, selections, null);
     }
 
     public CaseSearchHelper getCaseSearchHelper() {
