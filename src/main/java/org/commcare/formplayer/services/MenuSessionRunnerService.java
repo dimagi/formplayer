@@ -39,7 +39,6 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.commcare.util.screen.ScreenUtils;
@@ -291,9 +290,6 @@ public class MenuSessionRunnerService {
                 break;
             }
 
-            if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
-                menuSession.addSelection(selection);
-            }
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we've reached the end of this navigation path and no form in sight
                 // this usually means a RemoteRequestEntry was involved
