@@ -1,8 +1,8 @@
 package org.commcare.formplayer.beans.menus;
 
 import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.util.screen.ScreenUtils;
 
 import java.util.HashMap;
 
@@ -35,7 +35,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     }
 
     protected void processTitle(SessionWrapper session) {
-        setTitle(SessionUtils.getBestTitle(session));
+        setTitle(ScreenUtils.getBestTitle(session));
     }
 
     public String getTitle() {

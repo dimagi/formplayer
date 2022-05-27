@@ -37,6 +37,7 @@ import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
+import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -142,7 +143,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     private void initializeBreadcrumbs() {
         this.breadcrumbs = new ArrayList<>();
-        this.breadcrumbs.add(SessionUtils.getAppTitle());
+        this.breadcrumbs.add(ScreenUtils.getAppTitle());
     }
 
     /**
@@ -188,7 +189,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             }
 
             if (addBreadcrumb) {
-                addTitle(input, screen);
+                breadcrumbs.add(screen.getBreadcrumb(input, sandbox, getSessionWrapper()));
             }
 
             return true;
@@ -212,47 +213,6 @@ public class MenuSession implements HereFunctionHandlerListener {
             return false;
         }
         return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
-    }
-
-    private void addTitle(String input, Screen previousScreen) {
-        if (previousScreen instanceof MultiSelectEntityScreen) {
-            ExternalDataInstance instance = ((MultiSelectEntityScreen)previousScreen).getSelectedValuesInstance();
-            if (instance != null) {
-                AbstractTreeElement root = instance.getRoot();
-                int caseCount = root.getNumChildren();
-                if (caseCount > 0) {
-                    String caseName = getCaseName(root.getChildAt(0).getValue().getDisplayText());
-                    if (caseName != null) {
-                        if (caseCount > 1) {
-                            breadcrumbs.add("(" + caseCount + ") " + caseName + ", ...");
-                        } else {
-                            breadcrumbs.add(caseName);
-                        }
-                        return;
-                    }
-                }
-            }
-        } else if (previousScreen instanceof EntityScreen) {
-            String caseName = getCaseName(input);
-            if (caseName != null) {
-                breadcrumbs.add(caseName);
-                return;
-            }
-        }
-        // Menu name will also be fallback if no case is found
-        breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
-    }
-
-    private String getCaseName(String caseId) {
-        try {
-            String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), caseId);
-            if (caseName != null) {
-                return caseName;
-            }
-        } catch (NoSuchElementException e) {
-            // do nothing
-        }
-        return null;
     }
 
     /**
