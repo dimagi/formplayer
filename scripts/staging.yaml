@@ -60,3 +60,4 @@ submodules:
       - sk/search-input-instance+sk/combine-remote-request-entry-view # Jenny May 25
       - sk/combine-remote-request-entry-view # Simon/Jenny May 25
       - sk/search-input-instance # Simon/Jenny May 25
+      - jls/date-prompt # Jenny May 27
