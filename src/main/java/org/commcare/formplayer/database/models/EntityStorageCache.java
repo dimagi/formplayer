@@ -1,5 +1,7 @@
 package org.commcare.formplayer.database.models;
 
+import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
@@ -40,7 +42,7 @@ public class EntityStorageCache {
         this.mCacheName = cacheName;
         this.handler = handler;
         try {
-            execSQL(handler.getConnection(), getTableDefinition());
+            execSql(handler.getConnection(), getTableDefinition());
             EntityStorageCache.createIndexes(handler.getConnection());
             // Need to commit in order to make these tables available
             if (!handler.getConnection().getAutoCommit()) {
@@ -48,24 +50,6 @@ public class EntityStorageCache {
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private static void execSQL(Connection connection, String query) {
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
         }
     }
 
@@ -81,9 +65,9 @@ public class EntityStorageCache {
     }
 
     public static void createIndexes(Connection connection) throws SQLException {
-        execSQL(connection,
+        execSql(connection,
                 DatabaseIndexingUtils.indexOnTableCommand("CACHE_TIMESTAMP", TABLE_NAME, COL_CACHE_NAME + ", " + COL_TIMESTAMP));
-        execSQL(connection,
+        execSql(connection,
                 DatabaseIndexingUtils.indexOnTableCommand("NAME_ENTITY_KEY", TABLE_NAME, COL_CACHE_NAME + ", " + COL_ENTITY_KEY + ", " + COL_CACHE_KEY));
     }
 

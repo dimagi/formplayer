@@ -1,0 +1,26 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+	<h:head>
+		<h:title>Visit</h:title>
+		<model>
+			<instance>
+				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/52D111C9-79C6-403F-BF4C-D24B64A872E2" uiVersion="1" version="4" name="Visit">
+					<welcome_message/>
+				<case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""><update><sample_choice_question/><sample_number_question/></update></case><orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
+			</instance>
+			<instance src="jr://instance/casedb" id="casedb"/>
+			<instance src="jr://instance/session" id="commcaresession"/>
+			<itext>
+				<translation lang="en" default="">
+					<text id="welcome_message-label">
+						<value>This is a **follow up form**.</value>
+					</text>
+				</translation>
+			</itext>
+		<bind calculate="instance('commcaresession')/session/data/case_id" nodeset="/data/case/@case_id"/></model>
+	</h:head>
+	<h:body>
+		<trigger ref="/data/welcome_message" appearance="minimal">
+			<label ref="jr:itext('welcome_message-label')"/>
+		</trigger>
+	</h:body>
+</h:html>

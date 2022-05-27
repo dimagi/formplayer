@@ -186,13 +186,16 @@ public class CaseClaimTests extends BaseTestClass {
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
+        assert queryResponseBean.getDisplays()[0].isRequired();
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
                 new String[]{"karnataka", "Raj as than"});
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assert queryResponseBean.getDisplays()[1].isAllowBlankValue();
+        assert queryResponseBean.getDisplays()[1].isRequired();
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Bangalore", "Hampi"});
         assert !queryResponseBean.getDisplays()[2].isAllowBlankValue();
+        assert !queryResponseBean.getDisplays()[2].isRequired();
 
         // test hint
         assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");

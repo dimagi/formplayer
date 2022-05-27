@@ -17,6 +17,7 @@ import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
@@ -97,7 +98,8 @@ public class FormSession {
             FormSendCalloutHandler formSendCalloutHandler,
             FormplayerStorageFactory storageFactory,
             @Nullable CommCareSession commCareSession,
-            RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RemoteInstanceFetcher instanceFetcher,
+            FormDefinitionService formDefinitionService) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -107,8 +109,8 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
 
-        if (session.getFormDefinition() != null) {
-            this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+        if (this.session.getFormDefinition() != null) {
+            this.formDef = formDefinitionService.getFormDef(this.session);
         } else {
             this.log.error("No form definition attached to form session " + session.getId());
         }
@@ -637,5 +639,9 @@ public class FormSession {
 
     public SerializableFormSession getSerializableSession() {
         return session;
+    }
+
+    public FormDef getFormDef() {
+        return formDef;
     }
 }

@@ -39,6 +39,7 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -214,9 +215,9 @@ public class MenuSessionRunnerService {
 
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
-            String[] selections) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0, false, 0, null);
+            String[] selections, QueryData queryData) throws Exception {
+        return advanceSessionWithSelections(menuSession, selections, null, queryData,
+                0, null, 0, false, 0, null, null);
     }
 
     /**
@@ -244,7 +245,8 @@ public class MenuSessionRunnerService {
             int sortIndex,
             boolean forceManualAction,
             int casesPerPage,
-            String smartLinkTemplate) throws Exception {
+            String smartLinkTemplate,
+            String[] selectedValues) throws Exception {
         // If we have no selections, we're are the root screen.
         if (selections == null) {
             return getNextMenu(
@@ -267,7 +269,8 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             boolean needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated, true);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated,
+                    true, selectedValues);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -295,7 +298,9 @@ public class MenuSessionRunnerService {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
                 executeAndRebuildSession(menuSession);
             } else {
-                menuSession.addSelection(selection);
+                if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                    menuSession.addSelection(selection);
+                }
             }
         }
 
@@ -309,7 +314,7 @@ public class MenuSessionRunnerService {
                 casesPerPage,
                 smartLinkTemplate
         );
-        restoreFactory.cacheSessionSelections(selections);
+        restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
         if (nextResponse != null) {
             if (nextResponse.getNotification() == null && notificationMessage != null) {
@@ -442,7 +447,7 @@ public class MenuSessionRunnerService {
             throws CommCareSessionException {
         entityScreen.evaluateAutoLaunch(nextInput);
         if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsDetail, inputValidated, true);
+            menuSession.handleInput(selection, needsDetail, inputValidated, true, null);
             return true;
         }
         return false;
@@ -689,7 +694,7 @@ public class MenuSessionRunnerService {
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         menuSessionService.saveSession(menuSession.serialize());
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory,
-                caseSearchHelper, formDefinitionService);
+                formDefinitionService);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
         response.setNotification(establishVolatility(formEntrySession));
@@ -768,7 +773,7 @@ public class MenuSessionRunnerService {
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections);
+        return advanceSessionWithSelections(menuSession, selections, null);
     }
 
     public CaseSearchHelper getCaseSearchHelper() {
