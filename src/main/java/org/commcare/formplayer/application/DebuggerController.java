@@ -89,7 +89,8 @@ public class DebuggerController extends AbstractBaseController {
             HttpServletRequest request) throws Exception {
 
         MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
-        BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, debuggerMenuRequest.getSelections());
+        BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
+                menuSession, debuggerMenuRequest.getSelections(), debuggerMenuRequest.getQueryData());
         logNotification(responseBean.getNotification(), request);
 
         return new MenuDebuggerContentResponseBean(
@@ -109,7 +110,9 @@ public class DebuggerController extends AbstractBaseController {
                                                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                        HttpServletRequest request) throws Exception {
         MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
-        BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
+        BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
+                menuSession, evaluateXPathRequestBean.getSelections(),
+                evaluateXPathRequestBean.getQueryData());
         logNotification(responseBean.getNotification(), request);
 
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(

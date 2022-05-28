@@ -50,12 +50,13 @@
 trunk: master
 name: autostaging
 branches:
-  - multiselectList+gh/form-def/cache-by-session-id # Graham May 19
-  - multiSelectList # Shubham/Jenny April 11
-  - gh/form-def/cache-by-session-id # Graham April 21
+  - sk/form-entry-with-post # Simon/Jenny May 25
+  - sk/search-input-instance # Simon/Jenny May 25
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - ce/ensure-session # Cal Nov 20 2021
-      - multiSelectList # Shubham/Jenny April 11
+      - sk/search-input-instance+sk/combine-remote-request-entry-view # Jenny May 25
+      - sk/combine-remote-request-entry-view # Simon/Jenny May 25
+      - sk/search-input-instance # Simon/Jenny May 25
