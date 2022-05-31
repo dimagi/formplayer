@@ -296,6 +296,10 @@ public class MenuSessionRunnerService {
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
                 executeAndRebuildSession(menuSession);
+            } else {
+                if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                    menuSession.addSelection(selection);
+                }
             }
         }
 
