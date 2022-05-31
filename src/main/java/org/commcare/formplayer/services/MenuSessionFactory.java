@@ -133,6 +133,7 @@ public class MenuSessionFactory {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
                 menuSession.handleInput(currentStep, false, true, false, null);
+                menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
             }
         }
