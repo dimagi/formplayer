@@ -47,7 +47,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
                 + "storageRefernceId");
     }
 
-    public VirtualDataInstanceStorage getVirtualDataInstanceCache() {
+    public VirtualDataInstanceStorage getVirtualDataInstanceStorage() {
         return mVirtualDataInstanceStorage;
     }
 }
