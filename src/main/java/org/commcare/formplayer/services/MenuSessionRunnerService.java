@@ -38,6 +38,7 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.commcare.util.screen.ScreenUtils;
@@ -296,6 +297,10 @@ public class MenuSessionRunnerService {
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
                 executeAndRebuildSession(menuSession);
+            } else {
+                if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                    menuSession.addSelection(selection);
+                }
             }
         }
 
