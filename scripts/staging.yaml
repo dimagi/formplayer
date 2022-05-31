@@ -50,8 +50,10 @@
 trunk: master
 name: autostaging
 branches:
+  - sk/form-entry-with-post+sk/revert-select # Simon May 31
   - sk/form-entry-with-post # Simon/Jenny May 25
   - sk/search-input-instance # Simon/Jenny May 25
+  - sk/revert-select # Simon May 31
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -60,4 +62,3 @@ submodules:
       - sk/search-input-instance+sk/combine-remote-request-entry-view # Jenny May 25
       - sk/combine-remote-request-entry-view # Simon/Jenny May 25
       - sk/search-input-instance # Simon/Jenny May 25
-      - sk/revert-select  # Simon May 31
