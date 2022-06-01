@@ -17,6 +17,7 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
@@ -290,13 +291,24 @@ public class MenuSessionRunnerService {
                 break;
             }
 
-            if (nextScreen instanceof FormplayerSyncScreen) {
-                return doSyncGetNext((FormplayerSyncScreen)nextScreen, menuSession);
-            }
-
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
-                // we don't have a resolution, try rebuilding session to execute any pending ops
-                executeAndRebuildSession(menuSession);
+                // we've reached the end of this navigation path and no form in sight
+                // this usually means a RemoteRequestEntry was involved
+                if (nextInput != NO_SELECTION) {
+                    // still more nav to do so rebuild the session and continue
+                    executeAndRebuildSession(menuSession);
+                } else {
+                    // no more nav, we're done
+                    BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+                    if (postSyncResponse == null) {
+                        // Return use to the app root
+                        postSyncResponse = new BaseResponseBean(null,
+                                new NotificationMessage("Redirecting after sync", false,
+                                        NotificationMessage.Tag.sync),
+                                true);
+                    }
+                    return postSyncResponse;
+                }
             } else {
                 if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
                     menuSession.addSelection(selection);
@@ -383,6 +395,13 @@ public class MenuSessionRunnerService {
                 );
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
+            } else if (nextScreen instanceof FormplayerSyncScreen) {
+                try {
+                    doPostAndSync((FormplayerSyncScreen) nextScreen);
+                } catch (SyncRestoreException e) {
+                    throw new CommCareSessionException(e.getMessage(), e);
+                }
+                sessionAdvanced = true;
             }
         } while (!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
 
@@ -462,49 +481,23 @@ public class MenuSessionRunnerService {
         screen.refreshItemSetChoices();
     }
 
-
     /**
-     * Perform the sync and update the notification and screen accordingly.
-     * After a sync, we can either pop another menu/form to begin
-     * or just return to the app menu.
+     * Execute the post request associated with the sync screen and perform a sync if necessary.
      */
-    @Trace
-    private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
-            MenuSession menuSession) throws Exception {
-        NotificationMessage notificationMessage = doSync(nextScreen);
-
-        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-        if (postSyncResponse != null) {
-            // If not null, we have a form or menu to redirect to
-            if (notificationMessage != null) {
-                postSyncResponse.setNotification(notificationMessage);
-            }
-            return postSyncResponse;
-        } else {
-            // Otherwise, return use to the app root
-            postSyncResponse = new BaseResponseBean(null,
-                    new NotificationMessage("Redirecting after sync", false, NotificationMessage.Tag.sync),
-                    true);
-            return postSyncResponse;
-        }
-    }
-
-    private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
+    private void doPostAndSync(FormplayerSyncScreen screen) throws SyncRestoreException {
         Boolean shouldSync = true;
         try {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
+            screen.updateSessionOnSuccess();
         } catch (RestClientResponseException e) {
-            return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true,
-                    NotificationMessage.Tag.sync);
+            throw new SyncRestoreException(
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
         } catch (RestClientException e) {
-            return new NotificationMessage("Unknown error performing case claim", true,
-                    NotificationMessage.Tag.sync);
+            throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
             restoreFactory.performTimedSync(false, false, false);
         }
-        return null;
     }
 
     /**
@@ -758,11 +751,12 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            Screen s = menuSession.getNextScreen();
-            if (s instanceof FormplayerSyncScreen) {
+            Screen screen = menuSession.getNextScreen();
+            if (screen instanceof FormplayerSyncScreen) {
                 try {
-                    s.init(sessionWrapper);
-                    doSyncGetNext((FormplayerSyncScreen)s, menuSession);
+                    screen.init(sessionWrapper);
+                    doPostAndSync((FormplayerSyncScreen)screen);
+                    executeAndRebuildSession(menuSession);
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
                 }
