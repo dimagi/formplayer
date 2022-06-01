@@ -54,6 +54,7 @@ branches:
   - sk/form-entry-with-post # Simon/Jenny May 25
   - sk/search-input-instance # Simon/Jenny May 25
   - sk/revert-select # Simon May 31
+  - gh/form-def/stop-using-formxml # Graham June 1
 submodules:
   libs/commcare:
     trunk: formplayer
