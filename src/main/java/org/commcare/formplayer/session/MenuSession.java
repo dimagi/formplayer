@@ -42,8 +42,6 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
-import org.javarosa.core.model.instance.AbstractTreeElement;
-import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.util.MD5;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xpath.XPathParseTool;
@@ -54,7 +52,6 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import datadog.trace.api.Trace;
 
@@ -147,17 +144,17 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
-     * @param input           The user step input
-     * @param needsDetail     Whether a full entity screen is required for this request
-     *                        or if a list of references is sufficient
-     * @param inputValidated  Whether the input has been previously validated,
-     *                        allowing this step to skip validation
-     * @param allowAutoLaunch If this step is allowed to automatically launch an action,
-     *                        assuming it has an autolaunch action specified.
+     * @param input                 The user step input
+     * @param needsFullEntityScreen Whether a full entity screen is required for this request
+     *                              or if a list of references is sufficient
+     * @param inputValidated        Whether the input has been previously validated,
+     *                              allowing this step to skip validation
+     * @param allowAutoLaunch       If this step is allowed to automatically launch an action,
+     *                              assuming it has an autolaunch action specified.
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean inputValidated,
+    public boolean handleInput(String input, boolean needsFullEntityScreen, boolean inputValidated,
             boolean allowAutoLaunch, String[] selectedValues) throws CommCareSessionException {
-        Screen screen = getNextScreen(needsDetail);
+        Screen screen = getNextScreen(needsFullEntityScreen);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
             return false;
@@ -225,11 +222,11 @@ public class MenuSession implements HereFunctionHandlerListener {
      * Get next screen for current request, based on current state of session,
      * with autolaunching of actions not allowed.
      *
-     * @param needsDetail Whether a full entity screen is required for this request
-     *                    or if a list of references is sufficient
+     * @param needsFullEntityScreen Whether a full entity screen is required for this request
+     *                              or if a list of references is sufficient
      */
     @Trace
-    public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
+    public Screen getNextScreen(boolean needsFullEntityScreen) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
@@ -243,7 +240,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
-            EntityScreen entityScreen = getEntityScreenForSession(needsDetail);
+            EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen);
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
             }
@@ -270,7 +267,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen getEntityScreenForSession(boolean needsDetail)
+    private EntityScreen getEntityScreenForSession(boolean needsFullEntityScreen)
             throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
@@ -280,7 +277,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
         String datumKey = datum.getDataId() + ", " + nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
-            EntityScreen entityScreen = createFreshEntityScreen(needsDetail, datum);
+            EntityScreen entityScreen = createFreshEntityScreen(needsFullEntityScreen, datum);
             entityScreenCache.put(datumKey, entityScreen);
             return entityScreen;
         } else {
@@ -289,14 +286,14 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen createFreshEntityScreen(boolean needsDetail,
+    private EntityScreen createFreshEntityScreen(boolean needsFullEntityScreen,
             EntityDatum datum)
             throws CommCareSessionException {
         if (datum instanceof MultiSelectEntityDatum) {
-            return new MultiSelectEntityScreen(false, needsDetail,
+            return new MultiSelectEntityScreen(false, needsFullEntityScreen,
                     sessionWrapper, instanceFetcher.getVirtualDataInstanceCache());
         } else {
-            return new EntityScreen(false, needsDetail, sessionWrapper);
+            return new EntityScreen(false, needsFullEntityScreen, sessionWrapper);
         }
     }
 

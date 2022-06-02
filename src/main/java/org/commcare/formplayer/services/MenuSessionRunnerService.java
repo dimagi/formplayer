@@ -268,8 +268,8 @@ public class MenuSessionRunnerService {
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
-            boolean needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated,
+            boolean needsFullEntityScreen = detailSelection != null || i != selections.length;
+            boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
                     true, selectedValues);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
@@ -282,7 +282,7 @@ public class MenuSessionRunnerService {
             Screen nextScreen;
             try {
                 nextScreen = autoAdvanceSession(
-                        menuSession, selection, nextInput, queryData, needsDetail, inputValidated,
+                        menuSession, selection, nextInput, queryData, needsFullEntityScreen, inputValidated,
                         forceManualAction
                 );
             } catch (CommCareSessionException e) {
@@ -338,12 +338,12 @@ public class MenuSessionRunnerService {
      * - auto advance menu
      *
      * @param menuSession
-     * @param currentInput      The current input being processed
-     * @param nextInput         The next input being processed or NO_SELECTION constant
-     * @param queryData         Query data from the request
-     * @param needsDetail       Whether the full entity screen is required
-     * @param inputValidated    Whether the input has been validated (allows skipping validation)
-     * @param forceManualAction Prevent auto execution of queries if true.
+     * @param currentInput          The current input being processed
+     * @param nextInput             The next input being processed or NO_SELECTION constant
+     * @param queryData             Query data from the request
+     * @param needsFullEntityScreen Whether the full entity screen is required
+     * @param inputValidated        Whether the input has been validated (allows skipping validation)
+     * @param forceManualAction     Prevent auto execution of queries if true.
      * @return
      * @throws CommCareSessionException
      */
@@ -352,7 +352,7 @@ public class MenuSessionRunnerService {
             String currentInput,
             String nextInput,
             QueryData queryData,
-            boolean needsDetail,
+            boolean needsFullEntityScreen,
             boolean inputValidated,
             boolean forceManualAction) throws CommCareSessionException {
         boolean sessionAdvanced;
@@ -365,7 +365,7 @@ public class MenuSessionRunnerService {
             previousScreen = nextScreen;
             iterationCount += 1;
 
-            nextScreen = menuSession.getNextScreen(needsDetail);
+            nextScreen = menuSession.getNextScreen(needsFullEntityScreen);
             if (previousScreen != null) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
                 log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
@@ -374,7 +374,7 @@ public class MenuSessionRunnerService {
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
                 sessionAdvanced = handleAutoLaunch(
-                        (EntityScreen)nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
+                        (EntityScreen)nextScreen, menuSession, currentInput, needsFullEntityScreen, inputValidated, nextInput
                 );
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
@@ -443,11 +443,11 @@ public class MenuSessionRunnerService {
      * @throws CommCareSessionException
      */
     private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
-            String selection, boolean needsDetail, boolean inputValidated, String nextInput)
+            String selection, boolean needsFullEntityScreen, boolean inputValidated, String nextInput)
             throws CommCareSessionException {
         entityScreen.evaluateAutoLaunch(nextInput);
         if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsDetail, inputValidated, true, null);
+            menuSession.handleInput(selection, needsFullEntityScreen, inputValidated, true, null);
             return true;
         }
         return false;
