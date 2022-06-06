@@ -524,7 +524,7 @@ public class MenuSessionRunnerService {
                     screen.getQueryDatum().useCaseTemplate(),
                     screen.getBaseUrl(),
                     screen.getRequestData(skipDefaultPromptValues));
-            screen.setQueryDatum(searchDataInstance);
+            screen.updateSession(searchDataInstance);
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
             throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
