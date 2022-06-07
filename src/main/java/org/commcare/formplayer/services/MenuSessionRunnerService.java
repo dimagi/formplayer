@@ -547,7 +547,7 @@ public class MenuSessionRunnerService {
             }
 
             autoAdvanceSession(menuSession, "", "", new QueryData(),
-false, false, false, false
+                    false, false, false, false
             );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());

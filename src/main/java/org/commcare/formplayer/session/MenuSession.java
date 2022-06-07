@@ -84,9 +84,9 @@ public class MenuSession implements HereFunctionHandlerListener {
     private String smartLinkRedirect;
 
     public MenuSession(SerializableMenuSession session,
-                       InstallService installService,
-                       RestoreFactory restoreFactory,
-                       FormplayerRemoteInstanceFetcher instanceFetcher) throws Exception {
+            InstallService installService,
+            RestoreFactory restoreFactory,
+            FormplayerRemoteInstanceFetcher instanceFetcher) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
         this.engine = installService.configureApplication(session.getInstallReference(),
@@ -101,9 +101,9 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public MenuSession(String username, String domain, String appId, String locale,
-                       InstallService installService, RestoreFactory restoreFactory, String host,
-                       boolean oneQuestionPerScreen, String asUser, boolean preview,
-                       FormplayerRemoteInstanceFetcher instanceFetcher)
+            InstallService installService, RestoreFactory restoreFactory, String host,
+            boolean oneQuestionPerScreen, String asUser, boolean preview,
+            FormplayerRemoteInstanceFetcher instanceFetcher)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
@@ -154,7 +154,8 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      */
     public boolean handleInput(String input, boolean needsFullEntityScreen, boolean inputValidated,
-            boolean allowAutoLaunch, String[] selectedValues, boolean isDetailScreen) throws CommCareSessionException {
+            boolean allowAutoLaunch, String[] selectedValues, boolean isDetailScreen)
+            throws CommCareSessionException {
         Screen screen = getNextScreen(needsFullEntityScreen, isDetailScreen);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
@@ -229,7 +230,8 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      */
     @Trace
-    public Screen getNextScreen(boolean needsFullEntityScreen, boolean isDetailScreen) throws CommCareSessionException {
+    public Screen getNextScreen(boolean needsFullEntityScreen, boolean isDetailScreen)
+            throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
@@ -331,8 +333,8 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
-                                           FormplayerStorageFactory storageFactory,
-                                           FormDefinitionService formDefinitionService) throws Exception {
+            FormplayerStorageFactory storageFactory,
+            FormDefinitionService formDefinitionService) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = this.engine.loadFormByXmlns(formXmlns);
         SerializableFormDefinition serializableFormDefinition = formDefinitionService.getOrCreateFormDefinition(
