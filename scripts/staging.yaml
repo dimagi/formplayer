@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - sk/form-entry-with-post+sk/revert-select # Simon May 31
   - sk/form-entry-with-post # Simon/Jenny May 25
   - sk/search-input-instance # Simon/Jenny May 25
 submodules:
