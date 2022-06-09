@@ -271,6 +271,32 @@
       <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <command id="m2-f2">
+      <text>
+        <locale id="forms.m2f1"/>
+      </text>
+    </command>
+    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
+      <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
+    </post>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
+        <data ref="'case'" key="case_type"/>
+      </query>
+      <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
+    </session>
+    <assertions>
+      <assert test="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 1">
+        <text>
+          <locale id="case_autoload.usercase.case_missing"/>
+        </text>
+      </assert>
+    </assertions>
+  </entry>
   <menu id="root">
     <text>
       <locale id="modules.m0"/>
@@ -290,6 +316,7 @@
     </text>
     <command id="m2-f0"/>
     <command id="m2-f1"/>
+    <command id="m2-f2"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">

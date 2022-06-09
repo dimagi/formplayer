@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -181,6 +182,47 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 "count(instance('casedb')/casedb/case[@case_id='0156fa3e-093e-4136-b95c-01b13dae66c6'])",
                 "1"
         );
+    }
+
+    /**
+     * This tests that the session volatiles are cleared after the sync. The 'post'
+     * and the 'assertion' share the same XPath case lookup expression so without clearing volatiles
+     * the result is cached from the 'post' and not re-evaluated after the sync which causes
+     * the assertion to fail.
+     */
+    @Test
+    public void testPostInEntryWithQuery_clearVolatiles() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("2");  // 3rd form
+
+        QueryData queryData = new QueryData();
+
+        EntityListResponse entityListResponse;
+        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response.xml")) {
+            entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+        }
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        });
+
+        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse;
+        try (
+                VerifiedMock ignoredPostMock = mockPost(true);
+                VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
+        ) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+        if (formResponse.getNotification() != null && formResponse.getNotification().isError()) {
+            fail(formResponse.getNotification().getMessage());
+        }
     }
 
     /**

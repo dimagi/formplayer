@@ -397,7 +397,7 @@ public class MenuSessionRunnerService {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
-                    doPostAndSync((FormplayerSyncScreen) nextScreen);
+                    doPostAndSync(menuSession, (FormplayerSyncScreen) nextScreen);
                 } catch (SyncRestoreException e) {
                     // ignore for now to keep smart links working
                     // throw new CommCareSessionException(e.getMessage(), e);
@@ -485,8 +485,8 @@ public class MenuSessionRunnerService {
     /**
      * Execute the post request associated with the sync screen and perform a sync if necessary.
      */
-    private void doPostAndSync(FormplayerSyncScreen screen) throws SyncRestoreException {
-        Boolean shouldSync = true;
+    private void doPostAndSync(MenuSession menuSession, FormplayerSyncScreen screen) throws SyncRestoreException {
+        Boolean shouldSync;
         try {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
             screen.updateSessionOnSuccess();
@@ -500,6 +500,7 @@ public class MenuSessionRunnerService {
         }
         if (shouldSync) {
             restoreFactory.performTimedSync(false, false, false);
+            menuSession.getSessionWrapper().clearVolatiles();
         }
     }
 
@@ -757,7 +758,7 @@ public class MenuSessionRunnerService {
             if (screen instanceof FormplayerSyncScreen) {
                 try {
                     screen.init(sessionWrapper);
-                    doPostAndSync((FormplayerSyncScreen)screen);
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
                     executeAndRebuildSession(menuSession);
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
