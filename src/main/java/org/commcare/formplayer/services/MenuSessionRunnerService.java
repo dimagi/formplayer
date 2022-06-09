@@ -39,6 +39,7 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.commcare.util.screen.ScreenUtils;
@@ -134,7 +135,7 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             int casesPerPage,
             String smartLinkTemplate) throws Exception {
-        Screen nextScreen = menuSession.getNextScreen();
+        Screen nextScreen = menuSession.getNextScreen(detailSelection != null);
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -265,12 +266,13 @@ public class MenuSessionRunnerService {
             String selection = selections[i - 1];
 
             boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
+            boolean isDetailScreen = detailSelection != null;
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
-            boolean needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated,
-                    true, selectedValues);
+            boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
+            boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
+                    true, selectedValues, isDetailScreen);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -281,10 +283,8 @@ public class MenuSessionRunnerService {
             String nextInput = i == selections.length ? NO_SELECTION : selections[i];
             Screen nextScreen;
             try {
-                nextScreen = autoAdvanceSession(
-                        menuSession, selection, nextInput, queryData, needsDetail, inputValidated,
-                        forceManualAction
-                );
+                nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
+                        needsFullEntityScreen, inputValidated, forceManualAction, isDetailScreen);
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
                 break;
@@ -307,6 +307,10 @@ public class MenuSessionRunnerService {
                                 true);
                     }
                     return postSyncResponse;
+                }
+            } else {
+                if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                    menuSession.addSelection(selection);
                 }
             }
         }
@@ -345,12 +349,13 @@ public class MenuSessionRunnerService {
      * - auto advance menu
      *
      * @param menuSession
-     * @param currentInput      The current input being processed
-     * @param nextInput         The next input being processed or NO_SELECTION constant
-     * @param queryData         Query data from the request
-     * @param needsDetail       Whether the full entity screen is required
-     * @param inputValidated    Whether the input has been validated (allows skipping validation)
-     * @param forceManualAction Prevent auto execution of queries if true.
+     * @param currentInput          The current input being processed
+     * @param nextInput             The next input being processed or NO_SELECTION constant
+     * @param queryData             Query data from the request
+     * @param needsFullEntityScreen Whether the full entity screen is required
+     * @param inputValidated        Whether the input has been validated (allows skipping validation)
+     * @param forceManualAction     Prevent auto execution of queries if true.
+     * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      * @return
      * @throws CommCareSessionException
      */
@@ -359,9 +364,10 @@ public class MenuSessionRunnerService {
             String currentInput,
             String nextInput,
             QueryData queryData,
-            boolean needsDetail,
+            boolean needsFullEntityScreen,
             boolean inputValidated,
-            boolean forceManualAction) throws CommCareSessionException {
+            boolean forceManualAction,
+            boolean isDetailScreen) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
         Screen previousScreen;
@@ -372,7 +378,7 @@ public class MenuSessionRunnerService {
             previousScreen = nextScreen;
             iterationCount += 1;
 
-            nextScreen = menuSession.getNextScreen(needsDetail);
+            nextScreen = menuSession.getNextScreen(needsFullEntityScreen, isDetailScreen);
             if (previousScreen != null) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
                 log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
@@ -380,9 +386,8 @@ public class MenuSessionRunnerService {
 
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
-                sessionAdvanced = handleAutoLaunch(
-                        (EntityScreen)nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
-                );
+                sessionAdvanced = handleAutoLaunch((EntityScreen)nextScreen, menuSession, currentInput,
+                        needsFullEntityScreen, inputValidated, nextInput, isDetailScreen);
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 sessionAdvanced = handleQueryScreen(
@@ -457,12 +462,12 @@ public class MenuSessionRunnerService {
      * @return true if the session was advanced
      * @throws CommCareSessionException
      */
-    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
-            String selection, boolean needsDetail, boolean inputValidated, String nextInput)
+    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession, String selection,
+            boolean needsFullEntityScreen, boolean inputValidated, String nextInput, boolean isDetailScreen)
             throws CommCareSessionException {
         entityScreen.evaluateAutoLaunch(nextInput);
         if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsDetail, inputValidated, true, null);
+            menuSession.handleInput(selection, needsFullEntityScreen, inputValidated, true, null, isDetailScreen);
             return true;
         }
         return false;
@@ -537,9 +542,8 @@ public class MenuSessionRunnerService {
                 return responseBean;
             }
 
-            autoAdvanceSession(
-                    menuSession, "", "", new QueryData(),
-                    false, false, false
+            autoAdvanceSession(menuSession, "", "", new QueryData(),
+                    false, false, false, false
             );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
@@ -749,7 +753,7 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            Screen screen = menuSession.getNextScreen();
+            Screen screen = menuSession.getNextScreen(false);
             if (screen instanceof FormplayerSyncScreen) {
                 try {
                     screen.init(sessionWrapper);
