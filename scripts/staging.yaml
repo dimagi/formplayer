@@ -53,5 +53,4 @@ branches: []
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches:
-      - ce/ensure-session # Cal Nov 20 2021
+    branches: []
