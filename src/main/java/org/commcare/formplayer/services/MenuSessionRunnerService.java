@@ -399,8 +399,7 @@ public class MenuSessionRunnerService {
                 try {
                     doPostAndSync(menuSession, (FormplayerSyncScreen) nextScreen);
                 } catch (SyncRestoreException e) {
-                    // ignore for now to keep smart links working
-                    // throw new CommCareSessionException(e.getMessage(), e);
+                    throw new CommCareSessionException(e.getMessage(), e);
                 }
                 sessionAdvanced = true;
             }
@@ -491,8 +490,6 @@ public class MenuSessionRunnerService {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
             screen.updateSessionOnSuccess();
         } catch (RestClientResponseException e) {
-            // TODO: remove once smart link post relevancy is updated
-            screen.updateSessionOnSuccess();
             throw new SyncRestoreException(
                     String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
         } catch (RestClientException e) {
