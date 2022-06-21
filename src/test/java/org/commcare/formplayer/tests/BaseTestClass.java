@@ -1,6 +1,6 @@
 package org.commcare.formplayer.tests;
 
-import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -88,12 +88,14 @@ import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -408,28 +410,21 @@ public class BaseTestClass {
 
     private void mockVirtualDataInstanceService() {
         serializableDataInstanceMap.clear();
-        when(virtualDataInstanceService.write(any(ExternalDataInstance.class))).thenAnswer(invocation -> {
-            ExternalDataInstance externalDataInstance = (ExternalDataInstance)invocation.getArguments()[0];
-            SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
-                    externalDataInstance.getInstanceId(),
-                    JR_SELECTED_ENTITIES_REFERENCE,
-                    "username", "domain", "appid", "asuser",
-                    (TreeElement)externalDataInstance.getRoot(), externalDataInstance.useCaseTemplate());
-            if (serializableDataInstance.getId() == null) {
-                // this is normally taken care of by Hibernate
-                ReflectionTestUtils.setField(serializableDataInstance, "id", UUID.randomUUID().toString());
-            }
-            serializableDataInstanceMap.put(serializableDataInstance.getId(), serializableDataInstance);
-            return serializableDataInstance.getId();
-        });
+        when(virtualDataInstanceService.write(any(ExternalDataInstance.class)))
+                .thenAnswer(getVirtualInstanceMockWrite());
+
+        when(virtualDataInstanceService.write(any(String.class), any(ExternalDataInstance.class)))
+                .thenAnswer(getVirtualInstanceMockWrite());
 
         when(virtualDataInstanceService.read(any(String.class))).thenAnswer(invocation -> {
             String key = (String)invocation.getArguments()[0];
             if (serializableDataInstanceMap.containsKey(key)) {
-                SerializableDataInstance serializableDataInstance = serializableDataInstanceMap.get(key);
-                return new ExternalDataInstance(JR_SELECTED_ENTITIES_REFERENCE,
-                        serializableDataInstance.getInstanceId(),
-                        serializableDataInstance.getInstanceXml());
+                SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
+                ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
+                        savedInstance.getInstanceId(), savedInstance.getInstanceXml(),
+                        savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
+                        key);
+                return instanceSource.toInstance();
             }
             return null;
         });
@@ -438,6 +433,29 @@ public class BaseTestClass {
             String key = (String)invocation.getArguments()[0];
             return serializableDataInstanceMap.containsKey(key);
         });
+    }
+
+    @NotNull
+    private Answer<Object> getVirtualInstanceMockWrite() {
+        return invocation -> {
+            String key;
+            ExternalDataInstance dataInstance;
+            if (invocation.getArguments().length == 2) {
+                key = (String)invocation.getArguments()[0];
+                dataInstance = (ExternalDataInstance)invocation.getArguments()[1];
+            } else {
+                key = UUID.randomUUID().toString();
+                dataInstance = (ExternalDataInstance)invocation.getArguments()[0];
+            }
+
+            SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
+                    dataInstance.getInstanceId(), dataInstance.getReference(),
+                    "username", "domain", "appid", "asuser",
+                    (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate(),
+                    key);
+            serializableDataInstanceMap.put(key, serializableDataInstance);
+            return key;
+        };
     }
 
     private void mockMenuSessionService() {
@@ -800,6 +818,18 @@ public class BaseTestClass {
                 evaluateXPathRequestBean,
                 EvaluateXPathResponseBean.class
         );
+    }
+
+    /**
+     * Evaluate a XPath expression and check the result.
+     */
+    protected void checkXpath(String sessionId, String xpath, String expectedValue)
+            throws Exception {
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId, xpath);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXpathResponseBean.getStatus());
+        String result = String.format(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
+        assertEquals(result, evaluateXpathResponseBean.getOutput());
     }
 
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {

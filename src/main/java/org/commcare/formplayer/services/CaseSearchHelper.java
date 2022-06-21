@@ -58,7 +58,6 @@ public class CaseSearchHelper {
             return copyOfRoot;
         }
 
-        log.info(String.format("Making case search request to url %s with data %s", url, requestData));
         String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {

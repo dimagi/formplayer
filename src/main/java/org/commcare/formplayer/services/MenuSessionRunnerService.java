@@ -17,6 +17,7 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
@@ -26,7 +27,6 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
-import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
@@ -42,6 +42,7 @@ import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
+import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -134,7 +135,7 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             int casesPerPage,
             String smartLinkTemplate) throws Exception {
-        Screen nextScreen = menuSession.getNextScreen();
+        Screen nextScreen = menuSession.getNextScreen(detailSelection != null);
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -179,7 +180,7 @@ public class MenuSessionRunnerService {
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
             // using getBestTitle to eliminate risk of showing private information
-            String caseListName = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+            String caseListName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
@@ -215,8 +216,8 @@ public class MenuSessionRunnerService {
 
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
-            String[] selections) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, null, null,
+            String[] selections, QueryData queryData) throws Exception {
+        return advanceSessionWithSelections(menuSession, selections, null, queryData,
                 0, null, 0, false, 0, null, null);
     }
 
@@ -265,12 +266,13 @@ public class MenuSessionRunnerService {
             String selection = selections[i - 1];
 
             boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
+            boolean isDetailScreen = detailSelection != null;
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
-            boolean needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated,
-                    true, selectedValues);
+            boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
+            boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
+                    true, selectedValues, isDetailScreen);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -281,22 +283,31 @@ public class MenuSessionRunnerService {
             String nextInput = i == selections.length ? NO_SELECTION : selections[i];
             Screen nextScreen;
             try {
-                nextScreen = autoAdvanceSession(
-                        menuSession, selection, nextInput, queryData, needsDetail, inputValidated,
-                        forceManualAction
-                );
+                nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
+                        needsFullEntityScreen, inputValidated, forceManualAction, isDetailScreen);
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
                 break;
             }
 
-            if (nextScreen instanceof FormplayerSyncScreen) {
-                return doSyncGetNext((FormplayerSyncScreen)nextScreen, menuSession);
-            }
-
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
-                // we don't have a resolution, try rebuilding session to execute any pending ops
-                executeAndRebuildSession(menuSession);
+                // we've reached the end of this navigation path and no form in sight
+                // this usually means a RemoteRequestEntry was involved
+                if (nextInput != NO_SELECTION) {
+                    // still more nav to do so rebuild the session and continue
+                    executeAndRebuildSession(menuSession);
+                } else {
+                    // no more nav, we're done
+                    BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+                    if (postSyncResponse == null) {
+                        // Return use to the app root
+                        postSyncResponse = new BaseResponseBean(null,
+                                new NotificationMessage("Redirecting after sync", false,
+                                        NotificationMessage.Tag.sync),
+                                true);
+                    }
+                    return postSyncResponse;
+                }
             } else {
                 if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
                     menuSession.addSelection(selection);
@@ -338,12 +349,13 @@ public class MenuSessionRunnerService {
      * - auto advance menu
      *
      * @param menuSession
-     * @param currentInput      The current input being processed
-     * @param nextInput         The next input being processed or NO_SELECTION constant
-     * @param queryData         Query data from the request
-     * @param needsDetail       Whether the full entity screen is required
-     * @param inputValidated    Whether the input has been validated (allows skipping validation)
-     * @param forceManualAction Prevent auto execution of queries if true.
+     * @param currentInput          The current input being processed
+     * @param nextInput             The next input being processed or NO_SELECTION constant
+     * @param queryData             Query data from the request
+     * @param needsFullEntityScreen Whether the full entity screen is required
+     * @param inputValidated        Whether the input has been validated (allows skipping validation)
+     * @param forceManualAction     Prevent auto execution of queries if true.
+     * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      * @return
      * @throws CommCareSessionException
      */
@@ -352,9 +364,10 @@ public class MenuSessionRunnerService {
             String currentInput,
             String nextInput,
             QueryData queryData,
-            boolean needsDetail,
+            boolean needsFullEntityScreen,
             boolean inputValidated,
-            boolean forceManualAction) throws CommCareSessionException {
+            boolean forceManualAction,
+            boolean isDetailScreen) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
         Screen previousScreen;
@@ -365,7 +378,7 @@ public class MenuSessionRunnerService {
             previousScreen = nextScreen;
             iterationCount += 1;
 
-            nextScreen = menuSession.getNextScreen(needsDetail);
+            nextScreen = menuSession.getNextScreen(needsFullEntityScreen, isDetailScreen);
             if (previousScreen != null) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
                 log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
@@ -373,9 +386,8 @@ public class MenuSessionRunnerService {
 
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
-                sessionAdvanced = handleAutoLaunch(
-                        (EntityScreen)nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
-                );
+                sessionAdvanced = handleAutoLaunch((EntityScreen)nextScreen, menuSession, currentInput,
+                        needsFullEntityScreen, inputValidated, nextInput, isDetailScreen);
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 sessionAdvanced = handleQueryScreen(
@@ -383,6 +395,14 @@ public class MenuSessionRunnerService {
                 );
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
+            } else if (nextScreen instanceof FormplayerSyncScreen) {
+                try {
+                    doPostAndSync(menuSession, (FormplayerSyncScreen) nextScreen);
+                } catch (SyncRestoreException e) {
+                    // ignore for now to keep smart links working
+                    // throw new CommCareSessionException(e.getMessage(), e);
+                }
+                sessionAdvanced = true;
             }
         } while (!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
 
@@ -442,12 +462,12 @@ public class MenuSessionRunnerService {
      * @return true if the session was advanced
      * @throws CommCareSessionException
      */
-    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
-            String selection, boolean needsDetail, boolean inputValidated, String nextInput)
+    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession, String selection,
+            boolean needsFullEntityScreen, boolean inputValidated, String nextInput, boolean isDetailScreen)
             throws CommCareSessionException {
         entityScreen.evaluateAutoLaunch(nextInput);
         if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsDetail, inputValidated, true, null);
+            menuSession.handleInput(selection, needsFullEntityScreen, inputValidated, true, null, isDetailScreen);
             return true;
         }
         return false;
@@ -462,49 +482,26 @@ public class MenuSessionRunnerService {
         screen.refreshItemSetChoices();
     }
 
-
     /**
-     * Perform the sync and update the notification and screen accordingly.
-     * After a sync, we can either pop another menu/form to begin
-     * or just return to the app menu.
+     * Execute the post request associated with the sync screen and perform a sync if necessary.
      */
-    @Trace
-    private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
-            MenuSession menuSession) throws Exception {
-        NotificationMessage notificationMessage = doSync(nextScreen);
-
-        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-        if (postSyncResponse != null) {
-            // If not null, we have a form or menu to redirect to
-            if (notificationMessage != null) {
-                postSyncResponse.setNotification(notificationMessage);
-            }
-            return postSyncResponse;
-        } else {
-            // Otherwise, return use to the app root
-            postSyncResponse = new BaseResponseBean(null,
-                    new NotificationMessage("Redirecting after sync", false, NotificationMessage.Tag.sync),
-                    true);
-            return postSyncResponse;
-        }
-    }
-
-    private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
-        Boolean shouldSync = true;
+    private void doPostAndSync(MenuSession menuSession, FormplayerSyncScreen screen) throws SyncRestoreException {
+        Boolean shouldSync;
         try {
             shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
+            screen.updateSessionOnSuccess();
         } catch (RestClientResponseException e) {
-            return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true,
-                    NotificationMessage.Tag.sync);
+            // TODO: remove once smart link post relevancy is updated
+            screen.updateSessionOnSuccess();
+            throw new SyncRestoreException(
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
         } catch (RestClientException e) {
-            return new NotificationMessage("Unknown error performing case claim", true,
-                    NotificationMessage.Tag.sync);
+            throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
             restoreFactory.performTimedSync(false, false, false);
+            menuSession.getSessionWrapper().clearVolatiles();
         }
-        return null;
     }
 
     /**
@@ -528,7 +525,7 @@ public class MenuSessionRunnerService {
                     screen.getQueryDatum().useCaseTemplate(),
                     screen.getBaseUrl(),
                     screen.getRequestData(skipDefaultPromptValues));
-            screen.setQueryDatum(searchDataInstance);
+            screen.updateSession(searchDataInstance);
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
             throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
@@ -546,9 +543,8 @@ public class MenuSessionRunnerService {
                 return responseBean;
             }
 
-            autoAdvanceSession(
-                    menuSession, "", "", new QueryData(),
-                    false, false, false
+            autoAdvanceSession(menuSession, "", "", new QueryData(),
+                    false, false, false, false
             );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
@@ -758,11 +754,12 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            Screen s = menuSession.getNextScreen();
-            if (s instanceof FormplayerSyncScreen) {
+            Screen screen = menuSession.getNextScreen(false);
+            if (screen instanceof FormplayerSyncScreen) {
                 try {
-                    s.init(sessionWrapper);
-                    doSyncGetNext((FormplayerSyncScreen)s, menuSession);
+                    screen.init(sessionWrapper);
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
+                    executeAndRebuildSession(menuSession);
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
                 }
@@ -773,7 +770,7 @@ public class MenuSessionRunnerService {
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections);
+        return advanceSessionWithSelections(menuSession, selections, null);
     }
 
     public CaseSearchHelper getCaseSearchHelper() {

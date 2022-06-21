@@ -89,7 +89,7 @@ public class MenuController extends AbstractBaseController {
         );
         logNotification(baseResponseBean.getNotification(),request);
 
-        Screen currentScreen = menuSession.getNextScreen();
+        Screen currentScreen = menuSession.getNextScreen(true);
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand

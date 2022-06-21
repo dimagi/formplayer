@@ -49,14 +49,8 @@
 
 trunk: master
 name: autostaging
-branches:
-  - sk/form-entry-with-post # Simon/Jenny May 25
-  - sk/search-input-instance # Simon/Jenny May 25
+branches: []
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches:
-      - ce/ensure-session # Cal Nov 20 2021
-      - sk/search-input-instance+sk/combine-remote-request-entry-view # Jenny May 25
-      - sk/combine-remote-request-entry-view # Simon/Jenny May 25
-      - sk/search-input-instance # Simon/Jenny May 25
+    branches: []
