@@ -49,8 +49,10 @@
 
 trunk: master
 name: autostaging
-branches: []
+branches:
+  - sk/clear-remote-instance-cache
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches: []
+    branches:
+      - sk/data-instance-source
