@@ -51,7 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - sk/clear-remote-instance-cache
-  # - gh/remove-formxml-column
+  - gh/remove-formxml-column
 submodules:
   libs/commcare:
     trunk: formplayer
