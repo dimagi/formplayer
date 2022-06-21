@@ -55,5 +55,4 @@ branches:
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches:
-      - sk/data-instance-source
+    branches: []
