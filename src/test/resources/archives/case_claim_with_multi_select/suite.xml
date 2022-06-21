@@ -233,7 +233,7 @@
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="$case_id != ''">
-      <data key="case_id" nodeset="instance('search_cases')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id = current()/.]) = 1" ref="."/>
+      <data key="case_id" nodeset="instance('search_cases_instance_id')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id = current()/.]) = 1" ref="."/>
     </post>
     <command id="search_command.m1">
       <display>
@@ -246,7 +246,7 @@
     <instance id="commcaresession" src="jr://instance/session"/>
     <instance id="district" src="jr://fixture/item-list:district"/>
     <instance id="state" src="jr://fixture/item-list:state"/>
-    <instance id="search_cases" src="jr://instance/selected-entities"/>
+    <instance id="search_cases_instance_id" src="jr://instance/selected-entities/search_cases"/>
     <session>
       <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
         <data ref="'case1'" key="case_type"/>
