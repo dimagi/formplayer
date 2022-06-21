@@ -33,6 +33,7 @@ import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -296,8 +297,8 @@ public class FormSubmissionController extends AbstractBaseController {
             CaseSearchHelper caseSearchHelper = runnerService.getCaseSearchHelper();
             SessionFrame frame = context.getCommCareSession().getFrame();
             for (StackFrameStep step : frame.getSteps()) {
-                if (step.hasXmlInstance()) {
-                    caseSearchHelper.clearCacheForInstanceSource(step.getXmlInstanceSource());
+                for (ExternalDataInstanceSource source : step.getDataInstanceSources().values()) {
+                    caseSearchHelper.clearCacheForInstanceSource(source);
                 }
             }
         } catch (Exception e) {
