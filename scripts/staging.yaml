@@ -50,9 +50,12 @@
 trunk: master
 name: autostaging
 branches:
-  - sk/clear-remote-instance-cache
   - gh/remove-formxml-column
+  - sk/multi-select-auto-launch
+  - sk/clear-cache-volitile-session-elements
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches: []
+    branches:
+      - sk/next-input-multi-select
+      - sk/stack-observer
