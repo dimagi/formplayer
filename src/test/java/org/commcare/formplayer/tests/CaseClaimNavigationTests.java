@@ -257,10 +257,12 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         }
         assertEquals("Close", formResponse.getTitle());
 
-        ExternalDataInstanceSource source = getInstanceSourceFromSession(formResponse.getSessionId(), "results");
+        ExternalDataInstanceSource source = getInstanceSourceFromSession(
+                formResponse.getSessionId(), "results");
         assertNotNull(source, "Unable to find 'results' instance in session");
 
-        String key = ReflectionTestUtils.invokeMethod(caseSearchHelper, "getCacheKey", source.getSourceUri(), source.getRequestData());
+        String key = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", source.getSourceUri(), source.getRequestData());
         Cache.ValueWrapper cachedValue = cacheManager.getCache("case_search").get(key);
         assertNotNull(cachedValue, "Expected cache to contain results for the instance");
 
@@ -271,7 +273,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         assertNull(cachedValue, "Cache not cleared after form submission");
     }
 
-    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String instanceId) throws Exception {
+    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String instanceId)
+            throws Exception {
         SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
         CommCareSession commCareSession = getCommCareSession(formSession.getMenuSessionId());
         SessionFrame frame = commCareSession.getFrame();

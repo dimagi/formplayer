@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMultimap;
 
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.session.CommCareSession;
-import org.commcare.suite.model.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

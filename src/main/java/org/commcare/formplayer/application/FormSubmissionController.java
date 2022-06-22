@@ -140,8 +140,6 @@ public class FormSubmissionController extends AbstractBaseController {
                     serializableMenuSession.getCommcareSession());
         }
 
-        FormSession formEntrySession = getFormSession(serializableFormSession, commCareSession);
-
         // add tags for future datadog/sentry requests
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
@@ -150,6 +148,7 @@ public class FormSubmissionController extends AbstractBaseController {
         Map<String, String> extras = new HashMap();
         extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
 
+        FormSession formEntrySession = getFormSession(serializableFormSession, commCareSession);
         return new FormSubmissionContext(
                 request,
                 submitRequestBean,
@@ -287,6 +286,13 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
+    private Object doEndOfFormNav(SerializableMenuSession serializedSession, FormplayerConfigEngine engine,
+            CommCareSession commCareSession) throws Exception {
+        log.info("End of form navigation with serialized menu session: " + serializedSession);
+        MenuSession menuSession = menuSessionFactory.buildSession(serializedSession, engine, commCareSession);
+        return runnerService.resolveFormGetNext(menuSession);
+    }
+
     @Trace
     @SneakyThrows
     private SubmitResponseBean clearCaches(FormSubmissionContext context) {
@@ -346,13 +352,6 @@ public class FormSubmissionController extends AbstractBaseController {
                 log.error("Exception parsing submission response body", e);
             }
         }
-    }
-
-    private Object doEndOfFormNav(SerializableMenuSession serializedSession, FormplayerConfigEngine engine,
-            CommCareSession commCareSession) throws Exception {
-        log.info("End of form navigation with serialized menu session: " + serializedSession);
-        MenuSession menuSession = menuSessionFactory.buildSession(serializedSession, engine, commCareSession);
-        return runnerService.resolveFormGetNext(menuSession);
     }
 
     /**
