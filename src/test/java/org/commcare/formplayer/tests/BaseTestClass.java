@@ -546,7 +546,7 @@ public class BaseTestClass {
         return sandbox;
     }
 
-    public class RestoreFactoryAnswer implements Answer {
+    public static class RestoreFactoryAnswer implements Answer {
         private String mRestoreFile;
 
         public RestoreFactoryAnswer(String restoreFile) {
