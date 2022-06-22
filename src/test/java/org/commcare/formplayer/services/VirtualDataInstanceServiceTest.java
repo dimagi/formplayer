@@ -94,7 +94,7 @@ public class VirtualDataInstanceServiceTest {
         assertEquals(externalDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
 
         // get Record hits the cache (repo is mocked)
-        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
+        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId, "selected_cases");
         assertEquals(externalDataInstance.getRoot(), fetchedRecord.getRoot());
     }
 
@@ -112,7 +112,7 @@ public class VirtualDataInstanceServiceTest {
         assertEquals(externalDataInstance.getRoot(), getCachedRecord(recordId).get().getInstanceXml());
 
         // get Record hits the cache (repo is mocked)
-        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
+        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId, "selected_cases");
         assertEquals(externalDataInstance.getRoot(), fetchedRecord.getRoot());
     }
 
@@ -163,7 +163,7 @@ public class VirtualDataInstanceServiceTest {
         assertEquals(key, recordId);
 
         // get Record hits the cache (repo is mocked)
-        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId);
+        ExternalDataInstance fetchedRecord = virtualDataInstanceService.read(recordId, "selected_cases");
         assertNotNull(fetchedRecord);
 
         // call the runnable to change the session detail in some way that should prevent reading the
@@ -171,7 +171,7 @@ public class VirtualDataInstanceServiceTest {
         adjustSessionDetail.run();
 
         assertThrows(InstanceNotFoundException.class, () -> {
-            virtualDataInstanceService.read(recordId);
+            virtualDataInstanceService.read(recordId, "selected_cases");
         });
     }
 
