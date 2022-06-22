@@ -13,6 +13,7 @@ import com.google.common.collect.Multimap;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.junit.jupiter.api.Assertions;
@@ -45,6 +46,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
     @Captor
     ArgumentCaptor<MultiValueMap<String, String>> requestDataCaptor;
+    private MockRequestUtils mockRequest;
 
     @Override
     @BeforeEach
@@ -52,7 +54,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
         cacheManager.getCache("case_search").clear();
-        configureCaseSearchMock();
+        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
     }
 
     @Override
@@ -63,11 +65,14 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
     @Test
     public void testCaseClaimWithMultiSelectList() throws Exception {
         // default search is on so we should skip to search results directly
-        EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"0", "action 0"},
-                APP_NAME,
-                null,
-                EntityListResponse.class);
-        assertTrue(entityResp.isMultiSelect());
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"0", "action 0"},
+                    APP_NAME,
+                    null,
+                    EntityListResponse.class);
+            assertTrue(entityResp.isMultiSelect());
+        }
 
         String[] selectedValues =
                 new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0156fa3e-093e-4136-b95c-01b13dae66c7",
@@ -97,18 +102,15 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
     public void testNoCaseClaimRequestWhenAllCasesOwned() throws Exception {
         String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"};
         String[] selections = new String[]{"0", "action 0", MultiSelectEntityScreen.USE_SELECTED_VALUES};
-        sessionNavigateWithQuery(selections,
-                APP_NAME,
-                null,
-                selectedValues,
-                CommandListResponseBean.class);
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            sessionNavigateWithQuery(selections,
+                    APP_NAME,
+                    null,
+                    selectedValues,
+                    CommandListResponseBean.class);
+        }
         // Verify case claim request should not fire if the selected cases were owned already
         verify(webClientMock, times(0)).post(any(), any());
-    }
-
-    private void configureCaseSearchMock() {
-        when(webClientMock.postFormData(anyString(), any(Multimap.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(),
-                        "query_responses/case_search_multi_select_response.xml"));
     }
 }
