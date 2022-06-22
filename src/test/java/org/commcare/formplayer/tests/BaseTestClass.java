@@ -422,15 +422,7 @@ public class BaseTestClass {
             String instanceId = (String)invocation.getArguments()[1];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
-                TreeElement root = savedInstance.getInstanceXml();
-                if (!instanceId.equals(savedInstance.getInstanceId())) {
-                    TreeUtilities.renameInstance(root, instanceId);
-                }
-                ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
-                        instanceId, root,
-                        savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
-                        key);
-                return instanceSource.toInstance();
+                return savedInstance.toInstance(instanceId);
             }
             return null;
         });

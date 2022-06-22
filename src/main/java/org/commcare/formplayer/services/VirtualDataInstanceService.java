@@ -8,9 +8,7 @@ import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.utils.TreeUtilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -60,15 +58,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
             }
         }
         if (validateInstance(savedInstance, key)) {
-            TreeElement root = savedInstance.getInstanceXml();
-            if (!instanceId.equals(savedInstance.getInstanceId())) {
-                TreeUtilities.renameInstance(root, instanceId);
-            }
-            ExternalDataInstanceSource instanceSource =
-                    ExternalDataInstanceSource.buildVirtual(instanceId, root,
-                            savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
-                            key);
-            return instanceSource.toInstance();
+            return savedInstance.toInstance(instanceId);
         }
         throw new InstanceNotFoundException(key, getNamespace());
     }

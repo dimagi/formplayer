@@ -3,7 +3,10 @@ package org.commcare.formplayer.objects;
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.utils.TreeUtilities;
 
 import java.time.Instant;
 
@@ -79,6 +82,16 @@ public class SerializableDataInstance {
         this.instanceXml = instanceXml;
         this.useCaseTemplate = useCaseTemplate;
         this.key = key;
+    }
+
+    public ExternalDataInstance toInstance(String instanceId) {
+        TreeElement root = getInstanceXml();
+        if (!instanceId.equals(getInstanceId())) {
+            TreeUtilities.renameInstance(root, instanceId);
+        }
+        ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
+                        instanceId, root, getReference(), isUseCaseTemplate(), key);
+        return instanceSource.toInstance();
     }
 
 }
