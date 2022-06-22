@@ -39,7 +39,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
                         + instanceId + ". Please try opening the form again.", e);
             }
         } else if (source.getStorageReferenceId() != null) {
-            ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId());
+            ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId(), instanceId);
             return (TreeElement)instance.getRoot();
         }
         throw new RemoteInstanceException("Could not retrieve data for instance " + instanceId

@@ -90,6 +90,7 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.utils.TreeUtilities;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
@@ -416,12 +417,17 @@ public class BaseTestClass {
         when(virtualDataInstanceService.write(any(String.class), any(ExternalDataInstance.class)))
                 .thenAnswer(getVirtualInstanceMockWrite());
 
-        when(virtualDataInstanceService.read(any(String.class))).thenAnswer(invocation -> {
+        when(virtualDataInstanceService.read(any(String.class), any(String.class))).thenAnswer(invocation -> {
             String key = (String)invocation.getArguments()[0];
+            String instanceId = (String)invocation.getArguments()[1];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
+                TreeElement root = savedInstance.getInstanceXml();
+                if (!instanceId.equals(savedInstance.getInstanceId())) {
+                    TreeUtilities.renameInstance(root, instanceId);
+                }
                 ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
-                        savedInstance.getInstanceId(), savedInstance.getInstanceXml(),
+                        instanceId, root,
                         savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
                         key);
                 return instanceSource.toInstance();

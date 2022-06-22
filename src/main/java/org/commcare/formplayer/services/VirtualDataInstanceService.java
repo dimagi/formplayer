@@ -10,6 +10,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.utils.TreeUtilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -48,7 +49,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     }
 
     @Override
-    public ExternalDataInstance read(String key) {
+    public ExternalDataInstance read(String key, String instanceId) {
         String namespaceKey = namespaceKey(key);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance savedInstance = cache.get(namespaceKey, SerializableDataInstance.class);
@@ -59,9 +60,12 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
             }
         }
         if (validateInstance(savedInstance, key)) {
+            TreeElement root = savedInstance.getInstanceXml();
+            if (!instanceId.equals(savedInstance.getInstanceId())) {
+                TreeUtilities.renameInstance(root, instanceId);
+            }
             ExternalDataInstanceSource instanceSource =
-                    ExternalDataInstanceSource.buildVirtual(
-                            savedInstance.getInstanceId(), savedInstance.getInstanceXml(),
+                    ExternalDataInstanceSource.buildVirtual(instanceId, root,
                             savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
                             key);
             return instanceSource.toInstance();
