@@ -63,7 +63,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
     @Test
     public void testCaseClaimWithMultiSelectList() throws Exception {
         // default search is on so we should skip to search results directly
-        EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+        EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"0", "action 0"},
                 APP_NAME,
                 null,
                 EntityListResponse.class);
@@ -72,7 +72,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         String[] selectedValues =
                 new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0156fa3e-093e-4136-b95c-01b13dae66c7",
                         "0156fa3e-093e-4136-b95c-01b13dae66c8"};
-        String[] selections = new String[]{"1", "action 1", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+        String[] selections = new String[]{"0", "action 0", MultiSelectEntityScreen.USE_SELECTED_VALUES};
         CommandListResponseBean commandResponse = sessionNavigateWithQuery(selections,
                 APP_NAME,
                 null,
@@ -96,7 +96,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
     @Test
     public void testNoCaseClaimRequestWhenAllCasesOwned() throws Exception {
         String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"};
-        String[] selections = new String[]{"1", "action 1", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+        String[] selections = new String[]{"0", "action 0", MultiSelectEntityScreen.USE_SELECTED_VALUES};
         sessionNavigateWithQuery(selections,
                 APP_NAME,
                 null,
