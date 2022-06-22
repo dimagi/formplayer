@@ -2,6 +2,8 @@ package org.commcare.formplayer.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -16,18 +18,27 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.objects.QueryData;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.StackFrameStep;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.verification.VerificationMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -37,6 +48,9 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
     @Autowired
     CacheManager cacheManager;
+
+    @Autowired
+    CaseSearchHelper caseSearchHelper;
 
     @Override
     @BeforeEach
@@ -223,6 +237,53 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         if (formResponse.getNotification() != null && formResponse.getNotification().isError()) {
             fail(formResponse.getNotification().getMessage());
         }
+    }
+
+    @Test
+    public void testClearCachesAfterFormSubmission() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("1");  // 2nd form
+        selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
+
+        QueryData queryData = new QueryData();
+
+        NewFormResponse formResponse;
+        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response_owned.xml")) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+        assertEquals("Close", formResponse.getTitle());
+
+        ExternalDataInstanceSource source = getInstanceSourceFromSession(
+                formResponse.getSessionId(), "results");
+        assertNotNull(source, "Unable to find 'results' instance in session");
+
+        String key = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", source.getSourceUri(), source.getRequestData());
+        Cache.ValueWrapper cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNotNull(cachedValue, "Expected cache to contain results for the instance");
+
+        // submitting the form should clear the cache
+        submitForm(new HashMap<>(), formResponse.getSessionId());
+
+        cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNull(cachedValue, "Cache not cleared after form submission");
+    }
+
+    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String instanceId)
+            throws Exception {
+        SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
+        CommCareSession commCareSession = getCommCareSession(formSession.getMenuSessionId());
+        SessionFrame frame = commCareSession.getFrame();
+        for (StackFrameStep step : frame.getSteps()) {
+            if (step.hasDataInstanceSource(instanceId)) {
+                return step.getDataInstanceSource(instanceId);
+            }
+        }
+        return null;
     }
 
     /**
