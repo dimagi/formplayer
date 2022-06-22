@@ -2,6 +2,9 @@ package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
 
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.session.CommCareSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -156,8 +159,9 @@ public class MenuSessionFactory {
     }
 
     @Trace
-    public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory,
+    public MenuSession buildSession(SerializableMenuSession serializableMenuSession, FormplayerConfigEngine engine,
+            CommCareSession commCareSession) throws Exception {
+        return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
     }
 }

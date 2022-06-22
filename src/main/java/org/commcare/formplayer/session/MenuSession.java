@@ -25,6 +25,7 @@ import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
+import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
@@ -84,17 +85,14 @@ public class MenuSession implements HereFunctionHandlerListener {
     private String smartLinkRedirect;
 
     public MenuSession(SerializableMenuSession session,
-            InstallService installService,
-            RestoreFactory restoreFactory,
+            FormplayerConfigEngine engine, CommCareSession commCareSession, RestoreFactory restoreFactory,
             FormplayerRemoteInstanceFetcher instanceFetcher) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
-        this.engine = installService.configureApplication(session.getInstallReference(),
-                session.isPreview()).first;
+        this.engine = engine;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
-                SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
-                engine.getPlatform(), sandbox, instanceFetcher);
+                commCareSession, engine.getPlatform(), sandbox, instanceFetcher);
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
