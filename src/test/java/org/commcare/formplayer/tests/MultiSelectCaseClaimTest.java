@@ -10,8 +10,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Multimap;
 
+import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
@@ -27,6 +29,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.MultiValueMap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,5 +115,49 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         }
         // Verify case claim request should not fire if the selected cases were owned already
         verify(webClientMock, times(0)).post(any(), any());
+    }
+
+    @Test
+    public void testAutoLaunchAction() throws Exception {
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"1"},
+                    APP_NAME,
+                    null,
+                    EntityListResponse.class);
+            assertTrue(entityResp.isMultiSelect());
+        }
+
+        String[] selectedValues =
+                new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0156fa3e-093e-4136-b95c-01b13dae66c7",
+                        "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        String[] selections = new String[]{"1", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+        CommandListResponseBean commandResponse;
+        try (
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/multi_select_case_claim.xml");
+        ) {
+            commandResponse = sessionNavigateWithQuery(selections,
+                    APP_NAME,
+                    null,
+                    selectedValues,
+                    CommandListResponseBean.class);
+        }
+        assertEquals("Close", commandResponse.getCommands()[0].getDisplayText());
+
+        // Clear the cache to ensure that we aren't using it.
+        cacheManager.getCache("case_search").clear();
+
+        ArrayList<String> updatedSelections = new ArrayList<>();
+        updatedSelections.addAll(Arrays.asList(commandResponse.getSelections()));
+        updatedSelections.add("0");
+
+        sessionNavigateWithQuery(updatedSelections.toArray(new String[0]),
+                APP_NAME,
+                null,
+                FormEntryResponseBean.class);
+
+        // Verify query request should not happen again
+        verify(webClientMock, times(0)).postFormData(any(), any());
     }
 }

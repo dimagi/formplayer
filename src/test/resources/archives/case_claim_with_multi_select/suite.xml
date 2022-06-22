@@ -55,6 +55,43 @@
       </stack>
     </action>
   </detail>
+  <detail id="m1_case_short_autolaunch">
+    <title>
+      <text>
+        <locale id="m1.case_short.title"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <action auto_launch="count(instance('next_input')/results/value) = 0 or count(instance('next_input')/results/value[count(instance('casedb')/casedb/case[@case_id = current()/.]) = 0]) > 0">
+      <display>
+        <text>
+          <locale id="case_search.m1"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m1'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
   <detail id="m0_search_short">
     <title>
       <text>
@@ -139,7 +176,7 @@
     </command>
     <instance id="casedb" src="jr://instance/casedb"/>
     <session>
-      <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
+      <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short_autolaunch" detail-confirm="m1_case_long"/>
     </session>
   </entry>
   <menu id="m1">
@@ -147,6 +184,11 @@
       <locale id="modules.m1"/>
     </text>
     <command id="m1-f0"/>
+  </menu>
+  <menu id="m1-auto-launch">
+    <text>
+      <locale id="modules.m1"/>
+    </text>
     <command id="m1-f1"/>
   </menu>
   <remote-request>
