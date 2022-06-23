@@ -49,7 +49,8 @@
 
 trunk: master
 name: autostaging
-branches: []
+branches:
+  - gh/remove-formxml-column
 submodules:
   libs/commcare:
     trunk: formplayer
