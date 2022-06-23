@@ -5,14 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableMultimap;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
@@ -20,7 +15,6 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.CaseSearchHelper;
-import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.session.CommCareSession;
@@ -30,7 +24,6 @@ import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.verification.VerificationMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.Cache;
@@ -92,6 +85,17 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
 
+        // check that the result instance data is cached
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "case_type", "case1",
+                "case_type", "case2",
+                "case_type", "case3",
+                "include_closed", "False");
+        String key = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data);
+        Cache.ValueWrapper cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNotNull(cachedValue, "Expected cache to contain results for the instance");
+
         CommandListResponseBean commandListResponseBean;
         try (
                 MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
@@ -103,6 +107,10 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                     CommandListResponseBean.class);
         }
         assertEquals(2, commandListResponseBean.getCommands().length);
+
+        // check that the result instance data cache is cleared after the rewind
+        cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNull(cachedValue, "Expected cache to have been cleared");
     }
 
     @Test

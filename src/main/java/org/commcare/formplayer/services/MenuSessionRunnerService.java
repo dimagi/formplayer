@@ -30,6 +30,7 @@ import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
+import org.commcare.session.StackObserver;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
@@ -46,6 +47,7 @@ import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -557,18 +559,33 @@ public class MenuSessionRunnerService {
     private boolean executeAndRebuildSession(MenuSession menuSession)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         menuSession.getSessionWrapper().syncState();
-        if (menuSession.getSessionWrapper().finishExecuteAndPop(
-                menuSession.getSessionWrapper().getEvaluationContext())) {
+        StackObserver observer = new StackObserver();
+        EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
+        boolean continueSession = menuSession.getSessionWrapper().finishExecuteAndPop(ec, observer);
+        clearVolatiles(menuSession.getSessionWrapper(), observer);
+        if (continueSession) {
             String smartLinkRedirect = menuSession.getSessionWrapper().getSmartLinkRedirect();
             if (smartLinkRedirect != null) {
                 menuSession.setSmartLinkRedirect(smartLinkRedirect);
             } else {
-                menuSession.getSessionWrapper().clearVolatiles();
                 menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
             }
             return true;
         }
         return false;
+    }
+
+    private void clearVolatiles(SessionWrapper session, StackObserver observer) {
+        session.clearVolatiles();
+        for (StackFrameStep abandonedStep : observer.getRemovedSteps()) {
+            for (ExternalDataInstanceSource source : abandonedStep.getDataInstanceSources().values()) {
+                try {
+                    caseSearchHelper.clearCacheForInstanceSource(source);
+                } catch (InvalidStructureException e) {
+                    log.warn("Error clearing remote instance cache");
+                }
+            }
+        }
     }
 
     protected static TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {
