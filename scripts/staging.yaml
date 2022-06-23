@@ -51,7 +51,6 @@ trunk: master
 name: autostaging
 branches:
   - gh/remove-formxml-column
-  - revert-1163-revert-1162-sk/clear-cache-volitile-session-elements
 submodules:
   libs/commcare:
     trunk: formplayer
