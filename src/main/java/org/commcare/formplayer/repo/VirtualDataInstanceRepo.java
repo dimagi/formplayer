@@ -15,9 +15,9 @@ import java.util.Optional;
  */
 public interface VirtualDataInstanceRepo extends JpaRepository<SerializableDataInstance, String> {
 
-    Optional<SerializableDataInstance> findByKey(String key);
+    Optional<SerializableDataInstance> findByNamespacedKey(String key);
 
-    boolean existsByKey(String key);
+    boolean existsByNamespacedKey(String key);
 
     @Modifying
     @Transactional

@@ -52,7 +52,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance savedInstance = cache.get(namespaceKey, SerializableDataInstance.class);
         if (savedInstance == null) {
-            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findByKey(namespaceKey);
+            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findByNamespacedKey(namespaceKey);
             if (optionalSerializableDataInstance.isPresent()) {
                 savedInstance = optionalSerializableDataInstance.get();
             }
@@ -65,7 +65,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
 
     @Override
     public boolean contains(String key) {
-        return dataInstanceRepo.existsByKey(namespaceKey(key));
+        return dataInstanceRepo.existsByNamespacedKey(namespaceKey(key));
     }
 
 
@@ -77,7 +77,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     private void saveAndCacheInstance(SerializableDataInstance serializableDataInstance) {
         SerializableDataInstance savedDataInstance = dataInstanceRepo.save(serializableDataInstance);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
-        cache.put(savedDataInstance.getKey(), savedDataInstance);
+        cache.put(savedDataInstance.getNamespacedKey(), savedDataInstance);
     }
 
     @Nonnull
