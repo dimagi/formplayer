@@ -100,7 +100,8 @@ public class FormSubmissionController extends AbstractBaseController {
                 stepFactory.makeStep("processFormXml", this::processFormXml, PROCESSED_XML),
                 stepFactory.makeStep("updateVolatility", this::updateVolatility),
                 stepFactory.makeStep("performSync", this::performSync),
-                stepFactory.makeStep("doEndOfFormNav", this::doEndOfFormNav, PROCESSED_STACK)
+                stepFactory.makeStep("doEndOfFormNav", this::doEndOfFormNav, PROCESSED_STACK),
+                stepFactory.makeStep("clearCaches", this::clearCaches)
         );
 
         // execute steps one at a time, only proceeding to the next step if the previous step was successful
@@ -290,6 +291,26 @@ public class FormSubmissionController extends AbstractBaseController {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = menuSessionFactory.buildSession(serializedSession, engine, commCareSession);
         return runnerService.resolveFormGetNext(menuSession);
+    }
+
+    @Trace
+    @SneakyThrows
+    private SubmitResponseBean clearCaches(FormSubmissionContext context) {
+        if (context.getCommCareSession() == null) {
+            return context.success();
+        }
+        try {
+            CaseSearchHelper caseSearchHelper = runnerService.getCaseSearchHelper();
+            SessionFrame frame = context.getCommCareSession().getFrame();
+            for (StackFrameStep step : frame.getSteps()) {
+                for (ExternalDataInstanceSource source : step.getDataInstanceSources().values()) {
+                    caseSearchHelper.clearCacheForInstanceSource(source);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Exception clearing cache during form submission processing", e);
+        }
+        return context.success();
     }
 
     private SubmitResponseBean performSync(FormSubmissionContext context) throws SyncRestoreException {
