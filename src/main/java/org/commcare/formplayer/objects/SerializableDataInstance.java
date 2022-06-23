@@ -35,7 +35,7 @@ public class SerializableDataInstance {
 
     @Setter
     @Column(name = "key", updatable = false)
-    private String key;
+    private String namespacedKey;
 
     @Column(name = "instanceid", updatable = false)
     private String instanceId;
@@ -72,7 +72,7 @@ public class SerializableDataInstance {
 
     public SerializableDataInstance(String instanceId, String reference, String username,
             String domain, String appId, String asUser, TreeElement instanceXml, boolean useCaseTemplate,
-            String key) {
+            String namespacedKey) {
         this.instanceId = instanceId;
         this.reference = reference;
         this.username = username;
@@ -81,7 +81,7 @@ public class SerializableDataInstance {
         this.asUser = asUser;
         this.instanceXml = instanceXml;
         this.useCaseTemplate = useCaseTemplate;
-        this.key = key;
+        this.namespacedKey = namespacedKey;
     }
 
     /**
