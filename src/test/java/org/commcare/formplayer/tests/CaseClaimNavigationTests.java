@@ -21,6 +21,7 @@ import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
@@ -52,12 +53,15 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     @Autowired
     CaseSearchHelper caseSearchHelper;
 
+    MockRequestUtils mockRequest;
+
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
         cacheManager.getCache("case_search").clear();
+        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
     }
 
     @Override
@@ -76,7 +80,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         queryData.setExecute("case_search.m1", true);
 
         EntityListResponse entityListResponse;
-        try (VerifiedMock ignore = mockQuery("query_responses/case_claim_response.xml")) {
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
             entityListResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
@@ -90,8 +94,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         CommandListResponseBean commandListResponseBean;
         try (
-                VerifiedMock ignoredPostMock = mockPost(true);
-                VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml");
         ) {
             commandListResponseBean = sessionNavigateWithQuery(selections,
                     APP_PATH,
@@ -121,7 +125,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         verifyNoInteractions(webClientMock);  // post should only be executed once form is selected
 
         selections.add("56306779-26a2-4aa5-a952-70c9d8b21e39");
-        try(VerifiedMock ignored = mockPost(false)) {
+        try(MockRequestUtils.VerifiedMock ignored = mockRequest.mockPost(false)) {
             sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
@@ -138,7 +142,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         QueryData queryData = new QueryData();
 
         EntityListResponse entityListResponse;
-        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response_owned.xml")) {
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response_owned.xml")) {
             entityListResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
@@ -168,7 +172,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         QueryData queryData = new QueryData();
 
         EntityListResponse entityListResponse;
-        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response.xml")) {
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
             entityListResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
@@ -181,8 +185,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
         NewFormResponse formResponse;
         try (
-                VerifiedMock ignoredPostMock = mockPost(true);
-                VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml");
         ) {
             formResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
@@ -213,7 +217,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         QueryData queryData = new QueryData();
 
         EntityListResponse entityListResponse;
-        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response.xml")) {
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
             entityListResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
@@ -226,8 +230,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
         NewFormResponse formResponse;
         try (
-                VerifiedMock ignoredPostMock = mockPost(true);
-                VerifiedMock ignoredRestoreMock = mockRestore("restores/caseclaim3.xml");
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml");
         ) {
             formResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
@@ -249,7 +253,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         QueryData queryData = new QueryData();
 
         NewFormResponse formResponse;
-        try (VerifiedMock ignored = mockQuery("query_responses/case_claim_response_owned.xml")) {
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response_owned.xml")) {
             formResponse = sessionNavigateWithQuery(selections,
                     APP_PATH,
                     queryData,
@@ -285,49 +289,4 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         }
         return null;
     }
-
-    /**
-     * Mock the post request and verify it happened
-     */
-    private VerifiedMock mockPost(boolean returnValue) {
-        Mockito.reset(webClientMock);
-        when(webClientMock.caseClaimPost(anyString(), any())).thenReturn(returnValue);
-
-        return () -> {
-            VerificationMode once = Mockito.times(1);
-            verify(webClientMock, once).caseClaimPost(anyString(), any());
-        };
-    }
-
-    /**
-     * Mock the restore and verify it happened
-     */
-    private VerifiedMock mockRestore(String restoreFile) {
-        Mockito.reset(restoreFactoryMock);
-        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(restoreFile);
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
-
-        return () -> {
-            VerificationMode once = Mockito.times(1);
-            verify(restoreFactoryMock, once).getRestoreXml(anyBoolean());
-        };
-    }
-
-    /**
-     * Mock the query and verify it happened
-     */
-    private VerifiedMock mockQuery(String queryFile) {
-        Mockito.reset(webClientMock);
-        when(webClientMock.postFormData(anyString(), any(Multimap.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), queryFile));
-
-        return () -> verify(
-                webClientMock, Mockito.times(1)).postFormData(
-                        anyString(), any(Multimap.class));
-    }
-
-    /**
-     * Tagging class to make it clearer what is being returned by mock methods.
-     */
-    private interface VerifiedMock extends AutoCloseable { }
 }
