@@ -582,7 +582,7 @@ public class MenuSessionRunnerService {
                 try {
                     caseSearchHelper.clearCacheForInstanceSource(source);
                 } catch (InvalidStructureException e) {
-                    log.warn("Error clearing virtual instance cache");
+                    log.warn("Error clearing remote instance cache");
                 }
             }
         }
