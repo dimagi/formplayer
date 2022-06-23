@@ -47,6 +47,7 @@ import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.objects.QueryData;
@@ -422,7 +423,7 @@ public class BaseTestClass {
                 SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
                 return savedInstance.toInstance(instanceId, key);
             }
-            return null;
+            throw new InstanceNotFoundException(key, "test-namespace");
         });
 
         when(virtualDataInstanceService.contains(any(String.class))).thenAnswer(invocation -> {
@@ -448,7 +449,7 @@ public class BaseTestClass {
                     dataInstance.getInstanceId(), dataInstance.getReference(),
                     "username", "domain", "appid", "asuser",
                     (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate(),
-                    key);
+                    "test-namespace:" + key);
             serializableDataInstanceMap.put(key, serializableDataInstance);
             return key;
         };
