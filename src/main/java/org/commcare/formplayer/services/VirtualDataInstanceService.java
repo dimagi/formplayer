@@ -58,7 +58,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
             }
         }
         if (validateInstance(savedInstance, key)) {
-            return savedInstance.toInstance(instanceId);
+            return savedInstance.toInstance(instanceId, key);
         }
         throw new InstanceNotFoundException(key, getNamespace());
     }

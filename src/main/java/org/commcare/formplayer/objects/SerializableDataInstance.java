@@ -84,7 +84,12 @@ public class SerializableDataInstance {
         this.key = key;
     }
 
-    public ExternalDataInstance toInstance(String instanceId) {
+    /**
+     * @param instanceId The instance ID that is being requested.
+     * @param key The storage key without the namespace
+     * @return
+     */
+    public ExternalDataInstance toInstance(String instanceId, String key) {
         TreeElement root = getInstanceXml();
         if (!instanceId.equals(getInstanceId())) {
             TreeUtilities.renameInstance(root, instanceId);

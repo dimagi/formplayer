@@ -88,9 +88,7 @@ import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.instance.utils.TreeUtilities;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
@@ -422,7 +420,7 @@ public class BaseTestClass {
             String instanceId = (String)invocation.getArguments()[1];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
-                return savedInstance.toInstance(instanceId);
+                return savedInstance.toInstance(instanceId, key);
             }
             return null;
         });
