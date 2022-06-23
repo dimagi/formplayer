@@ -6,7 +6,7 @@
 				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB" uiVersion="1" version="4" name="Close">
 					<welcome_message/>
 					<close_confirmation/>
-				<case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""><update><close_confirmation/><close_reason/></update><close/></case><orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
+				<orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
 			</instance><instance id="commcaresession" src="jr://instance/session"/>
 			<bind nodeset="/data/welcome_message"/>
 			<bind nodeset="/data/close_confirmation"/>
@@ -26,7 +26,7 @@
 					</text>
 				</translation>
 			</itext>
-		<bind calculate="instance('commcaresession')/session/data/case_id" nodeset="/data/case/@case_id"/><bind calculate="/data/close_confirmation" nodeset="/data/case/update/close_confirmation" relevant="count(/data/close_confirmation) &gt; 0"/><bind nodeset="/data/case/close" relevant="/data/close_confirmation = 'yes'"/></model>
+		<bind calculate="/data/close_confirmation" nodeset="/data/case/update/close_confirmation" relevant="count(/data/close_confirmation) &gt; 0"/><bind nodeset="/data/case/close" relevant="/data/close_confirmation = 'yes'"/></model>
 	</h:head>
 	<h:body>
 		<trigger ref="/data/welcome_message" appearance="minimal">
