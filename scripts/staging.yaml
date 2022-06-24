@@ -51,12 +51,9 @@ trunk: master
 name: autostaging
 branches:
   - gh/remove-formxml-column
-  - sk/multi-select-auto-launch
-  - sk/clear-cache-volitile-session-elements
+  - virtualInstanceReferences
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - sk/next-input-multi-select
-      - sk/stack-observer
-      - do/query-init-change
+      - virtualInstanceReferences

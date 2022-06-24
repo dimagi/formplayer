@@ -9,7 +9,7 @@ import org.commcare.util.screen.QueryScreen;
 public class FormplayerQueryScreen extends QueryScreen {
 
     public FormplayerQueryScreen(VirtualDataInstanceStorage instanceStorage) {
-        super(null, null, null, instanceStorage);
+        super(null, null, null, instanceStorage, null);
     }
 
 }
