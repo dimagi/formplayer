@@ -6,7 +6,8 @@
 				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/DB9FFF98-960E-433F-821C-DF2D482F410C" uiVersion="1" version="33" name="1st Followup Form">
 					<case_name__case_name/>
 				<orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><orx:drift/></orx:meta></data>
-			</instance><instance id="secondcase" src="jr://instance/remote"/><instance id="registry" src="jr://instance/remote"/>
+			</instance>
+			<instance id="registry" src="jr://instance/remote"/>
 			<instance src="jr://instance/casedb" id="casedb"/>
 			<instance src="jr://instance/session" id="commcaresession"/>
 			<bind nodeset="/data/case_name__case_name"/>
