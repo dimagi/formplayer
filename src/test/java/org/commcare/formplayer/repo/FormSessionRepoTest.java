@@ -244,7 +244,6 @@ public class FormSessionRepoTest {
                 ImmutableMap.of("count", functionHandlers)
         );
         session.setInstanceXml("xml");
-        session.setFormXml("form xml");
         return session;
     }
 }
