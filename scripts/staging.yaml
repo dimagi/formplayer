@@ -59,3 +59,4 @@ submodules:
     branches:
       - sk/next-input-multi-select
       - sk/stack-observer
+      - do/query-init-change
