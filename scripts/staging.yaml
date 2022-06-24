@@ -51,7 +51,9 @@ trunk: master
 name: autostaging
 branches:
   - gh/remove-formxml-column
+  - virtualInstanceReferences
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches: []
+    branches:
+      - virtualInstanceReferences
