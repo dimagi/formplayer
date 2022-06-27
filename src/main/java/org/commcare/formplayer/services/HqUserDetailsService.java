@@ -8,6 +8,7 @@ import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.exceptions.UserDetailsException;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
+import org.commcare.formplayer.web.client.WebClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -19,6 +20,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
 
 @Service
 public class HqUserDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
@@ -32,7 +35,7 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
     private ObjectMapper objectMapper;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient webClient;
 
     public HqUserDetailsBean getUserDetails(String domain, String sessionKey) {
         HttpHeaders headers = new HttpHeaders();
@@ -43,10 +46,10 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
         } catch (Exception e) {
             throw new UserDetailsException(e);
         }
-        HttpEntity<String> request = new HttpEntity<>(data, headers);
-
         try {
-            HqUserDetailsBean userDetails = restTemplate.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
+
+            HqUserDetailsBean userDetails = webClient.postRaw(
+                    getSessionDetailsUrl(), headers, data, HqUserDetailsBean.class).getBody();
             userDetails.setDomain(domain);
             return userDetails;
         } catch(HttpClientErrorException.NotFound nfe) {
@@ -54,8 +57,8 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
         }
     }
 
-    private String getSessionDetailsUrl() {
-        return host + Constants.SESSION_DETAILS_VIEW;
+    private URI getSessionDetailsUrl() {
+        return URI.create(host + Constants.SESSION_DETAILS_VIEW);
     }
 
     private String getHmac(String data) throws Exception {

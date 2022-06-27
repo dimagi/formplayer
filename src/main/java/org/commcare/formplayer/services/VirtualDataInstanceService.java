@@ -8,7 +8,6 @@ import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -48,30 +47,25 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     }
 
     @Override
-    public ExternalDataInstance read(String key) {
+    public ExternalDataInstance read(String key, String instanceId) {
         String namespaceKey = namespaceKey(key);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance savedInstance = cache.get(namespaceKey, SerializableDataInstance.class);
         if (savedInstance == null) {
-            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findByKey(namespaceKey);
+            Optional<SerializableDataInstance> optionalSerializableDataInstance = dataInstanceRepo.findByNamespacedKey(namespaceKey);
             if (optionalSerializableDataInstance.isPresent()) {
                 savedInstance = optionalSerializableDataInstance.get();
             }
         }
         if (validateInstance(savedInstance, key)) {
-            ExternalDataInstanceSource instanceSource =
-                    ExternalDataInstanceSource.buildVirtual(
-                            savedInstance.getInstanceId(), savedInstance.getInstanceXml(),
-                            savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
-                            key);
-            return instanceSource.toInstance();
+            return savedInstance.toInstance(instanceId, key);
         }
         throw new InstanceNotFoundException(key, getNamespace());
     }
 
     @Override
     public boolean contains(String key) {
-        return dataInstanceRepo.existsByKey(namespaceKey(key));
+        return dataInstanceRepo.existsByNamespacedKey(namespaceKey(key));
     }
 
 
@@ -83,7 +77,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     private void saveAndCacheInstance(SerializableDataInstance serializableDataInstance) {
         SerializableDataInstance savedDataInstance = dataInstanceRepo.save(serializableDataInstance);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
-        cache.put(savedDataInstance.getKey(), savedDataInstance);
+        cache.put(savedDataInstance.getNamespacedKey(), savedDataInstance);
     }
 
     @Nonnull

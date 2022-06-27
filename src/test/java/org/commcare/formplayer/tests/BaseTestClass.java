@@ -47,6 +47,7 @@ import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.objects.QueryData;
@@ -88,7 +89,6 @@ import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
@@ -416,17 +416,14 @@ public class BaseTestClass {
         when(virtualDataInstanceService.write(any(String.class), any(ExternalDataInstance.class)))
                 .thenAnswer(getVirtualInstanceMockWrite());
 
-        when(virtualDataInstanceService.read(any(String.class))).thenAnswer(invocation -> {
+        when(virtualDataInstanceService.read(any(String.class), any(String.class))).thenAnswer(invocation -> {
             String key = (String)invocation.getArguments()[0];
+            String instanceId = (String)invocation.getArguments()[1];
             if (serializableDataInstanceMap.containsKey(key)) {
                 SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
-                ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
-                        savedInstance.getInstanceId(), savedInstance.getInstanceXml(),
-                        savedInstance.getReference(), savedInstance.isUseCaseTemplate(),
-                        key);
-                return instanceSource.toInstance();
+                return savedInstance.toInstance(instanceId, key);
             }
-            return null;
+            throw new InstanceNotFoundException(key, "test-namespace");
         });
 
         when(virtualDataInstanceService.contains(any(String.class))).thenAnswer(invocation -> {
@@ -452,7 +449,7 @@ public class BaseTestClass {
                     dataInstance.getInstanceId(), dataInstance.getReference(),
                     "username", "domain", "appid", "asuser",
                     (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate(),
-                    key);
+                    "test-namespace:" + key);
             serializableDataInstanceMap.put(key, serializableDataInstance);
             return key;
         };
@@ -546,7 +543,7 @@ public class BaseTestClass {
         return sandbox;
     }
 
-    public class RestoreFactoryAnswer implements Answer {
+    public static class RestoreFactoryAnswer implements Answer {
         private String mRestoreFile;
 
         public RestoreFactoryAnswer(String restoreFile) {

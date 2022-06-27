@@ -436,7 +436,6 @@ public class RestoreFactory {
         ensureValidParameters();
         URI url = getRestoreUrl(skipFixtures);
         recordSentryData(url.toString());
-        log.info("Restoring from URL " + url);
         InputStream restoreStream = getRestoreXmlHelper(url);
         setLastSyncTime();
         return restoreStream;
@@ -535,7 +534,6 @@ public class RestoreFactory {
     private InputStream getRestoreXmlHelper(URI restoreUrl) {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
-        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl.toString());
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {

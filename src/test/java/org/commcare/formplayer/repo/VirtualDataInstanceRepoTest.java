@@ -60,17 +60,17 @@ public class VirtualDataInstanceRepoTest {
         SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
                 getSerializableDataInstance(new String[]{"case1", "case3"}, UUID.randomUUID().toString()));
         Assertions.assertNotNull(savedInstance.getId());
-        Assertions.assertNotNull(savedInstance.getKey());
+        Assertions.assertNotNull(savedInstance.getNamespacedKey());
 
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         SerializableDataInstance loadedById = virtualDataInstanceRepo.getById(savedInstance.getId());
         Assertions.assertNotNull(loadedById);
 
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
-        Assertions.assertTrue(virtualDataInstanceRepo.existsByKey(savedInstance.getKey()));
+        Assertions.assertTrue(virtualDataInstanceRepo.existsByNamespacedKey(savedInstance.getNamespacedKey()));
 
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
-        Optional<SerializableDataInstance> loadedByKey = virtualDataInstanceRepo.findByKey(savedInstance.getKey());
+        Optional<SerializableDataInstance> loadedByKey = virtualDataInstanceRepo.findByNamespacedKey(savedInstance.getNamespacedKey());
         Assertions.assertTrue(loadedByKey.isPresent());
         Assertions.assertNotNull(loadedByKey.get().getDateCreated());
         assertInstanceXml(savedInstance, loadedByKey.get());
@@ -91,10 +91,10 @@ public class VirtualDataInstanceRepoTest {
         String key = "123";
         SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
                 getSerializableDataInstance(new String[]{"case1", "case3"}, key));
-        Assertions.assertEquals(key, savedInstance.getKey());
+        Assertions.assertEquals(key, savedInstance.getNamespacedKey());
 
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
-        Optional<SerializableDataInstance> loaded = virtualDataInstanceRepo.findByKey(key);
+        Optional<SerializableDataInstance> loaded = virtualDataInstanceRepo.findByNamespacedKey(key);
         Assertions.assertTrue(loaded.isPresent());
     }
 
@@ -106,7 +106,7 @@ public class VirtualDataInstanceRepoTest {
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
             virtualDataInstanceRepo.saveAndFlush(
-                    getSerializableDataInstance(new String[]{"case1", "case3"}, savedInstance.getKey()));
+                    getSerializableDataInstance(new String[]{"case1", "case3"}, savedInstance.getNamespacedKey()));
         });
     }
 
@@ -149,7 +149,7 @@ public class VirtualDataInstanceRepoTest {
 
     private SerializableDataInstance getSerializableDataInstance(String[] selections, String key) {
         ExternalDataInstance selectedEntitiesInstance = buildSelectedEntitiesInstance(selections);
-        SerializableDataInstance instance = new SerializableDataInstance(
+        return new SerializableDataInstance(
                 selectedEntitiesInstance.getInstanceId(),
                 JR_SELECTED_ENTITIES_REFERENCE,
                 "username",
@@ -159,10 +159,6 @@ public class VirtualDataInstanceRepoTest {
                 (TreeElement)selectedEntitiesInstance.getRoot(),
                 selectedEntitiesInstance.useCaseTemplate(),
                 key);
-        if (key != null) {
-            instance.setKey(key);
-        }
-        return instance;
     }
 
     public static ExternalDataInstance buildSelectedEntitiesInstance(String[] selections) {
