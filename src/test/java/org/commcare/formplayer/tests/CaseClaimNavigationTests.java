@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.google.common.collect.ImmutableMultimap;
 
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
@@ -270,7 +271,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         assertEquals("Close", formResponse.getTitle());
 
         ExternalDataInstanceSource source = getInstanceSourceFromSession(
-                formResponse.getSessionId(), "results");
+                formResponse.getSessionId(), VirtualInstances.getRemoteReference("results"));
         assertNotNull(source, "Unable to find 'results' instance in session");
 
         String key = ReflectionTestUtils.invokeMethod(
@@ -285,14 +286,14 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         assertNull(cachedValue, "Cache not cleared after form submission");
     }
 
-    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String instanceId)
+    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String reference)
             throws Exception {
         SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
         CommCareSession commCareSession = getCommCareSession(formSession.getMenuSessionId());
         SessionFrame frame = commCareSession.getFrame();
         for (StackFrameStep step : frame.getSteps()) {
-            if (step.hasDataInstanceSource(instanceId)) {
-                return step.getDataInstanceSource(instanceId);
+            if (step.hasDataInstanceSource(reference)) {
+                return step.getDataInstanceSource(reference);
             }
         }
         return null;
