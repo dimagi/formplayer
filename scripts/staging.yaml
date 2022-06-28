@@ -56,4 +56,5 @@ submodules:
   libs/commcare:
     trunk: formplayer
     branches:
+      - do/query-init-change
       - virtualInstanceReferences
