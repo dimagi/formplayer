@@ -242,6 +242,7 @@
       <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+<<<<<<< HEAD
   <entry>
     <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
     <command id="m2-f0">
@@ -329,6 +330,8 @@
       <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+=======
+>>>>>>> de67b993... rename ccz to avoid conflict
   <menu id="root">
     <text>
       <locale id="modules.m0"/>
@@ -342,6 +345,7 @@
     <command id="m1-f0"/>
     <command id="m1-f1"/>
   </menu>
+<<<<<<< HEAD
   <menu id="m2">
     <text>
       <locale id="modules.m2"/>
@@ -351,6 +355,8 @@
     <command id="m2-f2"/>
     <command id="m2-f3"/>
   </menu>
+=======
+>>>>>>> de67b993... rename ccz to avoid conflict
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
       <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
@@ -366,20 +372,32 @@
     <instance id="commcaresession" src="jr://instance/session"/>
     <instance id="district" src="jr://fixture/item-list:district"/>
     <instance id="state" src="jr://fixture/item-list:state"/>
+<<<<<<< HEAD
+=======
+    <instance id="my-search-input" src="jr://instance/search-input/results"/>
+>>>>>>> de67b993... rename ccz to avoid conflict
     <session>
       <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
         <data ref="'case1'" key="case_type"/>
         <data ref="'case2'" key="case_type"/>
         <data ref="'case3'" key="case_type"/>
         <data ref="'False'" key="include_closed"/>
+<<<<<<< HEAD
         <prompt key="name" default="instance('commcaresession')/session/context/deviceid">
+=======
+        <prompt key="name" default="instance('commcaresession')/session/context/deviceid" required="true()">
+>>>>>>> de67b993... rename ccz to avoid conflict
           <display>
             <text>
               <locale id="search_property.m1.name"/>
             </text>
           </display>
         </prompt>
+<<<<<<< HEAD
         <prompt key="state" input="select1" default="&quot;ka&quot;" allow_blank_value="true">
+=======
+        <prompt key="state" input="select1" default="&quot;ka&quot;" allow_blank_value="true" required="true()">
+>>>>>>> de67b993... rename ccz to avoid conflict
           <display>
             <text>
               <locale id="search_property.m1.state"/>
@@ -408,6 +426,21 @@
             <sort ref="id"/>
           </itemset>
         </prompt>
+<<<<<<< HEAD
+=======
+        <prompt key="age">
+          <validation test="count(.) = 1 and int(instance('my-search-input')/input/field[@name='age'])>18">
+            <text>
+              <locale id="search_property.m1.age.validation"/>
+            </text>
+          </validation>
+          <display>
+            <text>
+              <locale id="search_property.m1.age"/>
+            </text>
+          </display>
+        </prompt>
+>>>>>>> de67b993... rename ccz to avoid conflict
       </query>
       <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
     </session>
