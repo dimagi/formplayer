@@ -517,9 +517,7 @@ public class MenuSessionRunnerService {
             Hashtable<String, String> queryDictionary,
             boolean skipDefaultPromptValues, boolean skipCache) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
-        if (queryDictionary != null) {
-            screen.answerPrompts(queryDictionary);
-        }
+        answerQueryPrompts(screen, queryDictionary);
 
         try {
             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
