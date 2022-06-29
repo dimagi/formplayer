@@ -119,7 +119,8 @@ public class MenuSessionFactory {
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),
                                 uri.toURL(),
-                                dataBuilder.build()
+                                dataBuilder.build(),
+                                false
                             );
                             queryScreen.updateSession(searchDataInstance);
                             screen = menuSession.getNextScreen(false, false);

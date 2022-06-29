@@ -41,7 +41,7 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
+    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source, boolean skipCache)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
         Multimap<String, String> requestData = source.getRequestData();
@@ -49,7 +49,12 @@ public class CaseSearchHelper {
 
         Cache cache = cacheManager.getCache("case_search");
         String cacheKey = getCacheKey(source.getSourceUri(), requestData);
-        TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
+        TreeElement cachedRoot = null;
+        if (skipCache) {
+            log.info("Skipping cache check for case search results");
+        } else {
+            cachedRoot = cache.get(cacheKey, TreeElement.class);
+        }
         if (cachedRoot != null) {
             log.info(String.format("Using cached case search results for %s", url));
             // Deep copy to avoid concurrency issues
@@ -72,13 +77,14 @@ public class CaseSearchHelper {
         throw new IOException("No response from server for case search query");
     }
 
-    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url, Multimap<String, String> requestData)
+    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url,
+            Multimap<String, String> requestData, boolean skipCache)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
         ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemote(
                 instanceId, null, useCaseTemplate, url.toString(), requestData);
 
-        TreeElement root = getExternalRoot(instanceId, source);
+        TreeElement root = getExternalRoot(instanceId, source, skipCache);
         source.init(root);
 
         return source.toInstance();
