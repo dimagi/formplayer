@@ -3,7 +3,6 @@ package org.commcare.formplayer.session;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.core.process.CommCareInstanceInitializer;
-import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
@@ -73,7 +72,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     protected InstanceRoot setupFixtureData(ExternalDataInstance instance) {
         AbstractTreeElement indexedFixture = FormplayerIndexedFixtureInstanceTreeElement.get(
                 mSandbox,
-                VirtualInstances.getReferenceId(instance.getReference()),
+                getRefId(instance.getReference()),
                 instance.getBase());
 
         if (indexedFixture != null) {
