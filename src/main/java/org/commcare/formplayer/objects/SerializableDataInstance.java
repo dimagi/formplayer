@@ -92,7 +92,7 @@ public class SerializableDataInstance {
     public ExternalDataInstance toInstance(String instanceId, String key) {
         TreeElement root = getInstanceXml();
         if (!instanceId.equals(getInstanceId())) {
-            root = TreeUtilities.renameInstance(root, instanceId);
+            TreeUtilities.renameInstance(root, instanceId);
         }
         ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
                         instanceId, root, getReference(), isUseCaseTemplate(), key);
