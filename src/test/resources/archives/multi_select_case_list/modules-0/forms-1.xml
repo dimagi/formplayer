@@ -8,7 +8,7 @@
         </data>
       </instance>
       <instance id="commcaresession" src="jr://instance/session"/>
-      <instance id="selected_cases" src="jr://instance/selected-entities/selected_cases"/>
+      <instance id="selected_cases" src="jr://instance/selected-entities"/>
       <bind nodeset="/data/default_label"/>
       <itext>
         <translation lang="en" default="">
