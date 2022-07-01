@@ -57,4 +57,4 @@ submodules:
     branches:
       - do/query-init-change
       - sk/get-instance-by-id
-      - rc/add-xpath-func-to-ASTNodeFunctionCall-master
+      - rc/add-xpath-func-to-ASTNodeFunctionCall
