@@ -392,8 +392,10 @@ public class MenuSessionRunnerService {
                         needsFullEntityScreen, inputValidated, nextInput, isDetailScreen);
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
+                boolean skipCache = !(replay || isDetailScreen);
                 sessionAdvanced = handleQueryScreen(
-                        (FormplayerQueryScreen)nextScreen, menuSession, queryData, replay, forceManualAction
+                        (FormplayerQueryScreen)nextScreen, menuSession, queryData,
+                        replay, forceManualAction, skipCache
                 );
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
@@ -426,7 +428,7 @@ public class MenuSessionRunnerService {
      */
     private boolean handleQueryScreen(FormplayerQueryScreen queryScreen, MenuSession menuSession,
             QueryData queryData,
-            boolean replay, boolean forceManualAction)
+            boolean replay, boolean forceManualAction, boolean skipCache)
             throws CommCareSessionException {
         queryScreen.refreshItemSetChoices();
         String queryKey = menuSession.getSessionWrapper().getCommand();
@@ -443,7 +445,8 @@ public class MenuSessionRunnerService {
             doQuery(
                     queryScreen,
                     queryData == null ? null : queryData.getInputs(queryKey),
-                    queryScreen.doDefaultSearch() && !forceManualSearch
+                    queryScreen.doDefaultSearch() && !forceManualSearch,
+                    skipCache
             );
             return true;
         } else if (queryData != null) {
@@ -512,7 +515,7 @@ public class MenuSessionRunnerService {
     @Trace
     private void doQuery(FormplayerQueryScreen screen,
             Hashtable<String, String> queryDictionary,
-            boolean skipDefaultPromptValues) throws CommCareSessionException {
+            boolean skipDefaultPromptValues, boolean skipCache) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
@@ -523,7 +526,8 @@ public class MenuSessionRunnerService {
                     screen.getQueryDatum().getDataId(),
                     screen.getQueryDatum().useCaseTemplate(),
                     screen.getBaseUrl(),
-                    screen.getRequestData(skipDefaultPromptValues));
+                    screen.getRequestData(skipDefaultPromptValues),
+                    skipCache);
             screen.updateSession(searchDataInstance);
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
