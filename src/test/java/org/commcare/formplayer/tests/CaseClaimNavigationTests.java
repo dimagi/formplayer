@@ -9,7 +9,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.google.common.collect.ImmutableMultimap;
 
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.QuestionBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.objects.QueryData;
@@ -33,6 +35,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -270,7 +273,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         assertEquals("Close", formResponse.getTitle());
 
         ExternalDataInstanceSource source = getInstanceSourceFromSession(
-                formResponse.getSessionId(), "results");
+                formResponse.getSessionId(), VirtualInstances.getRemoteReference("results"));
         assertNotNull(source, "Unable to find 'results' instance in session");
 
         String key = ReflectionTestUtils.invokeMethod(
@@ -285,14 +288,36 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         assertNull(cachedValue, "Cache not cleared after form submission");
     }
 
-    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String instanceId)
+    @Test
+    public void testSearchInputInstanceInForm() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("3");  // m2-f3
+        selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
+
+        QueryData queryData = new QueryData();
+        queryData.setInputs("m2-f3", new Hashtable<String, String>() {{ put("name", "bob"); }});
+
+        NewFormResponse formResponse;
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response_owned.xml")) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+        assertEquals("Close again", formResponse.getTitle());
+        QuestionBean welcome = formResponse.getTree()[0];
+        assertEquals("bob", welcome.getAnswer());
+    }
+
+    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String reference)
             throws Exception {
         SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
         CommCareSession commCareSession = getCommCareSession(formSession.getMenuSessionId());
         SessionFrame frame = commCareSession.getFrame();
         for (StackFrameStep step : frame.getSteps()) {
-            if (step.hasDataInstanceSource(instanceId)) {
-                return step.getDataInstanceSource(instanceId);
+            if (step.hasDataInstanceSource(reference)) {
+                return step.getDataInstanceSource(reference);
             }
         }
         return null;
