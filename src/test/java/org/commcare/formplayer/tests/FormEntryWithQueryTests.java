@@ -14,8 +14,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMultimap;
 
-import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.QuestionBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
@@ -23,7 +23,6 @@ import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.session.FormSession;
-import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -35,6 +34,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 @WebMvcTest
@@ -208,6 +208,30 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
         assertEquals(formResponse.getTitle(), "Followup Form");
         verify(webClientMock, times(3)).postFormData(any(), any());
+    }
+
+    @Test
+    public void testSearchInputInstanceInForm() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("3");  // m3
+        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        selections.add("0");  // m3-f0
+
+        QueryData queryData = new QueryData();
+        queryData.setInputs("m3", new Hashtable<String, String>() {{ put("name", "bob"); }});
+
+        when(webClientMock.postFormData(any(), any())).thenReturn(
+                FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
+        NewFormResponse formResponse = sessionNavigateWithQuery(selections,
+                    "caseclaimquery",
+                    queryData,
+                    NewFormResponse.class);
+
+        assertEquals("test-search-input", formResponse.getTitle());
+        QuestionBean nameLegacyInstanceRef = formResponse.getTree()[0];
+        QuestionBean nameNewInstanceRef = formResponse.getTree()[1];
+        assertEquals("bob", nameLegacyInstanceRef.getAnswer());
+        assertEquals("bob", nameNewInstanceRef.getAnswer());
     }
 
     @Override

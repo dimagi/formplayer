@@ -50,11 +50,11 @@
 trunk: master
 name: autostaging
 branches:
-  - gh/remove-formxml-column
-  - virtualInstanceReferences
+  - sk/jit-virtual-instances
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - do/query-init-change
-      - virtualInstanceReferences
+      - sk/get-instance-by-id
+      - rc/add-xpath-func-to-ASTNodeFunctionCall

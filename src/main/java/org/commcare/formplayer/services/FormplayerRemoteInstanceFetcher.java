@@ -30,7 +30,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
             throws RemoteInstanceException {
         if (source.getSourceUri() != null) {
             try {
-                return caseSearchHelper.getExternalRoot(instanceId, (source));
+                return caseSearchHelper.getExternalRoot(instanceId, (source), false);
             } catch (XmlPullParserException | UnfullfilledRequirementsException | InvalidStructureException e) {
                 throw new RemoteInstanceException("Invalid data retrieved from remote instance " +
                         instanceId + ". If the error persists please contact your help desk.", e);
