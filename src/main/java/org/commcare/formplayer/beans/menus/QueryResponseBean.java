@@ -38,6 +38,7 @@ public class QueryResponseBean extends MenuBean {
         OrderedHashtable<String, QueryPrompt> queryPromptMap = queryScreen.getUserInputDisplays();
         Hashtable<String, String> currentAnswers = queryScreen.getCurrentAnswers();
         Hashtable<String, String> errors = queryScreen.getErrors();
+        Hashtable<String, Boolean> requiredPrompts = queryScreen.getRequiredPrompts();
         displays = new DisplayElement[queryPromptMap.size()];
         int count = 0;
         for (String key : Collections.list(queryPromptMap.keys())) {
@@ -78,7 +79,8 @@ public class QueryResponseBean extends MenuBean {
                     currentAnswer,
                     choiceLabels,
                     queryPromptItem.isAllowBlankValue(),
-                    queryPromptItem.getRequired(),
+                    requiredPrompts.get(key),
+                    queryPromptItem.getRequiredMsg(),
                     errors.get(key)
                     );
             count++;
