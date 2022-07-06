@@ -182,7 +182,7 @@ public class CaseClaimTests extends BaseTestClass {
                 "caseclaim",
                 queryData,
                 QueryResponseBean.class);
-        assert queryResponseBean.getDisplays().length == 3;
+        assert queryResponseBean.getDisplays().length == 4;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();

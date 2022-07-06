@@ -308,10 +308,14 @@
           </itemset>
         </prompt>
         <prompt key="age">
-          <validation xpath="count(instance('my-search-input')/input/field[@name='age']) = 1 and int(instance('my-search-input')/input/field[@name='age'])>18" message="age should be greater than 18"/>
+          <validation test="count(.) = 1 and int(instance('my-search-input')/input/field[@name='age'])>18">
+            <text>
+              <locale id="search_property.m1.age.validation"/>
+            </text>
+          </validation>
           <display>
             <text>
-              <locale id="search_property.m1.name"/>
+              <locale id="search_property.m1.age"/>
             </text>
           </display>
         </prompt>

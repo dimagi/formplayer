@@ -37,3 +37,5 @@ search_property.m1.name=Name
 search_property.m1.state=State
 search_property.m1.district=District
 search_property.m1.hint=This is a hint
+search_property.m1.age=Age
+search_property.m1.age.validation=age should be greater than 18
