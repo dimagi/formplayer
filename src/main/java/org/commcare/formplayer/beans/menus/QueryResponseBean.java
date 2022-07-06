@@ -1,11 +1,9 @@
 package org.commcare.formplayer.beans.menus;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
+import org.commcare.suite.model.QueryPromptCondition;
 import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.utils.ItemSetUtils;
 import org.javarosa.core.util.OrderedHashtable;
@@ -70,6 +68,13 @@ public class QueryResponseBean extends MenuBean {
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
+            String requiredMessage = null;
+            QueryPromptCondition required = queryPromptItem.getRequired();
+            if (required != null && required.getMessage() !=null) {
+                requiredMessage = queryPromptItem.getRequired().getMessage().evaluate(
+                        session.getEvaluationContext());
+            }
+
             displays[count] = new DisplayElement(queryPromptItem.getDisplay(),
                     session.getEvaluationContext(),
                     key,
@@ -80,7 +85,7 @@ public class QueryResponseBean extends MenuBean {
                     choiceLabels,
                     queryPromptItem.isAllowBlankValue(),
                     requiredPrompts.get(key),
-                    queryPromptItem.getRequiredMsg(),
+                    requiredMessage,
                     errors.get(key)
                     );
             count++;
