@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Hashtable;
 
 /**
@@ -323,7 +324,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
 
-        inputs.put("age","12");
+        inputs.put("age", "12");
         queryResponseBean = sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
@@ -331,7 +332,7 @@ public class CaseClaimTests extends BaseTestClass {
                 QueryResponseBean.class);
         assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
 
-        inputs.put("age","21");
+        inputs.put("age", "21");
         queryResponseBean = sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
