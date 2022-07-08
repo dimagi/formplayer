@@ -3,6 +3,7 @@ package org.commcare.formplayer.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -21,8 +22,10 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
@@ -72,8 +75,10 @@ public class MenuSessionServiceTest {
     }
 
     @Test
-    public void testCacheExists() {
-        assertNotNull(cacheManager.getCache("menu_session"));
+    public void testMenuSessionCacheExists() {
+        Cache cache = cacheManager.getCache("menu_session");
+        assertNotNull(cache);
+        assertTrue(cache instanceof CaffeineCache);
     }
 
     @Test

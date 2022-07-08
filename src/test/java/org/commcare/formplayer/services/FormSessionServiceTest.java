@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import static java.util.Optional.ofNullable;
 
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
@@ -19,16 +21,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
-import org.springframework.context.annotation.Bean;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;
@@ -38,6 +42,8 @@ import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
+@EnableConfigurationProperties(value = CacheConfiguration.class)
+@TestPropertySource("classpath:application.properties")
 public class FormSessionServiceTest {
 
     @Autowired
@@ -67,6 +73,13 @@ public class FormSessionServiceTest {
     @AfterEach
     public void cleanup() {
         cacheManager.getCache("form_session").clear();
+    }
+
+    @Test
+    public void testFormSessionCacheExists() {
+        Cache cache = cacheManager.getCache("form_session");
+        assertNotNull(cache);
+        assertTrue(cache instanceof CaffeineCache);
     }
 
     @Test
@@ -141,10 +154,5 @@ public class FormSessionServiceTest {
 
         @MockBean
         public JdbcTemplate jdbcTemplate;
-
-        @Bean
-        public CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("form_session");
-        }
     }
 }
