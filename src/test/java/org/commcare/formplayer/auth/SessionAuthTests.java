@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
@@ -37,7 +38,8 @@ import javax.servlet.http.Cookie;
         UtilController.class,
         TestContext.class,
         WebSecurityConfig.class,
-        MultipleReadRequestWrappingFilter.class
+        MultipleReadRequestWrappingFilter.class,
+        CacheConfiguration.class
 })
 public class SessionAuthTests {
 
