@@ -21,7 +21,6 @@ import org.springframework.test.context.ContextConfiguration;
  * Created by willpride on 5/16/16.
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CasePaginationTests extends BaseTestClass {
     @Override
     @BeforeEach

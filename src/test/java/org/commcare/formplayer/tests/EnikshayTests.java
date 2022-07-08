@@ -12,7 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
  * Tests specific to Enikshay
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class EnikshayTests extends BaseTestClass {
 
     @Override

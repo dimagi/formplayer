@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CaseClaimNavigationTests extends BaseTestClass {
 
     private static final String APP_PATH = "archives/caseclaim";

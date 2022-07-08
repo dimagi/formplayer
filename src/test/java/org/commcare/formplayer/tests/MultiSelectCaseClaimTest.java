@@ -37,7 +37,6 @@ import java.util.List;
  * Tests for selecting and claiming multiple entities from case search results screen
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class MultiSelectCaseClaimTest extends BaseTestClass {
 
     private static final String APP_NAME = "case_claim_with_multi_select";

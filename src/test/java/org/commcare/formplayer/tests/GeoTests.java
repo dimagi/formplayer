@@ -11,7 +11,6 @@ import org.springframework.test.context.ContextConfiguration;
  * Tests for geo functionality
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class GeoTests extends BaseTestClass {
 
     @Override
