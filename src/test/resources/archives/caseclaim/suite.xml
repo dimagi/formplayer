@@ -313,11 +313,28 @@
               <locale id="search_property.m1.age.validation"/>
             </text>
           </validation>
+          <required test="count(instance('my-search-input')/input/field[@name='dob']) = 0 or instance('my-search-input')/input/field[@name='dob']=''">
+            <text>
+              <locale id="search_property.m1.age.required"/>
+            </text>
+          </required>
           <display>
             <text>
               <locale id="search_property.m1.age"/>
             </text>
           </display>
+        </prompt>
+        <prompt key="dob" required="false()">
+          <display>
+            <text>
+              <locale id="search_property.m1.dob"/>
+            </text>
+          </display>
+          <required test="count(instance('my-search-input')/input/field[@name='age']) = 0 or instance('my-search-input')/input/field[@name='age']=''">
+            <text>
+              <locale id="search_property.m1.dob.required"/>
+            </text>
+          </required>
         </prompt>
       </query>
       <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
