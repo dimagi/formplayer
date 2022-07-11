@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -182,7 +183,7 @@ public class CaseClaimTests extends BaseTestClass {
                 "caseclaim",
                 queryData,
                 QueryResponseBean.class);
-        assert queryResponseBean.getDisplays().length == 3;
+        assert queryResponseBean.getDisplays().length == 4;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
@@ -305,6 +306,39 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
+    }
+
+    @Test
+    public void testQueryPromptValidation() throws Exception {
+        QueryData queryData = new QueryData();
+        Hashtable<String, String> inputs = new Hashtable<>();
+        queryData.setInputs("search_command.m1", inputs);
+        queryData.setForceManualSearch("search_command.m1", true);
+
+        // forceManualAction true when default Search on should result in query screen
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                QueryResponseBean.class);
+
+        assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
+
+        inputs.put("age", "12");
+        queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                QueryResponseBean.class);
+        assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
+
+        inputs.put("age", "21");
+        queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                QueryResponseBean.class);
+        assertTrue(queryResponseBean.getDisplays()[3].getError() == null);
     }
 
     @Test
