@@ -337,7 +337,7 @@ public class CaseClaimTests extends BaseTestClass {
         assertTrue(queryResponseBean.getDisplays()[4].getRequiredMsg().contentEquals(expectedMessage));
 
         // dynamic condition, inputting age should make dob not required
-        inputs.put("age","12");
+        inputs.put("age", "12");
         queryResponseBean = sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
