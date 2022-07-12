@@ -68,13 +68,7 @@ public class QueryResponseBean extends MenuBean {
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
-            String requiredMessage = null;
-            QueryPromptCondition required = queryPromptItem.getRequired();
-            if (required != null && required.getMessage() !=null) {
-                requiredMessage = queryPromptItem.getRequired().getMessage().evaluate(
-                        session.getEvaluationContext());
-            }
-
+            String requiredMessage = queryPromptItem.getRequiredMessage(session.getEvaluationContext());
             boolean isRequired = requiredPrompts.containsKey(key) && requiredPrompts.get(key);
             displays[count] = new DisplayElement(queryPromptItem.getDisplay(),
                     session.getEvaluationContext(),
