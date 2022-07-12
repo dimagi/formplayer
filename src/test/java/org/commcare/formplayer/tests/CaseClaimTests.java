@@ -2,6 +2,8 @@ package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,7 +29,9 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Hashtable;
@@ -36,7 +40,6 @@ import java.util.Hashtable;
  * Regression tests for fixed behaviors
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
 
     @Autowired
@@ -59,6 +62,13 @@ public class CaseClaimTests extends BaseTestClass {
     @Override
     protected String getMockRestoreFileName() {
         return "restores/caseclaim.xml";
+    }
+
+    @Test
+    public void testCaseSearchCacheExists() {
+        Cache cache = cacheManager.getCache("case_search");
+        assertNotNull(cache);
+        assertTrue(cache instanceof CaffeineCache);
     }
 
     @Test

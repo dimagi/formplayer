@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class FormEntryTest extends BaseTestClass {
 
     //Integration test of form entry functions

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import static java.util.Optional.ofNullable;
 
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
@@ -23,17 +24,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -47,6 +50,8 @@ import java.util.UUID;
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
+@EnableConfigurationProperties(value = CacheConfiguration.class)
+@TestPropertySource("classpath:application.properties")
 public class VirtualDataInstanceServiceTest {
 
     @Autowired
@@ -81,6 +86,13 @@ public class VirtualDataInstanceServiceTest {
     public void cleanup() {
         cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE).clear();
         storageFactory.getSQLiteDB().closeConnection();
+    }
+
+    @Test
+    public void testVirtualInstancesCacheExists() {
+        Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
+        assertNotNull(cache);
+        assertTrue(cache instanceof CaffeineCache);
     }
 
     @Test
@@ -216,11 +228,6 @@ public class VirtualDataInstanceServiceTest {
         @Bean
         public FormplayerStorageFactory storageFactory() {
             return Mockito.spy(FormplayerStorageFactory.class);
-        }
-
-        @Bean
-        public CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager(VIRTUAL_DATA_INSTANCES_CACHE);
         }
     }
 }

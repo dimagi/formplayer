@@ -20,7 +20,6 @@ import java.util.HashMap;
  * Do launch tests for very basic session endpoint definitions
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class EndpointLaunchTest extends BaseTestClass {
 
     private final String APP_NAME = "endpoint";

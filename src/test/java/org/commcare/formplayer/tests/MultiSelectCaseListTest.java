@@ -25,7 +25,6 @@ import java.util.HashMap;
  * Tests Navigation involving a multi-select case list
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class MultiSelectCaseListTest extends BaseTestClass {
 
     private static final String APP = "multi_select_case_list";

@@ -16,7 +16,6 @@ import java.util.Date;
  * Regression tests for fixed behaviors
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class EditTest extends BaseTestClass {
 
     private final Log log = LogFactory.getLog(EditTest.class);
