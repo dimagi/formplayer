@@ -50,11 +50,10 @@
 trunk: master
 name: autostaging
 branches:
-  - sk/jit-virtual-instances
+  - queryPromptValidation # Shubham July 11
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - do/query-init-change
-      - sk/get-instance-by-id
-      - rc/add-xpath-func-to-ASTNodeFunctionCall
+      - queryPromptValidation # Shubham July 11

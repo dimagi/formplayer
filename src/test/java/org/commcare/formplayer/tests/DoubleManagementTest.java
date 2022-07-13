@@ -16,7 +16,6 @@ import org.springframework.test.context.ContextConfiguration;
  * Created by willpride on 4/14/16.
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class DoubleManagementTest extends BaseTestClass {
 
     @Override

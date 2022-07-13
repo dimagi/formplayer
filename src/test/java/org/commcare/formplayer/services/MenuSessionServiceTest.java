@@ -1,7 +1,6 @@
 package org.commcare.formplayer.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,9 +10,9 @@ import static org.mockito.Mockito.when;
 import static java.util.Optional.ofNullable;
 
 import org.commcare.formplayer.configuration.CacheConfiguration;
-import org.commcare.formplayer.exceptions.FormNotFoundException;
-import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.exceptions.MenuNotFoundException;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,8 +33,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,113 +43,95 @@ import java.util.UUID;
 @ContextConfiguration
 @EnableConfigurationProperties(value = CacheConfiguration.class)
 @TestPropertySource("classpath:application.properties")
-public class FormSessionServiceTest {
-
+public class MenuSessionServiceTest {
     @Autowired
-    FormSessionService formSessionService;
+    MenuSessionService menuSessionService;
 
     @Autowired
     CacheManager cacheManager;
 
     @Autowired
-    private FormSessionRepo formSessionRepo;
-
-    private String sessionId;
+    private MenuSessionRepo menuSessionRepo;
 
     @BeforeEach
     public void setUp() {
         // the repo always returns the saved object so simulate that in the mock
-        when(formSessionRepo.save(any())).thenAnswer(new Answer<SerializableFormSession>() {
+        when(menuSessionRepo.save(any())).thenAnswer(new Answer<SerializableMenuSession>() {
             @Override
-            public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
-                return (SerializableFormSession)invocation.getArguments()[0];
+            public SerializableMenuSession answer(InvocationOnMock invocation) throws Throwable {
+                SerializableMenuSession session = (SerializableMenuSession)invocation.getArguments()[0];
+                if (session.getId() == null) {
+                    // this is normally taken care of by Hibernate
+                    ReflectionTestUtils.setField(session, "id", UUID.randomUUID().toString());
+                }
+                return session;
             }
         });
-
-        sessionId = UUID.randomUUID().toString();
     }
 
     @AfterEach
     public void cleanup() {
-        cacheManager.getCache("form_session").clear();
+        cacheManager.getCache("menu_session").clear();
     }
 
     @Test
-    public void testFormSessionCacheExists() {
-        Cache cache = cacheManager.getCache("form_session");
+    public void testMenuSessionCacheExists() {
+        Cache cache = cacheManager.getCache("menu_session");
         assertNotNull(cache);
         assertTrue(cache instanceof CaffeineCache);
     }
 
     @Test
     public void testGetSessionById_NotFound() {
-        assertThrows(FormNotFoundException.class,
-                () -> formSessionService.getSessionById(sessionId));
+        assertThrows(MenuNotFoundException.class,
+                () -> menuSessionService.getSessionById("123"));
     }
 
     @Test
     public void testGetSessionById_cached() {
-        // no cache to start
-        assertEquals(Optional.empty(), getCachedSession(sessionId));
+        cacheManager.getCache("menu_session").clear();
 
         // save a session
-        SerializableFormSession session = new SerializableFormSession(sessionId);
-        formSessionService.saveSession(session);
+        SerializableMenuSession session = new SerializableMenuSession();
+        menuSessionService.saveSession(session);
 
         // cache is populated on save
-        assertEquals(session, getCachedSession(sessionId).get());
+        assertEquals(session, getCachedSession(session.getId()).get());
 
         // get session hits the cache (repo is mocked)
-        SerializableFormSession fetchedSession = formSessionService.getSessionById(sessionId);
+        SerializableMenuSession fetchedSession = menuSessionService.getSessionById(session.getId());
         assertEquals(session, fetchedSession);
 
         // update session
-        session.setInstanceXml("xml1");
-        formSessionService.saveSession(session);
+        byte[] bytes = {1, 2, 3};
+        session.setCommcareSession(bytes);
+        menuSessionService.saveSession(session);
 
         // cache and find return updated session
-        assertEquals("xml1", getCachedSession(sessionId).get().getInstanceXml());
-        assertEquals("xml1", formSessionService.getSessionById(sessionId).getInstanceXml());
+        assertEquals(bytes, getCachedSession(session.getId()).get().getCommcareSession());
+        assertEquals(bytes, menuSessionService.getSessionById(session.getId()).getCommcareSession());
     }
 
-    @Test
-    public void testDeleteSessionByIdEvictsFromCache() {
-        SerializableFormSession session = new SerializableFormSession(sessionId);
-        formSessionService.saveSession(session);
-        assertEquals(session, getCachedSession(sessionId).get());
-
-        formSessionService.deleteSessionById(session.getId());
-        assertFalse(getCachedSession(sessionId).isPresent());
-    }
-
-    @Test
-    public void testPurgeClearsCache() {
-        formSessionService.saveSession(new SerializableFormSession(sessionId));
-        assertTrue(getCachedSession(sessionId).isPresent());
-        formSessionService.purge(Instant.now());
-        assertFalse(getCachedSession(sessionId).isPresent());
-    }
-
-    private Optional<SerializableFormSession> getCachedSession(String sessionId) {
-        return ofNullable(cacheManager.getCache("form_session")).map(
-                c -> c.get(sessionId, SerializableFormSession.class)
+    private Optional<SerializableMenuSession> getCachedSession(String sessionId) {
+        return ofNullable(cacheManager.getCache("menu_session")).map(
+                c -> c.get(sessionId, SerializableMenuSession.class)
         );
     }
 
     // only include the service under test and it's dependencies
     // This should not be necessary but we're using older versions of junit and spring
     @ComponentScan(
-            basePackageClasses = {FormSessionService.class},
+            basePackageClasses = {MenuSessionService.class},
             useDefaultFilters = false,
             includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
-                    FormSessionService.class})
+                    MenuSessionService.class})
     )
     @EnableCaching
     @Configuration
-    public static class FormSessionServiceTestConfig {
+    public static class Config {
 
         @MockBean
-        public FormSessionRepo formSessionRepo;
+        public MenuSessionRepo menuSessionRepo;
 
         @MockBean
         public JdbcTemplate jdbcTemplate;
