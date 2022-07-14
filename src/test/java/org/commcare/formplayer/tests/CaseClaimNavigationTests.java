@@ -40,7 +40,7 @@ import java.util.Hashtable;
 @WebMvcTest
 public class CaseClaimNavigationTests extends BaseTestClass {
 
-    private static final String APP_PATH = "archives/caseclaim";
+    private static final String APP_PATH = "archives/case_claim_post_in_entry";
 
     @Autowired
     CacheManager cacheManager;
