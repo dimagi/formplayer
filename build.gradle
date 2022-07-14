@@ -119,7 +119,7 @@ dependencies {
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: "${shedlockVersion}"
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: "${shedlockVersion}"
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
-    implementation group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
+    implementation group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '3.1.1'
 
 
     implementation fileTree(dir: 'libs', include: '*.jar')
