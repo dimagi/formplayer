@@ -51,9 +51,8 @@ public class GlobalDefaultExceptionHandler {
             NoLocalizedTextException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(HttpServletRequest request, Exception exception) {
-        log.error("Request: " + request.getRequestURL() + " raised " + exception);
+        log.info("Application error", exception);
         datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
-        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -74,8 +73,7 @@ public class GlobalDefaultExceptionHandler {
     @ResponseBody
     public ExceptionResponseBean handleHttpRequestError(HttpServletRequest req, HttpClientErrorException exception) {
         datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
-        log.error(String.format("Exception %s making external request %s.", exception, req));
-        Sentry.captureException(exception);
+        log.error(String.format("Exception %s making external request %s.", exception, req), exception);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
@@ -98,9 +96,8 @@ public class GlobalDefaultExceptionHandler {
     @ExceptionHandler({FormattedApplicationConfigException.class})
     @ResponseBody
     public HTMLExceptionResponseBean handleFormattedApplicationError(HttpServletRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        log.info("Application configuration error", exception);
         datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
-        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
@@ -108,7 +105,7 @@ public class GlobalDefaultExceptionHandler {
     @ResponseBody
     @ResponseStatus(HttpStatus.LOCKED)
     public ExceptionResponseBean handleLockError(HttpServletRequest req, Exception exception) {
-        FormplayerSentry.captureException(exception, SentryLevel.INFO);
+        log.info("User lock timed out", exception);
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
     }
 
@@ -124,8 +121,6 @@ public class GlobalDefaultExceptionHandler {
     public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception.getClass(), exception);
         datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_CRASH, req);
-        exception.printStackTrace();
-        Sentry.captureException(exception);
         String message = exception.getMessage();
         if (exception instanceof ClientAbortException) {
             // We can't actually return anything since the client has bailed. To avoid errors return null
