@@ -319,8 +319,8 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidation_NullInputCausesError() throws Exception {
-        runRequestAndValidateAgeError(null, "age should be greater than 18", true, false);
+    public void testQueryPromptValidation_NullInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError(null, null, true, false);
     }
 
     @Test
@@ -339,8 +339,8 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidationWithExecute_NullInputCausesError() throws Exception {
-        runRequestAndValidateAgeError(null, "age should be greater than 18", true, true);
+    public void testQueryPromptValidationWithExecute_NullInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError(null, null, true, true);
     }
 
     @Test
