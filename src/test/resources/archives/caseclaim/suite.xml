@@ -324,7 +324,7 @@
             </text>
           </display>
         </prompt>
-        <prompt key="dob" required="false()">
+        <prompt key="dob">
           <display>
             <text>
               <locale id="search_property.m1.dob"/>

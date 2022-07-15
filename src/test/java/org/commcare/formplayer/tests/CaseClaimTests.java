@@ -23,6 +23,7 @@ import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.suite.model.QueryPrompt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -322,12 +323,13 @@ public class CaseClaimTests extends BaseTestClass {
                 QueryResponseBean.class);
 
         // test old required attr
+
         assertTrue(queryResponseBean.getDisplays()[0].isRequired());
-        assertNull(queryResponseBean.getDisplays()[0].getRequiredMsg());
+        assertEquals(queryResponseBean.getDisplays()[0].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
         assertTrue(queryResponseBean.getDisplays()[1].isRequired());
-        assertNull(queryResponseBean.getDisplays()[1].getRequiredMsg());
+        assertEquals(queryResponseBean.getDisplays()[1].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
         assertFalse(queryResponseBean.getDisplays()[2].isRequired());
-        assertNull(queryResponseBean.getDisplays()[2].getRequiredMsg());
+        assertEquals(queryResponseBean.getDisplays()[2].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
 
         // test new required node, both age and dob is required without any input
         String expectedMessage = "One of age or DOB is required";
@@ -344,6 +346,7 @@ public class CaseClaimTests extends BaseTestClass {
                 queryData,
                 QueryResponseBean.class);
         assertFalse(queryResponseBean.getDisplays()[4].isRequired());
+        assertTrue(queryResponseBean.getDisplays()[4].getRequiredMsg().contentEquals(expectedMessage));
     }
 
     @Test
