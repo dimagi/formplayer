@@ -34,6 +34,8 @@ import org.springframework.cache.caffeine.CaffeineCache;
 
 import java.util.Hashtable;
 
+import javax.annotation.Nullable;
+
 /**
  * Regression tests for fixed behaviors
  */
@@ -316,36 +318,39 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidation() throws Exception {
+    public void testQueryPromptValidation_NullInputCausesError() throws Exception {
+        runRequestAndValidateAgeError(null, "age should be greater than 18");
+    }
+
+    @Test
+    public void testQueryPromptValidation_EmptyInputCausesError() throws Exception {
+        runRequestAndValidateAgeError("", "age should be greater than 18");
+    }
+
+    @Test
+    public void testQueryPromptValidation_InvalidInputCausesError() throws Exception {
+        runRequestAndValidateAgeError("12", "age should be greater than 18");
+    }
+
+    @Test
+    public void testQueryPromptValidation_ValidInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError("21", null);
+    }
+
+    private void runRequestAndValidateAgeError(String age, @Nullable String expectedError) throws Exception {
         QueryData queryData = new QueryData();
         Hashtable<String, String> inputs = new Hashtable<>();
+        if (age != null) {
+            inputs.put("age", age);
+        }
         queryData.setInputs("search_command.m1", inputs);
         queryData.setForceManualSearch("search_command.m1", true);
-
-        // forceManualAction true when default Search on should result in query screen
         QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
                 QueryResponseBean.class);
-
-        assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
-
-        inputs.put("age", "12");
-        queryResponseBean = sessionNavigateWithQuery(
-                new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
-        assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
-
-        inputs.put("age", "21");
-        queryResponseBean = sessionNavigateWithQuery(
-                new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
-        assertTrue(queryResponseBean.getDisplays()[3].getError() == null);
+        assertEquals(queryResponseBean.getDisplays()[3].getError(), expectedError);
     }
 
     @Test
