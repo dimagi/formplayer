@@ -324,8 +324,8 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidation_EmptyInputCausesError() throws Exception {
-        runRequestAndValidateAgeError("", "age should be greater than 18", true, false);
+    public void testQueryPromptValidation_EmptyInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError("", null, true, false);
     }
 
     @Test
@@ -344,8 +344,8 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidationWithExecute_EmptyInputCausesError() throws Exception {
-        runRequestAndValidateAgeError("", "age should be greater than 18", true, true);
+    public void testQueryPromptValidationWithExecute_EmptyInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError("", null, true, true);
     }
 
     @Test
