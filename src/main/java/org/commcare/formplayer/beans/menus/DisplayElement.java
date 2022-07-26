@@ -43,6 +43,9 @@ public class DisplayElement {
 
     private boolean required;
 
+    @Nullable
+    private String error;
+
     public DisplayElement() {
     }
 
@@ -60,7 +63,8 @@ public class DisplayElement {
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id,
             @Nullable String input,
             @Nullable String receive, @Nullable String hidden, @Nullable String value,
-            @Nullable String[] itemsetChoices, boolean allowBlankValue, XPathExpression required) {
+            @Nullable String[] itemsetChoices, boolean allowBlankValue, XPathExpression required,
+            String error) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -82,6 +86,7 @@ public class DisplayElement {
         if (required != null) {
             this.required = (boolean) required.eval(ec);
         }
+        this.error = error;
     }
 
     public String getText() {
@@ -160,5 +165,10 @@ public class DisplayElement {
     @Nullable
     public String getHint() {
         return hint;
+    }
+
+    @Nullable
+    public String getError() {
+        return error;
     }
 }

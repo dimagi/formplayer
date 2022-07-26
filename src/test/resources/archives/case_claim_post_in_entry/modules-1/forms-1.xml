@@ -8,15 +8,39 @@
 					<close_confirmation/>
 					<close_reason/>
 				<case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""><update><close_confirmation/><close_reason/></update><close/></case><orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
-			</instance><instance id="commcaresession" src="jr://instance/session"/>
+			</instance>
+			<instance id="commcaresession" src="jr://instance/session"/>
+			<instance id="casedb" src="jr://instance/casedb"/>
 			<bind nodeset="/data/welcome_message"/>
 			<bind nodeset="/data/close_confirmation"/>
 			<bind nodeset="/data/close_reason" type="xsd:string" relevant="/data/close_confirmation = 'yes'"/>
 			<itext>
 				<translation lang="en" default="">
 					<text id="welcome_message-label">
-						<value>This is a case close form</value>
-						<value form="markdown">This is a case close form</value>
+						<value>This is a case close form.  It lets you select a previously registered case and remove it from the phone. Its important to remove cases from the phone so that the user only sees the cases that they need to see.  However, all information collected about the case will still be stored on CommCareHQ.  
+
+* You can add questions to collect information about why the case is being closed.
+* Previously saved case properties have already been automatically loaded to this form, and can be updated and referenced in a similar fashion to the "Visit" form.
+
+For more help, see the following Help Site Pages:
+
+* [CommCare Forms](https://confluence.dimagi.com/display/commcarepublic/Form+Builder)
+* [Case Management Overview](https://confluence.dimagi.com/display/commcarepublic/Case+Management).
+* [Application Building Tutorials](https://confluence.dimagi.com/display/commcarepublic/Application+Building+Tutorial+Series)
+
+When you're ready to test your application, you can use the Try In CloudCare option on the form settings page, or [install it on a phone using our deploy manager](https://confluence.dimagi.com/display/commcarepublic/Deploy+an+Application+on+CommCareHQ).</value>
+						<value form="markdown">This is a case close form.  It lets you select a previously registered case and remove it from the phone. Its important to remove cases from the phone so that the user only sees the cases that they need to see.  However, all information collected about the case will still be stored on CommCareHQ.  
+
+* You can add questions to collect information about why the case is being closed.
+* Previously saved case properties have already been automatically loaded to this form, and can be updated and referenced in a similar fashion to the "Visit" form.
+
+For more help, see the following Help Site Pages:
+
+* [CommCare Forms](https://confluence.dimagi.com/display/commcarepublic/Form+Builder)
+* [Case Management Overview](https://confluence.dimagi.com/display/commcarepublic/Case+Management).
+* [Application Building Tutorials](https://confluence.dimagi.com/display/commcarepublic/Application+Building+Tutorial+Series)
+
+When you're ready to test your application, you can use the Try In CloudCare option on the form settings page, or [install it on a phone using our deploy manager](https://confluence.dimagi.com/display/commcarepublic/Deploy+an+Application+on+CommCareHQ).</value>
 					</text>
 					<text id="close_confirmation-label">
 						<value>Confirm case close. Choose "Yes" to confirm that you want to close this case.</value>
