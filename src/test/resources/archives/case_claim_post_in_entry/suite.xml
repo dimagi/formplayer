@@ -18,6 +18,12 @@
       <location authority="remote">./modules-1/forms-1.xml</location>
     </resource>
   </xform>
+  <xform>
+    <resource id="71395c84b617762dc929c0d7c9096194e0dad0" version="4" descriptor="Form: (Module Follow Up) - Close again">
+      <location authority="local">./modules-1/forms-2.xml</location>
+      <location authority="remote">./modules-1/forms-2.xml</location>
+    </resource>
+  </xform>
   <locale language="default">
     <resource id="app_default_strings" version="9" descriptor="Translations: Default Language">
       <location authority="local">./default/app_strings.txt</location>
@@ -236,6 +242,93 @@
       <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <command id="m2-f0">
+      <text>
+        <locale id="forms.m2f0"/>
+      </text>
+    </command>
+    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="true()">
+      <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
+    </post>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
+    </session>
+  </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <command id="m2-f1">
+      <text>
+        <locale id="forms.m2f1"/>
+      </text>
+    </command>
+    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
+      <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
+    </post>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
+        <data ref="'case'" key="case_type"/>
+      </query>
+      <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
+    </session>
+  </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <command id="m2-f2">
+      <text>
+        <locale id="forms.m2f1"/>
+      </text>
+    </command>
+    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
+      <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
+    </post>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
+        <data ref="'case'" key="case_type"/>
+      </query>
+      <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
+    </session>
+    <assertions>
+      <assert test="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 1">
+        <text>
+          <locale id="case_autoload.usercase.case_missing"/>
+        </text>
+      </assert>
+    </assertions>
+  </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/m2-f3</form>
+    <command id="m2-f3">
+      <text>
+        <locale id="forms.m2f1"/>
+      </text>
+    </command>
+    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
+      <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
+    </post>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
+        <data ref="'case'" key="case_type"/>
+        <prompt key="name" default="instance('commcaresession')/session/context/deviceid">
+          <display>
+            <text>
+              <locale id="search_property.m1.name"/>
+            </text>
+          </display>
+        </prompt>
+      </query>
+      <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
+    </session>
+  </entry>
   <menu id="root">
     <text>
       <locale id="modules.m0"/>
@@ -248,6 +341,15 @@
     </text>
     <command id="m1-f0"/>
     <command id="m1-f1"/>
+  </menu>
+  <menu id="m2">
+    <text>
+      <locale id="modules.m2"/>
+    </text>
+    <command id="m2-f0"/>
+    <command id="m2-f1"/>
+    <command id="m2-f2"/>
+    <command id="m2-f3"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
@@ -264,21 +366,20 @@
     <instance id="commcaresession" src="jr://instance/session"/>
     <instance id="district" src="jr://fixture/item-list:district"/>
     <instance id="state" src="jr://fixture/item-list:state"/>
-    <instance id="my-search-input" src="jr://instance/search-input/results"/>
     <session>
       <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
         <data ref="'case1'" key="case_type"/>
         <data ref="'case2'" key="case_type"/>
         <data ref="'case3'" key="case_type"/>
         <data ref="'False'" key="include_closed"/>
-        <prompt key="name" default="instance('commcaresession')/session/context/deviceid" required="true()">
+        <prompt key="name" default="instance('commcaresession')/session/context/deviceid">
           <display>
             <text>
               <locale id="search_property.m1.name"/>
             </text>
           </display>
         </prompt>
-        <prompt key="state" input="select1" default="&quot;ka&quot;" allow_blank_value="true" required="true()">
+        <prompt key="state" input="select1" default="&quot;ka&quot;" allow_blank_value="true">
           <display>
             <text>
               <locale id="search_property.m1.state"/>
@@ -306,18 +407,6 @@
             <value ref="id"/>
             <sort ref="id"/>
           </itemset>
-        </prompt>
-        <prompt key="age">
-          <validation test="count(.) = 1 and int(instance('my-search-input')/input/field[@name='age'])>18">
-            <text>
-              <locale id="search_property.m1.age.validation"/>
-            </text>
-          </validation>
-          <display>
-            <text>
-              <locale id="search_property.m1.age"/>
-            </text>
-          </display>
         </prompt>
       </query>
       <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
