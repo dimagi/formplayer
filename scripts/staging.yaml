@@ -57,3 +57,4 @@ submodules:
     branches:
       - do/query-init-change
       - queryPromptValidation # Shubham July 11
+      - jls/probably-not-the-right-fix # Jenny July 26
