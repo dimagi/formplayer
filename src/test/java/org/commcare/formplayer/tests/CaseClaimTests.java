@@ -391,10 +391,10 @@ public class CaseClaimTests extends BaseTestClass {
         }
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
-        if(forceManual) {
+        if (forceManual) {
             queryData.setForceManualSearch("search_command.m1", true);
         }
-        if(execute){
+        if (execute) {
             queryData.setExecute("search_command.m1", true);
         }
         return queryData;
