@@ -50,11 +50,11 @@
 trunk: master
 name: autostaging
 branches:
-  - queryPromptValidation # Shubham July 11
+  - dynamicRequired # Shubham July 27
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - do/query-init-change
-      - queryPromptValidation # Shubham July 11
+      - queryPromptRequired # Shubham July 27
       - jls/probably-not-the-right-fix # Jenny July 26
