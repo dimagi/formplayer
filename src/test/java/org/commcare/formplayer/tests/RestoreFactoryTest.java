@@ -10,6 +10,7 @@ import static java.util.Collections.singletonList;
 
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
@@ -44,7 +45,7 @@ import javax.servlet.http.HttpServletRequest;
  * Created by benrudolph on 1/19/17.
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 public class RestoreFactoryTest {
 
     private static final String BASE_URL = "http://localhost:8000/a/restore-domain/phone/restore/";

@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class FilterTests extends BaseTestClass {
 
     @Test

@@ -27,7 +27,6 @@ import java.io.IOException;
  * @author ctsims
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class SnapshotTests extends BaseTestClass {
 
     @BeforeEach

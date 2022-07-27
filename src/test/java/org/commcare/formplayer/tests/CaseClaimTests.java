@@ -3,8 +3,9 @@ package org.commcare.formplayer.tests;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,7 +23,6 @@ import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.FileUtils;
-import org.commcare.formplayer.utils.TestContext;
 import org.commcare.suite.model.QueryPrompt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,16 +31,18 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.cache.caffeine.CaffeineCache;
 
 import java.util.Hashtable;
+
+import javax.annotation.Nullable;
 
 /**
  * Regression tests for fixed behaviors
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
 
     @Autowired
@@ -63,6 +65,13 @@ public class CaseClaimTests extends BaseTestClass {
     @Override
     protected String getMockRestoreFileName() {
         return "restores/caseclaim.xml";
+    }
+
+    @Test
+    public void testCaseSearchCacheExists() {
+        Cache cache = cacheManager.getCache("case_search");
+        assertNotNull(cache);
+        assertTrue(cache instanceof CaffeineCache);
     }
 
     @Test
@@ -349,37 +358,85 @@ public class CaseClaimTests extends BaseTestClass {
         assertTrue(queryResponseBean.getDisplays()[4].getRequiredMsg().contentEquals(expectedMessage));
     }
 
-    @Test
-    public void testQueryPromptValidation() throws Exception {
-        QueryData queryData = new QueryData();
-        Hashtable<String, String> inputs = new Hashtable<>();
-        queryData.setInputs("search_command.m1", inputs);
-        queryData.setForceManualSearch("search_command.m1", true);
+    public void testQueryPromptValidation_NullInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError(null, null, true, false);
+    }
 
-        // forceManualAction true when default Search on should result in query screen
+    @Test
+    public void testQueryPromptValidation_EmptyInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError("", null, true, false);
+    }
+
+    @Test
+    public void testQueryPromptValidation_InvalidInputCausesError() throws Exception {
+        runRequestAndValidateAgeError("12", "age should be greater than 18", true, false);
+    }
+
+    @Test
+    public void testQueryPromptValidation_ValidInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError("21", null, true, false);
+    }
+
+    @Test
+    public void testQueryPromptValidationWithExecute_NullInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError(null, null, true, true);
+    }
+
+    @Test
+    public void testQueryPromptValidationWithExecute_EmptyInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError("", null, true, true);
+    }
+
+    @Test
+    public void testQueryPromptValidationWithExecute_InvalidInputCausesError() throws Exception {
+        runRequestAndValidateAgeError("12", "age should be greater than 18", true, true);
+    }
+
+    @Test
+    public void testQueryPromptValidationWithExecute_ValidInputCausesNoError() throws Exception {
+        runRequestAndValidateAgeError("21", null, true, true);
+    }
+
+    @Test
+    public void testQueryPromptValidation_DefaultSearchCausesNoError() throws Exception {
+        QueryData queryData = setUpQueryDataWithAge("12", false, false);
+        configureQueryMock();
+        try {
+            sessionNavigateWithQuery(
+                    new String[]{"1", "action 1"},
+                    "caseclaim",
+                    queryData,
+                    EntityListResponse.class);
+        } catch (Exception e) {
+            fail("Default search failed to proceed to search results without errors", e);
+        }
+    }
+
+    private void runRequestAndValidateAgeError(String age, @Nullable String expectedError, boolean forceManual,
+            boolean execute) throws Exception {
+        QueryData queryData = setUpQueryDataWithAge(age, forceManual, execute);
         QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
                 QueryResponseBean.class);
+        assertEquals(expectedError, queryResponseBean.getDisplays()[3].getError());
+    }
 
-        assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
-
-        inputs.put("age", "12");
-        queryResponseBean = sessionNavigateWithQuery(
-                new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
-        assertTrue(queryResponseBean.getDisplays()[3].getError().contentEquals("age should be greater than 18"));
-
-        inputs.put("age", "21");
-        queryResponseBean = sessionNavigateWithQuery(
-                new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
-        assertTrue(queryResponseBean.getDisplays()[3].getError() == null);
+    private QueryData setUpQueryDataWithAge(String age, boolean forceManual, boolean execute) {
+        Hashtable<String, String> inputs = new Hashtable<>();
+        if (age != null) {
+            inputs.put("age", age);
+        }
+        QueryData queryData = new QueryData();
+        queryData.setInputs("search_command.m1", inputs);
+        if (forceManual) {
+            queryData.setForceManualSearch("search_command.m1", true);
+        }
+        if (execute) {
+            queryData.setExecute("search_command.m1", true);
+        }
+        return queryData;
     }
 
     @Test

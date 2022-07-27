@@ -22,7 +22,6 @@ import java.util.Hashtable;
  * Tests for smart link workflow
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class SmartLinkTests extends BaseTestClass {
 
     private static final String SMART_LINK_APP = "smart_link";
