@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -22,6 +23,7 @@ import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.suite.model.QueryPrompt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -193,20 +195,18 @@ public class CaseClaimTests extends BaseTestClass {
                 "caseclaim",
                 queryData,
                 QueryResponseBean.class);
-        assert queryResponseBean.getDisplays().length == 4;
+        assert queryResponseBean.getDisplays().length == 5;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
-        assert queryResponseBean.getDisplays()[0].isRequired();
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
                 new String[]{"karnataka", "Raj as than"});
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assert queryResponseBean.getDisplays()[1].isAllowBlankValue();
-        assert queryResponseBean.getDisplays()[1].isRequired();
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Bangalore", "Hampi"});
         assert !queryResponseBean.getDisplays()[2].isAllowBlankValue();
-        assert !queryResponseBean.getDisplays()[2].isRequired();
+
 
         // test hint
         assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
@@ -230,7 +230,6 @@ public class CaseClaimTests extends BaseTestClass {
                 new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Baran", "Kota"});
-
 
         // change selection
         inputs.put("name", "Burt");
@@ -319,6 +318,46 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testQueryPromptRequired() throws Exception {
+        QueryData queryData = new QueryData();
+        Hashtable<String, String> inputs = new Hashtable<>();
+        queryData.setInputs("search_command.m1", inputs);
+        queryData.setForceManualSearch("search_command.m1", true);
+
+        // forceManualAction true when default Search on should result in query screen
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                QueryResponseBean.class);
+
+        // test old required attr
+
+        assertTrue(queryResponseBean.getDisplays()[0].isRequired());
+        assertEquals(queryResponseBean.getDisplays()[0].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
+        assertTrue(queryResponseBean.getDisplays()[1].isRequired());
+        assertEquals(queryResponseBean.getDisplays()[1].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
+        assertFalse(queryResponseBean.getDisplays()[2].isRequired());
+        assertEquals(queryResponseBean.getDisplays()[2].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
+
+        // test new required node, both age and dob is required without any input
+        String expectedMessage = "One of age or DOB is required";
+        assertTrue(queryResponseBean.getDisplays()[3].isRequired());
+        assertTrue(queryResponseBean.getDisplays()[3].getRequiredMsg().contentEquals(expectedMessage));
+        assertTrue(queryResponseBean.getDisplays()[4].isRequired());
+        assertTrue(queryResponseBean.getDisplays()[4].getRequiredMsg().contentEquals(expectedMessage));
+
+        // dynamic condition, inputting age should make dob not required
+        inputs.put("age", "12");
+        queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                QueryResponseBean.class);
+        assertFalse(queryResponseBean.getDisplays()[4].isRequired());
+        assertTrue(queryResponseBean.getDisplays()[4].getRequiredMsg().contentEquals(expectedMessage));
+    }
+
     public void testQueryPromptValidation_NullInputCausesNoError() throws Exception {
         runRequestAndValidateAgeError(null, null, true, false);
     }
