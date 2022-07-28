@@ -268,7 +268,7 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testDependentItemsets_ChoicesChangeWithSelection() throws Exception {
+    public void testDependentItemsets_DependentChoicesChangeWithSelection() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "1");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
@@ -287,6 +287,24 @@ public class CaseClaimTests extends BaseTestClass {
         // check if we have districts corresponding to karnataka state
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Bangalore", "Hampi"});
+    }
+
+    @Test
+    public void testDependentItemsets_SelectionPeristsInResponse() throws Exception {
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("state", "0");
+        inputs.put("district", "0");
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assertEquals("0",queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("0",queryResponseBean.getDisplays()[2].getValue());
+
+        // Change selection
+        inputs.put("state", "1");
+        inputs.put("district", "1");
+        queryResponseBean = runQuery(queryData);
+        assertEquals("1",queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("1",queryResponseBean.getDisplays()[2].getValue());
     }
 
     @Test
