@@ -86,10 +86,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         // Empty query data should set all values as null
         Hashtable<String, String> inputs = new Hashtable<>();
-        queryData = new QueryData();
-        queryData.setInputs("search_command.m1", inputs);
-        queryData.setExecute("search_command.m1", false);
-        queryData.setForceManualSearch("search_command.m1", true);
+        queryData = setUpQueryDataWithInput(inputs, true, false);
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue() == null;
         assert queryResponseBean.getDisplays()[1].getValue() == null;
@@ -196,10 +193,7 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
 
         Hashtable<String, String> inputs = new Hashtable<>();
-        queryData = new QueryData();
-        queryData.setExecute("search_command.m1", false);
-        queryData.setForceManualSearch("search_command.m1", true);
-        queryData.setInputs("search_command.m1", inputs);
+        queryData = setUpQueryDataWithInput(inputs, true, false);
         queryResponseBean = runQuery(queryData);
 
         // no value in queryDictionary should reset the value to null
@@ -208,7 +202,6 @@ public class CaseClaimTests extends BaseTestClass {
 
         // change selection
         inputs.put("name", "Burt");
-        queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
 
@@ -278,10 +271,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testDependentItemsets_ChoicesChangeWithSelection() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "1");
-        QueryData queryData = new QueryData();
-        queryData.setExecute("search_command.m1", false);
-        queryData.setForceManualSearch("search_command.m1", true);
-        queryData.setInputs("search_command.m1", inputs);
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
@@ -374,6 +364,10 @@ public class CaseClaimTests extends BaseTestClass {
         if (age != null) {
             inputs.put("age", age);
         }
+        return setUpQueryDataWithInput(inputs, forceManual, execute);
+    }
+
+    private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual, boolean execute) {
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
         if (forceManual) {
@@ -389,10 +383,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testAlreadyOwnCase() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("name", "Burt");
-        QueryData queryData = new QueryData();
-        queryData.setExecute("search_command.m1", true);
-        queryData.setForceManualSearch("search_command.m1", true);
-        queryData.setInputs("search_command.m1", inputs);
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, true);
 
         configureQueryMockOwned();
         configureSyncMock();
