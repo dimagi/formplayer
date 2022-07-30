@@ -400,15 +400,14 @@ public class CaseClaimTests extends BaseTestClass {
 
     @Test
     public void testAlreadyOwnCase() throws Exception {
-        Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("name", "Burt");
-        QueryData queryData = setUpQueryDataWithInput(inputs, true, true);
-
         configureQueryMockOwned();
         configureSyncMock();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim.xml");
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("name", "Burt");
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, true);
         CommandListResponseBean response = sessionNavigateWithQuery(
                 new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
                 "caseclaim",
