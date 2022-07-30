@@ -57,4 +57,4 @@ submodules:
     branches:
       - do/query-init-change
       - queryPromptRequired # Shubham July 27
-      - jls/probably-not-the-right-fix # Jenny July 26
+      - dependentItemsetFix # Shubham July 28
