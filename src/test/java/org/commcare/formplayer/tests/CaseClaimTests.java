@@ -296,15 +296,15 @@ public class CaseClaimTests extends BaseTestClass {
         inputs.put("district", "0");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
-        assertEquals("0",queryResponseBean.getDisplays()[1].getValue());
-        assertEquals("0",queryResponseBean.getDisplays()[2].getValue());
+        assertEquals("0", queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("0", queryResponseBean.getDisplays()[2].getValue());
 
         // Change selection
         inputs.put("state", "1");
         inputs.put("district", "1");
         queryResponseBean = runQuery(queryData);
-        assertEquals("1",queryResponseBean.getDisplays()[1].getValue());
-        assertEquals("1",queryResponseBean.getDisplays()[2].getValue());
+        assertEquals("1", queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("1", queryResponseBean.getDisplays()[2].getValue());
     }
 
     @Test
@@ -385,7 +385,8 @@ public class CaseClaimTests extends BaseTestClass {
         return setUpQueryDataWithInput(inputs, forceManual, execute);
     }
 
-    private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual, boolean execute) {
+    private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
+            boolean execute) {
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
         if (forceManual) {
