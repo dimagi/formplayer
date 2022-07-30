@@ -78,11 +78,7 @@ public class CaseClaimTests extends BaseTestClass {
         QueryData queryData = new QueryData();
         queryData.setForceManualSearch("search_command.m1", true);
         // When no queryData, Formplayer should return the default values
-        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
-                new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assert queryResponseBean.getDisplays()[2].getValue() == null;
@@ -90,14 +86,8 @@ public class CaseClaimTests extends BaseTestClass {
 
         // Empty query data should set all values as null
         Hashtable<String, String> inputs = new Hashtable<>();
-        queryData = new QueryData();
-        queryData.setInputs("search_command.m1", inputs);
-        queryData.setExecute("search_command.m1", false);
-        queryData.setForceManualSearch("search_command.m1", true);
-        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        queryData = setUpQueryDataWithInput(inputs, true, false);
+        queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue() == null;
         assert queryResponseBean.getDisplays()[1].getValue() == null;
         assert queryResponseBean.getDisplays()[2].getValue() == null;
@@ -106,10 +96,7 @@ public class CaseClaimTests extends BaseTestClass {
         // Empty values in query Data should be propogated back as it is from Formplayer
         inputs.put("name", "");
         inputs.put("state", "");
-        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("");
         assert queryResponseBean.getDisplays()[2].getValue() == null;
@@ -136,10 +123,7 @@ public class CaseClaimTests extends BaseTestClass {
         inputs.put("state", "0");
         inputs.put("district", "#,#1");
         queryData.setExecute("search_command.m1", false);
-        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#1");
@@ -188,11 +172,8 @@ public class CaseClaimTests extends BaseTestClass {
         queryData.setForceManualSearch("search_command.m1", true);
 
         // forceManualAction true when default Search on should result in query screen
-        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
-                new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+
         assert queryResponseBean.getDisplays().length == 4;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
@@ -212,61 +193,30 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
 
         Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("state", "1");
-        queryData = new QueryData();
-        queryData.setExecute("search_command.m1", false);
-        queryData.setForceManualSearch("search_command.m1", true);
-        queryData.setInputs("search_command.m1", inputs);
-        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        queryData = setUpQueryDataWithInput(inputs, true, false);
+        queryResponseBean = runQuery(queryData);
 
         // no value in queryDictionary should reset the value to null
         assert queryResponseBean.getDisplays()[0].getValue() == null;
-        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
         assert queryResponseBean.getDisplays()[2].getValue() == null;
-        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
-                new String[]{"karnataka", "Raj as than"});
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
-                new String[]{"Baran", "Kota"});
-
 
         // change selection
         inputs.put("name", "Burt");
-        inputs.put("state", "0");
-        queryData.setInputs("search_command.m1", inputs);
-        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
-        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
-        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
-                new String[]{"karnataka", "Raj as than"});
-
-        // check if we have districts corresponding to karnataka state
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
-                new String[]{"Bangalore", "Hampi"});
-
 
         // multi-select test
+        inputs.put("state", "0");
         inputs.put("district", "0#,#1"); // select 2 districts
-        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
 
         // Select an invalid choice in multi-select and verify it's removed from formplayer response
         inputs.put("district", "0#,#2#,#1");
-        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                QueryResponseBean.class);
+        queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
 
-
+        // Execute Search to get results
         queryData.setExecute("search_command.m1", true);
         responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
@@ -304,9 +254,8 @@ public class CaseClaimTests extends BaseTestClass {
 
         // when default search but forceManualSearch, prompts should get included
         // Subsequently when search happens as part of replaying a session, prompts should be
-        // same as the last search
-        // and therefore be served through cache. Therefore there are only 2 http calls here
-        // instead of 3
+        // same as the last search and therefore be served through cache.
+        // Therefore there are only 2 http calls here instead of 3
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(1));
         requestData = requestDataCaptor.getAllValues().get(1);
         assertEquals(5, requestData.keySet().size());
@@ -316,6 +265,46 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
+    }
+
+    @Test
+    public void testDependentItemsets_DependentChoicesChangeWithSelection() throws Exception {
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("state", "1");
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
+                new String[]{"karnataka", "Raj as than"});
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
+                new String[]{"Baran", "Kota"});
+
+        inputs.put("state", "0");
+        queryResponseBean = runQuery(queryData);
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
+                new String[]{"karnataka", "Raj as than"});
+        // check if we have districts corresponding to karnataka state
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
+                new String[]{"Bangalore", "Hampi"});
+    }
+
+    @Test
+    public void testDependentItemsets_SelectionPeristsInResponse() throws Exception {
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("state", "0");
+        inputs.put("district", "0");
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assertEquals("0", queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("0", queryResponseBean.getDisplays()[2].getValue());
+
+        // Change selection
+        inputs.put("state", "1");
+        inputs.put("district", "1");
+        queryResponseBean = runQuery(queryData);
+        assertEquals("1", queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("1", queryResponseBean.getDisplays()[2].getValue());
     }
 
     @Test
@@ -376,12 +365,16 @@ public class CaseClaimTests extends BaseTestClass {
     private void runRequestAndValidateAgeError(String age, @Nullable String expectedError, boolean forceManual,
             boolean execute) throws Exception {
         QueryData queryData = setUpQueryDataWithAge(age, forceManual, execute);
-        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assertEquals(expectedError, queryResponseBean.getDisplays()[3].getError());
+    }
+
+    private QueryResponseBean runQuery(QueryData queryData) throws Exception {
+        return sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
                 QueryResponseBean.class);
-        assertEquals(expectedError, queryResponseBean.getDisplays()[3].getError());
     }
 
     private QueryData setUpQueryDataWithAge(String age, boolean forceManual, boolean execute) {
@@ -389,6 +382,11 @@ public class CaseClaimTests extends BaseTestClass {
         if (age != null) {
             inputs.put("age", age);
         }
+        return setUpQueryDataWithInput(inputs, forceManual, execute);
+    }
+
+    private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
+            boolean execute) {
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
         if (forceManual) {
@@ -402,18 +400,14 @@ public class CaseClaimTests extends BaseTestClass {
 
     @Test
     public void testAlreadyOwnCase() throws Exception {
-        Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("name", "Burt");
-        QueryData queryData = new QueryData();
-        queryData.setExecute("search_command.m1", true);
-        queryData.setForceManualSearch("search_command.m1", true);
-        queryData.setInputs("search_command.m1", inputs);
-
         configureQueryMockOwned();
         configureSyncMock();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim.xml");
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("name", "Burt");
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, true);
         CommandListResponseBean response = sessionNavigateWithQuery(
                 new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
                 "caseclaim",
