@@ -19,9 +19,9 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.MediaHandler;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
@@ -31,6 +31,7 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
@@ -40,11 +41,13 @@ import org.javarosa.engine.FunctionExtensions;
 import org.javarosa.form.api.FormController;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.form.api.FormEntryPrompt;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -639,5 +642,39 @@ public class FormSession {
 
     public FormDef getFormDef() {
         return formDef;
+    }
+
+    public String saveMediaAnswer(MultipartFile file, String answerIndex, String mediaDirectoryPath) {
+        if (answerIndex == null) {
+            answerIndex = session.getCurrentIndex();
+        }
+        MediaHandler mediaHandler = new MediaHandler(file);
+        String fileId = mediaHandler.saveFile(mediaDirectoryPath);
+        cleanCurrentMedia(mediaHandler, mediaDirectoryPath, answerIndex);
+        return fileId;
+    }
+
+    private void cleanCurrentMedia(MediaHandler mediaHandler, String mediaDirectoryPath,
+            String answerIndex) {
+        Object currentAnswer = getCurrentAnswer(answerIndex);
+        if (currentAnswer != null) {
+            String currentFileId = (String)currentAnswer;
+            boolean deleted = mediaHandler.cleanMedia(mediaDirectoryPath, currentFileId);
+            if (!deleted) {
+                log.info("Could not delete media at path " + mediaHandler.getMediaFilePath(mediaDirectoryPath,
+                        currentFileId));
+            }
+        }
+    }
+
+    // returns the current answer for the corresponding answerIndex in the form
+    private Object getCurrentAnswer(String answerIndex) {
+        FormIndex formIndex = JsonActionUtils.indexFromString(answerIndex, formEntryModel.getForm());
+        FormEntryPrompt prompt = formEntryModel.getQuestionPrompt(formIndex);
+        IAnswerData answer = prompt.getAnswerValue();
+        if (answer != null) {
+            return prompt.getAnswerValue().getValue();
+        }
+        return null;
     }
 }

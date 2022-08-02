@@ -9,6 +9,7 @@ public class Constants {
     public final static String URL_INCOMPLETE_SESSION = "incomplete-form";
     public final static String URL_DELETE_INCOMPLETE_SESSION = "delete-incomplete-form";
     public final static String URL_ANSWER_QUESTION = "answer";
+    public final static String URL_ANSWER_MEDIA_QUESTION = "answer_media";
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
     public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
@@ -145,6 +146,7 @@ public class Constants {
         public static final String GET_SESSION = "get_session";
         public static final String INITIALIZE_SESSION = "initialize_session";
         public static final String PROCESS_ANSWER = "process_answer";
+        public static final String PROCESS_MEDIA = "process_media";
         public static final String UPDATE_SESSION = "update_session";
         public static final String COMPILE_RESPONSE = "compile_response";
     }

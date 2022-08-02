@@ -40,8 +40,10 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -117,10 +119,23 @@ public class FormController extends AbstractBaseController {
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
             throws Exception {
-        return saveAnswer(answerQuestionBean);
+        return saveAnswer(answerQuestionBean, null);
     }
 
-    private FormEntryResponseBean saveAnswer(AnswerQuestionRequestBean answerQuestionBean) throws Exception {
+    @RequestMapping(value = Constants.URL_ANSWER_MEDIA_QUESTION, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @ConfigureStorageFromSession
+    public FormEntryResponseBean answerMediaQuestion(
+            @RequestParam("file") MultipartFile file,
+            @RequestBody AnswerQuestionRequestBean answerQuestionBean,
+            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
+            throws Exception {
+        return saveAnswer(answerQuestionBean, file);
+    }
+
+    private FormEntryResponseBean saveAnswer(AnswerQuestionRequestBean answerQuestionBean,
+            @Nullable MultipartFile file) throws Exception {
 
         SerializableFormSession serializableFormSession = categoryTimingHelper.timed(
                 Constants.TimingCategories.GET_SESSION,
@@ -136,10 +151,20 @@ public class FormController extends AbstractBaseController {
                 () -> getFormSession(serializableFormSession)
         );
 
+        String fileId = null;
+        if (file != null) {
+            fileId = categoryTimingHelper.timed(
+                    Constants.TimingCategories.PROCESS_MEDIA,
+                    () -> formEntrySession.saveMediaAnswer(file, answerQuestionBean.getFormIndex(),
+                            getMediaDirectoryPath(formEntrySession))
+            );
+        }
+
+        Object answer = fileId != null ? fileId : answerQuestionBean.getAnswer();
         FormEntryResponseBean responseBean = categoryTimingHelper.timed(
                 Constants.TimingCategories.PROCESS_ANSWER,
                 () -> formEntrySession.answerQuestionToJson(
-                        answerQuestionBean.getAnswer(), answerQuestionBean.getFormIndex()
+                        answer, answerQuestionBean.getFormIndex()
                 )
         );
 
@@ -166,6 +191,24 @@ public class FormController extends AbstractBaseController {
         );
 
         return responseBean;
+    }
+
+    // forms/<domain>/<username>/<asUsername>/<app_id>/<form_id>/media/
+    private String getMediaDirectoryPath(FormSession formEntrySession) {
+        StringBuilder sb = new StringBuilder("forms/");
+        sb.append(restoreFactory.getDomain());
+        sb.append("/");
+        sb.append(restoreFactory.getUsername());
+        sb.append("/");
+        if (restoreFactory.getAsUsername() != null) {
+            sb.append(restoreFactory.getAsUsername());
+            sb.append("/");
+        }
+        sb.append(storageFactory.getAppId());
+        sb.append("/");
+        sb.append(formEntrySession.getSessionId());
+        sb.append("/media/");
+        return sb.toString();
     }
 
     // Iterate over all answers and attempt to save them to check for validity.
