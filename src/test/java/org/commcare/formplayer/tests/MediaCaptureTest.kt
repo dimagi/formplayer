@@ -79,7 +79,7 @@ class MediaCaptureTest : BaseTestClass() {
         }
         val expectedErr = Localization.get("form.attachment.invalid")
         assertEquals(
-            "Exception message doesn't match file oversize error message",
+            "Exception message doesn't match file invalid error message",
             expectedErr,
             exception.cause!!.message
         )
