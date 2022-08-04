@@ -151,7 +151,6 @@ public class UtilController {
             parser.parse();
             reporter.setPassed();
         } catch (XFormParseException xfpe) {
-            log.error("Validate Form threw exception", xfpe);
             reporter.setFailed(xfpe);
         } catch (Exception e) {
             log.error("Validate Form threw exception", e);
