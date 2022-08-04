@@ -18,8 +18,8 @@ class MediaHandler(val file: MultipartFile) {
     companion object {
         // 3 MB size limit
         const val MAX_BYTES = (3 * 1048576 - 1024).toLong()
-        private val SUPPORTED_FILE_EXTS = ImmutableList.of(".jpg", "jpeg", "png")
-        private val SUPPORTED_MIME_TYPES = ImmutableList.of("image")
+        private val SUPPORTED_FILE_EXTS = ImmutableList.of(".jpg", "jpeg", "png", "pdf")
+        private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application/pdf")
     }
 
     /**
