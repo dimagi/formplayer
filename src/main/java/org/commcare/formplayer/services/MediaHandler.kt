@@ -1,11 +1,12 @@
 package org.commcare.formplayer.services
 
+import com.google.common.collect.ImmutableList
 import org.commcare.util.FileUtils
 import org.javarosa.core.services.locale.Localization
 import org.javarosa.core.util.PropertyUtils
 import org.springframework.web.multipart.MultipartFile
-import java.io.File
 import java.io.IOException
+import java.net.URLConnection
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -17,7 +18,8 @@ class MediaHandler(val file: MultipartFile) {
     companion object {
         // 3 MB size limit
         const val MAX_BYTES = (3 * 1048576 - 1024).toLong()
-        private val SUPPORTED_FILE_EXTS = arrayOf(".jpg", "jpeg", "png")
+        private val SUPPORTED_FILE_EXTS = ImmutableList.of(".jpg", "jpeg", "png")
+        private val SUPPORTED_MIME_TYPES = ImmutableList.of("image")
     }
 
     /**
@@ -38,13 +40,19 @@ class MediaHandler(val file: MultipartFile) {
     }
 
     private fun validateFile() {
-        if (isUnSupportedFileExtension()) {
+        if (isUnSupportedFileExtension() && isUnsupportedMimeType()) {
             val unsupportedFileExtError = Localization.get("form.attachment.invalid")
             throw RuntimeException(unsupportedFileExtError)
         } else if (isFileTooLarge()) {
             val fileOversizeError = Localization.get("file.oversize.error.message")
             throw RuntimeException(fileOversizeError)
         }
+    }
+
+    private fun isUnsupportedMimeType(): Boolean {
+        val mimeType: String? = URLConnection.guessContentTypeFromName(file.name)
+        return mimeType.isNullOrBlank() ||
+            SUPPORTED_MIME_TYPES.find { mimeType.startsWith(it) }.isNullOrBlank()
     }
 
     fun getMediaFilePath(parentDirPath: Path, fileId: String): Path {
@@ -57,12 +65,8 @@ class MediaHandler(val file: MultipartFile) {
     }
 
     private fun isUnSupportedFileExtension(): Boolean {
-        for (supportedFileExt in SUPPORTED_FILE_EXTS) {
-            if (file.originalFilename.endsWith(supportedFileExt, true)) {
-                return false
-            }
-        }
-        return true
+        return SUPPORTED_FILE_EXTS.find { file.originalFilename.endsWith(it, true) }
+            .isNullOrBlank()
     }
 
     private fun isFileTooLarge(): Boolean {
