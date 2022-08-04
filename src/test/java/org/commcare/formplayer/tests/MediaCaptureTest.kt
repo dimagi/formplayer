@@ -13,7 +13,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.util.AssertionErrors.assertFalse
 import org.springframework.test.util.AssertionErrors.assertTrue
-import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 
 @WebMvcTest
 class MediaCaptureTest : BaseTestClass() {
@@ -28,7 +29,7 @@ class MediaCaptureTest : BaseTestClass() {
     @Test
     fun testImageCapture_fileSaveAndReplace() {
         val formResponse = startImageCaptureForm()
-        val responseBean: FormEntryResponseBean
+        var responseBean: FormEntryResponseBean
         try {
             responseBean = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
         } catch (e: Exception) {
@@ -36,16 +37,8 @@ class MediaCaptureTest : BaseTestClass() {
         }
 
         // get file from path and check if it's the same file
-        var imageResponse = responseBean.tree[IMAGE_CAPTURE_INDEX]
-        var expectedFilePath = String.format(
-            "forms/%s/%s/%s/%s/media/%s",
-            USERNAME,
-            DOMAIN,
-            APP_ID,
-            formResponse.session_id,
-            imageResponse.answer
-        )
-        val originalSavedFile = File(expectedFilePath)
+        var expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
+        val originalSavedFile = expectedFilePath.toFile()
         assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
 
         // upload an invalid file and check the old file remains as answer
@@ -55,8 +48,15 @@ class MediaCaptureTest : BaseTestClass() {
         assertTrue("Originally saved file was replaced by an invalid file upload", originalSavedFile.exists())
 
         // Upload again and check the old file gets cleared
-        saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
+        responseBean = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
         assertFalse("Old image is still present on the filesystem", originalSavedFile.exists())
+        expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
+        assertTrue("Could not find saved file on the filesystem", expectedFilePath.toFile().exists())
+    }
+
+    private fun getExpectedMediaPath(sessionId: String, responseBean: FormEntryResponseBean): Path {
+        var imageResponse = responseBean.tree[IMAGE_CAPTURE_INDEX]
+        return Paths.get("forms", USERNAME, DOMAIN, APP_ID, sessionId, "media", imageResponse.answer as String)
     }
 
     @Test

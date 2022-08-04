@@ -51,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
 
@@ -644,7 +645,7 @@ public class FormSession {
         return formDef;
     }
 
-    public String saveMediaAnswer(MultipartFile file, String answerIndex, String mediaDirectoryPath) {
+    public String saveMediaAnswer(MultipartFile file, String answerIndex, Path mediaDirectoryPath) {
         if (answerIndex == null) {
             answerIndex = session.getCurrentIndex();
         }
@@ -654,7 +655,7 @@ public class FormSession {
         return fileId;
     }
 
-    private void cleanCurrentMedia(MediaHandler mediaHandler, String mediaDirectoryPath,
+    private void cleanCurrentMedia(MediaHandler mediaHandler, Path mediaDirectoryPath,
             String answerIndex) {
         Object currentAnswer = getCurrentAnswer(answerIndex);
         if (currentAnswer != null) {

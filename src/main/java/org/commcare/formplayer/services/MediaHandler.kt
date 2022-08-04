@@ -23,12 +23,12 @@ class MediaHandler(val file: MultipartFile) {
     /**
      * Saves file in the given parent directory
      */
-    fun saveFile(parentDir: String): String {
+    fun saveFile(parentDirPath: Path): String {
         validateFile()
         val fileId = PropertyUtils.genUUID()
-        val parent = File(parentDir)
+        val parent = parentDirPath.toFile()
         parent.mkdirs()
-        val desintationFile = getMediaFilePath(parentDir, fileId).toFile()
+        val desintationFile = getMediaFilePath(parentDirPath, fileId).toFile()
         try {
             FileUtils.copyFile(file.inputStream, desintationFile)
             return fileId
@@ -47,12 +47,12 @@ class MediaHandler(val file: MultipartFile) {
         }
     }
 
-    fun getMediaFilePath(parentDir: String, fileId: String): Path {
-        return Paths.get(parentDir, fileId)
+    fun getMediaFilePath(parentDirPath: Path, fileId: String): Path {
+        return Paths.get(parentDirPath.toString(), fileId)
     }
 
-    fun cleanMedia(parentDir: String, fileId: String): Boolean {
-        val currentMedia = getMediaFilePath(parentDir, fileId).toFile()
+    fun cleanMedia(parentDirPath: Path, fileId: String): Boolean {
+        val currentMedia = getMediaFilePath(parentDirPath, fileId).toFile()
         return currentMedia.delete()
     }
 
