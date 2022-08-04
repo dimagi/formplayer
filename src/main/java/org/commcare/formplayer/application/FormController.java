@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -195,19 +196,22 @@ public class FormController extends AbstractBaseController {
 
     // forms/<domain>/<username>/<asUsername>/<app_id>/<form_id>/media/
     private String getMediaDirectoryPath(FormSession formEntrySession) {
-        StringBuilder sb = new StringBuilder("forms/");
+        StringBuilder sb = new StringBuilder("forms");
+        sb.append(File.separator);
         sb.append(restoreFactory.getDomain());
-        sb.append("/");
+        sb.append(File.separator);
         sb.append(restoreFactory.getUsername());
-        sb.append("/");
+        sb.append(File.separator);
         if (restoreFactory.getAsUsername() != null) {
             sb.append(restoreFactory.getAsUsername());
-            sb.append("/");
+            sb.append(File.separator);
         }
         sb.append(storageFactory.getAppId());
-        sb.append("/");
+        sb.append(File.separator);
         sb.append(formEntrySession.getSessionId());
-        sb.append("/media/");
+        sb.append(File.separator);
+        sb.append("media");
+        sb.append(File.separator);
         return sb.toString();
     }
 

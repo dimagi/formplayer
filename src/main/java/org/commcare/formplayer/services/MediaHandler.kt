@@ -6,6 +6,8 @@ import org.javarosa.core.util.PropertyUtils
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.IOException
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Supporting methods to process and save media files on the filesystem
@@ -26,9 +28,9 @@ class MediaHandler(val file: MultipartFile) {
         val fileId = PropertyUtils.genUUID()
         val parent = File(parentDir)
         parent.mkdirs()
-        val mediaPath: String = getMediaFilePath(parentDir, fileId)
+        val desintationFile = getMediaFilePath(parentDir, fileId).toFile()
         try {
-            FileUtils.copyFile(file.inputStream, File(mediaPath))
+            FileUtils.copyFile(file.inputStream, desintationFile)
             return fileId
         } catch (e: IOException) {
             throw IOException("Could not copy file to destination due to " + e.message, e)
@@ -45,12 +47,12 @@ class MediaHandler(val file: MultipartFile) {
         }
     }
 
-    fun getMediaFilePath(parentDir: String, fileId: String): String {
-        return parentDir + fileId
+    fun getMediaFilePath(parentDir: String, fileId: String): Path {
+        return Paths.get(parentDir, fileId)
     }
 
     fun cleanMedia(parentDir: String, fileId: String): Boolean {
-        val currentMedia = File(getMediaFilePath(parentDir, fileId))
+        val currentMedia = getMediaFilePath(parentDir, fileId).toFile()
         return currentMedia.delete()
     }
 
