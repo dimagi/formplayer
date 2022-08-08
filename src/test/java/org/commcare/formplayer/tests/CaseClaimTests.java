@@ -282,7 +282,7 @@ public class CaseClaimTests extends BaseTestClass {
         // test old required attr
 
         assertTrue(queryResponseBean.getDisplays()[0].isRequired());
-//        assertEquals(queryResponseBean.getDisplays()[0].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
+        assertEquals(queryResponseBean.getDisplays()[0].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
         assertTrue(queryResponseBean.getDisplays()[1].isRequired());
         assertEquals(queryResponseBean.getDisplays()[1].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
         assertFalse(queryResponseBean.getDisplays()[2].isRequired());
