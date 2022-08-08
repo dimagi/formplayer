@@ -320,8 +320,6 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testQueryPromptRequired() throws Exception {
         QueryData queryData = new QueryData();
-        Hashtable<String, String> inputs = new Hashtable<>();
-        queryData.setInputs("search_command.m1", inputs);
         queryData.setForceManualSearch("search_command.m1", true);
 
         // forceManualAction true when default Search on should result in query screen
@@ -334,7 +332,7 @@ public class CaseClaimTests extends BaseTestClass {
         // test old required attr
 
         assertTrue(queryResponseBean.getDisplays()[0].isRequired());
-        assertEquals(queryResponseBean.getDisplays()[0].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
+//        assertEquals(queryResponseBean.getDisplays()[0].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
         assertTrue(queryResponseBean.getDisplays()[1].isRequired());
         assertEquals(queryResponseBean.getDisplays()[1].getRequiredMsg(), QueryPrompt.DEFAULT_REQUIRED_ERROR);
         assertFalse(queryResponseBean.getDisplays()[2].isRequired());
@@ -348,7 +346,9 @@ public class CaseClaimTests extends BaseTestClass {
         assertTrue(queryResponseBean.getDisplays()[4].getRequiredMsg().contentEquals(expectedMessage));
 
         // dynamic condition, inputting age should make dob not required
+        Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("age", "12");
+        queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
