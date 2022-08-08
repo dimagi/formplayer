@@ -186,7 +186,6 @@ public class MenuSessionRunnerService {
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
-            ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
@@ -430,7 +429,6 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             boolean replay, boolean forceManualAction, boolean skipCache)
             throws CommCareSessionException {
-        queryScreen.refreshItemSetChoices();
         String queryKey = menuSession.getSessionWrapper().getCommand();
         boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
 
