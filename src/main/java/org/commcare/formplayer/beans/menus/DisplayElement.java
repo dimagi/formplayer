@@ -174,6 +174,7 @@ public class DisplayElement {
         return error;
     }
 
+    @JsonGetter(value = "required_msg")
     @Nullable
     public String getRequiredMsg() {
         return requiredMsg;
