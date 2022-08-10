@@ -58,6 +58,9 @@ To test:
 
     # to run in continuous mode
     $ ./gradlew test -t
+    
+    # to run tests from libs/commcare
+    $ ./gradlew :commcare:test --tests org.commcare.cases.test.CaseXPathQueryTest
 
 When building on Linux it is sometimes necessary to run:
 
