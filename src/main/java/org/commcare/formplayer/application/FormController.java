@@ -197,7 +197,7 @@ public class FormController extends AbstractBaseController {
 
     // forms/<domain>/<username>/<asUsername>/<app_id>/<form_id>/media/
     private Path getMediaDirectoryPath(FormSession formEntrySession) {
-        Path basePath = Paths.get("forms",restoreFactory.getDomain(), restoreFactory.getUsername());
+        Path basePath = Paths.get("forms", restoreFactory.getDomain(), restoreFactory.getUsername());
         if (restoreFactory.getAsUsername() != null) {
             basePath = Paths.get(basePath.toString(), restoreFactory.getAsUsername());
         }
