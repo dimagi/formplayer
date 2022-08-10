@@ -17,7 +17,7 @@ class MediaHandler(val file: MultipartFile) {
 
     companion object {
         // 3 MB size limit
-        const val MAX_BYTES = (3 * 1048576 - 1024).toLong()
+        private const val MAX_BYTES = (3 * 1048576 - 1024).toLong()
         private val SUPPORTED_FILE_EXTS = ImmutableList.of(".jpg", "jpeg", "png", "pdf")
         private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application/pdf")
     }
@@ -50,7 +50,10 @@ class MediaHandler(val file: MultipartFile) {
     }
 
     private fun isUnsupportedMimeType(): Boolean {
-        val mimeType: String? = URLConnection.guessContentTypeFromName(file.name)
+        var mimeType: String? = URLConnection.guessContentTypeFromStream(file.inputStream)
+        if (mimeType.isNullOrBlank()) {
+            mimeType = URLConnection.guessContentTypeFromName(file.name)
+        }
         return mimeType.isNullOrBlank() ||
             SUPPORTED_MIME_TYPES.find { mimeType.startsWith(it) }.isNullOrBlank()
     }
