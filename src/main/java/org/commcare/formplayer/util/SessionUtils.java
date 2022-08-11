@@ -40,12 +40,8 @@ public class SessionUtils {
             return;
         }
         Localizer localizer = Localization.getGlobalLocalizerAdvanced();
-        for (String availabile : localizer.getAvailableLocales()) {
-            if (locale.equals(availabile)) {
-                localizer.setLocale(locale);
-
-                return;
-            }
+        if (localizer.hasLocale(locale)) {
+            localizer.setLocale(locale);
         }
     }
 
