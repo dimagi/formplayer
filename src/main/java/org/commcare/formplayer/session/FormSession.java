@@ -241,8 +241,8 @@ public class FormSession {
         try {
             formEntryController.setLanguage(session.getInitLang());
         } catch (UnregisteredLocaleException e) {
-            log.error("Couldn't find locale " + session.getInitLang()
-                    + " for user " + session.getUsername());
+            log.info("Couldn't find form locale '" + session.getInitLang()
+                    + "' for user " + session.getUsername());
         }
     }
 
