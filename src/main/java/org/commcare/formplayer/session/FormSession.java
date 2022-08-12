@@ -52,6 +52,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Map;
 
@@ -677,5 +678,14 @@ public class FormSession {
             return prompt.getAnswerValue().getValue();
         }
         return null;
+    }
+
+    // forms/<domain>/<username>/<asUsername>/<app_id>/<form_id>/media/
+    public Path getMediaDirectoryPath(String domain, String user, String asUser, String appId) {
+        Path basePath = Paths.get("forms", domain, user);
+        if (asUser!= null) {
+            basePath = Paths.get(basePath.toString(), asUser);
+        }
+        return Paths.get(basePath.toString(), appId, getSessionId(), "media");
     }
 }

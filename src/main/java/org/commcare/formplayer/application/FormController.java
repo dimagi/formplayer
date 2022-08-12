@@ -46,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -154,11 +153,12 @@ public class FormController extends AbstractBaseController {
         );
 
         String fileId = null;
+        Path mediaDirPath = formEntrySession.getMediaDirectoryPath(restoreFactory.getDomain(),
+                restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
         if (file != null) {
             fileId = categoryTimingHelper.timed(
                     Constants.TimingCategories.PROCESS_MEDIA,
-                    () -> formEntrySession.saveMediaAnswer(file, answerQuestionBean.getFormIndex(),
-                            getMediaDirectoryPath(formEntrySession))
+                    () -> formEntrySession.saveMediaAnswer(file, answerQuestionBean.getFormIndex(), mediaDirPath)
             );
         }
 
@@ -193,15 +193,6 @@ public class FormController extends AbstractBaseController {
         );
 
         return responseBean;
-    }
-
-    // forms/<domain>/<username>/<asUsername>/<app_id>/<form_id>/media/
-    private Path getMediaDirectoryPath(FormSession formEntrySession) {
-        Path basePath = Paths.get("forms", restoreFactory.getDomain(), restoreFactory.getUsername());
-        if (restoreFactory.getAsUsername() != null) {
-            basePath = Paths.get(basePath.toString(), restoreFactory.getAsUsername());
-        }
-        return Paths.get(basePath.toString(), storageFactory.getAppId(), formEntrySession.getSessionId(), "media");
     }
 
     // Iterate over all answers and attempt to save them to check for validity.
