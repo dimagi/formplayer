@@ -149,7 +149,7 @@ public class RestoreFactoryTest {
     public void testGetCaseRestoreUrl() {
         restoreFactorySpy.setCaseId("case_id_123");
         assertEquals(
-                "http://localhost:8000/a/restore-domain/case_migrations/restore/case_id_123/",
+                "http://localhost:8000/a/restore-domain/phone/case_restore/case_id_123/",
                 restoreFactorySpy.getCaseRestoreUrl().toString()
         );
     }
