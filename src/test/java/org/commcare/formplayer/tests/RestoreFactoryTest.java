@@ -149,7 +149,7 @@ public class RestoreFactoryTest {
     public void testGetCaseRestoreUrl() {
         restoreFactorySpy.setCaseId("case_id_123");
         assertEquals(
-                "http://localhost:8000/a/restore-domain/case_migrations/restore/case_id_123/",
+                "http://localhost:8000/a/restore-domain/phone/case_restore/case_id_123/",
                 restoreFactorySpy.getCaseRestoreUrl().toString()
         );
     }
@@ -221,7 +221,7 @@ public class RestoreFactoryTest {
     public void testGetRequestHeaders_HmacAuth() throws Exception {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
@@ -239,7 +239,7 @@ public class RestoreFactoryTest {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
         String requestPath =
-                "/a/restore-domain/case_migrations/restore/case_id_123/?query_param=true";
+                "/a/restore-domain/phone/case_restore/case_id_123/?query_param=true";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
@@ -255,7 +255,7 @@ public class RestoreFactoryTest {
     @Test
     public void testGetRequestHeaders_UseHmacAuthEvenIfHqAuthPresent() throws Exception {
         mockHmacRequest();
-        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
