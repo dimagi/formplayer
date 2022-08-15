@@ -1,6 +1,8 @@
 package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -86,7 +88,7 @@ public class SavedFormDefTest extends BaseTestClass {
                 "requests/submit/submit_hidden_value_form.json", sessionId);
         assertEquals("success", submitResponseBean.getStatus());
 
-        Mockito.verify(this.submitServiceMock).submitForm(formSession.getInstanceXml(false),
-                formSession.getPostUrl());
+        Mockito.verify(this.submitServiceMock).submitForm(any(),
+                eq(formSession.getPostUrl()));
     }
 }
