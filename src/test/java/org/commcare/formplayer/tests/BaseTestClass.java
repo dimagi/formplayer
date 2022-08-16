@@ -7,11 +7,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.org.apache.xpath.internal.operations.Mult;
 
 import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -46,6 +48,7 @@ import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
+import org.commcare.formplayer.engine.ClasspathFileRoot;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
@@ -94,6 +97,7 @@ import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
+import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.jetbrains.annotations.NotNull;
@@ -118,11 +122,13 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.lang.Nullable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -287,9 +293,7 @@ public class BaseTestClass {
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupThreadLocalPrototypes();
-        LocalizerManager.setUseThreadLocalStrategy(true);
-        Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
-        Localization.setLocale("default");
+        setUpLocalization();
         new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
         DateUtils.setTimezoneProvider(tzProvider);
@@ -298,6 +302,15 @@ public class BaseTestClass {
         mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
+    }
+
+    private void setUpLocalization() {
+        LocalizerManager.setUseThreadLocalStrategy(true);
+        Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
+        Localization.setLocale("default");
+        ReferenceManager.instance().addReferenceFactory(new ClasspathFileRoot());
+        Localization.registerLanguageReference("default",
+                "jr://springfile/formplayer_translatable_strings.txt");
     }
 
     private void setupRestoreFactoryMock() {
@@ -645,6 +658,19 @@ public class BaseTestClass {
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
                 answerQuestionBean,
+                FormEntryResponseBean.class);
+    }
+
+    FormEntryResponseBean answerMediaQuestion(String index, MockMultipartFile file, String sessionId)
+            throws Exception {
+        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, null,
+                sessionId);
+        populateFromSession(answerQuestionBean, sessionId);
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.MULTIPART,
+                Constants.URL_ANSWER_MEDIA_QUESTION,
+                answerQuestionBean,
+                file,
                 FormEntryResponseBean.class);
     }
 
@@ -1050,7 +1076,7 @@ public class BaseTestClass {
     }
 
     public enum RequestType {
-        POST, GET
+        MULTIPART, POST, GET
     }
 
     public enum ControllerType {
@@ -1091,6 +1117,15 @@ public class BaseTestClass {
             String urlPath,
             Object bean,
             Class<T> clazz) throws Exception {
+        return generateMockQuery(controllerType, requestType, urlPath, bean, null, clazz);
+    }
+
+    private <T> T generateMockQuery(ControllerType controllerType,
+            RequestType requestType,
+            String urlPath,
+            Object bean,
+            MockMultipartFile file,
+            Class<T> clazz) throws Exception {
         MockMvc controller = null;
         ResultActions result = null;
 
@@ -1130,6 +1165,15 @@ public class BaseTestClass {
                 break;
         }
         switch (requestType) {
+            case MULTIPART:
+                result = controller.perform(
+                        multipart(urlPrepend(urlPath))
+                                .file(file)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
+                                .content((String)bean));
+                break;
+
             case POST:
                 result = controller.perform(
                         post(urlPrepend(urlPath))
