@@ -39,3 +39,6 @@ search_property.m1.district=District
 search_property.m1.hint=This is a hint
 search_property.m1.age=Age
 search_property.m1.age.validation=age should be greater than 18
+search_property.m1.age.required=One of age or DOB is required
+search_property.m1.dob=Date of Birth
+search_property.m1.dob.required=One of age or DOB is required

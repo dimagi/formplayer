@@ -1,11 +1,9 @@
 package org.commcare.formplayer.beans.menus;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
+import org.commcare.suite.model.QueryPromptCondition;
 import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.utils.ItemSetUtils;
 import org.javarosa.core.util.OrderedHashtable;
@@ -38,6 +36,7 @@ public class QueryResponseBean extends MenuBean {
         OrderedHashtable<String, QueryPrompt> queryPromptMap = queryScreen.getUserInputDisplays();
         Hashtable<String, String> currentAnswers = queryScreen.getCurrentAnswers();
         Hashtable<String, String> errors = queryScreen.getErrors();
+        Hashtable<String, Boolean> requiredPrompts = queryScreen.getRequiredPrompts();
         displays = new DisplayElement[queryPromptMap.size()];
         int count = 0;
         for (String key : Collections.list(queryPromptMap.keys())) {
@@ -69,6 +68,8 @@ public class QueryResponseBean extends MenuBean {
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
+            String requiredMessage = queryPromptItem.getRequiredMessage(session.getEvaluationContext());
+            boolean isRequired = requiredPrompts.containsKey(key) && requiredPrompts.get(key);
             displays[count] = new DisplayElement(queryPromptItem.getDisplay(),
                     session.getEvaluationContext(),
                     key,
@@ -78,7 +79,8 @@ public class QueryResponseBean extends MenuBean {
                     currentAnswer,
                     choiceLabels,
                     queryPromptItem.isAllowBlankValue(),
-                    queryPromptItem.getRequired(),
+                    isRequired,
+                    requiredMessage,
                     errors.get(key)
                     );
             count++;
