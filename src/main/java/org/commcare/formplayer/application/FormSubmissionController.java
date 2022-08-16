@@ -284,7 +284,7 @@ public class FormSubmissionController extends AbstractBaseController {
 
         // Add the form xml
         HttpEntity<Object> xmlPart = createFilePart("xml_submission_file", "xml_submission_file.xml",
-                formSession.getInstanceXml(false), "test/xml");
+                formSession.getInstanceXml(false), "text/xml");
         body.add("xml_submission_file", xmlPart);
         return body;
     }
