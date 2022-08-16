@@ -4,15 +4,20 @@ import org.commcare.formplayer.beans.FormEntryResponseBean
 import org.commcare.formplayer.beans.NewFormResponse
 import org.commcare.formplayer.utils.FileUtils
 import org.javarosa.core.services.locale.Localization
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito
+import org.mockito.kotlin.argumentCaptor
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.http.HttpEntity
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.util.AssertionErrors.assertFalse
 import org.springframework.test.util.AssertionErrors.assertTrue
+import org.springframework.util.LinkedMultiValueMap
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -55,8 +60,9 @@ class MediaCaptureTest : BaseTestClass() {
     }
 
     private fun getExpectedMediaPath(sessionId: String, responseBean: FormEntryResponseBean): Path {
-        var imageResponse = responseBean.tree[IMAGE_CAPTURE_INDEX]
-        return Paths.get("forms", USERNAME, DOMAIN, APP_ID, sessionId, "media", imageResponse.answer as String)
+        val imageResponse = responseBean.tree[IMAGE_CAPTURE_INDEX]
+        val fileName = (imageResponse.answer as String)
+        return Paths.get("forms", USERNAME, DOMAIN, APP_ID, sessionId, "media", fileName)
     }
 
     @Test
@@ -87,6 +93,39 @@ class MediaCaptureTest : BaseTestClass() {
         )
     }
 
+    @Test
+    fun testFormSubmissionWithMedia()  {
+        val formResponse = startImageCaptureForm()
+        val imageResponse = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
+
+        //Test Submission
+        val submitResponseBean = submitForm(
+            "requests/submit/submit_request.json",
+            formResponse.sessionId
+        )
+        assertEquals("success", submitResponseBean.status)
+
+        argumentCaptor<Object>().apply {
+            Mockito.verify(submitServiceMock).submitForm(capture(), anyString())
+            var body = allValues[0] as LinkedMultiValueMap<*, *>
+            assertEquals(2, body.size)
+            assertTrue("Form submission doesn't contain xml file part",body.containsKey("xml_submission_file"))
+            checkContentType("text/xml", body["xml_submission_file"]?.get(0) as HttpEntity<*>)
+
+            val fileName = imageResponse.tree[IMAGE_CAPTURE_INDEX].answer as String
+            assertTrue("Form submission doesn't contain media file part",body.containsKey(fileName))
+            val filePart = body[fileName]?.get(0) as HttpEntity<*>
+            checkContentType("image/jpeg", filePart)
+            val expectedFilePath = getExpectedMediaPath(formResponse.session_id, imageResponse).toString()
+            assertEquals(expectedFilePath, (filePart.body as File).path)
+        }
+    }
+
+    private fun checkContentType(expectedContentType: String, filePart: HttpEntity<*>) {
+        val contentType = filePart.headers["Content-Type"]
+        assertEquals(expectedContentType, contentType!![0])
+    }
+
     private fun startImageCaptureForm(): NewFormResponse {
         return startNewForm(
             "requests/new_form/new_form_2.json",
@@ -100,10 +139,9 @@ class MediaCaptureTest : BaseTestClass() {
         fileName: String
     ): FormEntryResponseBean {
         val questions = formResponse.tree
-        Assertions.assertEquals("q_image_acquire", questions[IMAGE_CAPTURE_INDEX].question_id)
+        assertEquals("q_image_acquire", questions[IMAGE_CAPTURE_INDEX].question_id)
         val fis = FileUtils.getFileStream(this.javaClass, filePath)
         val file = MockMultipartFile("file", fileName, "image/jpg", fis)
-        val response = answerMediaQuestion("" + IMAGE_CAPTURE_INDEX, file, formResponse.sessionId)
-        return response
+        return answerMediaQuestion("" + IMAGE_CAPTURE_INDEX, file, formResponse.sessionId)
     }
 }
