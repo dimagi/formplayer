@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class FormValidatorTests extends BaseTestClass {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_XML.getType(),

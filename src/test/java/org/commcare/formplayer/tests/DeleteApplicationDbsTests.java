@@ -13,7 +13,6 @@ import java.io.File;
 
 
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class DeleteApplicationDbsTests extends BaseTestClass {
 
     @Override

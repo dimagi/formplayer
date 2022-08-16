@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -44,11 +45,14 @@ import org.commcare.formplayer.beans.SyncDbRequestBean;
 import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.objects.QueryData;
+import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -57,6 +61,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.FormplayerRemoteInstanceFetcher;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.MenuSessionFactory;
@@ -65,6 +70,7 @@ import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -83,10 +89,14 @@ import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
+import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,6 +110,7 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -123,8 +134,10 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.Cookie;
@@ -135,7 +148,7 @@ import lombok.extern.apachecommons.CommonsLog;
  * Created by willpride on 2/3/16.
  */
 @CommonsLog
-@ContextConfiguration(classes = TestContext.class)
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 public class BaseTestClass {
 
     private MockMvc mockFormController;
@@ -156,6 +169,9 @@ public class BaseTestClass {
 
     @Autowired
     protected FormDefinitionService formDefinitionService;
+
+    @Autowired
+    protected CacheManager cacheManager;
 
     @Autowired
     private MenuSessionService menuSessionService;
@@ -202,6 +218,9 @@ public class BaseTestClass {
     @Autowired
     private NotificationLogger notificationLogger;
 
+    @Autowired
+    protected VirtualDataInstanceService virtualDataInstanceService;
+
     @InjectMocks
     protected FormController formController;
 
@@ -234,6 +253,8 @@ public class BaseTestClass {
     final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
+    final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
+    final Set<String> sessionSelectionsCache = new HashSet<>();
 
     protected Long currentFormDefinitionId = 1L;
 
@@ -260,17 +281,14 @@ public class BaseTestClass {
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
-        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        setupRestoreFactoryMock();
         setupSubmitServiceMock();
-        Mockito.doReturn(false)
-                .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupThreadLocalPrototypes();
         LocalizerManager.setUseThreadLocalStrategy(true);
-        LocalizerManager.getGlobalLocalizer().addAvailableLocale("default");
+        Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
         Localization.setLocale("default");
         new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
@@ -279,6 +297,25 @@ public class BaseTestClass {
         mockFormSessionService();
         mockFormDefinitionService();
         mockMenuSessionService();
+        mockVirtualDataInstanceService();
+    }
+
+    private void setupRestoreFactoryMock() {
+        sessionSelectionsCache.clear();
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doReturn(false)
+                .when(restoreFactoryMock).isRestoreXmlExpired();
+        doAnswer(invocation -> {
+            String[] selections = (String[])invocation.getArguments()[0];
+            sessionSelectionsCache.add(String.join("|", selections));
+            return null;
+        }).when(restoreFactoryMock).cacheSessionSelections(any(String[].class));
+
+        doAnswer(invocation -> {
+            String[] selections = (String[])invocation.getArguments()[0];
+            return sessionSelectionsCache.contains(String.join("|", selections));
+        }).when(restoreFactoryMock).isConfirmedSelection(any(String[].class));
     }
 
     /*
@@ -364,6 +401,59 @@ public class BaseTestClass {
         }).when(this.formDefinitionService).getOrCreateFormDefinition(
                 anyString(), anyString(), anyString(), any(FormDef.class)
         );
+
+        when(this.formDefinitionService.getFormDef(any(SerializableFormSession.class))).thenCallRealMethod();
+        when(this.formDefinitionService.cacheFormDef(any(FormSession.class))).thenCallRealMethod();
+
+        // manually wire this in. The autowiring doesn't work here since we've made it a mock
+        ReflectionTestUtils.setField(this.formDefinitionService, "caches", cacheManager);
+    }
+
+    private void mockVirtualDataInstanceService() {
+        serializableDataInstanceMap.clear();
+        when(virtualDataInstanceService.write(any(ExternalDataInstance.class)))
+                .thenAnswer(getVirtualInstanceMockWrite());
+
+        when(virtualDataInstanceService.write(any(String.class), any(ExternalDataInstance.class)))
+                .thenAnswer(getVirtualInstanceMockWrite());
+
+        when(virtualDataInstanceService.read(any(String.class), any(String.class))).thenAnswer(invocation -> {
+            String key = (String)invocation.getArguments()[0];
+            String instanceId = (String)invocation.getArguments()[1];
+            if (serializableDataInstanceMap.containsKey(key)) {
+                SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
+                return savedInstance.toInstance(instanceId, key);
+            }
+            throw new InstanceNotFoundException(key, "test-namespace");
+        });
+
+        when(virtualDataInstanceService.contains(any(String.class))).thenAnswer(invocation -> {
+            String key = (String)invocation.getArguments()[0];
+            return serializableDataInstanceMap.containsKey(key);
+        });
+    }
+
+    @NotNull
+    private Answer<Object> getVirtualInstanceMockWrite() {
+        return invocation -> {
+            String key;
+            ExternalDataInstance dataInstance;
+            if (invocation.getArguments().length == 2) {
+                key = (String)invocation.getArguments()[0];
+                dataInstance = (ExternalDataInstance)invocation.getArguments()[1];
+            } else {
+                key = UUID.randomUUID().toString();
+                dataInstance = (ExternalDataInstance)invocation.getArguments()[0];
+            }
+
+            SerializableDataInstance serializableDataInstance = new SerializableDataInstance(
+                    dataInstance.getInstanceId(), dataInstance.getReference(),
+                    "username", "domain", "appid", "asuser",
+                    (TreeElement)dataInstance.getRoot(), dataInstance.useCaseTemplate(),
+                    "test-namespace:" + key);
+            serializableDataInstanceMap.put(key, serializableDataInstance);
+            return key;
+        };
     }
 
     private void mockMenuSessionService() {
@@ -428,6 +518,8 @@ public class BaseTestClass {
         if (removeDatabaseFoldersAfterTests()) {
             SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
         }
+        ReferenceHandler.clearInstance();
+        LocalizerManager.clearInstance();
     }
 
     private UserDB customConnector;
@@ -452,7 +544,7 @@ public class BaseTestClass {
         return sandbox;
     }
 
-    public class RestoreFactoryAnswer implements Answer {
+    public static class RestoreFactoryAnswer implements Answer {
         private String mRestoreFile;
 
         public RestoreFactoryAnswer(String restoreFile) {
@@ -726,6 +818,18 @@ public class BaseTestClass {
         );
     }
 
+    /**
+     * Evaluate a XPath expression and check the result.
+     */
+    protected void checkXpath(String sessionId, String xpath, String expectedValue)
+            throws Exception {
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId, xpath);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXpathResponseBean.getStatus());
+        String result = String.format(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
+        assertEquals(result, evaluateXpathResponseBean.getOutput());
+    }
+
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
         Pair<String, SessionNavigationBean> refAndBean = getInstallReferenceAndBean(requestPath,
                 SessionNavigationBean.class);
@@ -832,6 +936,23 @@ public class BaseTestClass {
                 clazz);
     }
 
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            Class<T> clazz)
+            throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
+                ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
     <T> T sessionNavigateWithEndpoint(String testName,
             String endpointId,
             HashMap<String, String> endpointArgs,
@@ -864,12 +985,21 @@ public class BaseTestClass {
             String testName,
             QueryData queryData,
             Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections, testName, queryData, null, clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(String[] selections,
+            String testName,
+            QueryData queryData,
+            String[] selectedValues,
+            Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setQueryData(queryData);
+        sessionNavigationBean.setSelectedValues(selectedValues);
         return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
@@ -1065,12 +1195,17 @@ public class BaseTestClass {
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession)
             throws Exception {
+        FormplayerRemoteInstanceFetcher remoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
+                menuSessionRunnerService.getCaseSearchHelper(),
+                virtualDataInstanceService);
         return new FormSession(serializableFormSession,
                 restoreFactoryMock,
                 formSendCalloutHandlerMock,
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                menuSessionRunnerService.getCaseSearchHelper());
+                remoteInstanceFetcher,
+                formDefinitionService
+        );
     }
 
     @Nullable
@@ -1092,10 +1227,10 @@ public class BaseTestClass {
      * Turn a test name or relative path into an app install reference.
      *
      * Accepts:
-     *   * an archive name in `src/test/resources/archives`
-     *   * an exploded archive directly in `src/test/resources/archives`
-     *   * any path relative to src/test/resources` that points to an exploded archive directory
-     *   * any path relative to src/test/resources` that points to a CCZ or profile.ccpr file
+     * * an archive name in `src/test/resources/archives`
+     * * an exploded archive directly in `src/test/resources/archives`
+     * * any path relative to src/test/resources` that points to an exploded archive directory
+     * * any path relative to src/test/resources` that points to a CCZ or profile.ccpr file
      */
     private String getInstallReference(String nameOrPath) {
         if (checkInstallReference(nameOrPath)) {

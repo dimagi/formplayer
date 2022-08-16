@@ -12,7 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
  * correctly
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class SchedulerTest extends BaseTestClass {
 
     @Override

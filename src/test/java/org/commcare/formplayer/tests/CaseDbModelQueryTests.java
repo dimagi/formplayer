@@ -15,7 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
  * @author wspride
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CaseDbModelQueryTests extends BaseTestClass {
 
     @Override

@@ -10,6 +10,7 @@ import static java.util.Collections.singletonList;
 
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
@@ -44,7 +45,7 @@ import javax.servlet.http.HttpServletRequest;
  * Created by benrudolph on 1/19/17.
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 public class RestoreFactoryTest {
 
     private static final String BASE_URL = "http://localhost:8000/a/restore-domain/phone/restore/";
@@ -148,7 +149,7 @@ public class RestoreFactoryTest {
     public void testGetCaseRestoreUrl() {
         restoreFactorySpy.setCaseId("case_id_123");
         assertEquals(
-                "http://localhost:8000/a/restore-domain/case_migrations/restore/case_id_123/",
+                "http://localhost:8000/a/restore-domain/phone/case_restore/case_id_123/",
                 restoreFactorySpy.getCaseRestoreUrl().toString()
         );
     }
@@ -220,7 +221,7 @@ public class RestoreFactoryTest {
     public void testGetRequestHeaders_HmacAuth() throws Exception {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
@@ -238,7 +239,7 @@ public class RestoreFactoryTest {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
         String requestPath =
-                "/a/restore-domain/case_migrations/restore/case_id_123/?query_param=true";
+                "/a/restore-domain/phone/case_restore/case_id_123/?query_param=true";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
@@ -254,7 +255,7 @@ public class RestoreFactoryTest {
     @Test
     public void testGetRequestHeaders_UseHmacAuthEvenIfHqAuthPresent() throws Exception {
         mockHmacRequest();
-        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());

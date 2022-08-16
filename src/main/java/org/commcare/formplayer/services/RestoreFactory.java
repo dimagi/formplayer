@@ -15,6 +15,7 @@ import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.commcare.formplayer.exceptions.AsyncRetryException;
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
+import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
@@ -181,11 +182,12 @@ public class RestoreFactory {
     }
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
-    public UserSqlSandbox performTimedSync() throws Exception {
+    public UserSqlSandbox performTimedSync() throws SyncRestoreException {
         return performTimedSync(true, false, false);
     }
 
-    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412) throws Exception {
+    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412)
+            throws SyncRestoreException {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
         extras.put(Constants.DOMAIN_TAG, domain);
@@ -224,7 +226,7 @@ public class RestoreFactory {
                     handle412Sync(shouldPurge, skipFixtures);
                 } else {
                     // there are cycles even after a fresh sync
-                    throw e;
+                    throw new SyncRestoreException(e);
                 }
             }
         }
@@ -238,7 +240,7 @@ public class RestoreFactory {
         return sandbox;
     }
 
-    private UserSqlSandbox handle412Sync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+    private UserSqlSandbox handle412Sync(boolean shouldPurge, boolean skipFixtures) throws SyncRestoreException {
         getSQLiteDB().deleteDatabaseFile();
         // this line has the effect of clearing the sync token
         // from the restore URL that's used
@@ -248,7 +250,7 @@ public class RestoreFactory {
 
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
     @Trace
-    public UserSqlSandbox getSandbox() throws Exception {
+    public UserSqlSandbox getSandbox() throws SyncRestoreException {
         if (getSqlSandbox().getLoggedInUser() != null
                 && !isRestoreXmlExpired()) {
             return getSqlSandbox();
@@ -259,8 +261,7 @@ public class RestoreFactory {
     }
 
     @Trace
-    private UserSqlSandbox restoreUser(boolean skipFixtures) throws
-            UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
+    private UserSqlSandbox restoreUser(boolean skipFixtures) throws SyncRestoreException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         // create extras to send to category timing helper
@@ -300,12 +301,14 @@ public class RestoreFactory {
                     setAutoCommit(true);
                     getSQLiteDB().deleteDatabaseFile();
                     getSQLiteDB().createDatabaseFolder();
-                    throw e;
+                    throw new SyncRestoreException(e);
                 } else {
                     log.info(String.format("Retrying restore for user %s after receiving exception.",
                             getEffectiveUsername()),
                             e);
                 }
+            } catch (UnfullfilledRequirementsException | XmlPullParserException | IOException e) {
+                throw new SyncRestoreException(e);
             }
         }
     }
@@ -433,7 +436,6 @@ public class RestoreFactory {
         ensureValidParameters();
         URI url = getRestoreUrl(skipFixtures);
         recordSentryData(url.toString());
-        log.info("Restoring from URL " + url);
         InputStream restoreStream = getRestoreXmlHelper(url);
         setLastSyncTime();
         return restoreStream;
@@ -532,7 +534,6 @@ public class RestoreFactory {
     private InputStream getRestoreXmlHelper(URI restoreUrl) {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
-        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl.toString());
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {

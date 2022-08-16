@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Tests for GetInstanceResponseBean
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class GetInstanceTests extends BaseTestClass {
 
     @Test

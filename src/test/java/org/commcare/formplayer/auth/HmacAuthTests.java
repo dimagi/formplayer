@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.commcare.formplayer.application.UtilController;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
@@ -38,7 +39,8 @@ import java.nio.charset.Charset;
         UtilController.class,
         TestContext.class,
         WebSecurityConfig.class,
-        MultipleReadRequestWrappingFilter.class
+        MultipleReadRequestWrappingFilter.class,
+        CacheConfiguration.class
 })
 public class HmacAuthTests {
 

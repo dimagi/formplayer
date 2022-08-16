@@ -4,6 +4,7 @@ import org.commcare.formplayer.beans.SessionRequestBean;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.javarosa.core.model.FormDef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
@@ -27,5 +28,6 @@ public class ConfigureStorageFromSessionAspect {
         }
         final SessionRequestBean requestBean = (SessionRequestBean) args[0];
         storageFactory.configure(requestBean.getSessionId());
+        storageFactory.registerFormDefStorage();
     }
 }

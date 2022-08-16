@@ -1,0 +1,47 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+	<h:head>
+		<h:title>Close</h:title>
+		<model>
+			<instance>
+				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB" uiVersion="1" version="4" name="Close">
+					<welcome_message/>
+					<close_confirmation/>
+				<orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
+			</instance><instance id="commcaresession" src="jr://instance/session"/>
+			<bind nodeset="/data/welcome_message"/>
+			<bind nodeset="/data/close_confirmation"/>
+			<itext>
+				<translation lang="en" default="">
+					<text id="welcome_message-label">
+						<value>This is a case close form.</value>
+					</text>
+					<text id="close_confirmation-label">
+						<value>Confirm case close. Choose "Yes" to confirm that you want to close this case.</value>
+					</text>
+					<text id="close_confirmation-yes-label">
+						<value>Yes</value>
+					</text>
+					<text id="close_confirmation-no-label">
+						<value>No</value>
+					</text>
+				</translation>
+			</itext>
+		<bind calculate="/data/close_confirmation" nodeset="/data/case/update/close_confirmation" relevant="count(/data/close_confirmation) &gt; 0"/><bind nodeset="/data/case/close" relevant="/data/close_confirmation = 'yes'"/></model>
+	</h:head>
+	<h:body>
+		<trigger ref="/data/welcome_message" appearance="minimal">
+			<label ref="jr:itext('welcome_message-label')"/>
+		</trigger>
+		<select1 ref="/data/close_confirmation">
+			<label ref="jr:itext('close_confirmation-label')"/>
+			<item>
+				<label ref="jr:itext('close_confirmation-yes-label')"/>
+				<value>yes</value>
+			</item>
+			<item>
+				<label ref="jr:itext('close_confirmation-no-label')"/>
+				<value>no</value>
+			</item>
+		</select1>
+	</h:body>
+</h:html>

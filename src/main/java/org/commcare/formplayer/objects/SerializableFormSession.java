@@ -58,10 +58,6 @@ public class SerializableFormSession implements Serializable {
     private boolean oneQuestionPerScreen;
 
     @Setter
-    @Column(name = "formxml", updatable = false)
-    private String formXml;
-
-    @Setter
     @Column(name = "instancexml")
     private String instanceXml;
 

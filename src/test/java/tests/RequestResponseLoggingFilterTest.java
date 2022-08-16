@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import org.apache.commons.logging.Log;
 import org.commcare.formplayer.application.RequestResponseLoggingFilter;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.json.JSONObject;
@@ -28,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 public class RequestResponseLoggingFilterTest {
 
     Log log = null;
