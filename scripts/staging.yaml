@@ -51,7 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - dynamicRequired # Shubham July 27
-  - saveMediaAttachment # Shubham/Jenny Aug 12
+#  - saveMediaAttachment # Shubham/Jenny Aug 12
 submodules:
   libs/commcare:
     trunk: formplayer
