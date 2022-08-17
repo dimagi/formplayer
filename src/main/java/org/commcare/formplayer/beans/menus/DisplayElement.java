@@ -46,6 +46,9 @@ public class DisplayElement {
     @Nullable
     private String error;
 
+    @Nullable
+    private String requiredMsg;
+
     public DisplayElement() {
     }
 
@@ -63,8 +66,8 @@ public class DisplayElement {
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id,
             @Nullable String input,
             @Nullable String receive, @Nullable String hidden, @Nullable String value,
-            @Nullable String[] itemsetChoices, boolean allowBlankValue, XPathExpression required,
-            String error) {
+            @Nullable String[] itemsetChoices, boolean allowBlankValue, boolean required,
+            String requiredMsg, String error) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -83,9 +86,8 @@ public class DisplayElement {
             this.hint = displayUnit.getHintText().evaluate(ec);
         }
         this.allowBlankValue = allowBlankValue;
-        if (required != null) {
-            this.required = (boolean) required.eval(ec);
-        }
+        this.required = required;
+        this.requiredMsg = requiredMsg;
         this.error = error;
     }
 
@@ -170,5 +172,11 @@ public class DisplayElement {
     @Nullable
     public String getError() {
         return error;
+    }
+
+    @JsonGetter(value = "required_msg")
+    @Nullable
+    public String getRequiredMsg() {
+        return requiredMsg;
     }
 }
