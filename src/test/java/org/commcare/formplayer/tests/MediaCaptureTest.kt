@@ -17,6 +17,7 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.util.AssertionErrors.assertFalse
 import org.springframework.test.util.AssertionErrors.assertTrue
 import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -105,9 +106,9 @@ class MediaCaptureTest : BaseTestClass() {
         )
         assertEquals("success", submitResponseBean.status)
 
-        argumentCaptor<Object>().apply {
+        argumentCaptor<MultiValueMap<String, HttpEntity<Any>>>().apply {
             Mockito.verify(submitServiceMock).submitForm(capture(), anyString())
-            var body = allValues[0] as LinkedMultiValueMap<*, *>
+            val body = allValues[0] as LinkedMultiValueMap<*, *>
             assertEquals(2, body.size)
             assertTrue("Form submission doesn't contain xml file part",body.containsKey("xml_submission_file"))
             checkContentType("text/xml", body["xml_submission_file"]?.get(0) as HttpEntity<*>)

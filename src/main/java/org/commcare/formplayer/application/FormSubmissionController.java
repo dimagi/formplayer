@@ -231,7 +231,7 @@ public class FormSubmissionController extends AbstractBaseController {
             processXmlInner(context);
 
             FormSession formSession = context.getFormEntrySession();
-            MultiValueMap<String, Object> body = getMultiPartFormBody(formSession);
+            MultiValueMap<String, HttpEntity<Object>> body = getMultiPartFormBody(formSession);
 
             String response = submitService.submitForm(
                     body,
@@ -263,8 +263,8 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
-    private MultiValueMap<String, Object> getMultiPartFormBody(FormSession formSession) throws IOException {
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    private MultiValueMap<String, HttpEntity<Object>> getMultiPartFormBody(FormSession formSession) throws IOException {
+        MultiValueMap<String, HttpEntity<Object>> body = new LinkedMultiValueMap<>();
 
         // Add any media files associated with the form
         Path mediaDirPath = formSession.getMediaDirectoryPath(restoreFactory.getDomain(),
