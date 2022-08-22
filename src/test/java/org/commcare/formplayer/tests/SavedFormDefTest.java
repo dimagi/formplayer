@@ -11,19 +11,23 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.utils.FileUtils;
-import org.commcare.formplayer.utils.TestContext;
 import org.javarosa.core.model.FormDef;
-import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.util.XFormUtils;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.http.HttpEntity;
+import org.springframework.util.MultiValueMap;
 
 import java.io.InputStreamReader;
 
 @WebMvcTest
 public class SavedFormDefTest extends BaseTestClass {
+
+    @Captor
+    ArgumentCaptor<MultiValueMap<String, HttpEntity<Object>>> requestBodyCaptor;
 
     @Test
     public void testCleanFormDefSaved() throws Exception {
@@ -88,7 +92,9 @@ public class SavedFormDefTest extends BaseTestClass {
                 "requests/submit/submit_hidden_value_form.json", sessionId);
         assertEquals("success", submitResponseBean.getStatus());
 
-        Mockito.verify(this.submitServiceMock).submitForm(any(),
+        Mockito.verify(this.submitServiceMock).submitForm(requestBodyCaptor.capture(),
                 eq(formSession.getPostUrl()));
+        assertEquals(requestBodyCaptor.getAllValues().get(0).getFirst("xml_submission_file").getBody(),
+                (formSession.getInstanceXml(false)));
     }
 }
