@@ -514,7 +514,7 @@ public class BaseTestClass {
                         "OK" +
                         "</message>" +
                         "</OpenRosaResponse>")
-                .when(submitServiceMock).submitForm(anyString(), anyString());
+                .when(submitServiceMock).submitForm(any(), anyString());
     }
 
     @AfterEach
