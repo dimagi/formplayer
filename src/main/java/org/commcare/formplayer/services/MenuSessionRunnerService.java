@@ -186,9 +186,8 @@ public class MenuSessionRunnerService {
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
-            ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (queryData != null && !queryData.getExecute(queryKey)) {
+            if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
             }
             menuResponseBean = new QueryResponseBean(
@@ -430,7 +429,6 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             boolean replay, boolean forceManualAction, boolean skipCache)
             throws CommCareSessionException {
-        queryScreen.refreshItemSetChoices();
         String queryKey = menuSession.getSessionWrapper().getCommand();
         boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
 
@@ -442,13 +440,12 @@ public class MenuSessionRunnerService {
 
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
-            doQuery(
+            return doQuery(
                     queryScreen,
                     queryData == null ? null : queryData.getInputs(queryKey),
                     queryScreen.doDefaultSearch() && !forceManualSearch,
                     skipCache
             );
-            return true;
         } else if (queryData != null) {
             answerQueryPrompts(queryScreen, queryData.getInputs(queryKey));
             return false;
@@ -483,7 +480,6 @@ public class MenuSessionRunnerService {
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
-        screen.refreshItemSetChoices();
     }
 
     /**
@@ -513,26 +509,29 @@ public class MenuSessionRunnerService {
      * Will do nothing if this wasn't a query screen.
      */
     @Trace
-    private void doQuery(FormplayerQueryScreen screen,
+    private boolean doQuery(FormplayerQueryScreen screen,
             Hashtable<String, String> queryDictionary,
-            boolean skipDefaultPromptValues, boolean skipCache) throws CommCareSessionException {
+            boolean isDefaultSearch, boolean skipCache) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
-        if (queryDictionary != null) {
-            screen.answerPrompts(queryDictionary);
-        }
+        answerQueryPrompts(screen, queryDictionary);
 
-        try {
-            ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
-                    screen.getQueryDatum().getDataId(),
-                    screen.getQueryDatum().useCaseTemplate(),
-                    screen.getBaseUrl(),
-                    screen.getRequestData(skipDefaultPromptValues),
-                    skipCache);
-            screen.updateSession(searchDataInstance);
-        } catch (InvalidStructureException | IOException
-                | XmlPullParserException | UnfullfilledRequirementsException e) {
-            throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
+        // Only search when there are no errors in input or we are doing a default search
+        if (isDefaultSearch || screen.getErrors().isEmpty()) {
+            try {
+                ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
+                        screen.getQueryDatum().getDataId(),
+                        screen.getQueryDatum().useCaseTemplate(),
+                        screen.getBaseUrl(),
+                        screen.getRequestData(isDefaultSearch),
+                        skipCache);
+                screen.updateSession(searchDataInstance);
+                return true;
+            } catch (InvalidStructureException | IOException
+                    | XmlPullParserException | UnfullfilledRequirementsException e) {
+                throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
+            }
         }
+        return false;
     }
 
     @Trace
