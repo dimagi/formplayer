@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -123,13 +123,13 @@ public class FormController extends AbstractBaseController {
         return saveAnswer(answerQuestionBean, null);
     }
 
-    @RequestMapping(value = Constants.URL_ANSWER_MEDIA_QUESTION, method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_ANSWER_MEDIA_QUESTION, method = RequestMethod.POST, consumes = { "multipart/form-data" })
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
     public FormEntryResponseBean answerMediaQuestion(
-            @RequestParam("file") MultipartFile file,
-            @RequestBody AnswerQuestionRequestBean answerQuestionBean,
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("answer") AnswerQuestionRequestBean answerQuestionBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
             throws Exception {
         return saveAnswer(answerQuestionBean, file);
