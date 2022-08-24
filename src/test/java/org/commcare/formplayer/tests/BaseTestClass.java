@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.PART_ANSWER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -1165,7 +1166,7 @@ public class BaseTestClass {
         }
         switch (requestType) {
             case MULTIPART:
-                MockPart answer = new MockPart("answer", ((String)bean).getBytes());
+                MockPart answer = new MockPart(PART_ANSWER, ((String)bean).getBytes());
                 answer.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 result = controller.perform(
                         multipart(urlPrepend(urlPath))

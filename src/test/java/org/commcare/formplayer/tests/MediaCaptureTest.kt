@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests
 
 import org.commcare.formplayer.beans.FormEntryResponseBean
 import org.commcare.formplayer.beans.NewFormResponse
+import org.commcare.formplayer.util.Constants.PART_FILE
 import org.commcare.formplayer.utils.FileUtils
 import org.javarosa.core.services.locale.Localization
 import org.junit.jupiter.api.Assertions
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.util.AssertionErrors.assertFalse
 import org.springframework.test.util.AssertionErrors.assertTrue
@@ -100,9 +102,9 @@ class MediaCaptureTest : BaseTestClass() {
         fileName: String
     ): FormEntryResponseBean {
         val questions = formResponse.tree
-        Assertions.assertEquals("q_image_acquire", questions[IMAGE_CAPTURE_INDEX].question_id)
+        assertEquals("q_image_acquire", questions[IMAGE_CAPTURE_INDEX].question_id)
         val fis = FileUtils.getFileStream(this.javaClass, filePath)
-        val file = MockMultipartFile("file", fileName, "image/jpg", fis)
+        val file = MockMultipartFile(PART_FILE, fileName, MediaType.IMAGE_JPEG_VALUE, fis)
         val response = answerMediaQuestion("" + IMAGE_CAPTURE_INDEX, file, formResponse.sessionId)
         return response
     }

@@ -1,5 +1,8 @@
 package org.commcare.formplayer.application;
 
+import static org.commcare.formplayer.util.Constants.PART_ANSWER;
+import static org.commcare.formplayer.util.Constants.PART_FILE;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
@@ -36,6 +39,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -123,13 +127,17 @@ public class FormController extends AbstractBaseController {
         return saveAnswer(answerQuestionBean, null);
     }
 
-    @RequestMapping(value = Constants.URL_ANSWER_MEDIA_QUESTION, method = RequestMethod.POST, consumes = { "multipart/form-data" })
+    @RequestMapping(
+            value = Constants.URL_ANSWER_MEDIA_QUESTION,
+            method = RequestMethod.POST,
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
     public FormEntryResponseBean answerMediaQuestion(
-            @RequestPart("file") MultipartFile file,
-            @RequestPart("answer") AnswerQuestionRequestBean answerQuestionBean,
+            @RequestPart(PART_FILE) MultipartFile file,
+            @RequestPart(PART_ANSWER) AnswerQuestionRequestBean answerQuestionBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
             throws Exception {
         return saveAnswer(answerQuestionBean, file);
