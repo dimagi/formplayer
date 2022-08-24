@@ -34,12 +34,14 @@ public class AuthTestUtils {
     /**
      * Use the 'answer_media' endpoint for 'full auth' with multipart
      */
-    public static MockHttpServletRequestBuilder getMultipartRequestBuilder(Class c, String body) throws IOException {
+    public static MockHttpServletRequestBuilder getMultipartRequestBuilder(Class c, String body)
+            throws IOException {
         InputStream fis = FileUtils.getFileStream(c, "media/valid_image.jpg");
-        MockMultipartFile file = new MockMultipartFile(PART_FILE, "valid_image.jpg", MediaType.IMAGE_JPEG_VALUE, fis);
+        MockMultipartFile file = new MockMultipartFile(PART_FILE, "valid_image.jpg", MediaType.IMAGE_JPEG_VALUE,
+                fis);
         MockPart answer = new MockPart(PART_ANSWER, body.getBytes());
         answer.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        return  multipart(String.format("/%s", "mock_mulipart_request"))
+        return multipart(String.format("/%s", "mock_mulipart_request"))
                 .file(file)
                 .part(answer)
                 .with(SecurityMockMvcRequestPostProcessors.csrf());

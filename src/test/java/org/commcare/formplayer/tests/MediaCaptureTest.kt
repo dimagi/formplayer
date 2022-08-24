@@ -5,7 +5,6 @@ import org.commcare.formplayer.beans.NewFormResponse
 import org.commcare.formplayer.util.Constants.PART_FILE
 import org.commcare.formplayer.utils.FileUtils
 import org.javarosa.core.services.locale.Localization
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

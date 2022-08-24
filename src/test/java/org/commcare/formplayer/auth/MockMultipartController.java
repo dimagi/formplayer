@@ -6,8 +6,6 @@ import static org.commcare.formplayer.util.Constants.PART_FILE;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
-import org.commcare.formplayer.beans.AnswerQuestionRequestBean;
-import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.util.Constants;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
