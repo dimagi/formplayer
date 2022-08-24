@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,23 +21,39 @@ import java.util.Optional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 /**
  * Utility function to deal with request objects.
  */
 public class RequestUtils {
 
+    // If a multipart request returns the part having content type as 'application/json',
+    // otherwise the whole request content
+    public static String getBody(HttpServletRequest request) throws IOException, ServletException {
+        if (request.getContentType().contentEquals("multipart/form-data")) {
+            for (Part part : request.getParts()) {
+                if (part.getContentType().contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
+                    return getBody(part.getInputStream());
+                }
+            }
+            throw new RuntimeException("No part found with content type " + MediaType.APPLICATION_JSON_VALUE
+                    + " for multipart request " + request.getRequestURI());
+        } else {
+            return getBody(request.getInputStream());
+        }
+    }
+
     // Logic taken from here:
     // http://stackoverflow.com/a/14885950/835696
-    public static String getBody(HttpServletRequest request) throws IOException {
-
-        String body = null;
+    private static String getBody(InputStream inputStream) throws IOException {
+        String body;
         StringBuilder stringBuilder = new StringBuilder();
         BufferedReader bufferedReader = null;
 
         try {
-            InputStream inputStream = request.getInputStream();
             if (inputStream != null) {
                 bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 char[] charBuffer = new char[128];
@@ -67,7 +84,7 @@ public class RequestUtils {
         JSONObject data = null;
         try {
             data = new JSONObject(getBody(request));
-        } catch (IOException | JSONException a) {
+        } catch (IOException | JSONException | ServletException a) {
             throw new RuntimeException(
                     "Unreadable POST Body for the request: " + request.getRequestURI(), a);
         }

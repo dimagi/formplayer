@@ -1,5 +1,7 @@
 package org.commcare.formplayer.auth;
 
+import static org.commcare.formplayer.auth.AuthTestUtils.getFullAuthRequestBuilder;
+import static org.commcare.formplayer.auth.AuthTestUtils.getMultipartRequestBuilder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -37,6 +39,7 @@ import java.nio.charset.Charset;
 @WebMvcTest
 @ContextConfiguration(classes = {
         UtilController.class,
+        MockFormController.class,
         TestContext.class,
         WebSecurityConfig.class,
         MultipleReadRequestWrappingFilter.class,
@@ -115,6 +118,14 @@ public class HmacAuthTests {
         this.testEndpoint(builder, status().isOk());
     }
 
+    @Test
+    public void testFullAuthMultipartEndpoint_WithHmacAuthAndUserDetails_Succeeds() throws Exception {
+        String hmac = RequestUtils.getHmac(formplayerAuthKey, FULL_AUTH_BODY);
+        MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY)
+                .header(Constants.HMAC_HEADER, hmac);
+        this.testEndpoint(builder, status().isOk());
+    }
+
     private void testEndpoint(MockHttpServletRequestBuilder requestBuilder,
             ResultMatcher... matchers) throws Exception {
         ResultActions actions = mvc.perform(requestBuilder)
@@ -138,15 +149,5 @@ public class HmacAuthTests {
         return post(String.format("/%s", Constants.URL_VALIDATE_FORM))
                 .content(formXML)
                 .contentType(contentType);
-    }
-
-    /**
-     * Use the 'clear_user_data' endpoint for 'full auth' which required user details.
-     */
-    private MockHttpServletRequestBuilder getFullAuthRequestBuilder(String body) {
-        return post(String.format("/%s", Constants.URL_CLEAR_USER_DATA))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(SecurityMockMvcRequestPostProcessors.csrf());
     }
 }
