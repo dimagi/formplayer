@@ -37,7 +37,7 @@ import javax.servlet.http.Cookie;
 @WebMvcTest
 @ContextConfiguration(classes = {
         UtilController.class,
-        MockFormController.class,
+        MockMultipartController.class,
         TestContext.class,
         WebSecurityConfig.class,
         MultipleReadRequestWrappingFilter.class,

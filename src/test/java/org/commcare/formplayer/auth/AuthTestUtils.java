@@ -39,7 +39,7 @@ public class AuthTestUtils {
         MockMultipartFile file = new MockMultipartFile(PART_FILE, "valid_image.jpg", MediaType.IMAGE_JPEG_VALUE, fis);
         MockPart answer = new MockPart(PART_ANSWER, body.getBytes());
         answer.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        return  multipart(String.format("/%s", Constants.URL_ANSWER_MEDIA_QUESTION))
+        return  multipart(String.format("/%s", "mock_mulipart_request"))
                 .file(file)
                 .part(answer)
                 .with(SecurityMockMvcRequestPostProcessors.csrf());

@@ -39,7 +39,7 @@ import java.nio.charset.Charset;
 @WebMvcTest
 @ContextConfiguration(classes = {
         UtilController.class,
-        MockFormController.class,
+        MockMultipartController.class,
         TestContext.class,
         WebSecurityConfig.class,
         MultipleReadRequestWrappingFilter.class,

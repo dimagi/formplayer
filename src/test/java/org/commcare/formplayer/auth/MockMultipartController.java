@@ -8,6 +8,7 @@ import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.AnswerQuestionRequestBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.util.Constants;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -23,20 +24,20 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @EnableAutoConfiguration
-public class MockFormController {
+public class MockMultipartController {
 
     @RequestMapping(
-            value = Constants.URL_ANSWER_MEDIA_QUESTION,
+            value = "mock_mulipart_request",
             method = RequestMethod.POST,
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
     )
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
-    public FormEntryResponseBean answerMediaQuestion(
+    public void multipartRequest(
             @RequestPart(PART_FILE) MultipartFile file,
-            @RequestPart(PART_ANSWER) AnswerQuestionRequestBean answerQuestionBean,
+            @RequestPart(PART_ANSWER) SessionRequestBean sessionRequestBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) {
-        return new FormEntryResponseBean();
+        return;
     }
 }
