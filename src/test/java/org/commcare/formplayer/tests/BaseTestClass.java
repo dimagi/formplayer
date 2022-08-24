@@ -122,6 +122,7 @@ import org.springframework.http.MediaType;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.lang.Nullable;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -1164,12 +1165,12 @@ public class BaseTestClass {
         }
         switch (requestType) {
             case MULTIPART:
-                MockMultipartFile answer = new MockMultipartFile("answer", "answer",
-                        "application/json", ((String)bean).getBytes());
+                MockPart answer = new MockPart("answer", ((String)bean).getBytes());
+                answer.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 result = controller.perform(
                         multipart(urlPrepend(urlPath))
                                 .file(file)
-                                .file(answer)
+                                .part(answer)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp")));
                 break;
 
