@@ -30,23 +30,6 @@ import javax.servlet.http.Part;
  */
 public class RequestUtils {
 
-    // If a multipart request returns the part having content type as 'application/json',
-    // otherwise the whole request content
-    private static String getJsonBody(HttpServletRequest request) throws IOException, ServletException {
-        String primaryContentType = request.getContentType().split(";")[0];
-        if (primaryContentType.contentEquals(MediaType.MULTIPART_FORM_DATA_VALUE)) {
-            for (Part part : request.getParts()) {
-                if (part.getContentType().contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
-                    return getBody(part.getInputStream());
-                }
-            }
-            throw new RuntimeException("No part found with content type " + MediaType.APPLICATION_JSON_VALUE
-                    + " for multipart request " + request.getRequestURI());
-        } else {
-            return getBody(request.getInputStream());
-        }
-    }
-
     // Logic taken from here:
     // http://stackoverflow.com/a/14885950/835696
     public static String getBody(InputStream inputStream) throws IOException {
@@ -136,5 +119,22 @@ public class RequestUtils {
         }
         Object attribute = request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE);
         return attribute != null && (Boolean)attribute;
+    }
+
+    // If a multipart request returns the part having content type as 'application/json',
+    // otherwise the whole request content
+    private static String getJsonBody(HttpServletRequest request) throws IOException, ServletException {
+        String primaryContentType = request.getContentType().split(";")[0];
+        if (primaryContentType.contentEquals(MediaType.MULTIPART_FORM_DATA_VALUE)) {
+            for (Part part : request.getParts()) {
+                if (part.getContentType().contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
+                    return getBody(part.getInputStream());
+                }
+            }
+            throw new RuntimeException("No part found with content type " + MediaType.APPLICATION_JSON_VALUE
+                    + " for multipart request " + request.getRequestURI());
+        } else {
+            return getBody(request.getInputStream());
+        }
     }
 }
