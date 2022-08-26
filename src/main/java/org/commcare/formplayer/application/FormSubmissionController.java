@@ -55,6 +55,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -277,7 +278,7 @@ public class FormSubmissionController extends AbstractBaseController {
                     contentType = "application/octet-stream";
                 }
                 HttpEntity<Object> filePart = createFilePart(file.getName(), file.getName(),
-                        file, contentType);
+                        Files.readAllBytes(file.toPath()), contentType);
                 body.add(file.getName(), filePart);
             }
         }
