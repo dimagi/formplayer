@@ -19,8 +19,8 @@
 			<itext>
 				<translation lang="en" default="">
 					<text id="welcome_message-label">
-						<value>This is a **follow up form**</value>
-						<value form="markdown">This is a **follow up form**</value>
+						<value>This is a **follow up form**.</value>
+						<value form="markdown">This is a **follow up form**.</value>
 					</text>
 					<text id="sample_case_logic-label">
 						<value>Question Requiring Case Property Display Logic</value>

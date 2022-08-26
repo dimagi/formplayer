@@ -44,6 +44,10 @@ public class Constants {
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
     public static final String URL_DEBUGGER_MENU_CONTENT = "menu_debugger_content";
 
+    // Multipart part names
+    public static final String PART_FILE = "file";
+    public static final String PART_ANSWER = "answer";
+
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
     public static final String SQLITE_DB_VERSION = "V7";

@@ -1,5 +1,6 @@
 package org.commcare.formplayer.auth;
 
+import static org.commcare.formplayer.auth.AuthTestUtils.getMultipartRequestBuilder;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -36,6 +37,7 @@ import javax.servlet.http.Cookie;
 @WebMvcTest
 @ContextConfiguration(classes = {
         UtilController.class,
+        MockMultipartController.class,
         TestContext.class,
         WebSecurityConfig.class,
         MultipleReadRequestWrappingFilter.class,
@@ -89,13 +91,26 @@ public class SessionAuthTests {
     @Test
     public void testEndpoint_WithFullAuth_Succeeds() throws Exception {
         String sessionId = "123";
+        mockValidAuth(sessionId);
+        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
+                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
+        this.testEndpoint(builder, status().isOk());
+    }
+
+    @Test
+    public void testMultipartEndpoint_WithFullAuth_Succeeds() throws Exception {
+        String sessionId = "123";
+        mockValidAuth(sessionId);
+        MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY)
+                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
+        this.testEndpoint(builder, status().isOk());
+    }
+
+    private void mockValidAuth(String sessionId) {
         TokenMatcher matcher = new TokenMatcher(DOMAIN, USERNAME, sessionId);
         when(userDetailsService.loadUserDetails(argThat(matcher))).thenReturn(
                 new HqUserDetailsBean(DOMAIN, USERNAME)
         );
-        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
-                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
-        this.testEndpoint(builder, status().isOk());
     }
 
     private void testEndpoint(MockHttpServletRequestBuilder requestBuilder,

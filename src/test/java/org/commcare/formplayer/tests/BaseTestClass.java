@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.PART_ANSWER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -13,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sun.org.apache.xpath.internal.operations.Mult;
 
 import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -123,12 +123,12 @@ import org.springframework.http.MediaType;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.lang.Nullable;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -1166,12 +1166,13 @@ public class BaseTestClass {
         }
         switch (requestType) {
             case MULTIPART:
+                MockPart answer = new MockPart(PART_ANSWER, ((String)bean).getBytes());
+                answer.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 result = controller.perform(
                         multipart(urlPrepend(urlPath))
                                 .file(file)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                                .content((String)bean));
+                                .part(answer)
+                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp")));
                 break;
 
             case POST:

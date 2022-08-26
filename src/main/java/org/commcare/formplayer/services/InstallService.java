@@ -93,10 +93,8 @@ public class InstallService {
             installTimer.record();
             return new Pair<>(engine, newInstall);
         } catch (UnresolvedResourceException e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
             throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
             sqliteDB.deleteDatabaseFile();
             throw e;
         }
