@@ -1,6 +1,8 @@
 package org.commcare.formplayer.application;
 
-import io.sentry.Sentry;
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
@@ -19,7 +21,6 @@ import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -31,31 +32,42 @@ import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.ProcessingStep;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
-import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.StackFrameStep;
-import org.javarosa.core.model.instance.ExternalDataInstanceSource;
-import org.javarosa.form.api.FormEntrySession;
+import org.commcare.util.FileUtils;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import datadog.trace.api.Trace;
-import lombok.SneakyThrows;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
-import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
-import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
+import datadog.trace.api.Trace;
+import io.sentry.Sentry;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -220,10 +232,10 @@ public class FormSubmissionController extends AbstractBaseController {
             processXmlInner(context);
 
             FormSession formSession = context.getFormEntrySession();
-
+            MultiValueMap<String, HttpEntity<Object>> body = getMultiPartFormBody(formSession);
 
             String response = submitService.submitForm(
-                    context.getFormEntrySession().getInstanceXml(false),
+                    body,
                     context.getFormEntrySession().getPostUrl()
             );
             parseSubmitResponseMessage(response, context.getResponse());
@@ -250,6 +262,44 @@ public class FormSubmissionController extends AbstractBaseController {
             }
         }
         return context.success();
+    }
+
+    private MultiValueMap<String, HttpEntity<Object>> getMultiPartFormBody(FormSession formSession) throws IOException {
+        MultiValueMap<String, HttpEntity<Object>> body = new LinkedMultiValueMap<>();
+
+        // Add any media files associated with the form
+        Path mediaDirPath = formSession.getMediaDirectoryPath(restoreFactory.getDomain(),
+                restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
+        File mediaFile = mediaDirPath.toFile();
+        if(mediaFile.exists()) {
+            for (File file : Objects.requireNonNull(mediaDirPath.toFile().listFiles())) {
+                String contentType = FileUtils.getContentType(file);
+                if (!StringUtils.hasText(contentType)) {
+                    contentType = "application/octet-stream";
+                }
+                HttpEntity<Object> filePart = createFilePart(file.getName(), file.getName(),
+                        Files.readAllBytes(file.toPath()), contentType);
+                body.add(file.getName(), filePart);
+            }
+        }
+
+        // Add the form xml
+        HttpEntity<Object> xmlPart = createFilePart("xml_submission_file", "xml_submission_file.xml",
+                formSession.getInstanceXml(false), "text/xml");
+        body.add("xml_submission_file", xmlPart);
+        return body;
+    }
+
+    private static HttpEntity<Object> createFilePart(String partName, String fileName, Object content, String contentType) {
+        MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+        ContentDisposition contentDisposition = ContentDisposition
+                .builder("form-data")
+                .name(partName)
+                .filename(fileName)
+                .build();
+        fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+        fileMap.add(HttpHeaders.CONTENT_TYPE, contentType);
+        return new HttpEntity<>(content, fileMap);
     }
 
     private void processXmlInner(FormSubmissionContext context) throws Exception {
