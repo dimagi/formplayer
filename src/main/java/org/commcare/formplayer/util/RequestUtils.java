@@ -33,7 +33,8 @@ public class RequestUtils {
     // If a multipart request returns the part having content type as 'application/json',
     // otherwise the whole request content
     public static String getBody(HttpServletRequest request) throws IOException, ServletException {
-        if (request.getContentType().contentEquals("multipart/form-data")) {
+        String primaryContentType = request.getContentType().split(";")[0];
+        if (primaryContentType.contentEquals(MediaType.MULTIPART_FORM_DATA_VALUE)) {
             for (Part part : request.getParts()) {
                 if (part.getContentType().contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
                     return getBody(part.getInputStream());
