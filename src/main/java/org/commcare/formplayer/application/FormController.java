@@ -136,9 +136,9 @@ public class FormController extends AbstractBaseController {
     @UserRestore
     @ConfigureStorageFromSession
     public FormEntryResponseBean answerMediaQuestion(
-            @RequestPart(PART_FILE) MultipartFile file,
             @RequestPart(PART_ANSWER) AnswerQuestionRequestBean answerQuestionBean,
-            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
+            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
+            @RequestPart(PART_FILE) MultipartFile file)
             throws Exception {
         return saveAnswer(answerQuestionBean, file);
     }
