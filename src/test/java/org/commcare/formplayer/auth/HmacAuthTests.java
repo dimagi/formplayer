@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -120,9 +122,10 @@ public class HmacAuthTests {
 
     @Test
     public void testFullAuthMultipartEndpoint_WithHmacAuthAndUserDetails_Succeeds() throws Exception {
-        String hmac = RequestUtils.getHmac(formplayerAuthKey, FULL_AUTH_BODY);
-        MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY)
-                .header(Constants.HMAC_HEADER, hmac);
+        MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY);
+        MockHttpServletRequest request = builder.buildRequest(new MockServletContext());
+        String hmac = RequestUtils.getHmac(formplayerAuthKey, RequestUtils.getBody(request.getInputStream()));
+        builder.header(Constants.HMAC_HEADER, hmac);
         this.testEndpoint(builder, status().isOk());
     }
 

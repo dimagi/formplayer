@@ -32,7 +32,7 @@ public class RequestUtils {
 
     // If a multipart request returns the part having content type as 'application/json',
     // otherwise the whole request content
-    public static String getBody(HttpServletRequest request) throws IOException, ServletException {
+    private static String getJsonBody(HttpServletRequest request) throws IOException, ServletException {
         String primaryContentType = request.getContentType().split(";")[0];
         if (primaryContentType.contentEquals(MediaType.MULTIPART_FORM_DATA_VALUE)) {
             for (Part part : request.getParts()) {
@@ -49,7 +49,7 @@ public class RequestUtils {
 
     // Logic taken from here:
     // http://stackoverflow.com/a/14885950/835696
-    private static String getBody(InputStream inputStream) throws IOException {
+    public static String getBody(InputStream inputStream) throws IOException {
         String body;
         StringBuilder stringBuilder = new StringBuilder();
         BufferedReader bufferedReader = null;
@@ -84,7 +84,7 @@ public class RequestUtils {
     public static JSONObject getPostData(HttpServletRequest request) {
         JSONObject data = null;
         try {
-            data = new JSONObject(getBody(request));
+            data = new JSONObject(getJsonBody(request));
         } catch (IOException | JSONException | ServletException a) {
             throw new RuntimeException(
                     "Unreadable POST Body for the request: " + request.getRequestURI(), a);
