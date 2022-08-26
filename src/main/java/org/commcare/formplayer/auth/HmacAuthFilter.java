@@ -115,7 +115,7 @@ public class HmacAuthFilter extends GenericFilterBean {
 
     private void doAuthenticateInternal(HttpServletRequest request) throws Exception {
         String header = request.getHeader(Constants.HMAC_HEADER);
-        String hash = RequestUtils.getHmac(hmacKey, RequestUtils.getBody(request));
+        String hash = RequestUtils.getHmac(hmacKey, RequestUtils.getBody(request.getInputStream()));
         if (!header.equals(hash)) {
             logger.error(LogMessage.format(
                     "Request Authorization Failed - Hash mismatch: got (%s) != expected (%s)",
