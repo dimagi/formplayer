@@ -26,6 +26,12 @@ Download submodule dependencies
 
     $ git submodule update --init --recursive
 
+Mac users will need to comment out references to micrometer in the following files:
+
+    build.gradle
+
+    src/main/java/org/commcare/formplayer/application/WebAppContext.java
+
 To make properties file:
 
     $ cp config/application.example.properties config/application.properties  # Update properties as necessary (the defaults are fine for running locally)
