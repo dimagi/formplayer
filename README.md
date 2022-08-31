@@ -26,7 +26,7 @@ Download submodule dependencies
 
     $ git submodule update --init --recursive
 
-Mac users will need to comment out references to micrometer in the following files:
+Mac users may need to comment out references to micrometer in the following files in order to run formplayer:
 
     build.gradle
 
