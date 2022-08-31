@@ -7,6 +7,7 @@ import io.sentry.SentryLevel;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
@@ -663,6 +664,11 @@ public class RestoreFactory {
         if (syncToken != null && !"".equals(syncToken)) {
             params.put("since", syncToken);
         }
+        String caseStateHash = getCaseDbHash();
+        if (!caseStateHash.isEmpty()) {
+            params.put("state", caseStateHash);
+        }
+
         if (asUsername != null) {
             String asUserParam = asUsername;
             if (!asUsername.contains("@")) {
@@ -685,6 +691,14 @@ public class RestoreFactory {
                 .put("domain", this.domain)
                 .build();
         return builder.buildAndExpand(templateVars).toUri();
+    }
+
+    public String getCaseDbHash() {
+        String hash = CaseDBUtils.computeCaseDbHash(getSqlSandbox().getCaseStorage());
+        if (hash.isEmpty()) {
+            return "";
+        }
+        return String.format("ccsh:%s", hash);
     }
 
     /**
