@@ -30,10 +30,12 @@ class MediaHandler(val file: MultipartFile) {
         val fileId = PropertyUtils.genUUID()
         val parent = parentDirPath.toFile()
         parent.mkdirs()
-        val desintationFile = getMediaFilePath(parentDirPath, fileId).toFile()
+        var fileIdWithExt = fileId
+        FileUtils.getExtension(file.originalFilename)?.let { fileIdWithExt = "$fileId.$it" }
+        val desintationFile = getMediaFilePath(parentDirPath, fileIdWithExt).toFile()
         try {
             FileUtils.copyFile(file.inputStream, desintationFile)
-            return fileId
+            return fileIdWithExt
         } catch (e: IOException) {
             throw IOException("Could not copy file to destination due to " + e.message, e)
         }
