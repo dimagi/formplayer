@@ -1,6 +1,10 @@
 package org.commcare.formplayer.services
 
 import com.google.common.collect.ImmutableList
+import org.commcare.formplayer.application.FormSubmissionController.*
+import org.commcare.formplayer.services.MediaValidator.isFileTooLarge
+import org.commcare.formplayer.services.MediaValidator.isUnSupportedFileExtension
+import org.commcare.formplayer.services.MediaValidator.isUnsupportedMimeType
 import org.commcare.util.FileUtils
 import org.javarosa.core.services.locale.Localization
 import org.javarosa.core.util.PropertyUtils
@@ -14,13 +18,6 @@ import java.nio.file.Paths
  * Supporting methods to process and save media files on the filesystem
  */
 class MediaHandler(val file: MultipartFile) {
-
-    companion object {
-        // 3 MB size limit
-        private const val MAX_BYTES = (3 * 1048576 - 1024).toLong()
-        private val SUPPORTED_FILE_EXTS = ImmutableList.of(".jpg", "jpeg", "png", "pdf")
-        private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application/pdf")
-    }
 
     /**
      * Saves file in the given parent directory
@@ -42,22 +39,13 @@ class MediaHandler(val file: MultipartFile) {
     }
 
     private fun validateFile() {
-        if (isUnSupportedFileExtension() && isUnsupportedMimeType()) {
+        if (isUnSupportedFileExtension(file.originalFilename) && isUnsupportedMimeType(file.inputStream, file.name)) {
             val unsupportedFileExtError = Localization.get("form.attachment.invalid")
             throw RuntimeException(unsupportedFileExtError)
-        } else if (isFileTooLarge()) {
+        } else if (isFileTooLarge(file.size)) {
             val fileOversizeError = Localization.get("file.oversize.error.message")
             throw RuntimeException(fileOversizeError)
         }
-    }
-
-    private fun isUnsupportedMimeType(): Boolean {
-        var mimeType: String? = URLConnection.guessContentTypeFromStream(file.inputStream)
-        if (mimeType.isNullOrBlank()) {
-            mimeType = URLConnection.guessContentTypeFromName(file.name)
-        }
-        return mimeType.isNullOrBlank() ||
-            SUPPORTED_MIME_TYPES.find { mimeType.startsWith(it) }.isNullOrBlank()
     }
 
     fun getMediaFilePath(parentDirPath: Path, fileId: String): Path {
@@ -67,14 +55,5 @@ class MediaHandler(val file: MultipartFile) {
     fun cleanMedia(parentDirPath: Path, fileId: String): Boolean {
         val currentMedia = getMediaFilePath(parentDirPath, fileId).toFile()
         return currentMedia.delete()
-    }
-
-    private fun isUnSupportedFileExtension(): Boolean {
-        return SUPPORTED_FILE_EXTS.find { file.originalFilename.endsWith(it, true) }
-            .isNullOrBlank()
-    }
-
-    private fun isFileTooLarge(): Boolean {
-        return file.size > MAX_BYTES
     }
 }

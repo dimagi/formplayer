@@ -2,6 +2,9 @@ package org.commcare.formplayer.application;
 
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
+import static org.commcare.formplayer.services.MediaValidator.isFileTooLarge;
+import static org.commcare.formplayer.services.MediaValidator.isUnSupportedFileExtension;
+import static org.commcare.formplayer.services.MediaValidator.isUnsupportedMimeType;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,9 +36,11 @@ import org.commcare.formplayer.util.ProcessingStep;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.commcare.util.FileUtils;
+import org.javarosa.core.services.locale.Localization;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -54,6 +59,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -96,6 +103,9 @@ public class FormSubmissionController extends AbstractBaseController {
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
     private final Log log = LogFactory.getLog(FormSubmissionController.class);
+
+    @Value("${max.attachments.per.form}")
+    private Integer maxAttachmentsPerForm;
 
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
@@ -272,11 +282,18 @@ public class FormSubmissionController extends AbstractBaseController {
                 restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
         File mediaFile = mediaDirPath.toFile();
         if(mediaFile.exists()) {
-            for (File file : Objects.requireNonNull(mediaDirPath.toFile().listFiles())) {
+            File[] files = Objects.requireNonNull(mediaDirPath.toFile().listFiles());
+            if (files.length > maxAttachmentsPerForm) {
+                failWithError("form.upload.attachments.threshold.error.message", maxAttachmentsPerForm.toString());
+            }
+            for (File file : files) {
+                validateFile(file);
+
                 String contentType = FileUtils.getContentType(file);
                 if (!StringUtils.hasText(contentType)) {
                     contentType = "application/octet-stream";
                 }
+
                 HttpEntity<Object> filePart = createFilePart(file.getName(), file.getName(),
                         Files.readAllBytes(file.toPath()), contentType);
                 body.add(file.getName(), filePart);
@@ -288,6 +305,20 @@ public class FormSubmissionController extends AbstractBaseController {
                 formSession.getInstanceXml(false), "text/xml");
         body.add("xml_submission_file", xmlPart);
         return body;
+    }
+
+    private void validateFile(File file) throws FileNotFoundException {
+        if (isUnSupportedFileExtension(file.getName()) && isUnsupportedMimeType(new FileInputStream(file),
+                file.getName())) {
+            failWithError("form.upload.attachment.invalid", file.getName());
+        } else if (isFileTooLarge(file.length())) {
+            failWithError("form.upload.attachment.oversize", file.getName());
+        }
+    }
+
+    private void failWithError(String localeKey, String... args) {
+        String attachmentsThresholdError = Localization.get(localeKey, args);
+        throw new RuntimeException(attachmentsThresholdError);
     }
 
     private static HttpEntity<Object> createFilePart(String partName, String fileName, Object content, String contentType) {
