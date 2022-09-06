@@ -114,6 +114,10 @@ public class HmacAuthFilter extends GenericFilterBean {
     }
 
     private void doAuthenticateInternal(HttpServletRequest request) throws Exception {
+        if (RequestUtils.isMultipart(request)) {
+            // bypass hmac auth for multipart requests
+            return;
+        }
         String header = request.getHeader(Constants.HMAC_HEADER);
         String hash = RequestUtils.getHmac(hmacKey, RequestUtils.getBody(request.getInputStream()));
         if (!header.equals(hash)) {

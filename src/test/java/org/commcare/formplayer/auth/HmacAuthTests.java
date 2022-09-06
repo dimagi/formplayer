@@ -121,10 +121,9 @@ public class HmacAuthTests {
     }
 
     @Test
-    public void testFullAuthMultipartEndpoint_WithHmacAuthAndUserDetails_Succeeds() throws Exception {
+    public void testFullAuthMultipartEndpoint_BypassesHmacAuth() throws Exception {
         MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY);
-        MockHttpServletRequest request = builder.buildRequest(new MockServletContext());
-        String hmac = RequestUtils.getHmac(formplayerAuthKey, RequestUtils.getBody(request.getInputStream()));
+        String hmac = "fake";
         builder.header(Constants.HMAC_HEADER, hmac);
         this.testEndpoint(builder, status().isOk());
     }
