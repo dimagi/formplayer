@@ -4,12 +4,15 @@ import static org.commcare.formplayer.auth.AuthTestUtils.getFullAuthRequestBuild
 import static org.commcare.formplayer.auth.AuthTestUtils.getMultipartRequestBuilder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.commcare.formplayer.application.UtilController;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
@@ -121,11 +124,12 @@ public class HmacAuthTests {
     }
 
     @Test
-    public void testFullAuthMultipartEndpoint_BypassesHmacAuth() throws Exception {
+    public void testFullAuthMultipartEndpointWithHmac_WithoutSessionAuth_AlwaysFails() throws Exception {
         MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY);
-        String hmac = "fake";
+        MockHttpServletRequest request = builder.buildRequest(new MockServletContext());
+        String hmac = RequestUtils.getHmac(formplayerAuthKey, RequestUtils.getBody(request.getInputStream()));
         builder.header(Constants.HMAC_HEADER, hmac);
-        this.testEndpoint(builder, status().isOk());
+        this.testEndpoint(builder, status().isForbidden());
     }
 
     private void testEndpoint(MockHttpServletRequestBuilder requestBuilder,
