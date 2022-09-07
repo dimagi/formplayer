@@ -1,5 +1,15 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import static java.util.Collections.singletonList;
+
 import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
@@ -28,23 +38,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static java.util.Collections.singletonList;
-
-import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
-import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by benrudolph on 1/19/17.
