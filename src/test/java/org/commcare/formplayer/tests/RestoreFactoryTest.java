@@ -8,6 +8,7 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -35,6 +36,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import static java.util.Collections.singletonList;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -202,7 +206,8 @@ public class RestoreFactoryTest {
     }
 
     @Test
-    public void testGetUserRestoreUrlWithSinceParam() {
+    @WithHqUser(enabledToggles = {TOGGLE_INCLUDE_STATE_HASH})
+    public void testGetUserRestoreUrlWithStateHash() {
         try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
             mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("123");
             assertEquals(
@@ -215,6 +220,19 @@ public class RestoreFactoryTest {
     }
 
     @Test
+    public void testGetUserRestoreUrlWithStateHash_toggleOff() {
+        try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
+            mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("123");
+            assertEquals(
+                    BASE_URL + "?version=2.0" +
+                            "&device_id=WebAppsLogin",
+                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+            );
+        }
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_INCLUDE_STATE_HASH})
     public void testGetUserRestoreUrlEmptyStateHash() {
         try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
             mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("");

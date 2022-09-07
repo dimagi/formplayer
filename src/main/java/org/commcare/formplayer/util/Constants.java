@@ -173,6 +173,7 @@ public class Constants {
 
     public static final String TOGGLE_DETAILED_TAGGING = "DETAILED_TAGGING";
     public static final String TOGGLE_SESSION_ENDPOINTS = "SESSION_ENDPOINTS";
+    public static final String TOGGLE_INCLUDE_STATE_HASH = "FORMPLAYER_INCLUDE_STATE_HASH";
 
     public static final String AUTHORITY_COMMCARE = "COMMCARE";
 }

@@ -1,5 +1,7 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
+
 import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
@@ -13,6 +15,7 @@ import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.commcare.formplayer.exceptions.AsyncRetryException;
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
@@ -59,7 +62,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -68,7 +70,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
@@ -664,9 +665,12 @@ public class RestoreFactory {
         if (syncToken != null && !"".equals(syncToken)) {
             params.put("since", syncToken);
         }
-        String caseStateHash = getCaseDbHash();
-        if (!caseStateHash.isEmpty()) {
-            params.put("state", caseStateHash);
+
+        if (FeatureFlagChecker.isToggleEnabled(TOGGLE_INCLUDE_STATE_HASH)) {
+            String caseStateHash = getCaseDbHash();
+            if (!caseStateHash.isEmpty()) {
+                params.put("state", caseStateHash);
+            }
         }
 
         if (asUsername != null) {
