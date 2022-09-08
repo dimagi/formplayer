@@ -113,8 +113,8 @@ public class FormSubmissionController extends AbstractBaseController {
     @UserRestore
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
-                                         @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
-                                         HttpServletRequest request) throws Exception {
+            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
+            HttpServletRequest request) throws Exception {
         FormSubmissionContext context = getFormProcessingContext(request, submitRequestBean);
 
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
@@ -143,7 +143,8 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.getResponse();
     }
 
-    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, SubmitRequestBean submitRequestBean) throws Exception {
+    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request,
+            SubmitRequestBean submitRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 submitRequestBean.getSessionId());
 
@@ -186,10 +187,10 @@ public class FormSubmissionController extends AbstractBaseController {
      * and empty response to continue.
      *
      * @param request The HTTP Request object
-     * @param step A supplier object that performs one unit of form processing and returns
-     *             a SubmitResponseBean.
+     * @param step    A supplier object that performs one unit of form processing and returns
+     *                a SubmitResponseBean.
      * @return Empty Optional if the processing should continue otherwise an Optional containing the
-     *          error response.
+     * error response.
      */
     private Optional<SubmitResponseBean> executeStep(HttpServletRequest request, ProcessingStep step) {
         SubmitResponseBean response = null;
@@ -274,14 +275,15 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
-    private MultiValueMap<String, HttpEntity<Object>> getMultiPartFormBody(FormSession formSession) throws IOException {
+    private MultiValueMap<String, HttpEntity<Object>> getMultiPartFormBody(FormSession formSession)
+            throws IOException {
         MultiValueMap<String, HttpEntity<Object>> body = new LinkedMultiValueMap<>();
 
         // Add any media files associated with the form
         Path mediaDirPath = formSession.getMediaDirectoryPath(restoreFactory.getDomain(),
                 restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
         File mediaFile = mediaDirPath.toFile();
-        if(mediaFile.exists()) {
+        if (mediaFile.exists()) {
             File[] files = Objects.requireNonNull(mediaDirPath.toFile().listFiles());
             if (files.length > maxAttachmentsPerForm) {
                 failWithError("form.upload.attachments.threshold.error.message", maxAttachmentsPerForm.toString());
@@ -321,7 +323,8 @@ public class FormSubmissionController extends AbstractBaseController {
         throw new RuntimeException(attachmentsThresholdError);
     }
 
-    private static HttpEntity<Object> createFilePart(String partName, String fileName, Object content, String contentType) {
+    private static HttpEntity<Object> createFilePart(String partName, String fileName, Object content,
+            String contentType) {
         MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
         ContentDisposition contentDisposition = ContentDisposition
                 .builder("form-data")
@@ -340,31 +343,32 @@ public class FormSubmissionController extends AbstractBaseController {
         );
         FormRecordProcessorHelper.processXML(factory, context.getFormEntrySession().submitGetXml());
         categoryTimingHelper.timed(
-            Constants.TimingCategories.PURGE_CASES,
-            () -> {
-                if (factory.wereCaseIndexesDisrupted() && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
-                    FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
-                }
-            },
-            context.getMetricsTags()
+                Constants.TimingCategories.PURGE_CASES,
+                () -> {
+                    if (factory.wereCaseIndexesDisrupted()
+                            && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
+                        FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
+                    }
+                },
+                context.getMetricsTags()
         );
     }
 
     @Trace
     private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {
         Object nextScreen = categoryTimingHelper.timed(
-            Constants.TimingCategories.END_OF_FORM_NAV,
-            () -> {
-                if (context.getSerializableMenuSession() == null) {
-                    return null;
-                }
-                return doEndOfFormNav(
-                        context.getSerializableMenuSession(),
-                        context.getEngine(),
-                        context.getCommCareSession()
-                );
-            },
-            context.getMetricsTags()
+                Constants.TimingCategories.END_OF_FORM_NAV,
+                () -> {
+                    if (context.getSerializableMenuSession() == null) {
+                        return null;
+                    }
+                    return doEndOfFormNav(
+                            context.getSerializableMenuSession(),
+                            context.getEngine(),
+                            context.getCommCareSession()
+                    );
+                },
+                context.getMetricsTags()
         );
         context.getResponse().setNextScreen(nextScreen);
         return context.success();

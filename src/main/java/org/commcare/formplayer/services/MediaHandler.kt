@@ -1,7 +1,5 @@
 package org.commcare.formplayer.services
 
-import com.google.common.collect.ImmutableList
-import org.commcare.formplayer.application.FormSubmissionController.*
 import org.commcare.formplayer.services.MediaValidator.isFileTooLarge
 import org.commcare.formplayer.services.MediaValidator.isUnSupportedFileExtension
 import org.commcare.formplayer.services.MediaValidator.isUnsupportedMimeType
@@ -10,7 +8,6 @@ import org.javarosa.core.services.locale.Localization
 import org.javarosa.core.util.PropertyUtils
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
-import java.net.URLConnection
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -39,7 +36,11 @@ class MediaHandler(val file: MultipartFile) {
     }
 
     private fun validateFile() {
-        if (isUnSupportedFileExtension(file.originalFilename) && isUnsupportedMimeType(file.inputStream, file.name)) {
+        if (isUnSupportedFileExtension(file.originalFilename) && isUnsupportedMimeType(
+                file.inputStream,
+                file.name
+            )
+        ) {
             val unsupportedFileExtError = Localization.get("form.attachment.invalid")
             throw RuntimeException(unsupportedFileExtError)
         } else if (isFileTooLarge(file.size)) {
