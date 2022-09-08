@@ -618,10 +618,13 @@ public class RestoreFactory {
     }
 
     public URI getRestoreUrl(boolean skipFixtures) {
-        if (caseId != null) {
-            return getCaseRestoreUrl();
-        }
-        return getUserRestoreUrl(skipFixtures);
+        // TODO: remove timing once the state hash rollout is complete
+        return categoryTimingHelper.timed(Constants.TimingCategories.BUILD_RESTORE_URL, () -> {
+            if (caseId != null) {
+                return getCaseRestoreUrl();
+            }
+            return getUserRestoreUrl(skipFixtures);
+        });
     }
 
     private HttpHeaders getHmacHeader(URI url) {

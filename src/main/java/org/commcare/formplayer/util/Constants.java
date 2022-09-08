@@ -147,6 +147,7 @@ public class Constants {
         public static final String PROCESS_ANSWER = "process_answer";
         public static final String UPDATE_SESSION = "update_session";
         public static final String COMPILE_RESPONSE = "compile_response";
+        public static final String BUILD_RESTORE_URL = "build_restore_url";
     }
 
     // Requests
