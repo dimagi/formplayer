@@ -34,6 +34,7 @@ import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
+import org.javarosa.form.api.FormEntrySession;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,6 +218,9 @@ public class FormSubmissionController extends AbstractBaseController {
         try {
             restoreFactory.setAutoCommit(false);
             processXmlInner(context);
+
+            FormSession formSession = context.getFormEntrySession();
+
 
             String response = submitService.submitForm(
                     context.getFormEntrySession().getInstanceXml(false),
