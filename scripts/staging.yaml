@@ -52,7 +52,6 @@ name: autostaging
 branches:
   - saveMediaAttachment # Shubham/Jenny Aug 12
   - mediaFormSubmission # Shubham Aug 22
-  - sk/restore-state-hash # Simon Sep 1
 submodules:
   libs/commcare:
     trunk: formplayer
