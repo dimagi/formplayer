@@ -138,6 +138,9 @@ public class RequestUtils {
     }
 
     public static boolean isMultipart(HttpServletRequest request) {
+        if (request.getContentType() == null) {
+            return false;
+        }
         String primaryContentType = request.getContentType().split(";")[0];
         return primaryContentType.contentEquals(MediaType.MULTIPART_FORM_DATA_VALUE);
     }
