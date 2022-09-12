@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - spring_boot_2.7 # Shubham Aug 16
   - saveMediaAttachment # Shubham/Jenny Aug 12
   - mediaFormSubmission # Shubham Aug 22
 submodules:
@@ -58,3 +57,4 @@ submodules:
     trunk: formplayer
     branches:
       - do/query-init-change
+#      - ml/timezone-revert - this was branched off master

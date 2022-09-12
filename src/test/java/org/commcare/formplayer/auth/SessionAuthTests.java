@@ -98,11 +98,13 @@ public class SessionAuthTests {
     }
 
     @Test
-    public void testMultipartEndpoint_WithFullAuth_Succeeds() throws Exception {
+    public void testMultipartEndpointWithFullAuth_WithAnyHmacAuth_Succeeds() throws Exception {
         String sessionId = "123";
         mockValidAuth(sessionId);
         MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY)
                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
+        String hmac = "fakkydummy";
+        builder.header(Constants.HMAC_HEADER, hmac);
         this.testEndpoint(builder, status().isOk());
     }
 
