@@ -1,13 +1,16 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import static java.util.Collections.singletonList;
 
+import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
@@ -15,6 +18,7 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -23,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,6 +203,44 @@ public class RestoreFactoryTest {
                         "&as=asUser%40restore-domain.commcarehq.org",
                 restoreFactorySpy.getUserRestoreUrl(false).toString()
         );
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_INCLUDE_STATE_HASH})
+    public void testGetUserRestoreUrlWithStateHash() {
+        try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
+            mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("123");
+            assertEquals(
+                    BASE_URL + "?version=2.0" +
+                            "&device_id=WebAppsLogin" +
+                            "&state=ccsh%3A123",
+                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+            );
+        }
+    }
+
+    @Test
+    public void testGetUserRestoreUrlWithStateHash_toggleOff() {
+        try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
+            mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("123");
+            assertEquals(
+                    BASE_URL + "?version=2.0" +
+                            "&device_id=WebAppsLogin",
+                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+            );
+        }
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_INCLUDE_STATE_HASH})
+    public void testGetUserRestoreUrlEmptyStateHash() {
+        try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
+            mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("");
+            assertEquals(
+                    BASE_URL + "?version=2.0&device_id=WebAppsLogin",
+                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+            );
+        }
     }
 
     @Test

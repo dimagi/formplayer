@@ -5,11 +5,11 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.5.6'
+    id 'org.springframework.boot' version '2.7.3'
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
-    id "io.freefair.lombok" version "6.5.0.3"
-    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.6.10'
+    id "io.freefair.lombok" version "6.5.1"
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.7.10'
 }
 
 springBoot {
@@ -48,7 +48,7 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    sentryVersion = '6.4.0'
+    sentryVersion = '6.4.1'
     shedlockVersion = '4.41.0'
 }
 
@@ -109,7 +109,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '0.105.0'
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '0.108.1'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.0.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
