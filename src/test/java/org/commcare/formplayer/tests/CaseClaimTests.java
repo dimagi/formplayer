@@ -119,14 +119,14 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
 
         // select empty with a valid choice
-        inputs.put("name", "#,#chris");
+        inputs.put("name", " chris");
         inputs.put("state", "0");
-        inputs.put("district", "#,#1");
+        inputs.put("district", " 1");
         queryData.setExecute("search_command.m1", false);
         queryResponseBean = runQuery(queryData);
-        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals(" chris");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#1");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals(" 1");
 
         queryData.setExecute("search_command.m1", true);
         sessionNavigateWithQuery(new String[]{"1", "action 1"},
@@ -207,14 +207,14 @@ public class CaseClaimTests extends BaseTestClass {
 
         // multi-select test
         inputs.put("state", "0");
-        inputs.put("district", "0#,#1"); // select 2 districts
+        inputs.put("district", "0 1"); // select 2 districts
         queryResponseBean = runQuery(queryData);
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0 1");
 
         // Select an invalid choice in multi-select and verify it's removed from formplayer response
-        inputs.put("district", "0#,#2#,#1");
+        inputs.put("district", "0 2 1");
         queryResponseBean = runQuery(queryData);
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0 1");
 
         // Execute Search to get results
         queryData.setExecute("search_command.m1", true);
