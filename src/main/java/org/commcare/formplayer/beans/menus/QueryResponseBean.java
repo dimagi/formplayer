@@ -8,6 +8,7 @@ import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.utils.ItemSetUtils;
+import org.javarosa.core.util.DataUtil;
 import org.javarosa.core.util.OrderedHashtable;
 
 import java.util.ArrayList;
@@ -63,8 +64,7 @@ public class QueryResponseBean extends MenuBean {
                     }
                 }
                 if (indicesForSelectedChoices.size() > 0) {
-                    currentAnswer = String.join(RemoteQuerySessionManager.ANSWER_DELIMITER,
-                            indicesForSelectedChoices);
+                    currentAnswer = DataUtil.joinWithSpaces(indicesForSelectedChoices.toArray(new String[0]));
                 }
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
