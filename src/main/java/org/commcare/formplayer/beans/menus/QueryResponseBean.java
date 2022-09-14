@@ -64,7 +64,8 @@ public class QueryResponseBean extends MenuBean {
                     }
                 }
                 if (indicesForSelectedChoices.size() > 0) {
-                    currentAnswer = DataUtil.joinWithSpaces(indicesForSelectedChoices.toArray(new String[0]));
+                    currentAnswer = DataUtil.joinWithSpaces(
+                            indicesForSelectedChoices.toArray(new String[indicesForSelectedChoices.size()]));
                 }
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
