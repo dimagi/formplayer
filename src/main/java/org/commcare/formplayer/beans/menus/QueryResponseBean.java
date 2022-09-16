@@ -97,4 +97,9 @@ public class QueryResponseBean extends MenuBean {
     public String getType() {
         return type;
     }
+
+    @JsonGetter(value = "multi_select_csv_support")
+    public String getMultiSelectCsvSupport() {
+        return "yes";
+    }
 }
