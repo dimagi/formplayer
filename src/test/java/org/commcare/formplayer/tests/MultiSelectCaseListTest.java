@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -132,5 +134,27 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 "3a028cab-fa70-4611-a423-046d25f3e2f4"
         };
         checkForSelectedEntitiesInstance(formResp.getSessionId(), formResp.getSelections(), allCases);
+    }
+
+    @Test
+    public void testAutoSelectionWithMultiSelectCaseList_MaxCasesError() {
+        String[] selections = new String[]{"0", "3"};
+        try {
+            sessionNavigate(selections, APP, NewFormResponse.class);
+        } catch (Exception e) {
+            assertEquals("Number of selected cases 7 is greater than the maximum limit of 5", e.getCause().getMessage());
+        }
+    }
+
+    @Test
+    public void testAutoSelectionWithMultiSelectCaseList_NoCasesError() {
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/nocases.xml");
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        String[] selections = new String[]{"0", "2"};
+        try {
+            sessionNavigate(selections, APP, NewFormResponse.class);
+        } catch (Exception e) {
+            assertEquals("No cases found", e.getCause().getMessage());
+        }
     }
 }
