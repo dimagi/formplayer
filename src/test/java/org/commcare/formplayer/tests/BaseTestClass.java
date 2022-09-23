@@ -50,12 +50,9 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
-import org.commcare.formplayer.junit.FormDefSessionServiceExtension;
-import org.commcare.formplayer.junit.FormSessionServiceExtension;
-import org.commcare.formplayer.junit.InitializeStaticsExtension;
+import org.commcare.formplayer.junit.FormSessionTest;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
-import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
@@ -80,7 +77,6 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.SessionUtils;
-import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.CheckedSupplier;
 import org.commcare.formplayer.utils.FileUtils;
@@ -88,7 +84,6 @@ import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
-import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
@@ -99,7 +94,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -149,11 +143,7 @@ import lombok.extern.apachecommons.CommonsLog;
  */
 @CommonsLog
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
-@ExtendWith({
-        InitializeStaticsExtension.class,
-        FormSessionServiceExtension.class,
-        FormDefSessionServiceExtension.class,
-})
+@FormSessionTest
 public class BaseTestClass {
 
     private MockMvc mockFormController;
