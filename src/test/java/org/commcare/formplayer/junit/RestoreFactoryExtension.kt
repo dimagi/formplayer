@@ -2,24 +2,25 @@ package org.commcare.formplayer.junit
 
 import org.commcare.formplayer.auth.DjangoAuth
 import org.commcare.formplayer.services.RestoreFactory
-import org.commcare.formplayer.tests.BaseTestClass
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.Mockito
+import org.mockito.Mockito.doAnswer
 import org.mockito.invocation.InvocationOnMock
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.util.*
-import kotlin.collections.HashSet
+
 
 class RestoreFactoryExtension(
     private val username: String,
     private val domain: String,
     private val asUser: String?) : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
 
-    private lateinit var restoreFactory: RestoreFactory
+    lateinit var restoreFactory: RestoreFactory
     private val sessionSelectionsCache: MutableSet<String> = HashSet()
 
     var restorePath: String = "test_restore.xml"
@@ -39,33 +40,34 @@ class RestoreFactoryExtension(
         }
     }
 
-    fun withRestore(restorePath: String) {
-        val answer = BaseTestClass.RestoreFactoryAnswer(restorePath)
-        Mockito.doAnswer(answer).`when`(restoreFactory)
-            .getRestoreXml(ArgumentMatchers.anyBoolean())
-    }
-
     override fun beforeAll(context: ExtensionContext?) {
         restoreFactory = SpringExtension.getApplicationContext(context).getBean(RestoreFactory::class.java)
     }
 
     override fun beforeEach(context: ExtensionContext?) {
-        sessionSelectionsCache.clear()
-        withRestore(restorePath);
+        reset()
         restoreFactory.configure(username, domain, asUser, DjangoAuth("test"))
+        configureMock()
+    }
 
-        Mockito.doReturn(false)
-            .`when`(restoreFactory).isRestoreXmlExpired
-        Mockito.doAnswer { invocation: InvocationOnMock ->
-            val selections = invocation.arguments[0] as Array<String>
-            sessionSelectionsCache.add(java.lang.String.join("|", *selections))
-            null
-        }.`when`(restoreFactory).cacheSessionSelections(
-            ArgumentMatchers.any(
-                Array<String>::class.java
-            )
-        )
-        Mockito.doAnswer { invocation: InvocationOnMock ->
+    override fun afterEach(context: ExtensionContext?) {
+        reset()
+    }
+
+    fun reset() {
+        sessionSelectionsCache.clear()
+        restoreFactory.sqLiteDB.closeConnection()
+    }
+
+    fun configureMock() {
+        mockGetRestoreXml()
+        mockIsRestoreXmlExpired()
+        mockCacheSessionSelections()
+        mockIsConfirmedSelections()
+    }
+
+    private fun mockIsConfirmedSelections() {
+        doAnswer { invocation: InvocationOnMock ->
             val selections = invocation.arguments[0] as Array<String>
             sessionSelectionsCache.contains(java.lang.String.join("|", *selections))
         }.`when`(restoreFactory).isConfirmedSelection(
@@ -75,7 +77,24 @@ class RestoreFactoryExtension(
         )
     }
 
-    override fun afterEach(context: ExtensionContext?) {
-        sessionSelectionsCache.clear()
+    private fun mockCacheSessionSelections() {
+        doAnswer { invocation: InvocationOnMock ->
+            val selections = invocation.arguments[0] as Array<String>
+            sessionSelectionsCache.add(java.lang.String.join("|", *selections))
+            null
+        }.`when`(restoreFactory).cacheSessionSelections(
+            ArgumentMatchers.any(
+                Array<String>::class.java
+            )
+        )
+    }
+
+    private fun mockIsRestoreXmlExpired() {
+        Mockito.doReturn(false).`when`(restoreFactory).isRestoreXmlExpired
+    }
+
+    private fun mockGetRestoreXml() {
+        val answer = RestoreFactoryAnswer(restorePath)
+        doAnswer(answer).`when`(restoreFactory).getRestoreXml(anyBoolean())
     }
 }

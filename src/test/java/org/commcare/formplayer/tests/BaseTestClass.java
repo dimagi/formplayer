@@ -3,7 +3,6 @@ package org.commcare.formplayer.tests;
 import static org.commcare.formplayer.util.Constants.PART_ANSWER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -48,17 +47,14 @@ import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
-import org.commcare.formplayer.engine.ClasspathFileRoot;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
-import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.junit.FormSessionTest;
-import org.commcare.formplayer.junit.MockTimezoneProvider;
+import org.commcare.formplayer.junit.RestoreFactoryExtension;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
-import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
@@ -82,9 +78,7 @@ import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
-import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.util.SessionUtils;
-import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.CheckedSupplier;
 import org.commcare.formplayer.utils.FileUtils;
@@ -92,14 +86,10 @@ import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
-import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.reference.ReferenceHandler;
-import org.javarosa.core.reference.ReferenceManager;
-import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -132,19 +122,15 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.Cookie;
@@ -260,9 +246,7 @@ public class BaseTestClass {
 
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
     final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
-    final Set<String> sessionSelectionsCache = new HashSet<>();
-
-    protected Long currentFormDefinitionId = 1L;
+    RestoreFactoryExtension restoreFactoryExtension = new RestoreFactoryExtension.builder().build();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -291,28 +275,16 @@ public class BaseTestClass {
         setupSubmitServiceMock();
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
-        restoreFactoryMock.getSQLiteDB().closeConnection();
 
         mockMenuSessionService();
         mockVirtualDataInstanceService();
     }
 
     private void setupRestoreFactoryMock() {
-        sessionSelectionsCache.clear();
-        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
-        Mockito.doReturn(false)
-                .when(restoreFactoryMock).isRestoreXmlExpired();
-        doAnswer(invocation -> {
-            String[] selections = (String[])invocation.getArguments()[0];
-            sessionSelectionsCache.add(String.join("|", selections));
-            return null;
-        }).when(restoreFactoryMock).cacheSessionSelections(any(String[].class));
-
-        doAnswer(invocation -> {
-            String[] selections = (String[])invocation.getArguments()[0];
-            return sessionSelectionsCache.contains(String.join("|", selections));
-        }).when(restoreFactoryMock).isConfirmedSelection(any(String[].class));
+        restoreFactoryExtension.setRestoreFactory(restoreFactoryMock);
+        restoreFactoryExtension.setRestorePath(getMockRestoreFileName());
+        restoreFactoryExtension.reset();
+        restoreFactoryExtension.configureMock();
     }
 
     private void mockVirtualDataInstanceService() {
@@ -448,19 +420,6 @@ public class BaseTestClass {
         }
         sandbox = restoreFactoryMock.getSqlSandbox();
         return sandbox;
-    }
-
-    public static class RestoreFactoryAnswer implements Answer {
-        private String mRestoreFile;
-
-        public RestoreFactoryAnswer(String restoreFile) {
-            mRestoreFile = restoreFile;
-        }
-
-        @Override
-        public InputStream answer(InvocationOnMock invocation) throws Throwable {
-            return new FileInputStream("src/test/resources/" + mRestoreFile);
-        }
     }
 
     private String urlPrepend(String string) {
