@@ -1,6 +1,7 @@
 package org.commcare.formplayer.junit
 
 import org.commcare.formplayer.services.FormplayerStorageFactory
+import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -11,7 +12,7 @@ class StorageFactoryExtension(
     private val domain: String,
     private val appId: String,
     private val asUser: String?,
-    private val asCaseId: String?) : BeforeAllCallback, BeforeEachCallback {
+    private val asCaseId: String?) : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private lateinit var storageFactory: FormplayerStorageFactory
 
@@ -41,5 +42,9 @@ class StorageFactoryExtension(
 
     override fun beforeEach(context: ExtensionContext?) {
         storageFactory.configure(username, domain, appId, asUser, asCaseId)
+    }
+
+    override fun afterEach(context: ExtensionContext?) {
+        storageFactory.sqLiteDB.closeConnection()
     }
 }
