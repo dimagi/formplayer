@@ -47,10 +47,10 @@ import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
-import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.junit.FormSessionServiceExtension;
 import org.commcare.formplayer.junit.InitializeStaticsExtension;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
@@ -148,7 +148,7 @@ import lombok.extern.apachecommons.CommonsLog;
  */
 @CommonsLog
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
-@ExtendWith(InitializeStaticsExtension.class)
+@ExtendWith({InitializeStaticsExtension.class, FormSessionServiceExtension.class})
 public class BaseTestClass {
 
     private MockMvc mockFormController;
@@ -250,7 +250,6 @@ public class BaseTestClass {
 
     protected ObjectMapper mapper;
 
-    final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
     final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
     final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
@@ -287,7 +286,6 @@ public class BaseTestClass {
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
 
-        mockFormSessionService();
         mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
@@ -309,49 +307,6 @@ public class BaseTestClass {
             String[] selections = (String[])invocation.getArguments()[0];
             return sessionSelectionsCache.contains(String.join("|", selections));
         }).when(restoreFactoryMock).isConfirmedSelection(any(String[].class));
-    }
-
-    /*
-     * Setup mocking for the FormSessionService that allows saving and retrieving sessions.
-     * The 'persisted' sessions are cleared at the start of each test.
-     */
-    private void mockFormSessionService() {
-        sessionMap.clear();
-        doAnswer(new Answer<SerializableFormSession>() {
-            @Override
-            public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
-                SerializableFormSession session =
-                        (SerializableFormSession)invocation.getArguments()[0];
-                if (session.getId() == null) {
-                    // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(session, "id", UUID.randomUUID().toString());
-                }
-                sessionMap.put(session.getId(), session);
-                return session;
-            }
-        }).when(formSessionService).saveSession(any(SerializableFormSession.class));
-
-        when(formSessionService.getSessionById(anyString())).thenAnswer(
-                new Answer<SerializableFormSession>() {
-                    @Override
-                    public SerializableFormSession answer(InvocationOnMock invocation)
-                            throws Throwable {
-                        String key = (String)invocation.getArguments()[0];
-                        if (sessionMap.containsKey(key)) {
-                            return sessionMap.get(key);
-                        }
-                        throw new FormNotFoundException(key);
-                    }
-                });
-
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                String key = (String)invocation.getArguments()[0];
-                sessionMap.remove(key);
-                return null;
-            }
-        }).when(formSessionService).deleteSessionById(anyString());
     }
 
     /*
