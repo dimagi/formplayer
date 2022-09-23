@@ -51,6 +51,7 @@ import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.junit.FormSessionTest;
+import org.commcare.formplayer.junit.RestoreFactoryExtension;
 import org.commcare.formplayer.junit.request.NewFormRequest;
 import org.commcare.formplayer.junit.request.SubmitFormRequest;
 import org.commcare.formplayer.objects.QueryData;
@@ -249,9 +250,8 @@ public class BaseTestClass {
 
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
     final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
-    final Set<String> sessionSelectionsCache = new HashSet<>();
 
-    protected Long currentFormDefinitionId = 1L;
+    RestoreFactoryExtension restoreFactoryExtension = new RestoreFactoryExtension.builder().build();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -287,21 +287,10 @@ public class BaseTestClass {
     }
 
     private void setupRestoreFactoryMock() {
-        sessionSelectionsCache.clear();
-        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
-        Mockito.doReturn(false)
-                .when(restoreFactoryMock).isRestoreXmlExpired();
-        doAnswer(invocation -> {
-            String[] selections = (String[])invocation.getArguments()[0];
-            sessionSelectionsCache.add(String.join("|", selections));
-            return null;
-        }).when(restoreFactoryMock).cacheSessionSelections(any(String[].class));
-
-        doAnswer(invocation -> {
-            String[] selections = (String[])invocation.getArguments()[0];
-            return sessionSelectionsCache.contains(String.join("|", selections));
-        }).when(restoreFactoryMock).isConfirmedSelection(any(String[].class));
+        restoreFactoryExtension.setRestoreFactory(restoreFactoryMock);
+        restoreFactoryExtension.setRestorePath(getMockRestoreFileName());
+        restoreFactoryExtension.reset();
+        restoreFactoryExtension.configureMock();
     }
 
     private void mockVirtualDataInstanceService() {
@@ -437,19 +426,6 @@ public class BaseTestClass {
         }
         sandbox = restoreFactoryMock.getSqlSandbox();
         return sandbox;
-    }
-
-    public static class RestoreFactoryAnswer implements Answer {
-        private String mRestoreFile;
-
-        public RestoreFactoryAnswer(String restoreFile) {
-            mRestoreFile = restoreFile;
-        }
-
-        @Override
-        public InputStream answer(InvocationOnMock invocation) throws Throwable {
-            return new FileInputStream("src/test/resources/" + mRestoreFile);
-        }
     }
 
     private String urlPrepend(String string) {
