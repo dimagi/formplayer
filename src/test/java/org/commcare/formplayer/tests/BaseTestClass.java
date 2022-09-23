@@ -51,6 +51,8 @@ import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.junit.FormSessionTest;
+import org.commcare.formplayer.junit.request.NewFormRequest;
+import org.commcare.formplayer.junit.request.SubmitFormRequest;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -557,30 +559,23 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
-        when(restoreFactoryMock.getUsername())
-                .thenReturn(newSessionRequestBean.getUsername());
-        when(restoreFactoryMock.getDomain())
-                .thenReturn(newSessionRequestBean.getDomain());
-        return generateMockQuery(ControllerType.FORM,
-                RequestType.POST,
-                Constants.URL_NEW_SESSION,
-                newSessionRequestBean,
-                NewFormResponse.class);
+        restoreFactoryMock.configure(newSessionRequestBean, new DjangoAuth("derp"));
+        return new NewFormRequest(mockFormController, webClientMock, formPath)
+                .requestWithBean(newSessionRequestBean)
+                .bean();
     }
 
     SubmitResponseBean submitForm(String sessionId) throws Exception {
-        return submitForm(new HashMap<String, Object>(), sessionId);
+        return submitForm(new HashMap<>(), sessionId);
     }
 
     SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
-        return generateMockQuery(ControllerType.FORM_SUBMISSION,
-                RequestType.POST,
-                Constants.URL_SUBMIT_FORM,
-                submitRequestBean,
-                SubmitResponseBean.class);
+        restoreFactoryMock.configure(submitRequestBean, new DjangoAuth("123"));
+        return new SubmitFormRequest(mockFormSubmissionController)
+                .requestWithBean(submitRequestBean).bean();
     }
 
 
