@@ -513,19 +513,6 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    FormEntryResponseBean answerMediaQuestion(String index, MockMultipartFile file, String sessionId)
-            throws Exception {
-        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, null,
-                sessionId);
-        populateFromSession(answerQuestionBean, sessionId);
-        return generateMockQuery(ControllerType.FORM,
-                RequestType.MULTIPART,
-                Constants.URL_ANSWER_MEDIA_QUESTION,
-                answerQuestionBean,
-                file,
-                FormEntryResponseBean.class);
-    }
-
     GetInstanceResponseBean getInstance(String sessionId) throws Exception {
         SessionRequestBean sessionRequestBean = populateFromSession(new SessionRequestBean(),
                 sessionId);
