@@ -54,6 +54,7 @@ import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.junit.FormSessionTest;
 import org.commcare.formplayer.junit.MockTimezoneProvider;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
@@ -155,6 +156,7 @@ import lombok.extern.apachecommons.CommonsLog;
  */
 @CommonsLog
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
+@FormSessionTest
 public class BaseTestClass {
 
     private MockMvc mockFormController;
@@ -256,8 +258,6 @@ public class BaseTestClass {
 
     protected ObjectMapper mapper;
 
-    final Map<String, SerializableFormSession> sessionMap = new HashMap<>();
-    final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
     final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
     final Set<String> sessionSelectionsCache = new HashSet<>();
@@ -292,25 +292,9 @@ public class BaseTestClass {
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
-        PrototypeUtils.setupThreadLocalPrototypes();
-        setUpLocalization();
-        new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
-        MockTimezoneProvider tzProvider = new MockTimezoneProvider();
-        DateUtils.setTimezoneProvider(tzProvider);
 
-        mockFormSessionService();
-        mockFormDefinitionService();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-    }
-
-    private void setUpLocalization() {
-        LocalizerManager.setUseThreadLocalStrategy(true);
-        Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
-        Localization.setLocale("default");
-        ReferenceManager.instance().addReferenceFactory(new ClasspathFileRoot());
-        Localization.registerLanguageReference("default",
-                "jr://springfile/formplayer_translatable_strings.txt");
     }
 
     private void setupRestoreFactoryMock() {
@@ -329,97 +313,6 @@ public class BaseTestClass {
             String[] selections = (String[])invocation.getArguments()[0];
             return sessionSelectionsCache.contains(String.join("|", selections));
         }).when(restoreFactoryMock).isConfirmedSelection(any(String[].class));
-    }
-
-    /*
-     * Setup mocking for the FormSessionService that allows saving and retrieving sessions.
-     * The 'persisted' sessions are cleared at the start of each test.
-     */
-    private void mockFormSessionService() {
-        sessionMap.clear();
-        doAnswer(new Answer<SerializableFormSession>() {
-            @Override
-            public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
-                SerializableFormSession session =
-                        (SerializableFormSession)invocation.getArguments()[0];
-                if (session.getId() == null) {
-                    // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(session, "id", UUID.randomUUID().toString());
-                }
-                sessionMap.put(session.getId(), session);
-                return session;
-            }
-        }).when(formSessionService).saveSession(any(SerializableFormSession.class));
-
-        when(formSessionService.getSessionById(anyString())).thenAnswer(
-                new Answer<SerializableFormSession>() {
-                    @Override
-                    public SerializableFormSession answer(InvocationOnMock invocation)
-                            throws Throwable {
-                        String key = (String)invocation.getArguments()[0];
-                        if (sessionMap.containsKey(key)) {
-                            return sessionMap.get(key);
-                        }
-                        throw new FormNotFoundException(key);
-                    }
-                });
-
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                String key = (String)invocation.getArguments()[0];
-                sessionMap.remove(key);
-                return null;
-            }
-        }).when(formSessionService).deleteSessionById(anyString());
-    }
-
-    /*
-     * Setup mocking for the FormDefinitionService that allows saving and retrieving form definitions.
-     * The 'persisted' definitions are cleared at the start of each test.
-     */
-    private void mockFormDefinitionService() {
-        formDefinitionMap.clear();
-        currentFormDefinitionId = 1L;
-        doAnswer(new Answer<SerializableFormDefinition>() {
-            @Override
-            public SerializableFormDefinition answer(InvocationOnMock invocation) throws Throwable {
-                String appId = ((String)invocation.getArguments()[0]);
-                String appVersion = ((String)invocation.getArguments()[1]);
-                String xmlns = ((String)invocation.getArguments()[2]);
-                for (SerializableFormDefinition tmp : formDefinitionMap.values()) {
-                    if (tmp.getAppId().equals(appId) && tmp.getFormXmlns().equals(xmlns)
-                            && tmp.getFormVersion().equals(appVersion)) {
-                        return tmp;
-                    }
-                }
-                // else create a new one
-                String serializedFormDef;
-                try {
-                    serializedFormDef = FormDefStringSerializer.serialize(((FormDef)invocation.getArguments()[3]));
-                } catch (IOException ex) {
-                    serializedFormDef = "could not serialize provided form def";
-                }
-                SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(
-                        appId, appVersion, xmlns, serializedFormDef
-                );
-                if (serializableFormDef.getId() == null) {
-                    // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
-                    currentFormDefinitionId++;
-                }
-                formDefinitionMap.put(serializableFormDef.getId(), serializableFormDef);
-                return serializableFormDef;
-            }
-        }).when(this.formDefinitionService).getOrCreateFormDefinition(
-                anyString(), anyString(), anyString(), any(FormDef.class)
-        );
-
-        when(this.formDefinitionService.getFormDef(any(SerializableFormSession.class))).thenCallRealMethod();
-        when(this.formDefinitionService.cacheFormDef(any(FormSession.class))).thenCallRealMethod();
-
-        // manually wire this in. The autowiring doesn't work here since we've made it a mock
-        ReflectionTestUtils.setField(this.formDefinitionService, "caches", cacheManager);
     }
 
     private void mockVirtualDataInstanceService() {
