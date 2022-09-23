@@ -119,7 +119,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertTrue(submitResponse.getStatus().contentEquals("success"));
         NewFormResponse newFormResponse = getNextScreenForEofNavigation(submitResponse,
                 NewFormResponse.class);
-        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections(), selectedValues);
+        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections(),
+                selectedValues);
     }
 
     @Test
@@ -142,7 +143,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         try {
             sessionNavigate(selections, APP, NewFormResponse.class);
         } catch (Exception e) {
-            assertEquals("Number of selected cases 7 is greater than the maximum limit of 5", e.getCause().getMessage());
+            assertEquals("Number of selected cases 7 is greater than the maximum limit of 5",
+                    e.getCause().getMessage());
         }
     }
 
