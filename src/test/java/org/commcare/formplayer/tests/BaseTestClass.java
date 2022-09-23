@@ -54,6 +54,7 @@ import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.junit.MockTimezoneProvider;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
@@ -95,7 +96,6 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.utils.DateUtils;
-import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.services.locale.Localization;
@@ -1204,20 +1204,6 @@ public class BaseTestClass {
         LinkedHashMap commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
         return mapper.readValue(jsonString, clazz);
-    }
-
-    public class MockTimezoneProvider extends TimezoneProvider {
-
-        private int offsetMillis;
-
-        public void setOffset(int offset) {
-            this.offsetMillis = offset;
-        }
-
-        @Override
-        public int getTimezoneOffsetMillis() {
-            return offsetMillis;
-        }
     }
 
     /**
