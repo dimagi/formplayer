@@ -51,6 +51,7 @@ import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.junit.InitializeStaticsExtension;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
@@ -77,7 +78,6 @@ import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
-import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
@@ -91,15 +91,14 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
-import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -149,6 +148,7 @@ import lombok.extern.apachecommons.CommonsLog;
  */
 @CommonsLog
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
+@ExtendWith(InitializeStaticsExtension.class)
 public class BaseTestClass {
 
     private MockMvc mockFormController;
@@ -286,13 +286,6 @@ public class BaseTestClass {
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
-        PrototypeUtils.setupThreadLocalPrototypes();
-        LocalizerManager.setUseThreadLocalStrategy(true);
-        Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
-        Localization.setLocale("default");
-        new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
-        MockTimezoneProvider tzProvider = new MockTimezoneProvider();
-        DateUtils.setTimezoneProvider(tzProvider);
 
         mockFormSessionService();
         mockFormDefinitionService();
