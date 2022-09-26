@@ -6,17 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.Assert;
 
 import java.util.HashMap;
@@ -63,7 +63,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         selections = formResp.getSelections();
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
-        checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selections);
+        checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selections, selectedValues);
     }
 
     @Test
@@ -81,7 +81,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         }
     }
 
-    private void checkForSelectedEntitiesInstance(String sessionId, String[] selections) throws Exception {
+    private void checkForSelectedEntitiesInstance(String sessionId, String[] selections,
+            String[] expectedCases) throws Exception {
         // Ensure that the datum is set correctly to the guid
         EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('commcaresession')/session/data/selected_cases");
@@ -96,11 +97,11 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<result>\n"
-                + "  <results id=\"selected_cases\">\n"
-                + "    <value>5e421eb8bf414e03b4871195b869d894</value>\n"
-                + "    <value>3512eb7c-7a58-4a95-beda-205eb0d7f163</value>\n"
-                + "  </results>\n"
-                + "</result>\n";
+                + "  <results id=\"selected_cases\">\n";
+        for (String expectedCase : expectedCases) {
+            result += "    <value>" + expectedCase + "</value>\n";
+        }
+        result += "  </results>\n</result>\n";
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
 
@@ -118,6 +119,44 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertTrue(submitResponse.getStatus().contentEquals("success"));
         NewFormResponse newFormResponse = getNextScreenForEofNavigation(submitResponse,
                 NewFormResponse.class);
-        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections());
+        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections(),
+                selectedValues);
+    }
+
+    @Test
+    public void testAutoSelectionWithMultiSelectCaseList() throws Exception {
+        String[] selections = new String[]{"0", "2"};
+        NewFormResponse formResp = sessionNavigate(selections, APP,
+                NewFormResponse.class);
+        String[] allCases = new String[]{
+                "56306779-26a2-4aa5-a952-70c9d8b21e39", "5e421eb8bf414e03b4871195b869d894",
+                "3512eb7c-7a58-4a95-beda-205eb0d7f163", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
+                "f70977c4b27f44d391e118592ef8d08b", "b503dc77-f240-4d1e-89cd-69958f52bec4",
+                "3a028cab-fa70-4611-a423-046d25f3e2f4"
+        };
+        checkForSelectedEntitiesInstance(formResp.getSessionId(), formResp.getSelections(), allCases);
+    }
+
+    @Test
+    public void testAutoSelectionWithMultiSelectCaseList_MaxCasesError() {
+        String[] selections = new String[]{"0", "3"};
+        try {
+            sessionNavigate(selections, APP, NewFormResponse.class);
+        } catch (Exception e) {
+            assertEquals("Number of selected cases 7 is greater than the maximum limit of 5",
+                    e.getCause().getMessage());
+        }
+    }
+
+    @Test
+    public void testAutoSelectionWithMultiSelectCaseList_NoCasesError() {
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/nocases.xml");
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        String[] selections = new String[]{"0", "2"};
+        try {
+            sessionNavigate(selections, APP, NewFormResponse.class);
+        } catch (Exception e) {
+            assertEquals("No cases found", e.getCause().getMessage());
+        }
     }
 }

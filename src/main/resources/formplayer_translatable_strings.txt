@@ -1,4 +1,11 @@
 app.menu.display.cond.bad.xpath=Invalid form display condition (${0}): ${1}
 app.menu.display.cond.xpath.err=Error evaluating form display condition (${0}): ${1}
 ethiopian_months=Mäskäräm,T’ïk’ïmt,Hïdar,Tahsas,T’ïr,Yäkatit,Mägabit,Miyaziya,Gïnbot,Säne,Hämle,Nähäse,P’agume
+file.oversize.error.message=Selected file exceeds the file size limit of 3 MB. Please select a file whose size is less than 3 MB.
+form.attachment.invalid=Invalid filetype choosen. Please select a valid multimedia file.
+form.upload.attachments.threshold.error.message=More than ${0} attachments found for this form.
+form.upload.attachment.invalid=Invalid file ${0} attached with this form.
+form.upload.attachment.oversize=File ${0} is more than the maximum limit of 3 MB.
+max.entity.selection.error=Number of selected cases ${0} is greater than the maximum limit of ${1}
 nepali_months=Baishakh,Jestha,Ashadh,Shrawan,Bhadra,Ashwin,Kartik,Mangsir,Poush,Magh,Falgun,Chaitra
+no.entity.selection.error=No cases found
