@@ -1,6 +1,0 @@
-app.menu.display.cond.bad.xpath=Invalid form display condition (${0}): ${1}
-app.menu.display.cond.xpath.err=Error evaluating form display condition (${0}): ${1}
-ethiopian_months=Mäskäräm,T’ïk’ïmt,Hïdar,Tahsas,T’ïr,Yäkatit,Mägabit,Miyaziya,Gïnbot,Säne,Hämle,Nähäse,P’agume
-nepali_months=Baishakh,Jestha,Ashadh,Shrawan,Bhadra,Ashwin,Kartik,Mangsir,Poush,Magh,Falgun,Chaitra
-form.attachment.invalid=Invalid filetype choosen. Please select a valid multimedia file.
-file.oversize.error.message=Selected file exceeds the file size limit of 3 MB. Please select a file whose size is less than 3 MB.
