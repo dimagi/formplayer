@@ -14,7 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import java.util.*
 
 /**
- * Junit extension that configures the mock FormDefinitionService
+ * Junit extension that configures the mock FormSessionService
  *
  * Setup mocking for the FormSessionService that allows saving and retrieving sessions.
  * The 'persisted' sessions are cleared at the start of each test.
