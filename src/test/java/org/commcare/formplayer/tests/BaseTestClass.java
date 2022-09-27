@@ -1025,20 +1025,6 @@ public class BaseTestClass {
         return mapper.readValue(jsonString, clazz);
     }
 
-    public class MockTimezoneProvider extends TimezoneProvider {
-
-        private int offsetMillis;
-
-        public void setOffset(int offset) {
-            this.offsetMillis = offset;
-        }
-
-        @Override
-        public int getTimezoneOffsetMillis() {
-            return offsetMillis;
-        }
-    }
-
     /**
      * Utility method to extract the 'installReference' field from test JSON files and map the
      * remaining JSON fields to the given bean type.
