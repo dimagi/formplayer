@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.configuration.CacheConfiguration;
+import org.commcare.formplayer.junit.InitializeStaticsExtension;
 import org.commcare.formplayer.junit.Installer;
 import org.commcare.formplayer.junit.RestoreFactoryExtension;
 import org.commcare.formplayer.junit.request.SyncDbRequest;
@@ -15,6 +16,7 @@ import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.MenuSessionRunnerService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -44,6 +46,7 @@ import java.io.File;
 @ContextConfiguration(classes={TestContext.class, CacheConfiguration.class})
 @Import({UtilController.class})
 @TestPropertySource(properties={"sqlite.dataDir=src/test/resources/snapshot/"})
+@ExtendWith(InitializeStaticsExtension.class)
 public class GenerateSnapshotDatabases {
 
     static String a = "src/test/resources/snapshot/";

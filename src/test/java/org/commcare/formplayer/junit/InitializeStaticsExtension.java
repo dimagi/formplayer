@@ -21,7 +21,6 @@ public class InitializeStaticsExtension implements BeforeEachCallback {
                 "jr://springfile/formplayer_translatable_strings.txt");
 
         PrototypeUtils.setupThreadLocalPrototypes();
-        new SQLiteProperties().setDataDir("testdbs/");
 
         DateUtils.setTimezoneProvider(new MockTimezoneProvider());
     }

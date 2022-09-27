@@ -54,7 +54,9 @@ public class TestContext {
 
     @Bean
     public SQLiteProperties sQLiteProperties() {
-        return new SQLiteProperties();
+        SQLiteProperties sqLiteProperties = new SQLiteProperties();
+        sqLiteProperties.setDataDir("testdbs/");
+        return sqLiteProperties;
     }
 
     @Bean
