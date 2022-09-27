@@ -2,16 +2,13 @@ package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -75,14 +72,11 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.session.FormSession;
-import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
-import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
-import org.commcare.formplayer.utils.CheckedSupplier;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
@@ -91,7 +85,6 @@ import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
-import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.jetbrains.annotations.NotNull;
@@ -101,7 +94,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -123,19 +115,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.Cookie;
@@ -285,6 +271,8 @@ public class BaseTestClass {
 
         mockMenuSessionService();
         mockVirtualDataInstanceService();
+
+        new SQLiteProperties().setDataDir("testdbs/");
     }
 
     private void setupRestoreFactoryMock() {
