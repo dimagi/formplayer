@@ -35,7 +35,7 @@ class RestoreFactoryExtension(
     private val username: String,
     private val domain: String,
     private val asUser: String?,
-    private val restorePath: String = "test_restore.xml") : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
+    var restorePath: String = "test_restore.xml") : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
 
     lateinit var restoreFactory: RestoreFactory
     private val sessionSelectionsCache: MutableSet<String> = HashSet()
@@ -44,7 +44,7 @@ class RestoreFactoryExtension(
         private var username: String = "username",
         private var domain: String = "domain",
         private var asUser: String? = null,
-        private var restorePath: String? = null,
+        private var restorePath: String = "test_restore.xml",
     ) {
         fun withUser(username: String) = apply {this.username = username}
         fun withDomain(domain: String) = apply {this.domain = domain}
@@ -58,17 +58,17 @@ class RestoreFactoryExtension(
         }
     }
 
-    override fun beforeAll(context: ExtensionContext?) {
+    override fun beforeAll(context: ExtensionContext) {
         restoreFactory = SpringExtension.getApplicationContext(context).getBean(RestoreFactory::class.java)
     }
 
-    override fun beforeEach(context: ExtensionContext?) {
+    override fun beforeEach(context: ExtensionContext) {
         reset()
         restoreFactory.configure(username, domain, asUser, DjangoAuth("test"))
         configureMock()
     }
 
-    override fun afterEach(context: ExtensionContext?) {
+    override fun afterEach(context: ExtensionContext) {
         reset()
     }
 

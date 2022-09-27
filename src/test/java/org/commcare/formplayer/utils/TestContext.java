@@ -2,6 +2,7 @@ package org.commcare.formplayer.utils;
 
 import com.timgroup.statsd.StatsDClient;
 
+import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.TestInstallService;
@@ -49,6 +50,11 @@ public class TestContext {
 
     public TestContext() {
         MockitoAnnotations.openMocks(this);
+    }
+
+    @Bean
+    public SQLiteProperties sQLiteProperties() {
+        return new SQLiteProperties();
     }
 
     @Bean
