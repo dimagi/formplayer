@@ -34,24 +34,26 @@ import kotlin.collections.HashSet
 class RestoreFactoryExtension(
     private val username: String,
     private val domain: String,
-    private val asUser: String?) : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
+    private val asUser: String?,
+    private val restorePath: String = "test_restore.xml") : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
 
     lateinit var restoreFactory: RestoreFactory
     private val sessionSelectionsCache: MutableSet<String> = HashSet()
-
-    var restorePath: String = "test_restore.xml"
 
     class builder @JvmOverloads constructor(
         private var username: String = "username",
         private var domain: String = "domain",
         private var asUser: String? = null,
+        private var restorePath: String? = null,
     ) {
         fun withUser(username: String) = apply {this.username = username}
         fun withDomain(domain: String) = apply {this.domain = domain}
         fun withAsUser(asUser: String) = apply {this.asUser = asUser}
+        fun withRestorePath(restorePath: String) = apply {this.restorePath = restorePath}
+
         fun build(): RestoreFactoryExtension {
             return RestoreFactoryExtension(
-                username, domain, asUser
+                username, domain, asUser, restorePath
             )
         }
     }
