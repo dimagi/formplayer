@@ -271,8 +271,6 @@ public class BaseTestClass {
 
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-
-        new SQLiteProperties().setDataDir("testdbs/");
     }
 
     private void setupRestoreFactoryMock() {
