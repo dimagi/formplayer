@@ -272,6 +272,9 @@ public class BaseTestClass {
 
         mockMenuSessionService();
         mockVirtualDataInstanceService();
+
+        // this shouldn't be needed here (see TestContext) but tests fail without it
+        new SQLiteProperties().setDataDir("testdbs/");
     }
 
     private void setupRestoreFactoryMock() {
