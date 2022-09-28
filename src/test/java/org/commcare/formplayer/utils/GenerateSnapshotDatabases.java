@@ -49,8 +49,6 @@ import java.io.File;
 @ExtendWith(InitializeStaticsExtension.class)
 public class GenerateSnapshotDatabases {
 
-    static String a = "src/test/resources/snapshot/";
-
     @Autowired
     private MockMvc mockMvc;
 
