@@ -166,9 +166,6 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                if (nextScreen instanceof MultiSelectEntityScreen) {
-                    menuSession.addSelection(((MultiSelectEntityScreen)nextScreen).getStorageReferenceId());
-                }
                 return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData,
                         casesPerPage, smartLinkTemplate);
             }
