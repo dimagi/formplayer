@@ -63,7 +63,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         selections = formResp.getSelections();
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
-        checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selections, selectedValues);
+        checkForSelectedEntitiesDatum(formRespUsingGuid.getSessionId(),selections );
+        checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selectedValues);
     }
 
     @Test
@@ -81,27 +82,29 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         }
     }
 
-    private void checkForSelectedEntitiesInstance(String sessionId, String[] selections,
-            String[] expectedCases) throws Exception {
-        // Ensure that the datum is set correctly to the guid
-        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
-                "instance('commcaresession')/session/data/selected_cases");
-        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        String guid = selections[selections.length - 1];
-        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>" + guid + "</result>\n";
-        assertEquals(evaluateXpathResponseBean.getOutput(), result);
 
-        // Ensure that 'selected_cases' instance is populated correctly
-        evaluateXpathResponseBean = evaluateXPath(sessionId,
+    // Ensure that 'selected_cases' instance is populated correctly
+    private void checkForSelectedEntitiesInstance(String sessionId, String[] expectedCases) throws Exception {
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('selected_cases')/results");
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<result>\n"
                 + "  <results id=\"selected_cases\">\n";
         for (String expectedCase : expectedCases) {
             result += "    <value>" + expectedCase + "</value>\n";
         }
         result += "  </results>\n</result>\n";
+        assertEquals(evaluateXpathResponseBean.getOutput(), result);
+    }
+
+    // Ensure that the instance datum is set correctly to the guid
+    private void checkForSelectedEntitiesDatum(String sessionId, String[] selections) throws Exception {
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
+                "instance('commcaresession')/session/data/selected_cases");
+        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        String guid = selections[selections.length - 1];
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>" + guid + "</result>\n";
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
 
@@ -119,8 +122,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertTrue(submitResponse.getStatus().contentEquals("success"));
         NewFormResponse newFormResponse = getNextScreenForEofNavigation(submitResponse,
                 NewFormResponse.class);
-        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), newFormResponse.getSelections(),
-                selectedValues);
+        checkForSelectedEntitiesDatum(newFormResponse.getSessionId(),newFormResponse.getSelections() );
+        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
     }
 
     @Test
@@ -128,13 +131,15 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         String[] selections = new String[]{"0", "2"};
         NewFormResponse formResp = sessionNavigate(selections, APP,
                 NewFormResponse.class);
+        // we do not add any guid to selections in case of auto-selection
+        assertArrayEquals(formResp.getSelections(), selections);
         String[] allCases = new String[]{
                 "56306779-26a2-4aa5-a952-70c9d8b21e39", "5e421eb8bf414e03b4871195b869d894",
                 "3512eb7c-7a58-4a95-beda-205eb0d7f163", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
                 "f70977c4b27f44d391e118592ef8d08b", "b503dc77-f240-4d1e-89cd-69958f52bec4",
                 "3a028cab-fa70-4611-a423-046d25f3e2f4"
         };
-        checkForSelectedEntitiesInstance(formResp.getSessionId(), formResp.getSelections(), allCases);
+        checkForSelectedEntitiesInstance(formResp.getSessionId(), allCases);
     }
 
     @Test
