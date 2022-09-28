@@ -52,6 +52,7 @@ import org.commcare.formplayer.junit.Installer;
 import org.commcare.formplayer.junit.RestoreFactoryExtension;
 import org.commcare.formplayer.junit.request.NewFormRequest;
 import org.commcare.formplayer.junit.request.SubmitFormRequest;
+import org.commcare.formplayer.junit.request.SyncDbRequest;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -559,16 +560,13 @@ public class BaseTestClass {
                 SubmitResponseBean.class);
     }
 
-    protected SyncDbResponseBean syncDb() throws Exception {
+    protected SyncDbResponseBean syncDb() {
         SyncDbRequestBean syncDbRequestBean = new SyncDbRequestBean();
         syncDbRequestBean.setDomain(restoreFactoryMock.getDomain());
         syncDbRequestBean.setUsername(restoreFactoryMock.getUsername());
         syncDbRequestBean.setRestoreAs(restoreFactoryMock.getAsUsername());
-        return generateMockQuery(ControllerType.UTIL,
-                RequestType.POST,
-                Constants.URL_SYNC_DB,
-                syncDbRequestBean,
-                SyncDbResponseBean.class);
+        restoreFactoryMock.configure(syncDbRequestBean, new DjangoAuth("derp"));
+        return new SyncDbRequest(mockUtilController, restoreFactoryMock).requestWithBean(syncDbRequestBean).bean();
     }
 
     NotificationMessage deleteApplicationDbs() throws Exception {
