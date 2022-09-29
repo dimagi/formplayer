@@ -80,7 +80,6 @@ class MediaCaptureTest {
             .build()
     }
 
-
     @Test
     fun testImageCapture_fileSaveAndReplace() {
         val formResponse = startImageCaptureForm()

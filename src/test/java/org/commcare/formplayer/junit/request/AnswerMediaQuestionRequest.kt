@@ -18,11 +18,18 @@ import javax.servlet.http.Cookie
 /**
  * Request class for making a mock request that answers a media form question.
  */
-class AnswerMediaQuestionRequest(private val mockMvc: MockMvc, private val formSessionService: FormSessionService) {
+class AnswerMediaQuestionRequest(
+    private val mockMvc: MockMvc,
+    private val formSessionService: FormSessionService
+) {
 
     private val mapper = ObjectMapper()
 
-    fun request(questionIndex: String, file: MockMultipartFile, sessionId: String): Response<FormEntryResponseBean> {
+    fun request(
+        questionIndex: String,
+        file: MockMultipartFile,
+        sessionId: String
+    ): Response<FormEntryResponseBean> {
         val bean = AnswerQuestionRequestBean(questionIndex, null, sessionId)
         val session: SerializableFormSession = formSessionService.getSessionById(sessionId)
         bean.username = session.username
@@ -31,7 +38,10 @@ class AnswerMediaQuestionRequest(private val mockMvc: MockMvc, private val formS
         return requestWithBean(bean, file)
     }
 
-    fun requestWithBean(requestBean: AnswerQuestionRequestBean, file: MockMultipartFile): Response<FormEntryResponseBean> {
+    fun requestWithBean(
+        requestBean: AnswerQuestionRequestBean,
+        file: MockMultipartFile
+    ): Response<FormEntryResponseBean> {
         val answer = MockPart(Constants.PART_ANSWER, mapper.writeValueAsBytes(requestBean))
         answer.headers.contentType = MediaType.APPLICATION_JSON
 
@@ -45,5 +55,4 @@ class AnswerMediaQuestionRequest(private val mockMvc: MockMvc, private val formS
         ).andExpect(MockMvcResultMatchers.status().isOk)
         return Response(mapper, response, FormEntryResponseBean::class)
     }
-
 }

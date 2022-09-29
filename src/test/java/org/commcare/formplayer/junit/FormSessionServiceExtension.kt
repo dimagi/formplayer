@@ -11,7 +11,7 @@ import org.mockito.Mockito
 import org.mockito.stubbing.Answer
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
-import java.util.*
+import java.util.UUID
 
 /**
  * Junit extension that configures the mock FormSessionService
