@@ -1,0 +1,42 @@
+name: Formplayer staging build
+
+on:
+  push:
+    branches: [autostaging]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Setup config
+        run: |
+          cp .github/gradle.properties.ci $HOME/gradle.properties
+      - name: Build staging JAR
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build -x test -x jenkinsTest
+      - name: Compile resources
+        run: |
+          mkdir build/artifacts
+          cp build/libs/formplayer.jar \
+            build/scripts/archive_dbs.sh \
+            build/resources/main/git.properties \
+            build/resources/main/META-INF/build-info.properties \
+            build/artifacts
+      - name: Upload artifacts
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        uses: reggionick/s3-deploy@v3
+        with:
+          folder: build/artifacts
+          bucket: dimagi-formplayer-jars/staging/latest-successful
+          bucket-region: us-east-1
