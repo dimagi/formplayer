@@ -301,7 +301,7 @@ public class MenuSessionRunnerService {
                     // no more nav, we're done
                     BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
                     if (postSyncResponse == null) {
-                        // Return use to the app root
+                        // Return user to the app root
                         postSyncResponse = new BaseResponseBean(null,
                                 new NotificationMessage("Redirecting after sync", false,
                                         NotificationMessage.Tag.sync),
@@ -389,6 +389,16 @@ public class MenuSessionRunnerService {
                 // Advance the session in case auto launch is set
                 sessionAdvanced = handleAutoLaunch((EntityScreen)nextScreen, menuSession, currentInput,
                         needsFullEntityScreen, inputValidated, nextInput, isDetailScreen);
+
+                // Auto select if we have not advanced as part of auto launch
+                // avoiding unnecessary screen init by skipping the original screen
+                if (!sessionAdvanced && iterationCount != 0) {
+                    ((EntityScreen)nextScreen).init(menuSession.getSessionWrapper());
+                    if (nextScreen.shouldBeSkipped()) {
+                        ((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper());
+                        sessionAdvanced = true;
+                    }
+                }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 boolean skipCache = !(replay || isDetailScreen);
