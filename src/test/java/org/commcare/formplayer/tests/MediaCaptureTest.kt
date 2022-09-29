@@ -119,8 +119,9 @@ class MediaCaptureTest : BaseTestClass() {
             assertTrue("Form submission doesn't contain media file part", body.containsKey(fileName))
             val filePart = body[fileName]?.get(0) as HttpEntity<*>
             checkContentType("image/jpeg", filePart)
-            val expectedFilePath = getExpectedMediaPath(formResponse.session_id, imageResponse).toString()
-            assertEquals(expectedFilePath, (filePart.body as File).path)
+            val contentDisposition = filePart.headers["Content-Disposition"]
+            val expectedContentDisposition = String.format("form-data; name=\"%s\"; filename=\"%s\"", fileName, fileName)
+            assertEquals(expectedContentDisposition, contentDisposition!![0])
         }
     }
 
