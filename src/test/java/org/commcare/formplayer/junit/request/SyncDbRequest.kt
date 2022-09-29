@@ -38,5 +38,4 @@ class SyncDbRequest(private val mockMvc: MockMvc, private val restoreFactory: Re
         ).andExpect(MockMvcResultMatchers.status().isOk)
         return Response(mapper, response, SyncDbResponseBean::class)
     }
-
 }

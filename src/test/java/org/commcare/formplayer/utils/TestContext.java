@@ -53,7 +53,7 @@ public class TestContext {
     }
 
     @Bean
-    public SQLiteProperties sQLiteProperties() {
+    public SQLiteProperties sqliteProperties() {
         SQLiteProperties sqLiteProperties = new SQLiteProperties();
         sqLiteProperties.setDataDir("testdbs/");
         return sqLiteProperties;

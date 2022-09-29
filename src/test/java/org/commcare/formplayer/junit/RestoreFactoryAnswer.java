@@ -6,6 +6,9 @@ import org.mockito.stubbing.Answer;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+/**
+ * Mockito answer for mocking restores.
+ */
 public class RestoreFactoryAnswer implements Answer {
     private String mRestoreFile;
 

@@ -12,7 +12,6 @@ import org.mockito.Mockito
 import org.mockito.Mockito.doAnswer
 import org.mockito.invocation.InvocationOnMock
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import java.util.*
 import kotlin.collections.HashSet
 
 /**
@@ -35,7 +34,8 @@ class RestoreFactoryExtension(
     private val username: String,
     private val domain: String,
     private val asUser: String?,
-    var restorePath: String = "test_restore.xml") : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
+    var restorePath: String = "test_restore.xml"
+) : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
 
     lateinit var restoreFactory: RestoreFactory
     private val sessionSelectionsCache: MutableSet<String> = HashSet()
@@ -46,10 +46,10 @@ class RestoreFactoryExtension(
         private var asUser: String? = null,
         private var restorePath: String = "test_restore.xml",
     ) {
-        fun withUser(username: String) = apply {this.username = username}
-        fun withDomain(domain: String) = apply {this.domain = domain}
-        fun withAsUser(asUser: String) = apply {this.asUser = asUser}
-        fun withRestorePath(restorePath: String) = apply {this.restorePath = restorePath}
+        fun withUser(username: String) = apply { this.username = username }
+        fun withDomain(domain: String) = apply { this.domain = domain }
+        fun withAsUser(asUser: String) = apply { this.asUser = asUser }
+        fun withRestorePath(restorePath: String) = apply { this.restorePath = restorePath }
 
         fun build(): RestoreFactoryExtension {
             return RestoreFactoryExtension(

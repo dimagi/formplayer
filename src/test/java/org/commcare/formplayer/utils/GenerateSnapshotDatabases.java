@@ -43,9 +43,9 @@ import java.io.File;
  * @author ctsims
  */
 @WebMvcTest
-@ContextConfiguration(classes={TestContext.class, CacheConfiguration.class})
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 @Import({UtilController.class})
-@TestPropertySource(properties={"sqlite.dataDir=src/test/resources/snapshot/"})
+@TestPropertySource(properties = {"sqlite.dataDir=src/test/resources/snapshot/"})
 @ExtendWith(InitializeStaticsExtension.class)
 public class GenerateSnapshotDatabases {
 

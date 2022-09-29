@@ -21,12 +21,15 @@ import org.mockito.stubbing.Answer
 import java.io.IOException
 import java.io.StringReader
 
+/**
+ * Utility for performing app installs in tests.
+ */
 class Installer(
     private val restoreFactory: RestoreFactory,
     private val storageFactory: FormplayerStorageFactory,
     private val menuSessionFactory: MenuSessionFactory,
     private val menuSessionRunnerService: MenuSessionRunnerService
-    ) {
+) {
 
     /**
      * This function performs an app install outside of the request cycle. In order to do that
@@ -98,10 +101,9 @@ class Installer(
                     return@Answer invocation.callRealMethod()
                 }
             }
-            Mockito.mockStatic(SessionUtils::class.java, answer).use {
-                    _ -> return supplier.get()
+            Mockito.mockStatic(SessionUtils::class.java, answer).use { _ ->
+                return supplier.get()
             }
         }
     }
-
 }

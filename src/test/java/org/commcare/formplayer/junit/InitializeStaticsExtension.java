@@ -10,6 +10,9 @@ import org.javarosa.core.services.locale.LocalizerManager;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+/**
+ * Perform initialization of static utils.
+ */
 public class InitializeStaticsExtension implements BeforeEachCallback {
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {

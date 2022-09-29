@@ -18,7 +18,11 @@ import javax.servlet.http.Cookie
 /**
  * Request class for making a mock request that starts a new form session.
  */
-class NewFormRequest(private val mockMvc: MockMvc, private val webClientMock: WebClient, private val formPath: String) {
+class NewFormRequest(
+    private val mockMvc: MockMvc,
+    private val webClientMock: WebClient,
+    private val formPath: String
+) {
 
     private val mapper = ObjectMapper()
 
@@ -45,5 +49,4 @@ class NewFormRequest(private val mockMvc: MockMvc, private val webClientMock: We
         ).andExpect(MockMvcResultMatchers.status().isOk)
         return Response(mapper, response, NewFormResponse::class)
     }
-
 }

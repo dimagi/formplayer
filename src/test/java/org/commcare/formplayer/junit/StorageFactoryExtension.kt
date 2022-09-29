@@ -28,7 +28,8 @@ class StorageFactoryExtension(
     private val domain: String,
     private val appId: String,
     private val asUser: String?,
-    private val asCaseId: String?) : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
+    private val asCaseId: String?
+) : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private lateinit var storageFactory: FormplayerStorageFactory
 
@@ -39,18 +40,17 @@ class StorageFactoryExtension(
         private var asUser: String? = null,
         private var asCaseId: String? = null,
     ) {
-        fun withUser(username: String) = apply {this.username = username}
-        fun withDomain(domain: String) = apply {this.domain = domain}
-        fun withAppId(appId: String) = apply {this.appId = appId}
-        fun withAsUser(asUser: String) = apply {this.asUser = asUser}
-        fun withCase(asCaseId: String) = apply {this.asCaseId = asCaseId}
+        fun withUser(username: String) = apply { this.username = username }
+        fun withDomain(domain: String) = apply { this.domain = domain }
+        fun withAppId(appId: String) = apply { this.appId = appId }
+        fun withAsUser(asUser: String) = apply { this.asUser = asUser }
+        fun withCase(asCaseId: String) = apply { this.asCaseId = asCaseId }
         fun build(): StorageFactoryExtension {
             return StorageFactoryExtension(
                 username, domain, appId, asUser, asCaseId
             )
         }
     }
-
 
     override fun beforeAll(context: ExtensionContext) {
         storageFactory = SpringExtension.getApplicationContext(context).getBean(FormplayerStorageFactory::class.java)

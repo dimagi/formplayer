@@ -37,5 +37,4 @@ class SubmitFormRequest(private val mockMvc: MockMvc) {
         ).andExpect(MockMvcResultMatchers.status().isOk)
         return Response(mapper, response, SubmitResponseBean::class)
     }
-
 }
