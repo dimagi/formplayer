@@ -36,7 +36,7 @@ In Formpayer the main features we make use of are:
   * [Security guide](#security)
   * [Spring security reference](https://docs.spring.io/spring-security/site/docs/5.4.5/reference/html5/#introduction)
 
-### Security
+## Security
 All Formplayer endpoints other than "/serverup" are secured using Spring Security.
 
 Spring security is part of the Spring framework that provides filters and classes for securing an application.
@@ -52,8 +52,8 @@ separate authentication mechanisms and only one filter will be applied to each r
 The primary mode is to use the session token provided by Django. This is passed to Formplayer via the
 Django session cookie which is accessible to Formplayer since it is running under the same domain.
 
-Formplayer reads the session ID out of the request the `username` and `domain`. It then makes a request to
-CommCare HQ for the user details which it validates against the current request.
+Formplayer reads the session ID out of the request along with the `username` and `domain`.
+It then makes a request to CommCare HQ for the user details which it validates against the current request.
 
 CommCareSessionAuthFilter
   - generates a `PreAuthenticatedAuthenticationToken` containing:
@@ -74,7 +74,104 @@ fetching a session record from the DB. This user details bean is then placed in 
 possible to construct the user details then an anonymous token is placed in the security context with the role
 "COMMCARE" to indicate that the HMAC auth passed but with no user details.
 
-### Glossary
+
+## Testing
+
+Formplayer has a lot of legacy tests which use mock controllers (anything inheriting from `BaseTestClass`)
+but we have begun the process to migrate test to a more standard Spring Boot architecture. The rest of this
+section will discuss the new approach.
+
+### WebMvcTest
+
+Most tests are interacting with the REST controllers. In order to test these without the need to set up
+the full server and database we use the `@WebMvcTest` annotation. With this annotation we can autowire
+a `MockMvc` object into the test which can be used to make mock requests to the controller.
+
+`@WebMvcTest` does not configure services or the data access layer so those need to be configured manually
+or mocked. In most cases we mock those except for tests that are testing those classes directly.
+
+To make sure a specific controller is available for testing use the `@Import` annotation:
+
+```java
+@WebMvcTest
+@Import(UtilController.class)
+class UtilControllerTests {
+    @Autowired
+    private MockMvc mockMvc;
+
+    // ...
+}
+```
+
+To provide the dependent services that the controllers require we use a set of configuration classes which
+create the bean required by the controllers:
+
+```java
+@WebMvcTest
+@Import(UtilController.class)
+@ContextConfiguration(classes={TestContext.class, CacheConfiguration.class})
+class UtilControllerTests {
+    // ...
+}
+```
+
+Some beans require further configuration. This is done using [Junit5 extensions](https://junit.org/junit5/docs/current/user-guide/#extensions)
+which hook into the test lifecycle and configure the service mocks:
+
+* [FormDefSessionServiceExtension](src/test/java/org/commcare/formplayer/junit/FormDefSessionServiceExtension.kt)
+* [FormSessionServiceExtension](src/test/java/org/commcare/formplayer/junit/FormSessionServiceExtension.kt)
+* [RestoreFactoryExtension](src/test/java/org/commcare/formplayer/junit/RestoreFactoryExtension.kt)
+* [StorageFactoryExtension](src/test/java/org/commcare/formplayer/junit/StorageFactoryExtension.kt)
+* [InitializeStaticsExtension](src/test/java/org/commcare/formplayer/junit/InitializeStaticsExtension.java)
+
+These can be applied to tests using the `@ExtendWith` annotation at the test class level:
+
+```java
+@ExtendWith(FormDefSessionServiceExtension.class)
+class MyTests {
+    // ...
+}
+```
+
+Some extensions require configuration:
+
+```java
+class MyTests {
+    @RegisterExtension
+    static RestoreFactoryExtension restoreFactoryExt = new RestoreFactoryExtension.builder()
+            .withUser("user").withDomain("domain")
+            .withRestorePath("custom/restore/file.xml")
+            .build();
+}
+```
+
+We also have some convenience annotations which apply a number of the extensions together:
+
+* [FormSessionTest](src/test/java/org/commcare/formplayer/junit/FormSessionTest.java)
+
+### Mock Requests
+
+Making requests to the controllers can be done directly using the `MockMvc` class. Alternately we have
+created a set of request classes for common requests:
+
+* [NewFormRequest](src/test/java/org/commcare/formplayer/junit/request/NewFormRequest.kt)
+* [SubmitFormRequest](src/test/java/org/commcare/formplayer/junit/request/SubmitFormRequest.kt)
+* [SyncDbRequest](src/test/java/org/commcare/formplayer/junit/request/SyncDbRequest.kt)
+
+These can be used as follows:
+
+```java
+NewFormRequest request = new NewFormRequest(mockMvc, webClientMock, "form.xml");
+Response response = request.request();
+response.andExpect(jsonPath("status").value("success"));
+NewFormResponse responseBean = response.bean();
+```
+
+Additional utilities:
+
+* [Installer](src/test/java/org/commcare/formplayer/junit/Installer.kt)
+
+## Glossary
 * [JPA](https://en.wikipedia.org/wiki/Jakarta_Persistence): Jakarta Persistence
 * [Hibernate](https://en.wikipedia.org/wiki/Hibernate_(framework)): ORM framework that implements the JPA spec
 * [IoC](https://en.wikipedia.org/wiki/Inversion_of_control): Inversion of Control programming principal

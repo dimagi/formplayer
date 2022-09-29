@@ -34,7 +34,7 @@ public class SnapshotTests extends BaseTestClass {
         try {
             File destDirectory = new File(getDatabaseFolderRoot());
 
-            FileUtils.copyDirectory(new File(GenerateSnapshotDatabases.snapshotDbDirectory)
+            FileUtils.copyDirectory(new File("src/test/resources/snapshot/")
                     , destDirectory);
         } catch (IOException exception) {
             exception.printStackTrace();
