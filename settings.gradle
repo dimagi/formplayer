@@ -1,3 +1,12 @@
 include ':commcare'
 project(':commcare').projectDir = new File('libs/commcare')
 rootProject.name = 'formplayer'
+pluginManagement {
+    plugins {
+        id 'org.springframework.boot' version "${sprintBootPluginVersion}"
+        id "com.gorylenko.gradle-git-properties" version "${gradleGitPropertiesPluginVersion}"
+        id "io.freefair.lombok" version "${lombokPluginVersion}"
+        id 'org.jetbrains.kotlin.jvm' version "${kotlinPluginVersion}"
+        id 'org.jetbrains.kotlin.plugin.spring' version "${kotlinPluginVersion}"
+    }
+}
