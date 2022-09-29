@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Multimap;
 
 import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.objects.QueryData;
@@ -158,5 +159,33 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
         // Verify query request should not happen again
         verify(webClientMock, times(0)).postFormData(any(), any());
+    }
+
+
+    @Test
+    public void testAutoSelection() throws Exception {
+        CommandListResponseBean reponse;
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            reponse = sessionNavigateWithQuery(new String[]{"2"},
+                    APP_NAME,
+                    null,
+                    CommandListResponseBean.class);
+
+            // For auto-selection we should not add guid back to the selections.
+            assertEquals(reponse.getSelections().length, 1);
+            assertEquals(reponse.getSelections()[0], "2");
+
+            assertEquals("Close", reponse.getCommands()[0].getDisplayText());
+        }
+
+        ArrayList<String> updatedSelections = new ArrayList<>();
+        updatedSelections.addAll(Arrays.asList(reponse.getSelections()));
+        updatedSelections.add("0");
+
+        sessionNavigateWithQuery(updatedSelections.toArray(new String[0]),
+                APP_NAME,
+                null,
+                FormEntryResponseBean.class);
     }
 }

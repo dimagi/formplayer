@@ -140,6 +140,17 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 "3a028cab-fa70-4611-a423-046d25f3e2f4"
         };
         checkForSelectedEntitiesInstance(formResp.getSessionId(), allCases);
+
+        // we don't know the generated guid in this case to match against,
+        // but confirm there is a value saved for the corresponding instance datum in the session
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(formResp.getSessionId(),
+                "instance('commcaresession')/session/data/selected_cases");
+        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+
+        String result = evaluateXpathResponseBean.getOutput();
+        result = result.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>", "");
+        result = result.replace("</result>\n", "");
+        assertTrue(result.length() == 36);
     }
 
     @Test
