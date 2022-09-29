@@ -144,7 +144,7 @@ class MediaCaptureTest {
     }
 
     @Test
-    fun testFormSubmissionWithMedia()  {
+    fun testFormSubmissionWithMedia() {
         val formResponse = startImageCaptureForm()
         val imageResponse = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
 
@@ -157,11 +157,11 @@ class MediaCaptureTest {
             Mockito.verify(submitServiceMock).submitForm(capture(), anyString())
             val body = allValues[0] as LinkedMultiValueMap<*, *>
             assertEquals(2, body.size)
-            assertTrue("Form submission doesn't contain xml file part",body.containsKey("xml_submission_file"))
+            assertTrue("Form submission doesn't contain xml file part", body.containsKey("xml_submission_file"))
             checkContentType("text/xml", body["xml_submission_file"]?.get(0) as HttpEntity<*>)
 
             val fileName = imageResponse.tree[IMAGE_CAPTURE_INDEX].answer as String
-            assertTrue("Form submission doesn't contain media file part",body.containsKey(fileName))
+            assertTrue("Form submission doesn't contain media file part", body.containsKey(fileName))
             val filePart = body[fileName]?.get(0) as HttpEntity<*>
             checkContentType("image/jpeg", filePart)
             val expectedFilePath = getExpectedMediaPath(formResponse.session_id, imageResponse).toString()

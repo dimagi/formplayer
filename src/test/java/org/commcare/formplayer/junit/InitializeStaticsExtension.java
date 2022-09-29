@@ -7,10 +7,12 @@ import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+/**
+ * Perform initialization of static utils.
+ */
 public class InitializeStaticsExtension implements BeforeEachCallback {
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
@@ -22,8 +24,6 @@ public class InitializeStaticsExtension implements BeforeEachCallback {
                 "jr://springfile/formplayer_translatable_strings.txt");
 
         PrototypeUtils.setupThreadLocalPrototypes();
-        new SQLiteProperties().setDataDir("testdbs/");
-
         DateUtils.setTimezoneProvider(new MockTimezoneProvider());
     }
 }

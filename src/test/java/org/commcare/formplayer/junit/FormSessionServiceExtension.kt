@@ -14,7 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import java.util.*
 
 /**
- * Junit extension that configures the mock FormDefinitionService
+ * Junit extension that configures the mock FormSessionService
  *
  * Setup mocking for the FormSessionService that allows saving and retrieving sessions.
  * The 'persisted' sessions are cleared at the start of each test.
@@ -22,7 +22,7 @@ import java.util.*
 class FormSessionServiceExtension : BeforeAllCallback, BeforeEachCallback {
 
     private lateinit var formSessionService: FormSessionService
-    val sessionMap: MutableMap<String, SerializableFormSession> = HashMap()
+    private val sessionMap: MutableMap<String, SerializableFormSession> = HashMap()
 
     override fun beforeAll(context: ExtensionContext) {
         formSessionService = SpringExtension.getApplicationContext(context).getBean(FormSessionService::class.java)
@@ -53,7 +53,8 @@ class FormSessionServiceExtension : BeforeAllCallback, BeforeEachCallback {
                         return@Answer sessionMap[key]
                     }
                     throw FormNotFoundException(key)
-                })
+                }
+            )
 
         Mockito.doAnswer { invocation ->
             val key = invocation.arguments[0] as String

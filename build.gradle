@@ -5,11 +5,11 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.5.6'
+    id 'org.springframework.boot' version '2.7.3'
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
-    id "io.freefair.lombok" version "6.5.0.3"
-    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.6.10'
+    id "io.freefair.lombok" version "6.5.1"
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.7.10'
 }
 
 springBoot {
@@ -48,8 +48,8 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    sentryVersion = '6.4.0'
-    shedlockVersion = '4.41.0'
+    sentryVersion = '6.4.2'
+    shedlockVersion = '4.42.0'
 }
 
 sourceCompatibility = 1.8
@@ -109,12 +109,12 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '0.105.0'
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '0.109.0'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.0.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
     implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
-    implementation group: 'org.json', name: 'json', version: '20220320'
+    implementation group: 'org.json', name: 'json', version: '20220924'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: "${shedlockVersion}"
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: "${shedlockVersion}"

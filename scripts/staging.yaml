@@ -50,11 +50,14 @@
 trunk: master
 name: autostaging
 branches:
-  - spring_boot_2.7 # Shubham Aug 16
+  - jls/autoMultiSelect+saveMediaAttachment+mediaFormSubmission # nbd, conflicts are minor
   - saveMediaAttachment # Shubham/Jenny Aug 12
   - mediaFormSubmission # Shubham Aug 22
+  - autoMultiSelect # Shubham/Jenny Sept 26
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - do/query-init-change
+#      - ml/timezone-revert - this was branched off master
+      - autoMultiSelect # Shubham/Jenny Sept 26

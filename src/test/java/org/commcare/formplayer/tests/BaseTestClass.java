@@ -10,9 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -52,9 +50,11 @@ import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.junit.FormSessionTest;
+import org.commcare.formplayer.junit.Installer;
 import org.commcare.formplayer.junit.RestoreFactoryExtension;
 import org.commcare.formplayer.junit.request.NewFormRequest;
 import org.commcare.formplayer.junit.request.SubmitFormRequest;
+import org.commcare.formplayer.junit.request.SyncDbRequest;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -75,14 +75,11 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.session.FormSession;
-import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
-import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
-import org.commcare.formplayer.utils.CheckedSupplier;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
@@ -100,7 +97,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -125,8 +121,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -277,9 +271,11 @@ public class BaseTestClass {
         setupSubmitServiceMock();
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
-
+        restoreFactoryMock.getSQLiteDB().closeConnection();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
+        // this shouldn't be needed here (see TestContext) but tests fail without it
+        new SQLiteProperties().setDataDir("testdbs/");
     }
 
     private void setupRestoreFactoryMock() {
@@ -531,10 +527,6 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
-        when(restoreFactoryMock.getUsername())
-                .thenReturn(newSessionRequestBean.getUsername());
-        when(restoreFactoryMock.getDomain())
-                .thenReturn(newSessionRequestBean.getDomain());
         restoreFactoryMock.configure(newSessionRequestBean, new DjangoAuth("derp"));
         return new NewFormRequest(mockFormController, webClientMock, formPath)
                 .requestWithBean(newSessionRequestBean)
@@ -542,7 +534,7 @@ public class BaseTestClass {
     }
 
     SubmitResponseBean submitForm(String sessionId) throws Exception {
-        return submitForm(new HashMap<String, Object>(), sessionId);
+        return submitForm(new HashMap<>(), sessionId);
     }
 
     SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
@@ -570,16 +562,13 @@ public class BaseTestClass {
                 .requestWithBean(submitRequestBean).bean();
     }
 
-    protected SyncDbResponseBean syncDb() throws Exception {
+    protected SyncDbResponseBean syncDb() {
         SyncDbRequestBean syncDbRequestBean = new SyncDbRequestBean();
         syncDbRequestBean.setDomain(restoreFactoryMock.getDomain());
         syncDbRequestBean.setUsername(restoreFactoryMock.getUsername());
         syncDbRequestBean.setRestoreAs(restoreFactoryMock.getAsUsername());
-        return generateMockQuery(ControllerType.UTIL,
-                RequestType.POST,
-                Constants.URL_SYNC_DB,
-                syncDbRequestBean,
-                SyncDbResponseBean.class);
+        restoreFactoryMock.configure(syncDbRequestBean, new DjangoAuth("derp"));
+        return new SyncDbRequest(mockUtilController, restoreFactoryMock).requestWithBean(syncDbRequestBean).bean();
     }
 
     NotificationMessage deleteApplicationDbs() throws Exception {
@@ -650,7 +639,7 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateMenuXpath(String requestPath) throws Exception {
-        Pair<String, EvaluateXPathMenuRequestBean> refAndBean = getInstallReferenceAndBean(
+        Pair<String, EvaluateXPathMenuRequestBean> refAndBean = Installer.getInstallReferenceAndBean(
                 requestPath, EvaluateXPathMenuRequestBean.class);
         return generateMockQueryWithInstallReference(refAndBean.first,
                 ControllerType.DEBUGGER,
@@ -693,7 +682,7 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
-        Pair<String, SessionNavigationBean> refAndBean = getInstallReferenceAndBean(requestPath,
+        Pair<String, SessionNavigationBean> refAndBean = Installer.getInstallReferenceAndBean(requestPath,
                 SessionNavigationBean.class);
         return generateMockQueryWithInstallReference(refAndBean.first,
                 ControllerType.MENU,
@@ -731,7 +720,7 @@ public class BaseTestClass {
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
-        Pair<String, SessionNavigationBean> refAndBean = getInstallReferenceAndBean(requestPath,
+        Pair<String, SessionNavigationBean> refAndBean = Installer.getInstallReferenceAndBean(requestPath,
                 SessionNavigationBean.class);
         return generateMockQueryWithInstallReference(refAndBean.first,
                 ControllerType.MENU,
@@ -878,27 +867,9 @@ public class BaseTestClass {
      *                    'installReference'
      */
     protected CommandListResponseBean doInstall(String requestPath) throws Exception {
-        Pair<String, InstallRequestBean> refAndBean = getInstallReferenceAndBean(requestPath,
-                InstallRequestBean.class);
-        InstallRequestBean bean = refAndBean.second;
-        storageFactoryMock.configure(bean);
-        restoreFactoryMock.configure(bean, new DjangoAuth("key"));
-        if (bean.isMustRestore()) {
-            restoreFactoryMock.performTimedSync();
-        }
-        CheckedSupplier<CommandListResponseBean> install = () -> {
-            MenuSession menuSession = menuSessionFactory.buildSession(
-                    bean.getUsername(),
-                    bean.getDomain(),
-                    bean.getAppId(),
-                    bean.getLocale(),
-                    bean.getOneQuestionPerScreen(),
-                    bean.getRestoreAs(),
-                    bean.getPreview()
-            );
-            return (CommandListResponseBean)menuSessionRunnerService.getNextMenu(menuSession);
-        };
-        return mockInstallReference(install, refAndBean.first);
+        Installer installer = new Installer(restoreFactoryMock, storageFactoryMock, menuSessionFactory,
+                menuSessionRunnerService);
+        return installer.doInstall(requestPath);
     }
 
     CommandListResponseBean doUpdate(String requestPath) throws Exception {
@@ -919,30 +890,13 @@ public class BaseTestClass {
         FORM, FORM_SUBMISSION, MENU, UTIL, DEBUGGER,
     }
 
-    private <T> T mockInstallReference(CheckedSupplier<T> supplier, String installReference)
-            throws Exception {
-        Answer answer = invocation -> {
-            Method method = invocation.getMethod();
-            // only mock the `resolveInstallReference` method
-            if ("resolveInstallReference".equals(method.getName())) {
-                return installReference;
-            } else {
-                return invocation.callRealMethod();
-            }
-        };
-        try (MockedStatic<SessionUtils> mockUtils = Mockito.mockStatic(SessionUtils.class,
-                answer)) {
-            return supplier.get();
-        }
-    }
-
     private <T> T generateMockQueryWithInstallReference(String installReference,
             ControllerType controllerType,
             RequestType requestType,
             String urlPath,
             Object bean,
             Class<T> clazz) throws Exception {
-        return mockInstallReference(
+        return Installer.mockInstallReference(
                 () -> generateMockQuery(controllerType, requestType, urlPath, bean, clazz),
                 installReference
         );
@@ -1040,24 +994,6 @@ public class BaseTestClass {
         LinkedHashMap commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
         return mapper.readValue(jsonString, clazz);
-    }
-
-    /**
-     * Utility method to extract the 'installReference' field from test JSON files and map the
-     * remaining JSON fields to the given bean type.
-     *
-     * @param requestPath classpath relative path to JSON file
-     * @param clazz       Bean class map JSON to
-     * @return Pair of 'installReference' and deserialized JSON bean
-     * @throws IOException
-     */
-    private <T> Pair<String, T> getInstallReferenceAndBean(String requestPath, Class<T> clazz)
-            throws IOException {
-        JsonNode root = mapper.readTree(
-                new StringReader(FileUtils.getFile(this.getClass(), requestPath)));
-        String installReference = ((ObjectNode)root).remove("installReference").asText();
-        String beanContent = mapper.writeValueAsString(root);
-        return new Pair(installReference, mapper.readValue(beanContent, clazz));
     }
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession)

@@ -11,14 +11,15 @@ import kotlin.reflect.KClass
  * Wrapper class for MockMVC responses that gives access ot the response bean as well as the
  * ResultActions object.
  */
-class Response<T : Any> (
-    private val mapper: ObjectMapper, val response: ResultActions, private val kClass: KClass<T>
-    ) : ResultActions {
+class Response<T : Any>(
+    private val mapper: ObjectMapper,
+    val response: ResultActions,
+    private val kClass: KClass<T>
+) : ResultActions {
 
     fun bean(): T {
         return mapper.readValue(
-            response.andReturn().response.contentAsString,
-            kClass.java
+            response.andReturn().response.contentAsString, kClass.java
         )
     }
 
@@ -31,6 +32,6 @@ class Response<T : Any> (
     }
 
     override fun andReturn(): MvcResult {
-        return response.andReturn();
+        return response.andReturn()
     }
 }

@@ -1,5 +1,7 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
+
 import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
@@ -7,11 +9,13 @@ import io.sentry.SentryLevel;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.commcare.formplayer.exceptions.AsyncRetryException;
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
@@ -58,7 +62,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -67,7 +70,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
@@ -616,10 +618,13 @@ public class RestoreFactory {
     }
 
     public URI getRestoreUrl(boolean skipFixtures) {
-        if (caseId != null) {
-            return getCaseRestoreUrl();
-        }
-        return getUserRestoreUrl(skipFixtures);
+        // TODO: remove timing once the state hash rollout is complete
+        return categoryTimingHelper.timed(Constants.TimingCategories.BUILD_RESTORE_URL, () -> {
+            if (caseId != null) {
+                return getCaseRestoreUrl();
+            }
+            return getUserRestoreUrl(skipFixtures);
+        });
     }
 
     private HttpHeaders getHmacHeader(URI url) {
@@ -663,6 +668,14 @@ public class RestoreFactory {
         if (syncToken != null && !"".equals(syncToken)) {
             params.put("since", syncToken);
         }
+
+        if (FeatureFlagChecker.isToggleEnabled(TOGGLE_INCLUDE_STATE_HASH)) {
+            String caseStateHash = getCaseDbHash();
+            if (!caseStateHash.isEmpty()) {
+                params.put("state", caseStateHash);
+            }
+        }
+
         if (asUsername != null) {
             String asUserParam = asUsername;
             if (!asUsername.contains("@")) {
@@ -685,6 +698,14 @@ public class RestoreFactory {
                 .put("domain", this.domain)
                 .build();
         return builder.buildAndExpand(templateVars).toUri();
+    }
+
+    public String getCaseDbHash() {
+        String hash = CaseDBUtils.computeCaseDbHash(getSqlSandbox().getCaseStorage());
+        if (hash.isEmpty()) {
+            return "";
+        }
+        return String.format("ccsh:%s", hash);
     }
 
     /**
