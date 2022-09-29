@@ -167,7 +167,9 @@ public class MenuSession implements HereFunctionHandlerListener {
                 addBreadcrumb = !autoLaunch;
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
-                    if (screen.shouldBeSkipped()) {
+                    // auto-launch takes preference over auto-select
+                    if (screen.shouldBeSkipped() && !autoLaunch) {
+                        entityScreen.autoSelectEntities(sessionWrapper);
                         return handleInput(input, true, inputValidated, allowAutoLaunch, selectedValues,
                                 isDetailScreen);
                     }
@@ -244,9 +246,6 @@ public class MenuSession implements HereFunctionHandlerListener {
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
             EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, isDetailScreen);
-            if (entityScreen.shouldBeSkipped()) {
-                return getNextScreen(isDetailScreen);
-            }
             return entityScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
