@@ -114,7 +114,7 @@ dependencies {
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
     implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
-    implementation group: 'org.json', name: 'json', version: '20220320'
+    implementation group: 'org.json', name: 'json', version: '20220924'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: "${shedlockVersion}"
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: "${shedlockVersion}"
