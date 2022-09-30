@@ -146,7 +146,7 @@ class MediaCaptureTest {
         val formResponse = startImageCaptureForm()
         val imageResponse = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
 
-        //Test Submission
+        // Test Submission
         SubmitFormRequest(mockMvc)
             .request("requests/submit/submit_request.json", formResponse.sessionId)
             .andExpect(jsonPath("$.status").value("success"))
