@@ -1,23 +1,42 @@
 package org.commcare.formplayer.tests
 
+import org.commcare.formplayer.application.FormController
+import org.commcare.formplayer.application.FormSubmissionController
 import org.commcare.formplayer.beans.FormEntryResponseBean
 import org.commcare.formplayer.beans.NewFormResponse
+import org.commcare.formplayer.configuration.CacheConfiguration
+import org.commcare.formplayer.junit.FormSessionTest
+import org.commcare.formplayer.junit.RestoreFactoryExtension
+import org.commcare.formplayer.junit.StorageFactoryExtension
+import org.commcare.formplayer.junit.request.AnswerMediaQuestionRequest
+import org.commcare.formplayer.junit.request.NewFormRequest
+import org.commcare.formplayer.junit.request.SubmitFormRequest
+import org.commcare.formplayer.services.FormSessionService
+import org.commcare.formplayer.services.SubmitService
 import org.commcare.formplayer.util.Constants.PART_FILE
 import org.commcare.formplayer.utils.FileUtils
+import org.commcare.formplayer.utils.TestContext
+import org.commcare.formplayer.web.client.WebClient
 import org.javarosa.core.services.locale.Localization
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.fail
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.mockito.kotlin.argumentCaptor
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
+import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.util.AssertionErrors.assertFalse
 import org.springframework.test.util.AssertionErrors.assertTrue
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.io.File
@@ -25,13 +44,40 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 @WebMvcTest
-class MediaCaptureTest : BaseTestClass() {
+@ContextConfiguration(classes = [TestContext::class, CacheConfiguration::class])
+@Import(FormController::class, FormSubmissionController::class)
+@FormSessionTest
+class MediaCaptureTest {
+
+    @Autowired
+    private lateinit var mockMvc: MockMvc
+
+    @Autowired
+    private lateinit var webClientMock: WebClient
+
+    @Autowired
+    private lateinit var submitServiceMock: SubmitService
+
+    @Autowired
+    private lateinit var formSessionService: FormSessionService
 
     companion object {
         const val USERNAME = "test"
         const val DOMAIN = "test"
         const val APP_ID = "10a706429116a3e55f1d1302cd3db69f"
         const val IMAGE_CAPTURE_INDEX = 21
+
+        @JvmField
+        @RegisterExtension
+        val restoreFactoryExt = RestoreFactoryExtension.builder()
+            .withUser(USERNAME).withDomain(DOMAIN)
+            .build()
+
+        @JvmField
+        @RegisterExtension
+        val storageFactoryExt = StorageFactoryExtension.builder()
+            .withAppId(APP_ID).withUser(USERNAME).withDomain(DOMAIN)
+            .build()
     }
 
     @Test
@@ -102,11 +148,9 @@ class MediaCaptureTest : BaseTestClass() {
         val imageResponse = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
 
         //Test Submission
-        val submitResponseBean = submitForm(
-            "requests/submit/submit_request.json",
-            formResponse.sessionId
-        )
-        assertEquals("success", submitResponseBean.status)
+        SubmitFormRequest(mockMvc)
+            .request("requests/submit/submit_request.json", formResponse.sessionId)
+            .andExpect(jsonPath("$.status").value("success"))
 
         argumentCaptor<MultiValueMap<String, HttpEntity<Any>>>().apply {
             Mockito.verify(submitServiceMock).submitForm(capture(), anyString())
@@ -131,10 +175,8 @@ class MediaCaptureTest : BaseTestClass() {
     }
 
     private fun startImageCaptureForm(): NewFormResponse {
-        return startNewForm(
-            "requests/new_form/new_form_2.json",
-            "xforms/question_types.xml"
-        )
+        return NewFormRequest(mockMvc, webClientMock, "xforms/question_types.xml")
+            .request("requests/new_form/new_form_2.json").bean()
     }
 
     private fun saveImage(
@@ -146,6 +188,8 @@ class MediaCaptureTest : BaseTestClass() {
         assertEquals("q_image_acquire", questions[IMAGE_CAPTURE_INDEX].question_id)
         val fis = FileUtils.getFileStream(this.javaClass, filePath)
         val file = MockMultipartFile(PART_FILE, fileName, MediaType.IMAGE_JPEG_VALUE, fis)
-        return answerMediaQuestion("" + IMAGE_CAPTURE_INDEX, file, formResponse.sessionId)
+
+        val questionRequest = AnswerMediaQuestionRequest(mockMvc, formSessionService)
+        return questionRequest.request("" + IMAGE_CAPTURE_INDEX, file, formResponse.sessionId).bean()
     }
 }
