@@ -39,7 +39,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
-import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -164,7 +163,8 @@ class MediaCaptureTest {
             val filePart = body[fileName]?.get(0) as HttpEntity<*>
             checkContentType("image/jpeg", filePart)
             val contentDisposition = filePart.headers["Content-Disposition"]
-            val expectedContentDisposition = String.format("form-data; name=\"%s\"; filename=\"%s\"", fileName, fileName)
+            val expectedContentDisposition =
+                String.format("form-data; name=\"%s\"; filename=\"%s\"", fileName, fileName)
             assertEquals(expectedContentDisposition, contentDisposition!![0])
         }
     }
