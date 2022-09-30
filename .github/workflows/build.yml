@@ -52,7 +52,7 @@ jobs:
           distribution: 'adopt'
       - name: Setup config
         run: |
-          cp .github/gradle.properties.ci gradle.properties
+          cp .github/gradle.properties.ci $HOME/gradle.properties
       - name: Copy Test Resources
         uses: gradle/gradle-build-action@v2
         with:
