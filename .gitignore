@@ -11,6 +11,7 @@ local.properties
 *.swp
 __pycache__
 dbs/*
+gradle.properties
 .java-version
 .python-version
 scripts/*.pyc
