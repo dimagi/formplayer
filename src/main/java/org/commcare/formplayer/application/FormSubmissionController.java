@@ -20,6 +20,7 @@ import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
+import org.commcare.formplayer.exceptions.FormAttachmentException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -320,7 +321,7 @@ public class FormSubmissionController extends AbstractBaseController {
 
     private void failWithError(String localeKey, String... args) {
         String attachmentsThresholdError = Localization.get(localeKey, args);
-        throw new RuntimeException(attachmentsThresholdError);
+        throw new FormAttachmentException(attachmentsThresholdError);
     }
 
     private static HttpEntity<Object> createFilePart(String partName, String fileName, Object content,
