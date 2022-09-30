@@ -76,7 +76,7 @@ if [[ $deploy = 'y' && $no_push != 'y' ]]
 then
     rebuildstaging $args && {
       echo -e "\nWait for the staging build to complete."
-      echo "Check https://jenkins.dimagi.com/job/formplayer-staging/ for the status."
+      echo "Check https://github.com/dimagi/formplayer/actions/workflows/staging_build.yml for the status."
       echo -ne "\nContinue with deploy [y/n]: "
       read -n 1 continue
       if [ "$continue" != "y" ]; then echo "Aborting."; exit 1; fi
