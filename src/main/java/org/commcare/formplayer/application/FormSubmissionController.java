@@ -286,7 +286,7 @@ public class FormSubmissionController extends AbstractBaseController {
         if (mediaFile.exists()) {
             File[] files = Objects.requireNonNull(mediaDirPath.toFile().listFiles());
             if (files.length > maxAttachmentsPerForm) {
-                failWithError("form.upload.attachments.threshold.error.message", maxAttachmentsPerForm.toString());
+                failWithError("form.upload.attachments.limit.exceeded", maxAttachmentsPerForm.toString());
             }
             for (File file : files) {
                 validateFile(file);
