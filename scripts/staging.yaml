@@ -50,7 +50,7 @@
 trunk: master
 name: autostaging
 branches:
-  - jls/autoMultiSelect+saveMediaAttachment+mediaFormSubmission # nbd, conflicts are minor
+#  - jls/autoMultiSelect+saveMediaAttachment+mediaFormSubmission # nbd, conflicts are minor
   - saveMediaAttachment # Shubham/Jenny Aug 12
 #  - autoMultiSelect # Shubham/Jenny Sept 26
   - skipEntityListEval # Shubham Oct 11
