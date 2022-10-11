@@ -45,7 +45,6 @@ import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
-import org.commcare.formplayer.engine.ClasspathFileRoot;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
@@ -90,8 +89,6 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.reference.ReferenceHandler;
-import org.javarosa.core.reference.ReferenceManager;
-import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -245,7 +242,6 @@ public class BaseTestClass {
 
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<>();
     final Map<String, SerializableDataInstance> serializableDataInstanceMap = new HashMap();
-
     RestoreFactoryExtension restoreFactoryExtension = new RestoreFactoryExtension.builder().build();
 
     @BeforeEach
@@ -278,7 +274,6 @@ public class BaseTestClass {
         restoreFactoryMock.getSQLiteDB().closeConnection();
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-
         // this shouldn't be needed here (see TestContext) but tests fail without it
         new SQLiteProperties().setDataDir("testdbs/");
     }
@@ -382,7 +377,7 @@ public class BaseTestClass {
                         "OK" +
                         "</message>" +
                         "</OpenRosaResponse>")
-                .when(submitServiceMock).submitForm(anyString(), anyString());
+                .when(submitServiceMock).submitForm(any(), anyString());
     }
 
     @AfterEach
@@ -516,19 +511,6 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    FormEntryResponseBean answerMediaQuestion(String index, MockMultipartFile file, String sessionId)
-            throws Exception {
-        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, null,
-                sessionId);
-        populateFromSession(answerQuestionBean, sessionId);
-        return generateMockQuery(ControllerType.FORM,
-                RequestType.MULTIPART,
-                Constants.URL_ANSWER_MEDIA_QUESTION,
-                answerQuestionBean,
-                file,
-                FormEntryResponseBean.class);
-    }
-
     GetInstanceResponseBean getInstance(String sessionId) throws Exception {
         SessionRequestBean sessionRequestBean = populateFromSession(new SessionRequestBean(),
                 sessionId);
@@ -575,11 +557,9 @@ public class BaseTestClass {
                 sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(prevalidated);
-        return generateMockQuery(ControllerType.FORM_SUBMISSION,
-                RequestType.POST,
-                Constants.URL_SUBMIT_FORM,
-                submitRequestBean,
-                SubmitResponseBean.class);
+        restoreFactoryMock.configure(submitRequestBean, new DjangoAuth("123"));
+        return new SubmitFormRequest(mockFormSubmissionController)
+                .requestWithBean(submitRequestBean).bean();
     }
 
     protected SyncDbResponseBean syncDb() {
