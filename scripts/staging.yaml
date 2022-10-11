@@ -52,8 +52,7 @@ name: autostaging
 branches:
   - jls/autoMultiSelect+saveMediaAttachment+mediaFormSubmission # nbd, conflicts are minor
   - saveMediaAttachment # Shubham/Jenny Aug 12
-  - mediaFormSubmission # Shubham Aug 22
-  - autoMultiSelect # Shubham/Jenny Sept 26
+#  - autoMultiSelect # Shubham/Jenny Sept 26
   - skipEntityListEval # Shubham Oct 11
 submodules:
   libs/commcare:
@@ -61,5 +60,5 @@ submodules:
     branches:
       - do/query-init-change
 #      - ml/timezone-revert - this was branched off master
-      - autoMultiSelect # Shubham/Jenny Sept 26
+#      - autoMultiSelect # Shubham/Jenny Sept 26
       - skipEntityListEval # Shubham Oct 11
