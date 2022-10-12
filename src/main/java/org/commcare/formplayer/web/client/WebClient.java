@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,9 +23,9 @@ import lombok.extern.apachecommons.CommonsLog;
 @CommonsLog
 public class WebClient {
 
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
-    RestoreFactory restoreFactory;
+    private RestoreFactory restoreFactory;
 
     public String get(String url) {
         URI uri = URI.create(url);
@@ -113,6 +114,7 @@ public class WebClient {
     }
 
     @Autowired
+    @Qualifier("default")
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }

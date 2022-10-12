@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URISyntaxException;
@@ -37,12 +40,26 @@ public class RestTemplateConfig {
         this.externalRequestMode = externalRequestMode;
     }
 
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) throws URISyntaxException {
+    @Bean(name="default")
+    @Primary
+    public RestTemplate defaultRestTemplate(RestTemplateBuilder builder) throws URISyntaxException {
+        return restTemplate(builder, false);
+    }
+
+    @Bean(name="retry")
+    public RestTemplate retryRestTemplate(RestTemplateBuilder builder) throws URISyntaxException {
+        return restTemplate(builder, true);
+    }
+
+    public RestTemplate restTemplate(RestTemplateBuilder builder, Boolean allowRetry) throws URISyntaxException {
+        Class<? extends ClientHttpRequestFactory> requestFactory = FormplayerOkHttp3ClientHttpRequestFactory.class;
+        if (allowRetry) {
+            requestFactory = OkHttp3ClientHttpRequestFactory.class;
+        }
         builder = builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
                 .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
-                .requestFactory(FormplayerOkHttp3ClientHttpRequestFactory.class);
+                .requestFactory(requestFactory);
 
         if (externalRequestMode.equals(MODE_REPLACE_HOST)) {
             log.warn(String.format("RestTemplate configured in '%s' mode", externalRequestMode));

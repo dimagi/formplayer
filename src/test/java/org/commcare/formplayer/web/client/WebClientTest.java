@@ -44,7 +44,7 @@ public class WebClientTest {
         MockitoAnnotations.openMocks(this);
 
         RestTemplateConfig config = new RestTemplateConfig("", "");
-        restTemplate = config.restTemplate(new RestTemplateBuilder());
+        restTemplate = config.defaultRestTemplate(new RestTemplateBuilder());
         mockServer = MockRestServiceServer.createServer(restTemplate);
 
         webClient = new WebClient();

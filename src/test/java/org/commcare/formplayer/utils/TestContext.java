@@ -30,6 +30,7 @@ import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.MessageSource;
@@ -180,7 +181,7 @@ public class TestContext {
         return Mockito.spy(CategoryTimingHelper.class);
     }
 
-    @Bean
+    @Bean({"default", "retry"})
     public RestTemplate restTemplate() {
         return new RestTemplateBuilder()
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))

@@ -11,6 +11,7 @@ import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.util.Pair;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,8 @@ public class InstallService {
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
-    private RestTemplate restTemplate;
+    @Qualifier("retry")
+    private RestTemplate retryRestTemplate;
 
     private final Log log = LogFactory.getLog(InstallService.class);
 
@@ -62,7 +64,8 @@ public class InstallService {
                 // Try reusing old install, fail quietly
                 try {
                     FormplayerConfigEngine engine = new FormplayerConfigEngine(
-                            storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot, restTemplate
+                            storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot,
+                            retryRestTemplate
                     );
                     engine.initEnvironment();
                     return new Pair<>(engine, false);
@@ -81,7 +84,7 @@ public class InstallService {
                 throw new RuntimeException("Error instantiating folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
             FormplayerConfigEngine engine = new FormplayerConfigEngine(
-                    storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot, restTemplate
+                    storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot, retryRestTemplate
             );
             if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);

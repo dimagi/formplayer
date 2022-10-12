@@ -23,16 +23,17 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestTemplate;
 
 @RestClientTest(components = {HqUserDetailsService.class, WebClient.class})
-@AutoConfigureWebClient(registerRestTemplate = true)
 @TestPropertySource(properties = {
         "commcarehq.host=",
         "commcarehq.formplayerAuthKey=secretkey"
@@ -65,11 +66,13 @@ public class HqUserDetailsServiceTests {
     private HqUserDetailsService service;
 
     @Autowired
+    private RestTemplate restTemplate;
+
     private MockRestServiceServer server;
 
     @BeforeEach
     public void setUp() throws Exception {
-        this.server.reset();
+        server = MockRestServiceServer.bindTo(restTemplate).build();
     }
 
     @Test
@@ -104,5 +107,16 @@ public class HqUserDetailsServiceTests {
         assertThrows(SessionAuthUnavailableException.class, () -> {
             this.service.getUserDetails("domain", "invalid");
         });
+    }
+
+    @TestConfiguration
+    public static class TestConfig {
+        /**
+         * Custom bean so that we can add the qualifier which is required for auto-wiring
+         */
+        @Bean("default")
+        public RestTemplate restTemplate() {
+            return new RestTemplate();
+        }
     }
 }
