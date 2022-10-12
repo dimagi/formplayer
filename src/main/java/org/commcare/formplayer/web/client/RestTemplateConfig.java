@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 
 import lombok.extern.apachecommons.CommonsLog;
+import okhttp3.OkHttpClient;
 
 @Configuration
 @CommonsLog
@@ -52,14 +53,13 @@ public class RestTemplateConfig {
     }
 
     public RestTemplate restTemplate(RestTemplateBuilder builder, Boolean allowRetry) throws URISyntaxException {
-        Class<? extends ClientHttpRequestFactory> requestFactory = FormplayerOkHttp3ClientHttpRequestFactory.class;
-        if (allowRetry) {
-            requestFactory = OkHttp3ClientHttpRequestFactory.class;
-        }
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        OkHttpClient httpClient = clientBuilder.retryOnConnectionFailure(allowRetry).build();
+
         builder = builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
                 .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
-                .requestFactory(requestFactory);
+                .requestFactory(() -> new OkHttp3ClientHttpRequestFactory(httpClient));
 
         if (externalRequestMode.equals(MODE_REPLACE_HOST)) {
             log.warn(String.format("RestTemplate configured in '%s' mode", externalRequestMode));
