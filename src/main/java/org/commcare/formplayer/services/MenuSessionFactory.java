@@ -2,14 +2,13 @@ package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
 
-import org.commcare.formplayer.engine.FormplayerConfigEngine;
-import org.commcare.session.CommCareSession;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
+import org.commcare.session.CommCareSession;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
@@ -76,6 +75,11 @@ public class MenuSessionFactory {
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
+                if (menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu())) {
+                    screen = menuSession.getNextScreen(false, false);
+                    continue;
+                }
+
                 MenuDisplayable[] options = ((MenuScreen)screen).getMenuDisplayables();
                 for (int i = 0; i < options.length; i++) {
                     for (StackFrameStep step : steps) {
@@ -140,9 +144,6 @@ public class MenuSessionFactory {
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false, false);
             }
-        }
-        if (screen != null) {
-            menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu());
         }
     }
 
