@@ -267,13 +267,18 @@ public class MenuSessionRunnerService {
             String selection = selections[i - 1];
 
             boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
-            boolean isDetailScreen = detailSelection != null;
 
-            // minimal entity screens are only safe if there will be no further selection
+            // A details request applies to the last entity screen which accounts for the last 2 selections:
+            // [..., command, case selection]
+            boolean isInDetailSelectionRange = i >= selections.length - 1;
+            boolean isDetailSelection = detailSelection != null && isInDetailSelectionRange;
+
+            // minimal entity screens are only safe if there will be no further selection,
             // and we do not need the case detail
-            boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
+            boolean isLastSelection = i != selections.length;
+            boolean needsFullEntityScreen = isLastSelection || isDetailSelection;
             boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
-                    true, selectedValues, isDetailScreen);
+                    true, selectedValues, isDetailSelection);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -285,7 +290,7 @@ public class MenuSessionRunnerService {
             Screen nextScreen;
             try {
                 nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
-                        needsFullEntityScreen, inputValidated, forceManualAction, isDetailScreen);
+                        needsFullEntityScreen, inputValidated, forceManualAction, isDetailSelection);
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
                 break;
