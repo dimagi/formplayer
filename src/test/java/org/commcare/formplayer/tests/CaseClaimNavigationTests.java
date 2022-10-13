@@ -1,388 +1,324 @@
 package org.commcare.formplayer.tests;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableMultimap;
 
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.beans.NewFormResponse;
-import org.commcare.formplayer.beans.SubmitResponseBean;
+import org.commcare.formplayer.beans.QuestionBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.services.CaseSearchHelper;
+import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.StackFrameStep;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-/**
- * Tests Navigation with different case search workflows with Search Parent First(SPF) set to
- * 'Parrent' and 'Other -> Parent`
- */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CaseClaimNavigationTests extends BaseTestClass {
 
-    private static final String PARENT_CASE_ID = "192262cb-fbfa-46a4-ba91-a9d13659b0e0";
-    private static final String CHILD_CASE_ID = "d29c08f5-943c-42ca-b0a5-f64cbddba087";
+    private static final String APP_PATH = "archives/case_claim_post_in_entry";
 
-    private final String APP_CASE_CLAIM_SPF_PARENT = "case_claim_spf_parent";
-    private final String APP_CASE_CLAIM_SPF_OTHER = "case_claim_spf_other";
-    private final String APP_CASE_CLAIM_EOF_NAVIGATION = "case_claim_eof_navigation";
+    @Autowired
+    CacheManager cacheManager;
 
+    @Autowired
+    CaseSearchHelper caseSearchHelper;
 
-    private final String INDEX_PARENT_SEARCH_FIRST = "1";
-    private final String INDEX_PARENT_SEE_MORE = "2";
-    private final String INDEX_PARENT_SKIP_TO_RESULTS = "3";
-
-    private final String INDEX_PARENT_SEARCH_FIRST_CHILD = "1";
-    private final String INDEX_PARENT_SEARCH_FIRST_CHILD_SEARCH_FIRST = "2";
-    private final String INDEX_PARENT_SEARCH_FIRST_CHILD_SEE_MORE = "3";
-    private final String INDEX_PARENT_SEARCH_FIRST_CHILD_SKIP_TO_RESULTS = "4";
-
-    private final String INDEX_CHILD_FORM = "0";
-
+    MockRequestUtils mockRequest;
 
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
-        configureQueryMock();
-        configureSyncMock();
+        cacheManager.getCache("case_search").clear();
+        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
     }
 
     @Override
     protected String getMockRestoreFileName() {
-        return "restores/case_claim_parent_child.xml";
+        return "restores/caseclaim.xml";
     }
 
-    @Test
-    public void testSpfOtherWithSameCaseType() throws Exception {
-        testParentSearchFirst(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
-        testParentSeeMore(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
-        testParentSkipToSearchResults(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
-    }
 
     @Test
-    public void testSpfParentWithChildCase() throws Exception {
-        testParentSearchFirst(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
-        testParentSeeMore(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
-        testParentSkipToSearchResults(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
-    }
-
-    @Test
-    public void testEofNavigation() throws Exception {
-        when(webClientMock.postFormData(anyString(), argThat(data -> {
-            return ((Multimap<String, String>)data).get("case_type").contains("song");
-        }))).thenReturn(FileUtils.getFile(this.getClass(),
-                "query_responses/case_claim_parent_child_response.xml"));
-        String appName = APP_CASE_CLAIM_EOF_NAVIGATION;
+    public void testNormalClaim() throws Exception {
         ArrayList<String> selections = new ArrayList<>();
-        selections.add("1");
-        sessionNavigateWithQuery(selections,
-                appName,
-                null,
-                QueryResponseBean.class);
-        // execute search
-        QueryData queryData = new QueryData();
-        queryData.setExecute("search_command.m1", true);
+        selections.add("1");  // select menu
+        selections.add("action 1");  // load case search
 
-        Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("rating", "4");
-        queryData.setInputs("search_command.m1", inputs);
+        QueryData queryData = new QueryData();
+        queryData.setExecute("case_search.m1", true);
+
+        EntityListResponse entityListResponse;
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
+            entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+        }
+        assertEquals(1, entityListResponse.getEntities().length);
+        assertEquals("0156fa3e-093e-4136-b95c-01b13dae66c6",
+                entityListResponse.getEntities()[0].getId());
+
+        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
+
+        // check that the result instance data is cached
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "case_type", "case1",
+                "case_type", "case2",
+                "case_type", "case3",
+                "include_closed", "False");
+        String key = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data);
+        Cache.ValueWrapper cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNotNull(cachedValue, "Expected cache to contain results for the instance");
+
+        CommandListResponseBean commandListResponseBean;
+        try (
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml");
+        ) {
+            commandListResponseBean = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    CommandListResponseBean.class);
+        }
+        assertEquals(2, commandListResponseBean.getCommands().length);
+
+        // check that the result instance data cache is cleared after the rewind
+        cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNull(cachedValue, "Expected cache to have been cleared");
+    }
+
+    @Test
+    public void testPostInEntry() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("0");  // 1st form
+
+        QueryData queryData = new QueryData();
 
         EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                appName,
+                APP_PATH,
                 queryData,
                 EntityListResponse.class);
 
-        assert entityListResponse.getEntities().length == 1;
-        assert entityListResponse.getEntities()[0].getId().equals(PARENT_CASE_ID);
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("56306779-26a2-4aa5-a952-70c9d8b21e39");
+        });
 
-        selections.add(PARENT_CASE_ID);
+        verifyNoInteractions(webClientMock);  // post should only be executed once form is selected
+
+        selections.add("56306779-26a2-4aa5-a952-70c9d8b21e39");
+        try(MockRequestUtils.VerifiedMock ignored = mockRequest.mockPost(false)) {
+            sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+    }
+
+    @Test
+    public void testPostInEntryWithQuery_RelevantFalse() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("1");  // 2nd form
+
+        QueryData queryData = new QueryData();
+
+        EntityListResponse entityListResponse;
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response_owned.xml")) {
+            entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+        }
+
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("3512eb7c-7a58-4a95-beda-205eb0d7f163");
+        });
+
+        Mockito.reset(webClientMock);
+        selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
         sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                CommandListResponseBean.class);
-
-        selections.add("2");
-
-        NewFormResponse response = sessionNavigateWithQuery(selections,
-                appName,
+                APP_PATH,
                 queryData,
                 NewFormResponse.class);
+        // post should not be fired due to relevant condition evaluating to false
+        verifyNoInteractions(webClientMock);
+    }
 
-        SubmitResponseBean submitResponse = submitForm(
-                getAnswers("0", "0"),
-                response.getSessionId()
+    @Test
+    public void testPostInEntryWithQuery_RelevantTrue() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("1");  // 2nd form
+
+        QueryData queryData = new QueryData();
+
+        EntityListResponse entityListResponse;
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
+            entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+        }
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        });
+
+        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse;
+        try (
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml");
+        ) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+
+        // case was included in restore and is now in the case DB
+        checkXpath(
+                formResponse.getSessionId(),
+                "count(instance('casedb')/casedb/case[@case_id='0156fa3e-093e-4136-b95c-01b13dae66c6'])",
+                "1"
         );
-
-        CommandListResponseBean commandResponse = getNextScreenForEofNavigation(submitResponse,
-                CommandListResponseBean.class);
-
-        inputs.put("rating", "2");
-        queryData.setInputs("search_command.m1", inputs);
-
-        // return search results that doesn't have the selected case
-        when(webClientMock.postFormData(any(), argThat(data -> {
-            return ((Multimap<String, String>)data).get("case_type").contains("song");
-        }))).thenReturn(FileUtils.getFile(this.getClass(),
-                "query_responses/case_claim_parent_child_child_response.xml"));
-
-        // since the case claim has happened already, this should not redo the search and trigger
-        // the query above
-        // If that happens, it would result into a Entity Screen selection error
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                NewFormResponse.class);
     }
 
-
-    public void testParentSearchFirst(String appName, String subCaseSelectionId) throws Exception {
+    /**
+     * This tests that the session volatiles are cleared after the sync. The 'post'
+     * and the 'assertion' share the same XPath case lookup expression so without clearing volatiles
+     * the result is cached from the 'post' and not re-evaluated after the sync which causes
+     * the assertion to fail.
+     */
+    @Test
+    public void testPostInEntryWithQuery_clearVolatiles() throws Exception {
         ArrayList<String> selections = new ArrayList<>();
-        selections.add(INDEX_PARENT_SEARCH_FIRST);
+        selections.add("2");  // m2
+        selections.add("2");  // 3rd form
 
-        // we see a search screen first
-        sessionNavigateWithQuery(selections,
-                appName,
-                null,
-                QueryResponseBean.class);
-
-        // execute search
-        QueryData queryData = new QueryData();
-        queryData.setExecute("search_command.m5", true);
-
-        testParentSearchResults(appName, queryData, selections);
-        testParentSelection(appName, queryData, selections);
-
-        testChildSearchNormal(appName, queryData, new ArrayList<>(selections), "search_command.m6",
-                subCaseSelectionId);
-        testChildSearchFirst(appName, queryData, new ArrayList<>(selections), "search_command.m7",
-                subCaseSelectionId);
-        testChildSeeMore(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
-        testChildSkipToResults(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
-    }
-
-    public void testParentSeeMore(String appName, String subCaseSelectionId) throws Exception {
-        ArrayList<String> selections = new ArrayList<>();
-        selections.add(INDEX_PARENT_SEE_MORE);
         QueryData queryData = new QueryData();
 
-        // we should see parent case list with search action
-        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
-                queryData,
-                EntityListResponse.class);
+        EntityListResponse entityListResponse;
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
+            entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+        }
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        });
 
-        assert entityListResponse.getActions().length == 1;
-
-        // move to search screen
-        selections.add("action 0");
-        sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
-                queryData,
-                EntityListResponse.class);
-
-        queryData.setExecute("search_command.m10", true);
-        testParentSearchResults(appName, queryData, selections);
-        testParentSelection(appName, queryData, selections);
-
-        testChildSearchFirst(appName, queryData, new ArrayList<>(selections), "search_command.m12",
-                subCaseSelectionId);
-        testChildSeeMore(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
-        testChildSkipToResults(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
+        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse;
+        try (
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml");
+        ) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+        if (formResponse.getNotification() != null && formResponse.getNotification().isError()) {
+            fail(formResponse.getNotification().getMessage());
+        }
     }
 
-    public void testParentSkipToSearchResults(String appName, String subCaseSelectionId)
-            throws Exception {
+    @Test
+    public void testClearCachesAfterFormSubmission() throws Exception {
         ArrayList<String> selections = new ArrayList<>();
-        selections.add(INDEX_PARENT_SKIP_TO_RESULTS);
+        selections.add("2");  // m2
+        selections.add("1");  // 2nd form
+        selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
 
-        // we should move directly to search results
         QueryData queryData = new QueryData();
-        testParentSearchResults(appName, queryData, selections);
-        testParentSelection(appName, queryData, selections);
 
-        testChildSearchFirst(appName, queryData, new ArrayList<>(selections), "search_command.m17",
-                subCaseSelectionId);
-        testChildSeeMore(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
-        testChildSkipToResults(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
-        testParentSkipToResultsChildForceManualSearch(appName, queryData,
-                new ArrayList<>(selections), "search_command.m18", subCaseSelectionId);
+        NewFormResponse formResponse;
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response_owned.xml")) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+        assertEquals("Close", formResponse.getTitle());
+
+        ExternalDataInstanceSource source = getInstanceSourceFromSession(
+                formResponse.getSessionId(), VirtualInstances.getRemoteReference("results"));
+        assertNotNull(source, "Unable to find 'results' instance in session");
+
+        String key = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", source.getSourceUri(), source.getRequestData());
+        Cache.ValueWrapper cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNotNull(cachedValue, "Expected cache to contain results for the instance");
+
+        // submitting the form should clear the cache
+        submitForm(new HashMap<>(), formResponse.getSessionId());
+
+        cachedValue = cacheManager.getCache("case_search").get(key);
+        assertNull(cachedValue, "Cache not cleared after form submission");
     }
 
-    private void testChildSearchNormal(String appName, QueryData queryData,
-            ArrayList<String> selections, String searchKey, String subCaseSelectionId)
+    @Test
+    public void testSearchInputInstanceInForm() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("2");  // m2
+        selections.add("3");  // m2-f3
+        selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
+
+        QueryData queryData = new QueryData();
+        queryData.setInputs("m2-f3", new Hashtable<String, String>() {{ put("name", "bob"); }});
+
+        NewFormResponse formResponse;
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response_owned.xml")) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+        assertEquals("Close again", formResponse.getTitle());
+        QuestionBean welcome = formResponse.getTree()[0];
+        assertEquals("bob", welcome.getAnswer());
+    }
+
+    private ExternalDataInstanceSource getInstanceSourceFromSession(String sessionId, String reference)
             throws Exception {
-        selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD);
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        // clicking search moves user to search screen
-        selections.add("action 0");
-
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                QueryResponseBean.class);
-        queryData.setExecute(searchKey, true);
-
-        testChildSearchResult(appName, queryData, selections, subCaseSelectionId);
-        testChildSelection(appName, queryData, selections, subCaseSelectionId);
-    }
-
-    private void testParentSearchResults(String appName, QueryData queryData,
-            ArrayList<String> selections) throws Exception {
-        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        assert entityListResponse.getEntities().length == 1;
-        assert entityListResponse.getEntities()[0].getId().equals(PARENT_CASE_ID);
-    }
-
-    private void testParentSelection(String appName, QueryData queryData,
-            ArrayList<String> selections) throws Exception {
-        selections.add(PARENT_CASE_ID);
-        CommandListResponseBean commandListResponseBean = sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                CommandListResponseBean.class);
-
-        assert commandListResponseBean.getCommands().length == 5;
-    }
-
-    private void testChildSearchFirst(String appName, QueryData queryData,
-            ArrayList<String> selections, String searchKey,
-            String subCaseSelectionId) throws Exception {
-        // we move to child search directly
-        selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SEARCH_FIRST);
-        sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
-                queryData,
-                QueryResponseBean.class);
-
-        // Execute child search
-        queryData.setExecute(searchKey, true);
-
-        testChildSearchResult(appName, queryData, selections, subCaseSelectionId);
-        testChildSelection(appName, queryData, selections, subCaseSelectionId);
-    }
-
-    private void testChildSkipToResults(String appName, QueryData queryData,
-            ArrayList<String> selections, String subCaseSelectionId) throws Exception {
-        // we move to child search results directly
-        selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SKIP_TO_RESULTS);
-        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
-                queryData,
-                EntityListResponse.class);
-        testChildSearchResult(appName, queryData, selections, subCaseSelectionId);
-        testChildSelection(appName, queryData, selections, subCaseSelectionId);
-    }
-
-    private void testParentSkipToResultsChildForceManualSearch(String appName, QueryData queryData,
-            ArrayList<String> selections, String searchKey, String subCaseSelectionId)
-            throws Exception {
-
-        // we see child's case list
-        selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SEE_MORE);
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        // click search to show results
-        selections.add("action 0");
-        queryData.setForceManualSearch(searchKey, true);
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                QueryResponseBean.class);
-    }
-
-    // test result of executing child search
-    private void testChildSearchResult(String appName, QueryData queryData,
-            ArrayList<String> selections, String subCaseSelectionId) throws Exception {
-        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        assert entityListResponse.getEntities().length == 1;
-        assert entityListResponse.getEntities()[0].getId().equals(subCaseSelectionId);
-    }
-
-    // selecting child should show child update form
-    private void testChildSelection(String appName, QueryData queryData,
-            ArrayList<String> selections, String subCaseSelectionId) throws Exception {
-        selections.add(subCaseSelectionId);
-        CommandListResponseBean commandListResponseBean = sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                CommandListResponseBean.class);
-
-        assert commandListResponseBean.getCommands().length == 1;
-
-        selections.add(INDEX_CHILD_FORM);
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                NewFormResponse.class);
-    }
-
-
-    private void testChildSeeMore(String appName, QueryData queryData,
-            ArrayList<String> selections, String subCaseSelectionId) throws Exception {
-        // we see a case list first
-        selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SEE_MORE);
-        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
-                queryData,
-                EntityListResponse.class);
-
-        // clicking search moves user to search results screen directly
-        selections.add("action 0");
-
-        testChildSearchResult(appName, queryData, selections, subCaseSelectionId);
-        testChildSelection(appName, queryData, selections, subCaseSelectionId);
-    }
-
-    private void configureSyncMock() {
-        when(webClientMock.caseClaimPost(anyString(), anyString())).thenReturn(true);
-    }
-
-    private void configureQueryMock() {
-        when(webClientMock.postFormData(anyString(), argThat(data -> {
-            return (data != null) &&
-                    ((Multimap<String, String>)data).get("case_type").contains("song");
-        }))).thenReturn(FileUtils.getFile(this.getClass(),
-                "query_responses/case_claim_parent_child_response.xml"));
-
-        when(webClientMock.postFormData(anyString(), argThat(data -> {
-            return (data != null) &&
-                    ((Multimap<String, String>)data).get("case_type").contains("show");
-        }))).thenReturn(FileUtils.getFile(this.getClass(),
-                "query_responses/case_claim_parent_child_child_response.xml"));
-    }
-
-    private HashMap<String, Object> getAnswers(String index, String answer) {
-        HashMap<String, Object> ret = new HashMap<>();
-        ret.put(index, answer);
-        return ret;
+        SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
+        CommCareSession commCareSession = getCommCareSession(formSession.getMenuSessionId());
+        SessionFrame frame = commCareSession.getFrame();
+        for (StackFrameStep step : frame.getSteps()) {
+            if (step.hasDataInstanceSource(reference)) {
+                return step.getDataInstanceSource(reference);
+            }
+        }
+        return null;
     }
 }

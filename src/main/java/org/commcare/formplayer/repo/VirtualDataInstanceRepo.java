@@ -8,12 +8,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.UUID;
+import java.util.Optional;
 
 /**
  * JpaRepository interface for {@link SerializableDataInstance}
  */
 public interface VirtualDataInstanceRepo extends JpaRepository<SerializableDataInstance, String> {
+
+    Optional<SerializableDataInstance> findByNamespacedKey(String key);
+
+    boolean existsByNamespacedKey(String key);
 
     @Modifying
     @Transactional

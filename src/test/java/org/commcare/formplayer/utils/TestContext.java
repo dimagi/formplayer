@@ -2,6 +2,7 @@ package org.commcare.formplayer.utils;
 
 import com.timgroup.statsd.StatsDClient;
 
+import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.TestInstallService;
@@ -31,8 +32,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -51,6 +50,13 @@ public class TestContext {
 
     public TestContext() {
         MockitoAnnotations.openMocks(this);
+    }
+
+    @Bean
+    public SQLiteProperties sqliteProperties() {
+        SQLiteProperties sqLiteProperties = new SQLiteProperties();
+        sqLiteProperties.setDataDir("testdbs/");
+        return sqLiteProperties;
     }
 
     @Bean
@@ -161,11 +167,6 @@ public class TestContext {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return Mockito.spy(ArchiveFileRoot.class);
-    }
-
-    @Bean
-    public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("case_search", "form_definition");
     }
 
     @Bean

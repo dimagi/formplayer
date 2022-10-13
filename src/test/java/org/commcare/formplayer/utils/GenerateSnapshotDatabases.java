@@ -3,12 +3,28 @@ package org.commcare.formplayer.utils;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.commcare.formplayer.application.SQLiteProperties;
+import org.commcare.formplayer.application.UtilController;
+import org.commcare.formplayer.configuration.CacheConfiguration;
+import org.commcare.formplayer.junit.InitializeStaticsExtension;
+import org.commcare.formplayer.junit.Installer;
+import org.commcare.formplayer.junit.RestoreFactoryExtension;
+import org.commcare.formplayer.junit.request.SyncDbRequest;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
-import org.commcare.formplayer.tests.BaseTestClass;
-import org.junit.jupiter.api.BeforeEach;
+import org.commcare.formplayer.services.FormplayerLockRegistry;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.MenuSessionFactory;
+import org.commcare.formplayer.services.MenuSessionRunnerService;
+import org.commcare.formplayer.services.RestoreFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.File;
 
@@ -27,32 +43,35 @@ import java.io.File;
  * @author ctsims
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
-public class GenerateSnapshotDatabases extends BaseTestClass {
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
+@Import({UtilController.class})
+@TestPropertySource(properties = {"sqlite.dataDir=src/test/resources/snapshot/"})
+@ExtendWith(InitializeStaticsExtension.class)
+public class GenerateSnapshotDatabases {
 
-    //This is the destination directory for the snapshot.
-    public static String snapshotDbDirectory = "src/test/resources/snapshot/";
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Override
-    @BeforeEach
-    public void setUp() throws Exception {
-        super.setUp();
-        configureRestoreFactory("snapshot", "snapshot_test");
-    }
+    @Autowired
+    private RestoreFactory restoreFactory;
 
-    protected String getDatabaseFolderRoot() {
-        return snapshotDbDirectory;
-    }
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
 
-    @Override
-    protected boolean removeDatabaseFoldersAfterTests() {
-        return false;
-    }
+    @Autowired
+    private MenuSessionFactory menuSessionFactory;
 
-    @Override
-    protected String getMockRestoreFileName() {
-        return "sandbox_reference/user_restore.xml";
-    }
+    @Autowired
+    private MenuSessionRunnerService menuSessionRunnerService;
+
+    @MockBean
+    private FormplayerLockRegistry lockRegistry;
+
+    @RegisterExtension
+    static RestoreFactoryExtension restoreFactoryExt = new RestoreFactoryExtension.builder()
+            .withUser("snapshot_test").withDomain("snapshot")
+            .withRestorePath("sandbox_reference/user_restore.xml")
+            .build();
 
     @Test
     public void testCreateSnapshot() throws Exception {
@@ -64,8 +83,13 @@ public class GenerateSnapshotDatabases extends BaseTestClass {
             if (new File(SQLiteProperties.getDataDir()).exists()) {
                 fail("Couldn't remove existing snapshot assets");
             }
-            syncDb();
-            doInstall("sandbox_reference/snapshot.json");
+            new SyncDbRequest(mockMvc, restoreFactory).request();
+            new Installer(
+                    restoreFactory,
+                    storageFactory,
+                    menuSessionFactory,
+                    menuSessionRunnerService
+            ).doInstall("sandbox_reference/snapshot.json");
         }
     }
 

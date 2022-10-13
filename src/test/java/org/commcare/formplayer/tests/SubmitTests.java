@@ -33,7 +33,6 @@ import java.util.Map;
  * Regression tests for submission behaviors
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class SubmitTests extends BaseTestClass {
     static Map<String, Object> answers = ImmutableMap.of("0", "name", "1", "1");
 

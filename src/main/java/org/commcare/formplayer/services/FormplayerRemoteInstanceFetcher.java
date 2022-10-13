@@ -30,7 +30,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
             throws RemoteInstanceException {
         if (source.getSourceUri() != null) {
             try {
-                return caseSearchHelper.getExternalRoot(instanceId, (source));
+                return caseSearchHelper.getExternalRoot(instanceId, (source), false);
             } catch (XmlPullParserException | UnfullfilledRequirementsException | InvalidStructureException e) {
                 throw new RemoteInstanceException("Invalid data retrieved from remote instance " +
                         instanceId + ". If the error persists please contact your help desk.", e);
@@ -39,7 +39,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
                         + instanceId + ". Please try opening the form again.", e);
             }
         } else if (source.getStorageReferenceId() != null) {
-            ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId());
+            ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId(), instanceId);
             return (TreeElement)instance.getRoot();
         }
         throw new RemoteInstanceException("Could not retrieve data for instance " + instanceId
@@ -47,7 +47,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
                 + "storageRefernceId");
     }
 
-    public VirtualDataInstanceStorage getVirtualDataInstanceCache() {
+    public VirtualDataInstanceStorage getVirtualDataInstanceStorage() {
         return mVirtualDataInstanceStorage;
     }
 }

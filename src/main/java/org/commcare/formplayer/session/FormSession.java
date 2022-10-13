@@ -109,13 +109,7 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
 
-        if (this.session.getFormDefinition() != null) {
-            this.formDef = formDefinitionService.getFormDef(this.session);
-        } else {
-            // DEPRECATED: leave to allow rollback if needed
-            // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe
-            this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
-        }
+        this.formDef = formDefinitionService.getFormDef(this.session);
 
         loadInstanceXml(this.formDef, session.getInstanceXml());
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
@@ -164,9 +158,6 @@ public class FormSession {
                 locale, inPromptMode, sessionData, functionContext
         );
         this.session.setFormDefinition(serializableFormDefinition);
-        // DEPRECATED: leave to allow rollback if needed
-        // Will remove once https://github.com/dimagi/formplayer/pull/1075 is safe
-        this.session.setFormXml(serializableFormDefinition.getSerializedFormDef());
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
@@ -250,8 +241,8 @@ public class FormSession {
         try {
             formEntryController.setLanguage(session.getInitLang());
         } catch (UnregisteredLocaleException e) {
-            log.error("Couldn't find locale " + session.getInitLang()
-                    + " for user " + session.getUsername());
+            log.info("Couldn't find form locale '" + session.getInitLang()
+                    + "' for user " + session.getUsername());
         }
     }
 

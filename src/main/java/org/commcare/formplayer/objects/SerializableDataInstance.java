@@ -3,10 +3,12 @@ package org.commcare.formplayer.objects;
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.utils.TreeUtilities;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -15,17 +17,25 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Model class representing a postgress entry for virtual data instances table
  */
 @Entity
 @Table(name = Constants.POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME)
+@Getter
 public class SerializableDataInstance {
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
+
+    @Setter
+    @Column(name = "key", updatable = false)
+    private String namespacedKey;
 
     @Column(name = "instanceid", updatable = false)
     private String instanceId;
@@ -61,7 +71,8 @@ public class SerializableDataInstance {
     }
 
     public SerializableDataInstance(String instanceId, String reference, String username,
-            String domain, String appId, String asUser, TreeElement instanceXml, boolean useCaseTemplate) {
+            String domain, String appId, String asUser, TreeElement instanceXml, boolean useCaseTemplate,
+            String namespacedKey) {
         this.instanceId = instanceId;
         this.reference = reference;
         this.username = username;
@@ -70,45 +81,22 @@ public class SerializableDataInstance {
         this.asUser = asUser;
         this.instanceXml = instanceXml;
         this.useCaseTemplate = useCaseTemplate;
+        this.namespacedKey = namespacedKey;
     }
 
-    public String getInstanceId() {
-        return instanceId;
+    /**
+     * @param instanceId The instance ID that is being requested.
+     * @param key The storage key without the namespace
+     * @return
+     */
+    public ExternalDataInstance toInstance(String instanceId, String key) {
+        TreeElement root = getInstanceXml();
+        if (!instanceId.equals(getInstanceId())) {
+            root = TreeUtilities.renameInstance(root, instanceId);
+        }
+        ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
+                        instanceId, root, getReference(), isUseCaseTemplate(), key);
+        return instanceSource.toInstance();
     }
 
-    public TreeElement getInstanceXml() {
-        return instanceXml;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public String getAsUser() {
-        return asUser;
-    }
-
-    public Instant getDateCreated() {
-        return dateCreated;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-
-    public boolean useCaseTemplate() {
-        return useCaseTemplate;
-    }
 }

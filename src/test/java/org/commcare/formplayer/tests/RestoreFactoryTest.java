@@ -1,19 +1,24 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import static java.util.Collections.singletonList;
 
+import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -22,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +50,7 @@ import javax.servlet.http.HttpServletRequest;
  * Created by benrudolph on 1/19/17.
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 public class RestoreFactoryTest {
 
     private static final String BASE_URL = "http://localhost:8000/a/restore-domain/phone/restore/";
@@ -148,7 +154,7 @@ public class RestoreFactoryTest {
     public void testGetCaseRestoreUrl() {
         restoreFactorySpy.setCaseId("case_id_123");
         assertEquals(
-                "http://localhost:8000/a/restore-domain/case_migrations/restore/case_id_123/",
+                "http://localhost:8000/a/restore-domain/phone/case_restore/case_id_123/",
                 restoreFactorySpy.getCaseRestoreUrl().toString()
         );
     }
@@ -200,6 +206,44 @@ public class RestoreFactoryTest {
     }
 
     @Test
+    @WithHqUser(enabledToggles = {TOGGLE_INCLUDE_STATE_HASH})
+    public void testGetUserRestoreUrlWithStateHash() {
+        try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
+            mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("123");
+            assertEquals(
+                    BASE_URL + "?version=2.0" +
+                            "&device_id=WebAppsLogin" +
+                            "&state=ccsh%3A123",
+                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+            );
+        }
+    }
+
+    @Test
+    public void testGetUserRestoreUrlWithStateHash_toggleOff() {
+        try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
+            mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("123");
+            assertEquals(
+                    BASE_URL + "?version=2.0" +
+                            "&device_id=WebAppsLogin",
+                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+            );
+        }
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_INCLUDE_STATE_HASH})
+    public void testGetUserRestoreUrlEmptyStateHash() {
+        try (MockedStatic<CaseDBUtils> mockUtils = Mockito.mockStatic(CaseDBUtils.class)) {
+            mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("");
+            assertEquals(
+                    BASE_URL + "?version=2.0&device_id=WebAppsLogin",
+                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+            );
+        }
+    }
+
+    @Test
     public void testGetRequestHeaders() {
         String syncToken = "synctoken";
         Mockito.doReturn(syncToken).when(restoreFactorySpy).getSyncToken();
@@ -220,7 +264,7 @@ public class RestoreFactoryTest {
     public void testGetRequestHeaders_HmacAuth() throws Exception {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
@@ -238,7 +282,7 @@ public class RestoreFactoryTest {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
         String requestPath =
-                "/a/restore-domain/case_migrations/restore/case_id_123/?query_param=true";
+                "/a/restore-domain/phone/case_restore/case_id_123/?query_param=true";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
@@ -254,7 +298,7 @@ public class RestoreFactoryTest {
     @Test
     public void testGetRequestHeaders_UseHmacAuthEvenIfHqAuthPresent() throws Exception {
         mockHmacRequest();
-        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
                 new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());

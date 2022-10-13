@@ -50,13 +50,16 @@
 trunk: master
 name: autostaging
 branches:
-  - sk/form-entry-with-post # Simon/Jenny May 25
-  - sk/search-input-instance # Simon/Jenny May 25
+#  - jls/autoMultiSelect+saveMediaAttachment+mediaFormSubmission # nbd, conflicts are minor
+  - saveMediaAttachment # Shubham/Jenny Aug 12
+#  - autoMultiSelect # Shubham/Jenny Sept 26
+#  - skipEntityListEval # Shubham Oct 11
+  - autoAdvanceMenuFix # Shubham Oct 13
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - ce/ensure-session # Cal Nov 20 2021
-      - sk/search-input-instance+sk/combine-remote-request-entry-view # Jenny May 25
-      - sk/combine-remote-request-entry-view # Simon/Jenny May 25
-      - sk/search-input-instance # Simon/Jenny May 25
+      - do/query-init-change
+#      - ml/timezone-revert - this was branched off master
+#      - autoMultiSelect # Shubham/Jenny Sept 26
+#      - skipEntityListEval # Shubham Oct 11

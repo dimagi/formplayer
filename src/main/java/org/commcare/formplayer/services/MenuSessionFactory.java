@@ -2,6 +2,9 @@ package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
 
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.session.CommCareSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -69,7 +72,7 @@ public class MenuSessionFactory {
     public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
-        Screen screen = menuSession.getNextScreen(false);
+        Screen screen = menuSession.getNextScreen(false, false);
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
@@ -85,7 +88,7 @@ public class MenuSessionFactory {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 entityScreen.init(menuSession.getSessionWrapper());
                 if (entityScreen.shouldBeSkipped()) {
-                    screen = menuSession.getNextScreen(false);
+                    screen = menuSession.getNextScreen(false, false);
                     continue;
                 }
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
@@ -116,10 +119,11 @@ public class MenuSessionFactory {
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),
                                 uri.toURL(),
-                                dataBuilder.build()
+                                dataBuilder.build(),
+                                false
                             );
-                            queryScreen.setQueryDatum(searchDataInstance);
-                            screen = menuSession.getNextScreen(false);
+                            queryScreen.updateSession(searchDataInstance);
+                            screen = menuSession.getNextScreen(false, false);
                             currentStep = NEXT_SCREEN;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
@@ -132,8 +136,9 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, false, true, false, null);
-                screen = menuSession.getNextScreen(false);
+                menuSession.handleInput(currentStep, false, true, false, null, false);
+                menuSession.addSelection(currentStep);
+                screen = menuSession.getNextScreen(false, false);
             }
         }
         if (screen != null) {
@@ -155,8 +160,9 @@ public class MenuSessionFactory {
     }
 
     @Trace
-    public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory,
+    public MenuSession buildSession(SerializableMenuSession serializableMenuSession, FormplayerConfigEngine engine,
+            CommCareSession commCareSession) throws Exception {
+        return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
     }
 }

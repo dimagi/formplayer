@@ -13,7 +13,6 @@ import org.springframework.test.context.ContextConfiguration;
 import java.util.HashMap;
 
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class BasicEndOfFormTests extends BaseTestClass {
 
     @BeforeEach

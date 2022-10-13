@@ -7,20 +7,17 @@ import static org.mockito.Mockito.verify;
 import com.timgroup.statsd.StatsDClient;
 
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.utils.TestContext;
-import org.commcare.formplayer.utils.WithHqUser;
+import org.commcare.formplayer.utils.HqUserDetails;
+import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class FormplayerDatadogTests {
     FormplayerDatadog datadog;
     StatsDClient mockDatadogClient;
@@ -30,6 +27,7 @@ public class FormplayerDatadogTests {
         mockDatadogClient = mock(StatsDClient.class);
         List<String> detailedTagNames = Collections.singletonList("detailed_tag");
         datadog = new FormplayerDatadog(mockDatadogClient, detailedTagNames);
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -105,8 +103,9 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    @WithHqUser(enabledToggles = {TOGGLE_DETAILED_TAGGING})
     public void testAddRequestScopedDetailedTagForEligibleDomain() {
+        enableDetailTagging();
+
         // detailed_tag was added to FormplayerDatadog in beforeTest
         datadog.addRequestScopedTag("detailed_tag", "test_value");
         datadog.recordExecutionTime("requests", 100, Collections.emptyList());
@@ -116,7 +115,6 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    @WithHqUser(enabledToggles = {})
     public void testAddRequestScopedDetailedTagForIneligibleDomain() {
         // detailed_tag was added to FormplayerDatadog in beforeTest
         datadog.addRequestScopedTag("detailed_tag", "test_value");
@@ -127,8 +125,9 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    @WithHqUser(enabledToggles = {TOGGLE_DETAILED_TAGGING})
     public void testAddTransientDetailedTagForEligibleDomain() {
+        enableDetailTagging();
+
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         // detailed_tag was added to FormplayerDatadog in beforeTest
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
@@ -139,7 +138,6 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    @WithHqUser(enabledToggles = {})
     public void testAddTransientDetailedTagForIneligibleDomain() {
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         // detailed_tag was added to FormplayerDatadog in beforeTest
@@ -150,4 +148,9 @@ public class FormplayerDatadogTests {
         verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
+    private void enableDetailTagging() {
+        WithHqUserSecurityContextFactory.setSecurityContext(
+                HqUserDetails.builder().enabledToggles(new String[]{TOGGLE_DETAILED_TAGGING}).build()
+        );
+    }
 }

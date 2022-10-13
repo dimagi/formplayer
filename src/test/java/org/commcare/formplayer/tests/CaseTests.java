@@ -25,7 +25,6 @@ import java.util.Iterator;
  * This test tests that we can create and delete a case via the form API
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CaseTests extends BaseTestClass {
 
     @Test

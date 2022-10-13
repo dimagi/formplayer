@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static java.util.Optional.ofNullable;
 
 import org.apache.commons.io.IOUtils;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
@@ -30,16 +31,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -56,6 +60,8 @@ import java.util.UUID;
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
+@EnableConfigurationProperties(value = CacheConfiguration.class)
+@TestPropertySource("classpath:application.properties")
 public class FormDefinitionServiceTest {
 
     private final Map<List<String>, SerializableFormDefinition> formDefinitionMap = new HashMap<>();
@@ -127,6 +133,13 @@ public class FormDefinitionServiceTest {
     public void cleanup() {
         this.cacheManager.getCache("form_definition").clear();
         getFormDefStorage().removeAll();
+    }
+
+    @Test
+    public void testFormDefinitionCacheExists() {
+        Cache cache = cacheManager.getCache("form_definition");
+        assertNotNull(cache);
+        assertTrue(cache instanceof CaffeineCache);
     }
 
     @Test
@@ -318,11 +331,6 @@ public class FormDefinitionServiceTest {
 
         @MockBean
         public JdbcTemplate jdbcTemplate;
-
-        @Bean
-        public CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("form_definition");
-        }
 
         @Bean
         public FormplayerStorageFactory storageFactory() {

@@ -8,7 +8,6 @@ import org.commcare.data.xml.SimpleNode;
 import org.commcare.data.xml.TreeBuilder;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.util.PrototypeUtils;
-import org.commcare.formplayer.utils.JpaTestUtils;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.junit.jupiter.api.Assertions;
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -26,6 +26,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,20 +58,56 @@ public class VirtualDataInstanceRepoTest {
     @Test
     public void testSaveAndLoad() {
         SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
-                getSerializableDataInstance(new String[]{"case1", "case3"}));
+                getSerializableDataInstance(new String[]{"case1", "case3"}, UUID.randomUUID().toString()));
         Assertions.assertNotNull(savedInstance.getId());
+        Assertions.assertNotNull(savedInstance.getNamespacedKey());
 
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
-        SerializableDataInstance loaded = JpaTestUtils.unwrapProxy(
-                virtualDataInstanceRepo.getById(savedInstance.getId())
-        );
+        SerializableDataInstance loadedById = virtualDataInstanceRepo.getById(savedInstance.getId());
+        Assertions.assertNotNull(loadedById);
+
+        entityManager.clear(); // clear the EM cache to force a re-fetch from DB
+        Assertions.assertTrue(virtualDataInstanceRepo.existsByNamespacedKey(savedInstance.getNamespacedKey()));
+
+        entityManager.clear(); // clear the EM cache to force a re-fetch from DB
+        Optional<SerializableDataInstance> loadedByKey = virtualDataInstanceRepo.findByNamespacedKey(savedInstance.getNamespacedKey());
+        Assertions.assertTrue(loadedByKey.isPresent());
+        Assertions.assertNotNull(loadedByKey.get().getDateCreated());
+        assertInstanceXml(savedInstance, loadedByKey.get());
+    }
+
+    private void assertInstanceXml(SerializableDataInstance savedInstance, SerializableDataInstance loaded) {
+        Assertions.assertNotNull(loaded);
         // Reattach parent
         ExternalDataInstance loadedExternalDataInstance = new ExternalDataInstance(
                 JR_SELECTED_ENTITIES_REFERENCE,
                 "selected_cases",
                 loaded.getInstanceXml());
         assertThat(loadedExternalDataInstance.getRoot()).isEqualTo(savedInstance.getInstanceXml());
-        Assertions.assertNotNull(loaded.getDateCreated());
+    }
+
+    @Test
+    public void testSaveAndLoad_manualKey() {
+        String key = "123";
+        SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
+                getSerializableDataInstance(new String[]{"case1", "case3"}, key));
+        Assertions.assertEquals(key, savedInstance.getNamespacedKey());
+
+        entityManager.clear(); // clear the EM cache to force a re-fetch from DB
+        Optional<SerializableDataInstance> loaded = virtualDataInstanceRepo.findByNamespacedKey(key);
+        Assertions.assertTrue(loaded.isPresent());
+    }
+
+    @Test
+    public void testDuplicateKey() {
+        SerializableDataInstance savedInstance = virtualDataInstanceRepo.saveAndFlush(
+                getSerializableDataInstance(new String[]{"case1", "case3"}, UUID.randomUUID().toString()));
+
+        entityManager.clear(); // clear the EM cache to force a re-fetch from DB
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            virtualDataInstanceRepo.saveAndFlush(
+                    getSerializableDataInstance(new String[]{"case1", "case3"}, savedInstance.getNamespacedKey()));
+        });
     }
 
     @Test
@@ -106,19 +144,21 @@ public class VirtualDataInstanceRepoTest {
     }
 
     private SerializableDataInstance getSerializableDataInstance(int i) {
-        return getSerializableDataInstance(new String[]{"case" + i});
+        return getSerializableDataInstance(new String[]{"case" + i}, UUID.randomUUID().toString());
     }
 
-    private SerializableDataInstance getSerializableDataInstance(String[] selections) {
+    private SerializableDataInstance getSerializableDataInstance(String[] selections, String key) {
         ExternalDataInstance selectedEntitiesInstance = buildSelectedEntitiesInstance(selections);
-        return new SerializableDataInstance(selectedEntitiesInstance.getInstanceId(),
+        return new SerializableDataInstance(
+                selectedEntitiesInstance.getInstanceId(),
                 JR_SELECTED_ENTITIES_REFERENCE,
                 "username",
                 "domain",
                 "appid",
                 "asUser",
                 (TreeElement)selectedEntitiesInstance.getRoot(),
-                selectedEntitiesInstance.useCaseTemplate());
+                selectedEntitiesInstance.useCaseTemplate(),
+                key);
     }
 
     public static ExternalDataInstance buildSelectedEntitiesInstance(String[] selections) {
@@ -130,4 +170,3 @@ public class VirtualDataInstanceRepoTest {
         return new ExternalDataInstance(JR_SELECTED_ENTITIES_REFERENCE, "selected_cases", root);
     }
 }
-
