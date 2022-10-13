@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 
-
 /**
  * Regression test for a fixed behaviour around auto-advancing menus and nested multi-select case list
  */
@@ -29,7 +28,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
     override fun setUp() {
         super.setUp()
         configureRestoreFactory("domain", "user")
-        storageFactoryMock.configure("user","domain","app_id","asUser")
+        storageFactoryMock.configure("user", "domain", "app_id", "asUser")
         cacheManager.getCache("case_search").clear()
         mockRequest = MockRequestUtils(webClientMock, restoreFactoryMock)
     }

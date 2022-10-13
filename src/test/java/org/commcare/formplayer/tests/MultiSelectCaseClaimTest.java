@@ -128,7 +128,8 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         CommandListResponseBean commandResponse;
         try (
                 MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
-                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/multi_select_case_claim.xml");
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore(
+                        "restores/multi_select_case_claim.xml");
         ) {
             commandResponse = sessionNavigateWithQuery(selections,
                     APP_NAME,
@@ -172,7 +173,8 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         CommandListResponseBean commandResponse;
         try (
                 MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
-                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/multi_select_case_claim.xml");
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore(
+                        "restores/multi_select_case_claim.xml");
         ) {
             NewFormResponse formResponse = sessionNavigateWithQuery(selections,
                     APP_NAME,

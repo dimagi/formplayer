@@ -117,7 +117,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
 
         // selections should now be {"1", "guid"}
-        assertEquals( 2, formResp.getSelections().length);
+        assertEquals(2, formResp.getSelections().length);
     }
 
     @Test
