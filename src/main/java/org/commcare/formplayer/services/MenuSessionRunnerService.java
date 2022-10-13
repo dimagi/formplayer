@@ -497,7 +497,7 @@ public class MenuSessionRunnerService {
             throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
-            restoreFactory.performTimedSync(false, false, false);
+            restoreFactory.performTimedSync(false, true, false);
             menuSession.getSessionWrapper().clearVolatiles();
         }
     }
