@@ -53,7 +53,8 @@ branches:
 #  - jls/autoMultiSelect+saveMediaAttachment+mediaFormSubmission # nbd, conflicts are minor
   - saveMediaAttachment # Shubham/Jenny Aug 12
 #  - autoMultiSelect # Shubham/Jenny Sept 26
-  - skipEntityListEval # Shubham Oct 11
+#  - skipEntityListEval # Shubham Oct 11
+  - autoAdvanceMenuFix # Shubham Oct 13
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -61,4 +62,4 @@ submodules:
       - do/query-init-change
 #      - ml/timezone-revert - this was branched off master
 #      - autoMultiSelect # Shubham/Jenny Sept 26
-      - skipEntityListEval # Shubham Oct 11
+#      - skipEntityListEval # Shubham Oct 11
