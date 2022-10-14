@@ -96,7 +96,7 @@ public class EntityListResponse extends MenuBean {
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
-            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec,
+            List<EntityBean> entityBeans = processEntitiesForCaseList(detail, references, ec,
                     searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
 
             if (casesPerPage == 0) {
@@ -104,14 +104,14 @@ public class EntityListResponse extends MenuBean {
             }
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
 
-            if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
+            if (entityBeans.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
                 setCurrentPage(offset / casesPerPage);
-                setPageCount((int)Math.ceil((double)entityList.size() / casesPerPage));
-                entityList = paginateEntities(entityList, casesPerPage, offset);
+                setPageCount((int)Math.ceil((double)entityBeans.size() / casesPerPage));
+                entityBeans = paginateEntities(entityBeans, casesPerPage, offset);
             }
-            entities = new EntityBean[entityList.size()];
-            entityList.toArray(entities);
+            entities = new EntityBean[entityBeans.size()];
+            entityBeans.toArray(entities);
         }
 
         processTitle(session);
