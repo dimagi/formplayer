@@ -1,0 +1,27 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+  <h:head>
+    <h:title>Followup</h:title>
+    <model>
+      <instance>
+        <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/06F07035-D13F-4E61-8B69-BE1DEF4FD3F5" uiVersion="1" version="37" name="Followup">
+          <t/>
+        </data>
+      </instance>
+      <instance id="commcaresession" src="jr://instance/session"/>
+      <instance id="selected_cases" src="jr://instance/selected-entities/selected_cases"/>
+      <bind nodeset="/data/t" type="xsd:string"/>
+      <itext>
+        <translation lang="en" default="">
+          <text id="t-label">
+            <value>tee</value>
+          </text>
+        </translation>
+      </itext>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/t">
+      <label ref="jr:itext('t-label')"/>
+    </input>
+  </h:body>
+</h:html>
