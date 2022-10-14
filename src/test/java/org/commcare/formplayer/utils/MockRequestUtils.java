@@ -58,12 +58,16 @@ public class MockRequestUtils {
      * Mock the query and verify it happened
      */
     public VerifiedMock mockQuery(String queryFile) {
+        return mockQuery(queryFile, 1);
+    }
+
+    public VerifiedMock mockQuery(String queryFile, int times) {
         Mockito.reset(webClientMock);
         when(webClientMock.postFormData(anyString(), any(Multimap.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), queryFile));
 
         return () -> verify(
-                webClientMock, Mockito.times(1)).postFormData(
+                webClientMock, Mockito.times(times)).postFormData(
                 anyString(), any(Multimap.class));
     }
 
