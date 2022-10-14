@@ -96,17 +96,18 @@ public class EntityListResponse extends MenuBean {
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
-            List<EntityBean> entityBeans = processEntitiesForCaseList(detail, references, ec,
-                    searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
+            List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
+                    sortIndex, isFuzzySearchEnabled);
 
             if (casesPerPage == 0) {
                 casesPerPage = DEFAULT_CASES_PER_PAGE;
             }
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
 
-            List<EntityBean> entitesForPage = paginateEntities(entityBeans, detail, casesPerPage, offset);
-            entities = new EntityBean[entitesForPage.size()];
-            entitesForPage.toArray(entities);
+            List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage, offset);
+            List<EntityBean> entityBeans = processEntitiesForCaseList(detail, entitesForPage, ec, neededDatum);
+            entities = new EntityBean[entityBeans.size()];
+            entityBeans.toArray(entities);
         }
 
         processTitle(session);
@@ -158,14 +159,9 @@ public class EntityListResponse extends MenuBean {
 
     @Trace
     public static List<EntityBean> processEntitiesForCaseList(Detail detail,
-            Vector<TreeReference> references,
+            List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
-            String searchText,
-            EntityDatum neededDatum,
-            int sortIndex,
-            boolean isFuzzySearchEnabled) {
-        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
-                sortIndex, isFuzzySearchEnabled);
+            EntityDatum neededDatum) {
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
@@ -186,20 +182,20 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
-    private List<EntityBean> paginateEntities(
-            List<EntityBean> entityBeans, Detail detail, int casesPerPage, int offset) {
-        if (entityBeans.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
+    private  List<Entity<TreeReference>> paginateEntities(
+            List<Entity<TreeReference>> entityList, Detail detail, int casesPerPage, int offset) {
+        if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
             // we're doing pagination
             setCurrentPage(offset / casesPerPage);
-            setPageCount((int)Math.ceil((double)entityBeans.size() / casesPerPage));
-            return getEntitiesForCurrentPage(entityBeans, casesPerPage, offset);
+            setPageCount((int)Math.ceil((double)entityList.size() / casesPerPage));
+            return getEntitiesForCurrentPage(entityList, casesPerPage, offset);
         }
-        return entityBeans;
+        return entityList;
     }
 
 
     @Trace
-    private List<EntityBean> getEntitiesForCurrentPage(List<EntityBean> matched, int casesPerPage,
+    private List<Entity<TreeReference>> getEntitiesForCurrentPage(List<Entity<TreeReference>> matched, int casesPerPage,
             int offset) {
         if (offset > matched.size()) {
             throw new RuntimeException("Pagination offset " + offset +
@@ -218,7 +214,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     @Trace
-    private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
+    public static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
             EvaluationContext context,
             Vector<TreeReference> references,
             String searchText,
