@@ -104,14 +104,9 @@ public class EntityListResponse extends MenuBean {
             }
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
 
-            if (entityBeans.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
-                // we're doing pagination
-                setCurrentPage(offset / casesPerPage);
-                setPageCount((int)Math.ceil((double)entityBeans.size() / casesPerPage));
-                entityBeans = getEntitiesForCurrentPage(entityBeans, casesPerPage, offset);
-            }
-            entities = new EntityBean[entityBeans.size()];
-            entityBeans.toArray(entities);
+            List<EntityBean> entitesForPage = paginateEntities(entityBeans, detail, casesPerPage, offset);
+            entities = new EntityBean[entitesForPage.size()];
+            entitesForPage.toArray(entities);
         }
 
         processTitle(session);
@@ -127,6 +122,8 @@ public class EntityListResponse extends MenuBean {
         }
         setQueryKey(session.getCommand());
     }
+
+
 
     private void processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
@@ -188,6 +185,18 @@ public class EntityListResponse extends MenuBean {
         }
         return full;
     }
+
+    private List<EntityBean> paginateEntities(
+            List<EntityBean> entityBeans, Detail detail, int casesPerPage, int offset) {
+        if (entityBeans.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
+            // we're doing pagination
+            setCurrentPage(offset / casesPerPage);
+            setPageCount((int)Math.ceil((double)entityBeans.size() / casesPerPage));
+            return getEntitiesForCurrentPage(entityBeans, casesPerPage, offset);
+        }
+        return entityBeans;
+    }
+
 
     @Trace
     private List<EntityBean> getEntitiesForCurrentPage(List<EntityBean> matched, int casesPerPage,
