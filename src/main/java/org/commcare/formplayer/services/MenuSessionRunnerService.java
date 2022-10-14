@@ -387,8 +387,7 @@ public class MenuSessionRunnerService {
 
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
-                sessionAdvanced = handleAutoLaunch((EntityScreen)nextScreen, menuSession, currentInput,
-                        needsFullEntityScreen, inputValidated, nextInput, isDetailScreen);
+                sessionAdvanced = handleAutoLaunch((EntityScreen)nextScreen, menuSession, nextInput);
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 boolean skipCache = !(replay || isDetailScreen);
@@ -463,12 +462,13 @@ public class MenuSessionRunnerService {
      * @return true if the session was advanced
      * @throws CommCareSessionException
      */
-    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession, String selection,
-            boolean needsFullEntityScreen, boolean inputValidated, String nextInput, boolean isDetailScreen)
+    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
+            String nextInput)
             throws CommCareSessionException {
         entityScreen.evaluateAutoLaunch(nextInput);
         if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsFullEntityScreen, inputValidated, true, null, isDetailScreen);
+            entityScreen.setPendingAction(entityScreen.getAutoLaunchAction());
+            entityScreen.executePendingAction(menuSession.getSessionWrapper());
             return true;
         }
         return false;
