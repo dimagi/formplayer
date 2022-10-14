@@ -108,7 +108,7 @@ public class EntityListResponse extends MenuBean {
                 // we're doing pagination
                 setCurrentPage(offset / casesPerPage);
                 setPageCount((int)Math.ceil((double)entityBeans.size() / casesPerPage));
-                entityBeans = paginateEntities(entityBeans, casesPerPage, offset);
+                entityBeans = getEntitiesForCurrentPage(entityBeans, casesPerPage, offset);
             }
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
@@ -190,7 +190,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     @Trace
-    private List<EntityBean> paginateEntities(List<EntityBean> matched, int casesPerPage,
+    private List<EntityBean> getEntitiesForCurrentPage(List<EntityBean> matched, int casesPerPage,
             int offset) {
         if (offset > matched.size()) {
             throw new RuntimeException("Pagination offset " + offset +
