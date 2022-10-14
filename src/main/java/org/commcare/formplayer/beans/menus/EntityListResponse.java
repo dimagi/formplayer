@@ -104,7 +104,8 @@ public class EntityListResponse extends MenuBean {
             }
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
 
-            List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage, offset);
+            List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
+                    offset);
             List<EntityBean> entityBeans = processEntitiesForCaseList(detail, entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
@@ -123,7 +124,6 @@ public class EntityListResponse extends MenuBean {
         }
         setQueryKey(session.getCommand());
     }
-
 
 
     private void processCaseTiles(Detail shortDetail) {
@@ -182,7 +182,7 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
-    private  List<Entity<TreeReference>> paginateEntities(
+    private List<Entity<TreeReference>> paginateEntities(
             List<Entity<TreeReference>> entityList, Detail detail, int casesPerPage, int offset) {
         if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
             // we're doing pagination
@@ -195,7 +195,8 @@ public class EntityListResponse extends MenuBean {
 
 
     @Trace
-    private List<Entity<TreeReference>> getEntitiesForCurrentPage(List<Entity<TreeReference>> matched, int casesPerPage,
+    private List<Entity<TreeReference>> getEntitiesForCurrentPage(List<Entity<TreeReference>> matched,
+            int casesPerPage,
             int offset) {
         if (offset > matched.size()) {
             throw new RuntimeException("Pagination offset " + offset +
