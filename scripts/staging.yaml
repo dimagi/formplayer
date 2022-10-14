@@ -55,6 +55,7 @@ branches:
 #  - autoMultiSelect # Shubham/Jenny Sept 26
   - skipEntityListEval # Shubham Oct 11
   - autoAdvanceMenuFix # Shubham Oct 13
+  - paginationPerformance # Shubham Oct 14
 submodules:
   libs/commcare:
     trunk: formplayer
