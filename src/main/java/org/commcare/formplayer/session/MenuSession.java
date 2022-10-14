@@ -165,6 +165,10 @@ public class MenuSession implements HereFunctionHandlerListener {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 boolean autoLaunch = entityScreen.getAutoLaunchAction() != null && allowAutoLaunch;
                 addBreadcrumb = !autoLaunch;
+
+                boolean inActionMode = input.startsWith("action ") || autoLaunch;
+                entityScreen.enableActionMode(inActionMode);
+
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
