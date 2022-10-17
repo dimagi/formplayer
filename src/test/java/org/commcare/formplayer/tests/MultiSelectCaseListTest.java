@@ -11,12 +11,11 @@ import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.Assert;
 
 import java.util.HashMap;
@@ -102,6 +101,23 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 + "  </results>\n"
                 + "</result>\n";
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
+    }
+
+    @Test
+    public void testAutoAdvanceWithMultiSelect() throws Exception {
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
+        String[] selections = new String[]{"1"};
+        sessionNavigate(selections, APP,
+                EntityListResponse.class);
+
+        selections = new String[]{"1", "use_selected_values"};
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                NewFormResponse.class);
+
+        // selections should now be {"1", "guid"} without the auto-advanced menu index
+        assertEquals(2, formResp.getSelections().length);
     }
 
     @Test
