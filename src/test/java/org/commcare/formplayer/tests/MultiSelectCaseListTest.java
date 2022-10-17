@@ -116,7 +116,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
                 NewFormResponse.class);
 
-        // selections should now be {"1", "guid"}
+        // selections should now be {"1", "guid"} without the auto-advanced menu index
         assertEquals(2, formResp.getSelections().length);
     }
 

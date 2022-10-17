@@ -181,6 +181,8 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
                     null,
                     selectedValues,
                     NewFormResponse.class);
+
+            // selections should now be {"1", "guid"} without the auto-advanced menu index
             assertEquals(formResponse.getSelections().length, 2);
         }
     }
