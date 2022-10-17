@@ -24,6 +24,8 @@ public abstract class Timing {
     public static String getDurationBucket(long timeInSeconds) {
         if (timeInSeconds < 1) {
             return "lt_001s";
+        } else if (timeInSeconds < 3) {
+            return "lt_003s";
         } else if (timeInSeconds < 5) {
             return "lt_005s";
         } else if (timeInSeconds < 20) {
