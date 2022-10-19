@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile version="40"
+         update="https://staging.commcarehq.org/a/shubhamgoyaltest/apps/download/593a8b62be76498b82d0d91f767902e4/media_profile.ccpr?latest=true&amp;profile=None"
+         requiredMajor="2"
+         requiredMinor="53"
+         requiredMinimal="0"
+         uniqueid="0f30053085a1b8bd6b64fc7f74375779"
+         name="Multi Select Test"
+         descriptor="Profile File"
+         buildProfileID="">
+    <property key="ota-restore-url" value="https://staging.commcarehq.org/a/shubhamgoyaltest/phone/restore/593a8b62be76498b82d0d91f767902e4/" force="true"/>
+    <property key="ota-restore-url-testing" value="https://staging.commcarehq.org/a/shubhamgoyaltest/phone/restore/593a8b62be76498b82d0d91f767902e4/" force="true"/>
+    <property key="PostURL" value="https://staging.commcarehq.org/a/shubhamgoyaltest/receiver/secure/593a8b62be76498b82d0d91f767902e4/" force="true"/>
+
+    <suite><resource id="suite" version="40">
+        <location authority="local">./suite.xml</location>
+        <location authority="remote">https://staging.commcarehq.org/a/shubhamgoyaltest/apps/download/593a8b62be76498b82d0d91f767902e4/suite.xml</location>
+    </resource></suite>
+    
+    <suite><resource id="media-suite" version="40">
+        <location authority="local">./media_suite.xml</location>
+        <location authority="remote">https://staging.commcarehq.org/a/shubhamgoyaltest/apps/download/593a8b62be76498b82d0d91f767902e4/media_suite.xml</location>
+    </resource></suite>
+    
+</profile>

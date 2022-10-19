@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.beans.menus.EntityBean;
@@ -9,13 +10,11 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
-import org.commcare.formplayer.utils.TestContext;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Created by willpride on 5/16/16.
@@ -68,9 +67,14 @@ public class CasePaginationTests extends BaseTestClass {
         EntityListResponse entityListResponse2 =
                 sessionNavigate("requests/navigators/pagination_navigator_1.json",
                         EntityListResponse.class);
-        assert entityListResponse2.getEntities().length == 12;
+        EntityBean[] responseEntities = entityListResponse2.getEntities();
+        assert responseEntities.length == 12;
         assert entityListResponse2.getCurrentPage() == 4;
         assert entityListResponse2.getPageCount() == 5;
+
+        // check the order of entities is correct
+        assertEquals(responseEntities[0].getData()[0], "Test 1");
+        assertEquals(responseEntities[11].getData()[0], "Yoi");
 
         EntityDetailListResponse details2 =
                 getDetails("requests/get_details/pagination_navigator_details_1.json",
@@ -126,8 +130,13 @@ public class CasePaginationTests extends BaseTestClass {
         EntityListResponse entityListResponse =
                 sessionNavigate("requests/navigators/search_paginate_navigator.json",
                         EntityListResponse.class);
-        assert entityListResponse.getEntities().length == 5;
+        EntityBean[] responseEntities = entityListResponse.getEntities();
+        assert responseEntities.length == 5;
         assert entityListResponse.getPageCount() == 2;
         assert entityListResponse.getCurrentPage() == 1;
+
+        // check the order of entities is correct
+        assertEquals(responseEntities[0].getData()[0], "Test");
+        assertEquals(responseEntities[4].getData()[0], "Test123456");
     }
 }
