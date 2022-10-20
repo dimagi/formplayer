@@ -694,10 +694,14 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, clazz, false);
+        return getDetails(selections, testName, null, null,  clazz, false);
     }
 
-    <T> T getDetails(String[] selections, String testName, String locale, Class<T> clazz,
+    <T> T getDetails(String[] selections, String testName, QueryData queryData, Class<T> clazz) throws Exception {
+        return getDetails(selections, testName, null, queryData,  clazz, false);
+    }
+
+    <T> T getDetails(String[] selections, String testName, String locale, QueryData queryData, Class<T> clazz,
             boolean inline) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
@@ -705,6 +709,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setIsPersistent(inline);
+        sessionNavigationBean.setQueryData(queryData);
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
@@ -717,7 +722,7 @@ public class BaseTestClass {
     }
 
     <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, clazz, true);
+        return getDetails(selections, testName, null, null,  clazz, true);
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
