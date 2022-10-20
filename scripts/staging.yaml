@@ -62,6 +62,7 @@ submodules:
     branches:
       - do/query-init-change
       - autoLaunchPerformanceFix # Shubham Oct 14
+      - detailPerformanceIssue # Shubham Oct 20
 #      - ml/timezone-revert - this was branched off master
 #      - autoMultiSelect # Shubham/Jenny Sept 26
 #      - skipEntityListEval # Shubham Oct 11
