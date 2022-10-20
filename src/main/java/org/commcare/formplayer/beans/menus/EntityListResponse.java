@@ -106,7 +106,7 @@ public class EntityListResponse extends MenuBean {
 
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
-            List<EntityBean> entityBeans = processEntitiesForCaseList(detail, entitesForPage, ec, neededDatum);
+            List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
         }
@@ -154,18 +154,16 @@ public class EntityListResponse extends MenuBean {
 
     private static EntityBean[] processEntitiesForCaseDetail(Detail detail, TreeReference reference,
             EvaluationContext ec, EntityDatum neededDatum) {
-        return new EntityBean[]{processEntity(detail, reference, ec, neededDatum)};
+        return new EntityBean[]{evalEntity(detail, reference, ec, neededDatum)};
     }
 
     @Trace
-    public static List<EntityBean> processEntitiesForCaseList(Detail detail,
-            List<Entity<TreeReference>> entityList,
+    public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
             EntityDatum neededDatum) {
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
-            TreeReference treeReference = entity.getElement();
-            entities.add(processEntity(detail, treeReference, ec, neededDatum));
+            entities.add(toEntityBean(entity, ec, neededDatum));
         }
         return entities;
     }
@@ -273,33 +271,56 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
+    // Converts the Given Entity to EntityBean
     @Trace
-    private static EntityBean processEntity(Detail detail, TreeReference treeReference,
+    private static EntityBean toEntityBean(Entity<TreeReference> entity,
+            EvaluationContext ec, EntityDatum neededDatum) {
+        Object[] entityData = entity.getData();
+        Object[] data = new Object[entityData.length];
+        String id = getEntityId(entity.getElement(), neededDatum, ec);
+        EntityBean ret = new EntityBean(id);
+        for (int i = 0; i < entityData.length; i++) {
+            data[i] = processData(entityData[i]);
+        }
+        ret.setData(data);
+        return ret;
+    }
+
+    private static Object processData(Object data) {
+        if (data instanceof GraphData) {
+            try {
+                return FormplayerGraphUtil.getHtml((GraphData)data, "").replace("\"", "'");
+            } catch (GraphException e) {
+                return "<html><body>Error loading graph " + e + "</body></html>";
+            }
+        } else {
+            return data;
+        }
+    }
+
+    // Evaluates detail fields for the given entity reference and returns it as EntityBean
+    @Trace
+    private static EntityBean evalEntity(Detail detail, TreeReference treeReference,
             EvaluationContext ec, EntityDatum neededDatum) {
         EvaluationContext context = new EvaluationContext(ec, treeReference);
         detail.populateEvaluationContextVariables(context);
         DetailField[] fields = detail.getFields();
         Object[] data = new Object[fields.length];
-        String id = neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
-                treeReference, neededDatum, ec);
+        String id = getEntityId(treeReference, neededDatum, ec);
         EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
-            Object o;
-            o = field.getTemplate().evaluate(context);
-            if (o instanceof GraphData) {
-                try {
-                    data[i] = FormplayerGraphUtil.getHtml((GraphData)o, "").replace("\"", "'");
-                } catch (GraphException e) {
-                    data[i] = "<html><body>Error loading graph " + e + "</body></html>";
-                }
-            } else {
-                data[i] = o;
-            }
+            Object o = field.getTemplate().evaluate(context);
+            data[i] = processData(o);
             i++;
         }
         ret.setData(data);
         return ret;
+    }
+
+    private static String getEntityId(TreeReference treeReference, EntityDatum neededDatum, EvaluationContext ec) {
+        return neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
+                treeReference, neededDatum, ec);
     }
 
     private static Style[] processStyles(Detail detail) {
