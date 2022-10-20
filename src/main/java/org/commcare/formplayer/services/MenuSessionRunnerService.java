@@ -387,8 +387,8 @@ public class MenuSessionRunnerService {
 
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
-                sessionAdvanced = handleAutoLaunch((EntityScreen)nextScreen, menuSession, currentInput,
-                        needsFullEntityScreen, inputValidated, nextInput, isDetailScreen);
+                sessionAdvanced = ((EntityScreen)nextScreen).evalAndExecuteAutoLaunchAction(nextInput,
+                        menuSession.getSessionWrapper());
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 boolean skipCache = !(replay || isDetailScreen);
@@ -455,23 +455,6 @@ public class MenuSessionRunnerService {
 
     private boolean isAutoAdvanceMenu() {
         return storageFactory.getPropertyManager().isAutoAdvanceMenu();
-    }
-
-    /**
-     * Handle auto-launch actions for EntityScreens
-     *
-     * @return true if the session was advanced
-     * @throws CommCareSessionException
-     */
-    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession, String selection,
-            boolean needsFullEntityScreen, boolean inputValidated, String nextInput, boolean isDetailScreen)
-            throws CommCareSessionException {
-        entityScreen.evaluateAutoLaunch(nextInput);
-        if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsFullEntityScreen, inputValidated, true, null, isDetailScreen);
-            return true;
-        }
-        return false;
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
