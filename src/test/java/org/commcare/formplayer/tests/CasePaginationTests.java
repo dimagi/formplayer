@@ -139,4 +139,23 @@ public class CasePaginationTests extends BaseTestClass {
         assertEquals(responseEntities[0].getData()[0], "Test");
         assertEquals(responseEntities[4].getData()[0], "Test123456");
     }
+
+
+    // test with an offset greater that case list size
+    @Test
+    public void testInvalidOffsetPagination() throws Exception {
+        EntityListResponse entityListResponse =
+                sessionNavigate("requests/navigators/invalid_offset_paginate_navigator.json",
+                        EntityListResponse.class);
+        EntityBean[] responseEntities = entityListResponse.getEntities();
+        assert responseEntities.length == 5;
+        assert entityListResponse.getPageCount() == 2;
+
+        // We should be on the last page with offset > case list size
+        assert entityListResponse.getCurrentPage() == 1;
+
+        // check the order of entities is correct
+        assertEquals(responseEntities[0].getData()[0], "Test");
+        assertEquals(responseEntities[4].getData()[0], "Test123456");
+    }
 }
