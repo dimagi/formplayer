@@ -154,7 +154,7 @@ public class EntityListResponse extends MenuBean {
 
     private static EntityBean[] processEntitiesForCaseDetail(Detail detail, TreeReference reference,
             EvaluationContext ec, EntityDatum neededDatum) {
-        return new EntityBean[]{processEntity(detail, reference, ec, neededDatum)};
+        return new EntityBean[]{evalEntity(detail, reference, ec, neededDatum)};
     }
 
     @Trace
@@ -271,6 +271,7 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
+    // Converts the Given Entity to EntityBean
     @Trace
     private static EntityBean toEntityBean(Entity<TreeReference> entity,
             EvaluationContext ec, EntityDatum neededDatum) {
@@ -297,8 +298,9 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
+    // Evaluates detail fields for the given entity reference and returns it as EntityBean
     @Trace
-    private static EntityBean processEntity(Detail detail, TreeReference treeReference,
+    private static EntityBean evalEntity(Detail detail, TreeReference treeReference,
             EvaluationContext ec, EntityDatum neededDatum) {
         EvaluationContext context = new EvaluationContext(ec, treeReference);
         detail.populateEvaluationContextVariables(context);
