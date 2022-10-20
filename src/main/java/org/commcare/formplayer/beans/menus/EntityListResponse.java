@@ -310,17 +310,8 @@ public class EntityListResponse extends MenuBean {
         EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
-            Object o;
-            o = field.getTemplate().evaluate(context);
-            if (o instanceof GraphData) {
-                try {
-                    data[i] = FormplayerGraphUtil.getHtml((GraphData)o, "").replace("\"", "'");
-                } catch (GraphException e) {
-                    data[i] = "<html><body>Error loading graph " + e + "</body></html>";
-                }
-            } else {
-                data[i] = o;
-            }
+            Object o = field.getTemplate().evaluate(context);
+            data[i] = processData(o);
             i++;
         }
         ret.setData(data);
