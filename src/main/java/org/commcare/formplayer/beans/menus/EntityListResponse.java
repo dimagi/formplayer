@@ -106,7 +106,7 @@ public class EntityListResponse extends MenuBean {
 
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
-            List<EntityBean> entityBeans = processEntitiesForCaseList(detail, entitesForPage, ec, neededDatum);
+            List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
         }
@@ -158,14 +158,12 @@ public class EntityListResponse extends MenuBean {
     }
 
     @Trace
-    public static List<EntityBean> processEntitiesForCaseList(Detail detail,
-            List<Entity<TreeReference>> entityList,
+    public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
             EntityDatum neededDatum) {
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
-            TreeReference treeReference = entity.getElement();
-            entities.add(processEntity(detail, treeReference, ec, neededDatum));
+            entities.add(toEntityBean(entity, ec, neededDatum));
         }
         return entities;
     }
@@ -270,6 +268,33 @@ public class EntityListResponse extends MenuBean {
         @Override
         public void notifyBadFilter(String[] args) {
 
+        }
+    }
+
+    @Trace
+    private static EntityBean toEntityBean(Entity<TreeReference> entity,
+            EvaluationContext ec, EntityDatum neededDatum) {
+        Object[] entityData = entity.getData();
+        Object[] data = new Object[entityData.length];
+        String id = neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
+                entity.getElement(), neededDatum, ec);
+        EntityBean ret = new EntityBean(id);
+        for (int i = 0; i < entityData.length; i++) {
+            data[i] = processData(entityData[i]);
+        }
+        ret.setData(data);
+        return ret;
+    }
+
+    private static Object processData(Object data) {
+        if (data instanceof GraphData) {
+            try {
+                return FormplayerGraphUtil.getHtml((GraphData)data, "").replace("\"", "'");
+            } catch (GraphException e) {
+                return "<html><body>Error loading graph " + e + "</body></html>";
+            }
+        } else {
+            return data;
         }
     }
 

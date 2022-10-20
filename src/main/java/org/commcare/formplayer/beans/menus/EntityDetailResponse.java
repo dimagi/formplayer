@@ -80,7 +80,7 @@ public class EntityDetailResponse {
             boolean isFuzzySearchEnabled) {
         List<Entity<TreeReference>> entityRefs = EntityListResponse.buildEntityList(detail, ec, references, null,
                 0, isFuzzySearchEnabled);
-        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, entityRefs, ec, null);
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(entityRefs, ec, null);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
         this.title = title;
