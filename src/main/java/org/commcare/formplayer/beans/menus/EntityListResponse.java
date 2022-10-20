@@ -276,8 +276,7 @@ public class EntityListResponse extends MenuBean {
             EvaluationContext ec, EntityDatum neededDatum) {
         Object[] entityData = entity.getData();
         Object[] data = new Object[entityData.length];
-        String id = neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
-                entity.getElement(), neededDatum, ec);
+        String id = getEntityId(entity.getElement(), neededDatum, ec);
         EntityBean ret = new EntityBean(id);
         for (int i = 0; i < entityData.length; i++) {
             data[i] = processData(entityData[i]);
@@ -305,8 +304,7 @@ public class EntityListResponse extends MenuBean {
         detail.populateEvaluationContextVariables(context);
         DetailField[] fields = detail.getFields();
         Object[] data = new Object[fields.length];
-        String id = neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
-                treeReference, neededDatum, ec);
+        String id = getEntityId(treeReference, neededDatum, ec);
         EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
@@ -316,6 +314,11 @@ public class EntityListResponse extends MenuBean {
         }
         ret.setData(data);
         return ret;
+    }
+
+    private static String getEntityId(TreeReference treeReference, EntityDatum neededDatum, EvaluationContext ec) {
+        return neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
+                treeReference, neededDatum, ec);
     }
 
     private static Style[] processStyles(Detail detail) {
