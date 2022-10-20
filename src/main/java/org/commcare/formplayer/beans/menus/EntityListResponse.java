@@ -186,22 +186,21 @@ public class EntityListResponse extends MenuBean {
             List<Entity<TreeReference>> entityList, Detail detail, int casesPerPage, int offset) {
         if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
             // we're doing pagination
-            setCurrentPage(offset / casesPerPage);
-            setPageCount((int)Math.ceil((double)entityList.size() / casesPerPage));
             return getEntitiesForCurrentPage(entityList, casesPerPage, offset);
         }
         return entityList;
     }
 
-
     @Trace
     private List<Entity<TreeReference>> getEntitiesForCurrentPage(List<Entity<TreeReference>> matched,
             int casesPerPage,
             int offset) {
+        setPageCount((int)Math.ceil((double)matched.size() / casesPerPage));
         if (offset > matched.size()) {
-            throw new RuntimeException("Pagination offset " + offset +
-                    " exceeded case list length: " + matched.size());
+            // Set the offset to last page
+            offset = casesPerPage * (getPageCount() - 1);
         }
+        setCurrentPage(offset / casesPerPage);
 
         int end = offset + casesPerPage;
         int length = casesPerPage;
@@ -209,7 +208,6 @@ public class EntityListResponse extends MenuBean {
             end = matched.size();
             length = end - offset;
         }
-        setPageCount((int)Math.ceil((double)matched.size() / casesPerPage));
         matched = matched.subList(offset, offset + length);
         return matched;
     }
