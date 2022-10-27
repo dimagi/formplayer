@@ -54,15 +54,15 @@ branches:
 #  - saveMediaAttachment # Shubham/Jenny Aug 12
 #  - autoMultiSelect # Shubham/Jenny Sept 26
 #  - skipEntityListEval # Shubham Oct 11
-  - autoLaunchPerformanceFix # Shubham Oct 14
-  - entityListPerformance # Shubham Oct 20
+#  - autoLaunchPerformanceFix # Shubham Oct 14
+#  - entityListPerformance # Shubham Oct 20
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - do/query-init-change
-      - autoLaunchPerformanceFix # Shubham Oct 14
-      - detailPerformanceIssue # Shubham Oct 20
+#      - autoLaunchPerformanceFix # Shubham Oct 14
+#      - detailPerformanceIssue # Shubham Oct 20
       - em/checkbox-prompt # Evan Oct 27
 #      - ml/timezone-revert - this was branched off master
 #      - autoMultiSelect # Shubham/Jenny Sept 26
