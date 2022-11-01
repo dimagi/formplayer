@@ -124,16 +124,4 @@ public class WebSecurityConfig {
         filter.setRequiresAuthenticationRequestMatcher(new CommCareSessionAuthFilter.SessionAuthRequestMatcher());
         return filter;
     }
-
-    /**
-     * Temporary customization of the firewall to allow '//' in the URL.
-     * This should be removed once all 3rd party hosters have been given an opportunity
-     * to update their proxy configuration.
-     */
-    @Bean
-    public HttpFirewall allowDoubleSlashHttpFirewall() {
-        StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setAllowUrlEncodedDoubleSlash(allowDoubleSlash);
-        return firewall;
-    }
 }
