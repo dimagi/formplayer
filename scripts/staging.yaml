@@ -60,8 +60,7 @@ branches:
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches:
-      - jls/temp
+    branches: []
 #      - autoLaunchPerformanceFix # Shubham Oct 14
 #      - detailPerformanceIssue # Shubham Oct 20
 #      - ml/timezone-revert - this was branched off master
