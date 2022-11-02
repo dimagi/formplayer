@@ -387,8 +387,8 @@ public class MenuSessionRunnerService {
 
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
-                sessionAdvanced = handleAutoLaunch((EntityScreen)nextScreen, menuSession, currentInput,
-                        needsFullEntityScreen, inputValidated, nextInput, isDetailScreen);
+                sessionAdvanced = ((EntityScreen)nextScreen).evalAndExecuteAutoLaunchAction(nextInput,
+                        menuSession.getSessionWrapper());
 
                 // Auto select if we have not advanced as part of auto launch
                 // avoiding unnecessary screen init by skipping the original screen
@@ -467,23 +467,6 @@ public class MenuSessionRunnerService {
         return storageFactory.getPropertyManager().isAutoAdvanceMenu();
     }
 
-    /**
-     * Handle auto-launch actions for EntityScreens
-     *
-     * @return true if the session was advanced
-     * @throws CommCareSessionException
-     */
-    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession, String selection,
-            boolean needsFullEntityScreen, boolean inputValidated, String nextInput, boolean isDetailScreen)
-            throws CommCareSessionException {
-        entityScreen.evaluateAutoLaunch(nextInput);
-        if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsFullEntityScreen, inputValidated, true, null, isDetailScreen);
-            return true;
-        }
-        return false;
-    }
-
     // Sets the query fields and refreshes any itemset choices based on them
     private void answerQueryPrompts(FormplayerQueryScreen screen,
             Hashtable<String, String> queryDictionary) {
@@ -507,7 +490,7 @@ public class MenuSessionRunnerService {
             throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
-            restoreFactory.performTimedSync(false, false, false);
+            restoreFactory.performTimedSync(false, true, false);
             menuSession.getSessionWrapper().clearVolatiles();
         }
     }

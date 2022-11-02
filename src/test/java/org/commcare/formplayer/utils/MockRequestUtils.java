@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Multimap;
 
+import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.tests.BaseTestClass;
 import org.commcare.formplayer.web.client.WebClient;
 import org.mockito.Mockito;
 import org.mockito.verification.VerificationMode;
@@ -45,7 +45,7 @@ public class MockRequestUtils {
      */
     public VerifiedMock mockRestore(String restoreFile) {
         Mockito.reset(restoreFactoryMock);
-        BaseTestClass.RestoreFactoryAnswer answer = new BaseTestClass.RestoreFactoryAnswer(restoreFile);
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(restoreFile);
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
         return () -> {
@@ -58,12 +58,16 @@ public class MockRequestUtils {
      * Mock the query and verify it happened
      */
     public VerifiedMock mockQuery(String queryFile) {
+        return mockQuery(queryFile, 1);
+    }
+
+    public VerifiedMock mockQuery(String queryFile, int times) {
         Mockito.reset(webClientMock);
         when(webClientMock.postFormData(anyString(), any(Multimap.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), queryFile));
 
         return () -> verify(
-                webClientMock, Mockito.times(1)).postFormData(
+                webClientMock, Mockito.times(times)).postFormData(
                 anyString(), any(Multimap.class));
     }
 

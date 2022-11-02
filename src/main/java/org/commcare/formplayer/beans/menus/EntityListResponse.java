@@ -96,22 +96,19 @@ public class EntityListResponse extends MenuBean {
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
-            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec,
-                    searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
+            List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
+                    sortIndex, isFuzzySearchEnabled);
 
             if (casesPerPage == 0) {
                 casesPerPage = DEFAULT_CASES_PER_PAGE;
             }
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
 
-            if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
-                // we're doing pagination
-                setCurrentPage(offset / casesPerPage);
-                setPageCount((int)Math.ceil((double)entityList.size() / casesPerPage));
-                entityList = paginateEntities(entityList, casesPerPage, offset);
-            }
-            entities = new EntityBean[entityList.size()];
-            entityList.toArray(entities);
+            List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
+                    offset);
+            List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
+            entities = new EntityBean[entityBeans.size()];
+            entityBeans.toArray(entities);
         }
 
         processTitle(session);
@@ -127,6 +124,7 @@ public class EntityListResponse extends MenuBean {
         }
         setQueryKey(session.getCommand());
     }
+
 
     private void processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
@@ -156,23 +154,16 @@ public class EntityListResponse extends MenuBean {
 
     private static EntityBean[] processEntitiesForCaseDetail(Detail detail, TreeReference reference,
             EvaluationContext ec, EntityDatum neededDatum) {
-        return new EntityBean[]{processEntity(detail, reference, ec, neededDatum)};
+        return new EntityBean[]{evalEntity(detail, reference, ec, neededDatum)};
     }
 
     @Trace
-    public static List<EntityBean> processEntitiesForCaseList(Detail detail,
-            Vector<TreeReference> references,
+    public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
-            String searchText,
-            EntityDatum neededDatum,
-            int sortIndex,
-            boolean isFuzzySearchEnabled) {
-        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
-                sortIndex, isFuzzySearchEnabled);
+            EntityDatum neededDatum) {
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
-            TreeReference treeReference = entity.getElement();
-            entities.add(processEntity(detail, treeReference, ec, neededDatum));
+            entities.add(toEntityBean(entity, ec, neededDatum));
         }
         return entities;
     }
@@ -189,13 +180,25 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
-    @Trace
-    private List<EntityBean> paginateEntities(List<EntityBean> matched, int casesPerPage,
-            int offset) {
-        if (offset > matched.size()) {
-            throw new RuntimeException("Pagination offset " + offset +
-                    " exceeded case list length: " + matched.size());
+    private List<Entity<TreeReference>> paginateEntities(
+            List<Entity<TreeReference>> entityList, Detail detail, int casesPerPage, int offset) {
+        if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
+            // we're doing pagination
+            return getEntitiesForCurrentPage(entityList, casesPerPage, offset);
         }
+        return entityList;
+    }
+
+    @Trace
+    private List<Entity<TreeReference>> getEntitiesForCurrentPage(List<Entity<TreeReference>> matched,
+            int casesPerPage,
+            int offset) {
+        setPageCount((int)Math.ceil((double)matched.size() / casesPerPage));
+        if (offset > matched.size()) {
+            // Set the offset to last page
+            offset = casesPerPage * (getPageCount() - 1);
+        }
+        setCurrentPage(offset / casesPerPage);
 
         int end = offset + casesPerPage;
         int length = casesPerPage;
@@ -203,13 +206,12 @@ public class EntityListResponse extends MenuBean {
             end = matched.size();
             length = end - offset;
         }
-        setPageCount((int)Math.ceil((double)matched.size() / casesPerPage));
         matched = matched.subList(offset, offset + length);
         return matched;
     }
 
     @Trace
-    private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
+    public static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
             EvaluationContext context,
             Vector<TreeReference> references,
             String searchText,
@@ -269,33 +271,56 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
+    // Converts the Given Entity to EntityBean
     @Trace
-    private static EntityBean processEntity(Detail detail, TreeReference treeReference,
+    private static EntityBean toEntityBean(Entity<TreeReference> entity,
+            EvaluationContext ec, EntityDatum neededDatum) {
+        Object[] entityData = entity.getData();
+        Object[] data = new Object[entityData.length];
+        String id = getEntityId(entity.getElement(), neededDatum, ec);
+        EntityBean ret = new EntityBean(id);
+        for (int i = 0; i < entityData.length; i++) {
+            data[i] = processData(entityData[i]);
+        }
+        ret.setData(data);
+        return ret;
+    }
+
+    private static Object processData(Object data) {
+        if (data instanceof GraphData) {
+            try {
+                return FormplayerGraphUtil.getHtml((GraphData)data, "").replace("\"", "'");
+            } catch (GraphException e) {
+                return "<html><body>Error loading graph " + e + "</body></html>";
+            }
+        } else {
+            return data;
+        }
+    }
+
+    // Evaluates detail fields for the given entity reference and returns it as EntityBean
+    @Trace
+    private static EntityBean evalEntity(Detail detail, TreeReference treeReference,
             EvaluationContext ec, EntityDatum neededDatum) {
         EvaluationContext context = new EvaluationContext(ec, treeReference);
         detail.populateEvaluationContextVariables(context);
         DetailField[] fields = detail.getFields();
         Object[] data = new Object[fields.length];
-        String id = neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
-                treeReference, neededDatum, ec);
+        String id = getEntityId(treeReference, neededDatum, ec);
         EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
-            Object o;
-            o = field.getTemplate().evaluate(context);
-            if (o instanceof GraphData) {
-                try {
-                    data[i] = FormplayerGraphUtil.getHtml((GraphData)o, "").replace("\"", "'");
-                } catch (GraphException e) {
-                    data[i] = "<html><body>Error loading graph " + e + "</body></html>";
-                }
-            } else {
-                data[i] = o;
-            }
+            Object o = field.getTemplate().evaluate(context);
+            data[i] = processData(o);
             i++;
         }
         ret.setData(data);
         return ret;
+    }
+
+    private static String getEntityId(TreeReference treeReference, EntityDatum neededDatum, EvaluationContext ec) {
+        return neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(
+                treeReference, neededDatum, ec);
     }
 
     private static Style[] processStyles(Detail detail) {

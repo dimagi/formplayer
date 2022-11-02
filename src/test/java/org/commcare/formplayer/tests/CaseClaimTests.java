@@ -17,8 +17,11 @@ import com.google.common.collect.Multimap;
 
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
+import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
+import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -170,9 +173,12 @@ public class CaseClaimTests extends BaseTestClass {
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+
+        String[] detailSelections = new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"};
+        testDetailResponse(detailSelections, null);
+
         QueryData queryData = new QueryData();
         queryData.setForceManualSearch("search_command.m1", true);
-
         // forceManualAction true when default Search on should result in query screen
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays().length == 5;
@@ -222,6 +228,7 @@ public class CaseClaimTests extends BaseTestClass {
                 "caseclaim",
                 queryData,
                 EntityListResponse.class);
+        testDetailResponse(detailSelections, queryData);
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
@@ -265,6 +272,19 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
+    }
+
+    private void testDetailResponse(String[] detailSelections, QueryData queryData) throws Exception {
+        EntityDetailListResponse responseBean = getDetails(detailSelections,
+                "caseclaim",
+                queryData,
+                EntityDetailListResponse.class);
+        EntityDetailResponse[] entityDetailResponse = responseBean.getEntityDetailList();
+        assertEquals(entityDetailResponse.length, 1);
+        EntityDetailResponse entityDetailResponseItem = entityDetailResponse[0];
+        Object[] detailFields = entityDetailResponseItem.getDetails();
+        assertEquals(detailFields.length, 1);
+        assertEquals(detailFields[0], "Burt Maclin");
     }
 
     @Test
