@@ -55,5 +55,5 @@ branches:
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches: []
+    branches:
        - autoMultiSelect # Shubham/Jenny Sept 26
