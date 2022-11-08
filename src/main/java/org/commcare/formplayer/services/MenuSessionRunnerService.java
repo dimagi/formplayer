@@ -250,7 +250,6 @@ public class MenuSessionRunnerService {
             String smartLinkTemplate,
             String[] selectedValues) throws Exception {
         NotificationMessage notificationMessage = null;
-        BaseResponseBean nextResponse = null;
         try {
             // If we have no selections, we're are the root screen.
             if (selections == null) {
@@ -311,22 +310,22 @@ public class MenuSessionRunnerService {
                     }
                 }
             }
-
-            nextResponse = getNextMenu(
-                    menuSession,
-                    detailSelection,
-                    offset,
-                    searchText,
-                    sortIndex,
-                    queryData,
-                    casesPerPage,
-                    smartLinkTemplate
-            );
-            restoreFactory.cacheSessionSelections(menuSession.getSelections());
         } catch (CommCareSessionException ccse) {
             notificationMessage = new NotificationMessage(ccse.getMessage(), true,
                     NotificationMessage.Tag.menu);
         }
+
+        BaseResponseBean nextResponse = getNextMenu(
+                menuSession,
+                detailSelection,
+                offset,
+                searchText,
+                sortIndex,
+                queryData,
+                casesPerPage,
+                smartLinkTemplate
+        );
+        restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
         if (nextResponse != null) {
             if (nextResponse.getNotification() == null && notificationMessage != null) {
