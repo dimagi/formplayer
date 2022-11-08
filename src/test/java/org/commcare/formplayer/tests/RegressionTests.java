@@ -1,12 +1,13 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.beans.NewFormResponse;
-import org.commcare.formplayer.utils.TestContext;
-import org.commcare.util.screen.CommCareSessionException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.commcare.formplayer.beans.menus.BaseResponseBean;
+import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Regression tests for fixed behaviors
@@ -27,12 +28,12 @@ public class RegressionTests extends BaseTestClass {
     }
 
     @Test
-    public void testBadCaseSelection() {
-        try {
-            sessionNavigate(new String[]{"2", "1"}, "doublemgmt", NewFormResponse.class);
-        } catch (Exception e) {
-            assert e.getCause() instanceof CommCareSessionException;
-        }
+    public void testBadCaseSelection() throws Exception {
+        BaseResponseBean response = sessionNavigate(new String[]{"2", "1"}, "doublemgmt",
+                EntityListResponse.class);
+        assertTrue(response.getNotification().isError(), "Bad case selection should result into an error");
+        assertEquals(response.getNotification().getMessage(),
+                "Could not select case 1 on this screen.  If this error persists please report a bug to CommCareHQ.");
     }
 
     @Test
