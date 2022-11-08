@@ -284,15 +284,8 @@ public class MenuSessionRunnerService {
                     break;
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
-                Screen nextScreen;
-                try {
-                    nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
-                            needsFullEntityScreen, inputValidated, forceManualAction, isDetailScreen);
-                } catch (CommCareSessionException e) {
-                    notificationMessage = new NotificationMessage(e.getMessage(), true,
-                            NotificationMessage.Tag.query);
-                    break;
-                }
+                Screen nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
+                        needsFullEntityScreen, inputValidated, forceManualAction, isDetailScreen);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                     // we've reached the end of this navigation path and no form in sight
@@ -407,7 +400,7 @@ public class MenuSessionRunnerService {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
-                    doPostAndSync(menuSession, (FormplayerSyncScreen) nextScreen);
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
                 } catch (SyncRestoreException e) {
                     throw new CommCareSessionException(e.getMessage(), e);
                 }
