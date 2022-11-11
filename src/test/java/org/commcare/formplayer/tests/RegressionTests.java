@@ -33,7 +33,8 @@ public class RegressionTests extends BaseTestClass {
                 EntityListResponse.class);
         assertTrue(response.getNotification().isError(), "Bad case selection should result into an error");
         assertEquals(response.getNotification().getMessage(),
-                "Could not select case 1 on this screen.  If this error persists please report a bug to CommCareHQ.");
+                "Could not select case 1 on this screen.  If this error persists please report a bug to "
+                        + "CommCareHQ.");
     }
 
     @Test
