@@ -51,7 +51,7 @@ trunk: master
 name: autostaging
 branches:
    - autoMultiSelect # Shubham/Jenny Sept 26
-   - em/checkbox-prompt # Evan Oct 27
+   - sk/security-config # Simon Nov 8
 submodules:
   libs/commcare:
     trunk: formplayer

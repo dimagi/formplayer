@@ -249,71 +249,70 @@ public class MenuSessionRunnerService {
             int casesPerPage,
             String smartLinkTemplate,
             String[] selectedValues) throws Exception {
-        // If we have no selections, we're are the root screen.
-        if (selections == null) {
-            return getNextMenu(
-                    menuSession,
-                    null,
-                    offset,
-                    searchText,
-                    sortIndex,
-                    queryData,
-                    casesPerPage,
-                    smartLinkTemplate
-            );
-        }
         NotificationMessage notificationMessage = null;
-        for (int i = 1; i <= selections.length; i++) {
-            String selection = selections[i - 1];
-
-            boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
-            boolean isDetailScreen = detailSelection != null;
-
-            // minimal entity screens are only safe if there will be no further selection
-            // and we do not need the case detail
-            boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
-                    true, selectedValues, isDetailScreen);
-            if (!gotNextScreen) {
-                notificationMessage = new NotificationMessage(
-                        "Overflowed selections with selection " + selection + " at index " + i,
-                        true,
-                        NotificationMessage.Tag.selection);
-                break;
+        try {
+            // If we have no selections, we're are the root screen.
+            if (selections == null) {
+                return getNextMenu(
+                        menuSession,
+                        null,
+                        offset,
+                        searchText,
+                        sortIndex,
+                        queryData,
+                        casesPerPage,
+                        smartLinkTemplate
+                );
             }
-            String nextInput = i == selections.length ? NO_SELECTION : selections[i];
-            Screen nextScreen;
-            try {
-                nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
+            for (int i = 1; i <= selections.length; i++) {
+                String selection = selections[i - 1];
+
+                boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
+                boolean isDetailScreen = detailSelection != null;
+
+                // minimal entity screens are only safe if there will be no further selection
+                // and we do not need the case detail
+                boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
+                boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
+                        true, selectedValues, isDetailScreen);
+                if (!gotNextScreen) {
+                    notificationMessage = new NotificationMessage(
+                            "Overflowed selections with selection " + selection + " at index " + i,
+                            true,
+                            NotificationMessage.Tag.selection);
+                    break;
+                }
+                String nextInput = i == selections.length ? NO_SELECTION : selections[i];
+                Screen nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
                         needsFullEntityScreen, inputValidated, forceManualAction, isDetailScreen);
-            } catch (CommCareSessionException e) {
-                notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
-                break;
-            }
 
-            if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
-                // we've reached the end of this navigation path and no form in sight
-                // this usually means a RemoteRequestEntry was involved
-                if (nextInput != NO_SELECTION) {
-                    // still more nav to do so rebuild the session and continue
-                    executeAndRebuildSession(menuSession);
-                } else {
-                    // no more nav, we're done
-                    BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-                    if (postSyncResponse == null) {
-                        // Return user to the app root
-                        postSyncResponse = new BaseResponseBean(null,
-                                new NotificationMessage("Redirecting after sync", false,
-                                        NotificationMessage.Tag.sync),
-                                true);
+                if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
+                    // we've reached the end of this navigation path and no form in sight
+                    // this usually means a RemoteRequestEntry was involved
+                    if (nextInput != NO_SELECTION) {
+                        // still more nav to do so rebuild the session and continue
+                        executeAndRebuildSession(menuSession);
+                    } else {
+                        // no more nav, we're done
+                        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+                        if (postSyncResponse == null) {
+                            // Return use to the app root
+                            postSyncResponse = new BaseResponseBean(null,
+                                    new NotificationMessage("Redirecting after sync", false,
+                                            NotificationMessage.Tag.sync),
+                                    true);
+                        }
+                        return postSyncResponse;
                     }
-                    return postSyncResponse;
-                }
-            } else {
-                if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
-                    menuSession.addSelection(selection);
+                } else {
+                    if (!selection.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                        menuSession.addSelection(selection);
+                    }
                 }
             }
+        } catch (CommCareSessionException ccse) {
+            notificationMessage = new NotificationMessage(ccse.getMessage(), true,
+                    NotificationMessage.Tag.menu);
         }
 
         BaseResponseBean nextResponse = getNextMenu(
@@ -410,7 +409,7 @@ public class MenuSessionRunnerService {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
-                    doPostAndSync(menuSession, (FormplayerSyncScreen) nextScreen);
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
                 } catch (SyncRestoreException e) {
                     throw new CommCareSessionException(e.getMessage(), e);
                 }
