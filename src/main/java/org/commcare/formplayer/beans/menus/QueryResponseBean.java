@@ -102,7 +102,7 @@ public class QueryResponseBean extends MenuBean {
     @Override
     public String toString() {
         return "QueryResponseBean [displays=" + Arrays.toString(displays)
-                + "description=" + description
+                + "description=" + getDescription()
                 + "MenuBean= " + super.toString() + "]";
     }
 
