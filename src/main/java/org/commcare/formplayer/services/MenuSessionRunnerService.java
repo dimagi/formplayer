@@ -388,6 +388,16 @@ public class MenuSessionRunnerService {
                 // Advance the session in case auto launch is set
                 sessionAdvanced = ((EntityScreen)nextScreen).evalAndExecuteAutoLaunchAction(nextInput,
                         menuSession.getSessionWrapper());
+
+                // Auto select if we have not advanced as part of auto launch
+                // avoiding unnecessary screen init by skipping the original screen
+                if (!sessionAdvanced && iterationCount != 0) {
+                    ((EntityScreen)nextScreen).init(menuSession.getSessionWrapper());
+                    if (nextScreen.shouldBeSkipped()) {
+                        ((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper());
+                        sessionAdvanced = true;
+                    }
+                }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 boolean skipCache = !(replay || isDetailScreen);

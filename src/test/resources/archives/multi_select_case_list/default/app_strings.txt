@@ -24,6 +24,7 @@ cchq.reports_last_updated_on=Reports last updated on
 en=English
 forms.m0f0=Registration Form
 forms.m0f1=Followup Form
+forms.m0f2=Followup Form with AutoSelect Datum
 homescreen.title=Multi-Select Case List
 lang.current=en
 m0.case_long.case_name_1.header=Name
