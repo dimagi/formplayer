@@ -50,12 +50,12 @@
 trunk: master
 name: autostaging
 branches:
-#   - autoMultiSelect # Shubham/Jenny Sept 26
+   - autoMultiSelect # Shubham/Jenny Sept 26
    - sk/security-config # Simon Nov 8
    - em/case-search-subtitle # Evan Nov 14
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-#       - autoMultiSelect # Shubham/Jenny Sept 26
+       - autoMultiSelect # Shubham/Jenny Sept 26
        - em/case-search-subtitle # Evan Nov 14
