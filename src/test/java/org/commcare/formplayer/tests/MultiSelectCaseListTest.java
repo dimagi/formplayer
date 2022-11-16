@@ -178,7 +178,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         try {
             sessionNavigate(selections, APP, NewFormResponse.class);
         } catch (Exception e) {
-            assertEquals("Number of selected cases 7 is greater than the maximum limit of 5",
+            assertEquals("Too many cases(7) to proceed. Only 5 are allowed",
                     e.getCause().getMessage());
         }
     }
