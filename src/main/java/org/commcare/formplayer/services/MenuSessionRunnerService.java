@@ -166,6 +166,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
+                ((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper());
                 return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData,
                         casesPerPage, smartLinkTemplate);
             }
