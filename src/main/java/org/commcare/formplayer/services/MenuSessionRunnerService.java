@@ -166,9 +166,10 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                ((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper());
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData,
-                        casesPerPage, smartLinkTemplate);
+                if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
+                    return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData,
+                            casesPerPage, smartLinkTemplate);
+                }
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -393,10 +394,9 @@ public class MenuSessionRunnerService {
                 // Auto select if we have not advanced as part of auto launch
                 // avoiding unnecessary screen init by skipping the original screen
                 if (!sessionAdvanced && iterationCount != 0) {
-                    ((EntityScreen)nextScreen).init(menuSession.getSessionWrapper());
+                    nextScreen.init(menuSession.getSessionWrapper());
                     if (nextScreen.shouldBeSkipped()) {
-                        ((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper());
-                        sessionAdvanced = true;
+                        sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper());
                     }
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
