@@ -91,6 +91,10 @@ public class MenuSessionFactory {
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 entityScreen.init(menuSession.getSessionWrapper());
+                if (entityScreen.shouldBeSkipped()) {
+                    screen = menuSession.getNextScreen(false, false);
+                    continue;
+                }
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
@@ -99,11 +103,6 @@ public class MenuSessionFactory {
                         }
                         break;
                     }
-                }
-                if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(currentStep, false, true, false, null, false);
-                    screen = menuSession.getNextScreen(false, false);
-                    continue;
                 }
             } else if (screen instanceof QueryScreen) {
                 QueryScreen queryScreen = (QueryScreen)screen;
