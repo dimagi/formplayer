@@ -92,43 +92,6 @@
       </stack>
     </action>
   </detail>
-  <detail id="m1_case_short_autolaunch_autoselect">
-    <title>
-      <text>
-        <locale id="m1.case_short.title"/>
-      </text>
-    </title>
-    <field>
-      <header>
-        <text>
-          <locale id="m1.case_short.case_name_1.header"/>
-        </text>
-      </header>
-      <template>
-        <text>
-          <xpath function="case_name"/>
-        </text>
-      </template>
-      <sort type="string" order="1" direction="ascending">
-        <text>
-          <xpath function="case_name"/>
-        </text>
-      </sort>
-    </field>
-    <action auto_launch="count(instance('next_input')/results/value) = 0 or count(instance('next_input')/results/value[count(instance('casedb')/casedb/case[@case_id = current()/.]) = 0]) > 0">
-      <display>
-        <text>
-          <locale id="case_search.m1"/>
-        </text>
-      </display>
-      <stack>
-        <push>
-          <mark/>
-          <command value="'search_command.autoselect'"/>
-        </push>
-      </stack>
-    </action>
-  </detail>
   <detail id="m0_search_short">
     <title>
       <text>
@@ -216,18 +179,6 @@
       <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short_autolaunch" detail-confirm="m1_case_long"/>
     </session>
   </entry>
-  <entry>
-    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
-    <command id="m1-f2">
-      <text>
-        <locale id="forms.m1f1"/>
-      </text>
-    </command>
-    <instance id="casedb" src="jr://instance/casedb"/>
-    <session>
-      <instance-datum id="selected_cases" autoselect="true" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short_autolaunch_autoselect" detail-confirm="m1_case_long"/>
-    </session>
-  </entry>
   <menu id="m1">
     <text>
       <locale id="modules.m1"/>
@@ -239,12 +190,6 @@
       <locale id="modules.m1"/>
     </text>
     <command id="m1-f1"/>
-  </menu>
-  <menu id="m1-auto-launch-auto-select">
-    <text>
-      <locale id="modules.m1"/>
-    </text>
-    <command id="m1-f2"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="$case_id != ''">
@@ -277,44 +222,6 @@
         </prompt>
       </query>
       <instance-datum id="search_cases" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
-    </session>
-    <stack>
-      <push>
-        <rewind value="instance('commcaresession')/session/data/search_cases"/>
-      </push>
-    </stack>
-  </remote-request>
-  <remote-request>
-    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="$case_id != ''">
-      <data key="case_id" nodeset="instance('search_cases_instance_id')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id = current()/.]) = 1" ref="."/>
-    </post>
-    <command id="search_command.autoselect">
-      <display>
-        <text>
-          <locale id="case_search.m1"/>
-        </text>
-      </display>
-    </command>
-    <instance id="casedb" src="jr://instance/casedb"/>
-    <instance id="commcaresession" src="jr://instance/session"/>
-    <instance id="district" src="jr://fixture/item-list:district"/>
-    <instance id="state" src="jr://fixture/item-list:state"/>
-    <instance id="search_cases_instance_id" src="jr://instance/selected-entities/search_cases"/>
-    <session>
-      <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
-        <data ref="'case1'" key="case_type"/>
-        <data ref="'case2'" key="case_type"/>
-        <data ref="'case3'" key="case_type"/>
-        <data ref="'False'" key="include_closed"/>
-        <prompt key="name" default="instance('commcaresession')/session/context/deviceid">
-          <display>
-            <text>
-              <locale id="search_property.m1.name"/>
-            </text>
-          </display>
-        </prompt>
-      </query>
-      <instance-datum id="search_cases" autoselect="true" max-select-value="5" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
     </session>
     <stack>
       <push>
