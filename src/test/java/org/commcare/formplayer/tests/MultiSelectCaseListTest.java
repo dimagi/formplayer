@@ -65,7 +65,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         selections = formResp.getSelections();
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
-        checkForSelectedEntitiesDatum(formRespUsingGuid.getSessionId(),selections );
+        checkForSelectedEntitiesDatum(formRespUsingGuid.getSessionId(), selections);
         checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selectedValues);
     }
 
@@ -141,7 +141,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertTrue(submitResponse.getStatus().contentEquals("success"));
         NewFormResponse newFormResponse = getNextScreenForEofNavigation(submitResponse,
                 NewFormResponse.class);
-        checkForSelectedEntitiesDatum(newFormResponse.getSessionId(),newFormResponse.getSelections() );
+        checkForSelectedEntitiesDatum(newFormResponse.getSessionId(), newFormResponse.getSelections());
         checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
     }
 

@@ -396,7 +396,8 @@ public class MenuSessionRunnerService {
                 if (!sessionAdvanced && iterationCount != 0) {
                     nextScreen.init(menuSession.getSessionWrapper());
                     if (nextScreen.shouldBeSkipped()) {
-                        sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper());
+                        sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
+                                menuSession.getSessionWrapper());
                     }
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
