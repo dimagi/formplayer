@@ -156,6 +156,33 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
     }
 
     @Test
+    public void testAutoSelection() throws Exception {
+        CommandListResponseBean reponse;
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            reponse = sessionNavigateWithQuery(new String[]{"2"},
+                    APP_NAME,
+                    null,
+                    CommandListResponseBean.class);
+
+            // For auto-selection we should not add guid back to the selections.
+            assertEquals(reponse.getSelections().length, 1);
+            assertEquals(reponse.getSelections()[0], "2");
+
+            assertEquals("Close", reponse.getCommands()[0].getDisplayText());
+        }
+
+        ArrayList<String> updatedSelections = new ArrayList<>();
+        updatedSelections.addAll(Arrays.asList(reponse.getSelections()));
+        updatedSelections.add("0");
+
+        sessionNavigateWithQuery(updatedSelections.toArray(new String[0]),
+                APP_NAME,
+                null,
+                FormEntryResponseBean.class);
+    }
+
+    @Test
     public void testAutoAdvanceMenuWithCaseSearch() throws Exception {
         FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
