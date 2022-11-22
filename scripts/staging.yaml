@@ -50,10 +50,11 @@
 trunk: master
 name: autostaging
 branches:
-   - sk/security-config # Simon Nov 8
    - em/case-search-subtitle # Evan Nov 14
+   - masterToFpUpdate # Shubham Nov 22
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
        - em/case-search-subtitle # Evan Nov 14
+       - masterToFpUpdate # Shubham Nov 22
