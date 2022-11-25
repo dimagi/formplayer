@@ -20,12 +20,21 @@ public class QueryResponseBean extends MenuBean {
 
     private DisplayElement[] displays;
     private final String type = "query";
+    private String description;
 
     QueryResponseBean() {
     }
 
     public DisplayElement[] getDisplays() {
         return displays;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     private void setDisplays(DisplayElement[] displays) {
@@ -86,12 +95,14 @@ public class QueryResponseBean extends MenuBean {
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
+        setDescription(queryScreen.getDescriptionText());
         setQueryKey(session.getCommand());
     }
 
     @Override
     public String toString() {
         return "QueryResponseBean [displays=" + Arrays.toString(displays)
+                + "description=" + getDescription()
                 + "MenuBean= " + super.toString() + "]";
     }
 
