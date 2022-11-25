@@ -51,10 +51,9 @@ trunk: master
 name: autostaging
 branches:
    - em/case-search-subtitle # Evan Nov 14
-   - masterToFpUpdate # Shubham Nov 22
+   - fixNewInstallFlag # Shubham Nov 25
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
        - em/case-search-subtitle # Evan Nov 14
-       - masterToFpUpdate # Shubham Nov 22
