@@ -109,7 +109,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.0.1'
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.1.1'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.1.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
