@@ -98,7 +98,7 @@ public class UtilController {
                 requestBean.getDomain(),
                 requestBean.getUsername(),
                 requestBean.getRestoreAs()
-        ).deleteDatabaseFolder();
+        ).deleteDatabaseFile();
         NotificationMessage notificationMessage = new NotificationMessage(message, false, NotificationMessage.Tag.clear_data);
         notificationLogger.logNotification(notificationMessage, request);
         return notificationMessage;
