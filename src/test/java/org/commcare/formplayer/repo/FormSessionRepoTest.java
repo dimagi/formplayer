@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,12 +97,13 @@ public class FormSessionRepoTest {
     @Test
     public void testGetListView_Ordering() {
         // create and save 3 sessions, reverse order of creation, extract IDs
-        Iterator<String> sessionIdIterator = Stream.of(getSession(), getSession(),
-                getSession()).map((session) -> {
+        List<SerializableFormSession> sessions = Arrays.asList(getSession(), getSession(),
+                getSession());
+        for(SerializableFormSession session: sessions)
             formSessionRepo.save(session);
-            return session;
-        }).map(SerializableFormSession::getId).collect(Collectors.toCollection(LinkedList::new))
-                .descendingIterator();
+
+        Iterator<String> sessionIdIterator = sessions.stream().map(SerializableFormSession::getId)
+                .collect(Collectors.toCollection(LinkedList::new)).descendingIterator();
         ArrayList<String> sessionIds = Lists.newArrayList(sessionIdIterator);
 
         List<FormSessionListView> userSessions =
