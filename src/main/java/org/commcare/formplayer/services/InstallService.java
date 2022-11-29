@@ -50,14 +50,12 @@ public class InstallService {
 
     @Trace
     public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
-        boolean newInstall = true;
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
         log.info("Configuring application with reference " + reference +
                 " and dbPath: " + sqliteDB.getDatabaseFileForDebugPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
             if (sqliteDB.databaseFileExists()) {
-                newInstall = false;
                 // If the SQLiteDB exists then this was not an update
                 // Try reusing old install, fail quietly
                 try {
@@ -91,7 +89,7 @@ public class InstallService {
             engine.initEnvironment();
             installTimer.end();
             installTimer.record();
-            return new Pair<>(engine, newInstall);
+            return new Pair<>(engine, true);
         } catch (UnresolvedResourceException e) {
             throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
