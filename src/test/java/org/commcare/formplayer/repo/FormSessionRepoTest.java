@@ -99,8 +99,9 @@ public class FormSessionRepoTest {
         // create and save 3 sessions, reverse order of creation, extract IDs
         List<SerializableFormSession> sessions = Arrays.asList(getSession(), getSession(),
                 getSession());
-        for(SerializableFormSession session: sessions)
+        for (SerializableFormSession session: sessions) {
             formSessionRepo.save(session);
+        }
 
         Iterator<String> sessionIdIterator = sessions.stream().map(SerializableFormSession::getId)
                 .collect(Collectors.toCollection(LinkedList::new)).descendingIterator();
