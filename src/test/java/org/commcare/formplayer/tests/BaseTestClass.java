@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.junit.HasXPath.hasXPath;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -7,6 +9,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -663,11 +666,12 @@ public class BaseTestClass {
      */
     protected void checkXpath(String sessionId, String xpath, String expectedValue)
             throws Exception {
-        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId, xpath);
-        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXpathResponseBean.getStatus());
-        String result = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
-        assertEquals(result, evaluateXpathResponseBean.getOutput());
+        new EvaluateXpathRequest(mockDebuggerController, sessionId, xpath, formSessionService)
+                .request()
+                .andExpectAll(
+                        jsonPath("status", equalTo(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)),
+                        jsonPath("output", hasXPath("/result", equalTo(expectedValue)))
+                );
     }
 
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
