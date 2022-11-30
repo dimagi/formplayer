@@ -24,7 +24,6 @@ import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.ChangeLocaleRequestBean;
 import org.commcare.formplayer.beans.DeleteApplicationDbsRequestBean;
 import org.commcare.formplayer.beans.EvaluateXPathMenuRequestBean;
-import org.commcare.formplayer.beans.EvaluateXPathRequestBean;
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
@@ -50,6 +49,7 @@ import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.junit.FormSessionTest;
 import org.commcare.formplayer.junit.Installer;
 import org.commcare.formplayer.junit.RestoreFactoryExtension;
+import org.commcare.formplayer.junit.request.EvaluateXpathRequest;
 import org.commcare.formplayer.junit.request.NewFormRequest;
 import org.commcare.formplayer.junit.request.SubmitFormRequest;
 import org.commcare.formplayer.junit.request.SyncDbRequest;
@@ -622,21 +622,9 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
-        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue(
-                FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
-                EvaluateXPathRequestBean.class
-        );
-        populateFromSession(evaluateXPathRequestBean, sessionId);
-        evaluateXPathRequestBean.setSessionId(sessionId);
-        evaluateXPathRequestBean.setXpath(xPath);
-        evaluateXPathRequestBean.setDebugOutputLevel(Constants.BASIC_NO_TRACE);
-        return generateMockQuery(
-                ControllerType.DEBUGGER,
-                RequestType.POST,
-                Constants.URL_EVALUATE_XPATH,
-                evaluateXPathRequestBean,
-                EvaluateXPathResponseBean.class
-        );
+        return new EvaluateXpathRequest(mockDebuggerController, sessionId, xPath, formSessionService)
+                .request()
+                .bean();
     }
 
     EvaluateXPathResponseBean evaluateMenuXpath(String requestPath) throws Exception {
