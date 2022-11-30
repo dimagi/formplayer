@@ -172,7 +172,9 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         String result = evaluateXpathResponseBean.getOutput();
-        result = result.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.lineSeparator() + "<result>", "");
+        result = result.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + System.lineSeparator()
+                + "<result>","");
         result = result.replace("</result>" + System.lineSeparator(), "");
         assertTrue(result.length() == 36);
     }
