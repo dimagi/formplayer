@@ -102,7 +102,10 @@ public class FormEntryTest extends BaseTestClass {
         assert evaluateXpathResponseBean.getStatus().equals(
                 Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         String result =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>William Pride</result>\n";
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                        + System.lineSeparator()
+                        +"<result>William Pride</result>"
+                        + System.lineSeparator();
         assert evaluateXpathResponseBean.getOutput().equals(result);
 
         // We shouldn't error when a path doesn't exist

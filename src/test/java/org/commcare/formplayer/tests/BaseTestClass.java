@@ -678,7 +678,10 @@ public class BaseTestClass {
         EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId, xpath);
         assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXpathResponseBean.getStatus());
         String result = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                        + System.lineSeparator()
+                        + "<result>%s</result>"
+                        + System.lineSeparator(), expectedValue);
         assertEquals(result, evaluateXpathResponseBean.getOutput());
     }
 

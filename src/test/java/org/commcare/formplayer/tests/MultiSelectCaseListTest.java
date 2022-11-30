@@ -90,13 +90,14 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('selected_cases')/results");
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<result>\n"
-                + "  <results id=\"selected_cases\">\n";
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.lineSeparator()
+                + "<result>" + System.lineSeparator()
+                + "  <results id=\"selected_cases\">" + System.lineSeparator();
         for (String expectedCase : expectedCases) {
-            result += "    <value>" + expectedCase + "</value>\n";
+            result += "    <value>" + expectedCase + "</value>" + System.lineSeparator();
         }
-        result += "  </results>\n</result>\n";
+        result += "  </results>" + System.lineSeparator()
+                + "</result>" + System.lineSeparator();
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
 
@@ -106,7 +107,11 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 "instance('commcaresession')/session/data/selected_cases");
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         String guid = selections[selections.length - 1];
-        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>" + guid + "</result>\n";
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + System.lineSeparator()
+                + "<result>" + guid
+                + "</result>"
+                + System.lineSeparator();
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
 
@@ -167,8 +172,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         String result = evaluateXpathResponseBean.getOutput();
-        result = result.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>", "");
-        result = result.replace("</result>\n", "");
+        result = result.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.lineSeparator() + "<result>", "");
+        result = result.replace("</result>" + System.lineSeparator(), "");
         assertTrue(result.length() == 36);
     }
 
