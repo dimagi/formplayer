@@ -1,6 +1,6 @@
 package org.commcare.formplayer.tests;
 
-import static org.commcare.formplayer.junit.HasXPath.hasXPath;
+import static org.commcare.formplayer.junit.HasXpath.hasXpath;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -670,7 +670,7 @@ public class BaseTestClass {
                 .request()
                 .andExpectAll(
                         jsonPath("status", equalTo(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)),
-                        jsonPath("output", hasXPath("/result", equalTo(expectedValue)))
+                        jsonPath("output", hasXpath("/result", equalTo(expectedValue)))
                 );
     }
 

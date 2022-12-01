@@ -25,16 +25,16 @@ import javax.xml.xpath.XPathFactory;
 /**
  * Applies a Matcher to a given XML String, specified by an XPath expression.
  */
-public class HasXPath extends TypeSafeDiagnosingMatcher<String> {
+public class HasXpath extends TypeSafeDiagnosingMatcher<String> {
 
     private final Matcher<String> valueMatcher;
     private final String xpathString;
-    private final XPathExpression compiledXPath;
+    private final XPathExpression compiledXpath;
 
-    private static final Condition.Step<Object,String> NODE_EXISTS = nodeExists();
+    private static final Condition.Step<Object, String> NODE_EXISTS = nodeExists();
 
-    private HasXPath(String xPathExpression, Matcher<String> valueMatcher) {
-        this.compiledXPath = compiledXPath(xPathExpression, null);
+    private HasXpath(String xPathExpression, Matcher<String> valueMatcher) {
+        this.compiledXpath = compiledXpath(xPathExpression, null);
         this.xpathString = xPathExpression;
         this.valueMatcher = valueMatcher;
     }
@@ -65,8 +65,8 @@ public class HasXPath extends TypeSafeDiagnosingMatcher<String> {
      * @param valueMatcher
      *     matcher for the value at the specified xpath
      */
-    public static Matcher<String> hasXPath(String xPath, Matcher<String> valueMatcher) {
-        return new HasXPath(xPath, valueMatcher);
+    public static Matcher<String> hasXpath(String xPath, Matcher<String> valueMatcher) {
+        return new HasXpath(xPath, valueMatcher);
     }
 
     private Condition<Object> evaluated(String item, Description mismatch) {
@@ -79,14 +79,14 @@ public class HasXPath extends TypeSafeDiagnosingMatcher<String> {
         }
 
         try {
-            return matched(compiledXPath.evaluate(document, STRING), mismatch);
+            return matched(compiledXpath.evaluate(document, STRING), mismatch);
         } catch (XPathExpressionException e) {
             mismatch.appendText(e.getMessage());
         }
         return notMatched();
     }
 
-    private static XPathExpression compiledXPath(String xPathExpression, NamespaceContext namespaceContext) {
+    private static XPathExpression compiledXpath(String xPathExpression, NamespaceContext namespaceContext) {
         try {
             final XPath xPath = XPathFactory.newInstance().newXPath();
             if (namespaceContext != null) {
