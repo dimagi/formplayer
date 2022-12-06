@@ -92,11 +92,11 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<result>\n"
-                + "  <results id=\"selected_cases\">\n";
+                + "    <results id=\"selected_cases\">\n";
         for (String expectedCase : expectedCases) {
-            result += "    <value>" + expectedCase + "</value>\n";
+            result += "        <value>" + expectedCase + "</value>\n";
         }
-        result += "  </results>\n</result>\n";
+        result += "    </results>\n</result>\n";
         assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
 
