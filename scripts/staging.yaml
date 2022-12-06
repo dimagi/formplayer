@@ -50,16 +50,10 @@
 trunk: master
 name: autostaging
 branches:
-#  - jls/autoMultiSelect+saveMediaAttachment+mediaFormSubmission # nbd, conflicts are minor
-  - saveMediaAttachment # Shubham/Jenny Aug 12
-#  - autoMultiSelect # Shubham/Jenny Sept 26
-#  - skipEntityListEval # Shubham Oct 11
-  - autoAdvanceMenuFix # Shubham Oct 13
+   - fixNewInstallFlag # Shubham Nov 25
+   - masterToFpUpdate # Shubham Nov 29
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - do/query-init-change
-#      - ml/timezone-revert - this was branched off master
-#      - autoMultiSelect # Shubham/Jenny Sept 26
-#      - skipEntityListEval # Shubham Oct 11
+       - masterToFpUpdate # Shubham Nov 29

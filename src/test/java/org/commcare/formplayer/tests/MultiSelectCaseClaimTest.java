@@ -3,20 +3,15 @@ package org.commcare.formplayer.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.google.common.collect.Multimap;
 
 import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.MockRequestUtils;
-import org.commcare.formplayer.utils.TestContext;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +21,6 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.MultiValueMap;
 
 import java.util.ArrayList;
@@ -134,7 +128,8 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         CommandListResponseBean commandResponse;
         try (
                 MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
-                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/multi_select_case_claim.xml");
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore(
+                        "restores/multi_select_case_claim.xml");
         ) {
             commandResponse = sessionNavigateWithQuery(selections,
                     APP_NAME,
@@ -158,5 +153,64 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
         // Verify query request should not happen again
         verify(webClientMock, times(0)).postFormData(any(), any());
+    }
+
+    @Test
+    public void testAutoSelection() throws Exception {
+        CommandListResponseBean reponse;
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            reponse = sessionNavigateWithQuery(new String[]{"2"},
+                    APP_NAME,
+                    null,
+                    CommandListResponseBean.class);
+
+            // For auto-selection we should not add guid back to the selections.
+            assertEquals(reponse.getSelections().length, 1);
+            assertEquals(reponse.getSelections()[0], "2");
+
+            assertEquals("Close", reponse.getCommands()[0].getDisplayText());
+        }
+
+        ArrayList<String> updatedSelections = new ArrayList<>();
+        updatedSelections.addAll(Arrays.asList(reponse.getSelections()));
+        updatedSelections.add("0");
+
+        sessionNavigateWithQuery(updatedSelections.toArray(new String[0]),
+                APP_NAME,
+                null,
+                FormEntryResponseBean.class);
+    }
+
+    @Test
+    public void testAutoAdvanceMenuWithCaseSearch() throws Exception {
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"1"},
+                    APP_NAME,
+                    null,
+                    EntityListResponse.class);
+            assertTrue(entityResp.isMultiSelect());
+        }
+
+        String[] selectedValues =
+                new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0156fa3e-093e-4136-b95c-01b13dae66c7"};
+        String[] selections = new String[]{"1", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+        CommandListResponseBean commandResponse;
+        try (
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore(
+                        "restores/multi_select_case_claim.xml");
+        ) {
+            NewFormResponse formResponse = sessionNavigateWithQuery(selections,
+                    APP_NAME,
+                    null,
+                    selectedValues,
+                    NewFormResponse.class);
+
+            // selections should now be {"1", "guid"} without the auto-advanced menu index
+            assertEquals(formResponse.getSelections().length, 2);
+        }
     }
 }
