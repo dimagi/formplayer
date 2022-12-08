@@ -50,10 +50,7 @@
 trunk: master
 name: autostaging
 branches:
-   - fixNewInstallFlag # Shubham Nov 25
-   - masterToFpUpdate # Shubham Nov 29
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-       - masterToFpUpdate # Shubham Nov 29
