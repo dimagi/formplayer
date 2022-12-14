@@ -185,16 +185,4 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                     e.getCause().getMessage());
         }
     }
-
-    @Test
-    public void testAutoSelectionWithMultiSelectCaseList_NoCasesError() {
-        RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/nocases.xml");
-        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
-        String[] selections = new String[]{"0", "2"};
-        try {
-            sessionNavigate(selections, APP, NewFormResponse.class);
-        } catch (Exception e) {
-            assertEquals("No cases found", e.getCause().getMessage());
-        }
-    }
 }
