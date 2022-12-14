@@ -50,11 +50,9 @@
 trunk: master
 name: autostaging
 branches:
-  - smh/autoMultiSelectNoResults # Steph Dec 9
   - java-17-update # Ahmad Dec 13
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - smh/autoMultiSelectZeroResults # Steph Dec 9
       - java-17-update # Ahmad Dec 13
