@@ -21,15 +21,5 @@ vim ./scripts/staging.yaml
 Rebuild the autostaging branch to align with the spec in `./scripts/staging.yaml`:
 
 ```bash
-./scripts/rebuildstaging
-```
-
-Then wait for jenkins to build the new branch https://jenkins.dimagi.com/job/formplayer-staging/
-and then deploy staging.
-```bash
-cchq staging deploy formplayer
-```
-or
-```bash
-cchq --control staging deploy formplayer
+./scripts/rebuildstaging --deploy
 ```

@@ -1,19 +1,25 @@
 package org.commcare.formplayer.tests;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.commcare.formplayer.junit.HasXpath.hasXpath;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.junit.HasXpath;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
+import org.commcare.formplayer.junit.request.EvaluateXpathRequest;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.util.Constants;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +65,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
 
         // use_selected_values would be replaced by guid in the selections array in response
-        assertThat(selections).isNotEqualTo(formResp.getSelections());
+        assertFalse(formResp.getSelections()[2].contentEquals("use_selected_values"));
 
         // Navigate without using selected values using the selections from response
         selections = formResp.getSelections();
@@ -90,14 +96,11 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "instance('selected_cases')/results");
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<result>\n"
-                + "  <results id=\"selected_cases\">\n";
-        for (String expectedCase : expectedCases) {
-            result += "    <value>" + expectedCase + "</value>\n";
+        for (int i = 0; i < expectedCases.length; i++) {
+            String xpathRef = "/result/results[@id='selected_cases']/value[" + (i+1) + "]";
+            assertThat(evaluateXpathResponseBean.getOutput(), hasXpath(xpathRef, equalTo(expectedCases[i])));
         }
-        result += "  </results>\n</result>\n";
-        assertEquals(evaluateXpathResponseBean.getOutput(), result);
+
     }
 
     // Ensure that the instance datum is set correctly to the guid
