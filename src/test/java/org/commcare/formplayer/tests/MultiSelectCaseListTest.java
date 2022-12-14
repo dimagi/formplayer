@@ -185,4 +185,19 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                     e.getCause().getMessage());
         }
     }
+
+    @Test
+    public void testAutoSelectionWithMultiSelectCaseList_NoCaseSelection() throws Exception {
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/nocases.xml");
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+
+        // Since there are no cases to select we see the empty case list
+        String[] selections = new String[]{"0", "2"};
+        EntityListResponse response = sessionNavigate(selections, APP, EntityListResponse.class);
+        assertEquals(response.getEntities().length, 0);
+
+        // we can still select any actions present on the case list
+        selections = new String[]{"0", "2","action 0"};
+        sessionNavigate(selections, APP, NewFormResponse.class);
+    }
 }
