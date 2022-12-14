@@ -47,6 +47,20 @@
         </text>
       </sort>
     </field>
+    <action>
+      <display>
+        <text>
+          <locale id="forms.m0f0"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <command value="'m0-f0'"/>
+          <datum id="case_id_new_case_0" value="uuid()"/>
+          <datum id="return_to" value="'m0'"/>
+        </push>
+      </stack>
+    </action>
   </detail>
   <detail id="m0_case_long">
     <title>
