@@ -183,6 +183,25 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
     }
 
     @Test
+    public void testAutoSelection_WithNoCases() throws Exception {
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_no_cases_response.xml")) {
+            // we see the entity list when there are no cases to select in auto select mode
+            EntityListResponse entityListResponse = sessionNavigateWithQuery(new String[]{"2"},
+                    APP_NAME,
+                    null,
+                    EntityListResponse.class);
+            assertEquals(entityListResponse.getEntities().length, 0);
+
+            // we can still select any actions present on the case list
+            sessionNavigateWithQuery(new String[]{"2", "action 0"},
+                    APP_NAME,
+                    null,
+                    NewFormResponse.class);
+        }
+    }
+
+    @Test
     public void testAutoAdvanceMenuWithCaseSearch() throws Exception {
         FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(

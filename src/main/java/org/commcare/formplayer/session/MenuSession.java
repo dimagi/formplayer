@@ -168,8 +168,8 @@ public class MenuSession implements HereFunctionHandlerListener {
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
                     // auto-launch takes preference over auto-select
-                    if (screen.shouldBeSkipped() && !autoLaunch) {
-                        entityScreen.autoSelectEntities(sessionWrapper);
+                    if (screen.shouldBeSkipped() && !autoLaunch &&
+                            entityScreen.autoSelectEntities(sessionWrapper)) {
                         return handleInput(input, true, inputValidated, allowAutoLaunch, selectedValues,
                                 isDetailScreen);
                     }
