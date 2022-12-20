@@ -1,8 +1,8 @@
 package org.commcare.formplayer.objects;
 
 import lombok.Getter;
-import lombok.Setter;
 
+import lombok.Setter;
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -28,23 +28,23 @@ public class MediaMetadataRecord {
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    @Column(name = "filePath", updatable = false)
+    @Column(name = "filepath", updatable = false)
     private String filePath;
 
     @Setter
-    @Column(name = "formSessionId")
+    @Column(name = "formsessionid")
     private String formSessionId;
 
-    @Column(name = "contentType", updatable = false)
+    @Column(name = "contenttype", updatable = false)
     private String contentType;
 
-    @Column(name = "contentLength", updatable = false)
+    @Column(name = "contentlength", updatable = false)
     private Integer contentLength;
 
     @Column(name = "username", updatable = false)
     private String username;
 
-    @Column(name = "asUser", updatable = false)
+    @Column(name = "asuser", updatable = false)
     private String asUser;
 
     @Column(updatable = false)
@@ -61,6 +61,7 @@ public class MediaMetadataRecord {
 
     public MediaMetadataRecord(
             String filePath,
+            String formSessionId,
             String contentType,
             Integer contentLength,
             String username,
@@ -68,11 +69,19 @@ public class MediaMetadataRecord {
             String domain,
             String appid) {
         this.filePath = filePath;
+        this.formSessionId = formSessionId;
         this.contentType = contentType;
         this.contentLength = contentLength;
         this.username = username;
         this.asUser = asUser;
         this.domain = domain;
         this.appid = appid;
+    }
+
+    @Override
+    public String toString(){
+        return "MediaMetaData [id=" + id + ", formSessionId=" + formSessionId + ", username=" + username
+                + ", asUser=" + asUser +  " domain=" + domain + ", filePath=" + filePath
+                + ", contentType=" + contentType + "]";
     }
 }

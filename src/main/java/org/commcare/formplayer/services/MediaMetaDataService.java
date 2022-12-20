@@ -13,12 +13,15 @@ public class MediaMetaDataService {
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
 
-    @CacheEvict(allEntries = true)
     public int purge() {
         return mediaMetaDataRepo.deleteMetaDataWithoutFormSessionId();
     }
 
-    private void saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
-        MediaMetadataRecord savedMediaMetadataRecord = mediaMetaDataRepo.save(mediaMetadataRecord);
+    public void saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
+        mediaMetaDataRepo.save(mediaMetadataRecord);
+    }
+
+    public void deleteMetaDataById(String id) {
+        mediaMetaDataRepo.deleteById(id);
     }
 }
