@@ -50,9 +50,9 @@
 trunk: master
 name: autostaging
 branches:
-  - java-17-update # Ahmad Dec 13
+#   - java-17-update # Ahmad Dec 13
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - java-17-update # Ahmad Dec 13
+#       - java-17-update # Ahmad Dec 13
