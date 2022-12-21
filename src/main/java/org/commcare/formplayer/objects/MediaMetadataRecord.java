@@ -51,7 +51,7 @@ public class MediaMetadataRecord {
     private String domain;
 
     @Column(name = "appid", updatable = false)
-    private String appid;
+    private String appId;
 
     @CreationTimestamp
     @Column(name = "datecreated")
@@ -67,7 +67,7 @@ public class MediaMetadataRecord {
             String username,
             String asUser,
             String domain,
-            String appid) {
+            String appId) {
         this.filePath = filePath;
         this.formSessionId = formSessionId;
         this.contentType = contentType;
@@ -75,7 +75,7 @@ public class MediaMetadataRecord {
         this.username = username;
         this.asUser = asUser;
         this.domain = domain;
-        this.appid = appid;
+        this.appId = appId;
     }
 
     @Override

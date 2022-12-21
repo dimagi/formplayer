@@ -11,16 +11,16 @@ public class V26__init_media_meta_data extends BaseFormplayerMigration {
         return Arrays.asList(
                 "CREATE TABLE " + Constants.POSTGRES_MEDIA_META_DATA_TABLE_NAME + " (\n" +
                         "    id varchar NOT NULL,\n" +
-                        "    filePath varchar NOT NULL,\n" +
-                        "    formSessionId varchar,\n" +
+                        "    filepath varchar NOT NULL,\n" +
+                        "    formsessionid varchar,\n" +
                         "    CONSTRAINT formSessionId_constraint FOREIGN KEY (formSessionId) REFERENCES formplayer_sessions (id) ON DELETE SET NULL,\n" +
-                        "    contentType varchar,\n" +
+                        "    contenttype varchar,\n" +
                         "    username varchar NOT NULL,\n" +
-                        "    asUser varchar,\n" +
+                        "    asuser varchar,\n" +
                         "    domain varchar NOT NULL,\n" +
                         "    appid varchar NOT NULL,\n" +
                         "    datecreated timestamptz NOT NULL,\n" +
-                        "    contentLength integer\n" +
+                        "    contentlength integer\n" +
                         ")",
                 "CREATE INDEX ON " + Constants.POSTGRES_MEDIA_META_DATA_TABLE_NAME + " (datecreated)"
         );
