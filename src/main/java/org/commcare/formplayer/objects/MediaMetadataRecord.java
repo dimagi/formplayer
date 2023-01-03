@@ -7,11 +7,7 @@ import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import java.time.Instant;
 
@@ -24,16 +20,15 @@ import java.time.Instant;
 public class MediaMetadataRecord {
 
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     @Column(name = "filepath", updatable = false)
     private String filePath;
 
     @Setter
-    @Column(name = "formsessionid")
-    private String formSessionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "formsessionid")
+    private SerializableFormSession formSession;
 
     @Column(name = "contenttype", updatable = false)
     private String contentType;
@@ -60,16 +55,18 @@ public class MediaMetadataRecord {
     public MediaMetadataRecord() { }
 
     public MediaMetadataRecord(
+            String id,
             String filePath,
-            String formSessionId,
+            SerializableFormSession formSession,
             String contentType,
             Integer contentLength,
             String username,
             String asUser,
             String domain,
             String appId) {
+        this.id = id;
         this.filePath = filePath;
-        this.formSessionId = formSessionId;
+        this.formSession = formSession;
         this.contentType = contentType;
         this.contentLength = contentLength;
         this.username = username;
@@ -80,7 +77,7 @@ public class MediaMetadataRecord {
 
     @Override
     public String toString(){
-        return "MediaMetaData [id=" + id + ", formSessionId=" + formSessionId + ", username=" + username
+        return "MediaMetaData [id=" + id + ", formSessionId=" + formSession.getId() + ", username=" + username
                 + ", asUser=" + asUser +  " domain=" + domain + ", filePath=" + filePath
                 + ", contentType=" + contentType + "]";
     }

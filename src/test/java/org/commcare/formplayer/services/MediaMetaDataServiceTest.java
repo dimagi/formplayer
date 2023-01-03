@@ -13,6 +13,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Tests for {@link MediaMetaDataService}
@@ -35,11 +36,15 @@ public class MediaMetaDataServiceTest {
     @Autowired
     MediaMetaDataRepo mediaMetaDataRepo;
 
+    private String mediaId;
+
     MediaMetadataRecord mediaMetaData;
 
     @BeforeEach
     public void setUp() {
+         mediaId = UUID.randomUUID().toString();
          mediaMetaData = new MediaMetadataRecord(
+                 mediaId,
                 "filePath",
                 null,
                 "contentType",
