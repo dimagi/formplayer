@@ -3,9 +3,6 @@ package org.commcare.formplayer.objects;
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Instant;
 
 import javax.persistence.Column;
@@ -15,6 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Model class representing a postgres entry for media metadata table
