@@ -14,6 +14,7 @@ import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.formplayer.services.HqUserDetailsService;
@@ -54,6 +55,10 @@ public class HqUserDetailsServiceTests {
     // mock this so we don't need to configure a DB
     @MockBean
     public VirtualDataInstanceRepo virtualDataInstanceRepo;
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    public MediaMetaDataRepo mediaMetaDataRepo;
 
     @MockBean
     public RestoreFactory RestoreFactory;
