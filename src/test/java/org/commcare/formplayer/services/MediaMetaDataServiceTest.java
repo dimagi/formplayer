@@ -23,7 +23,7 @@ import java.util.UUID;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing
 @ComponentScan(
-        basePackageClasses = {MediaMetaDataService.class,}, 
+        basePackageClasses = {MediaMetaDataService.class},
         useDefaultFilters = false,
         includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
                 MediaMetaDataService.class})
