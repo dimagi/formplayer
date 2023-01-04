@@ -36,9 +36,9 @@ public class MediaMetaDataServiceTest {
     @Autowired
     MediaMetaDataRepo mediaMetaDataRepo;
 
-    private String mediaId;
-
     MediaMetadataRecord mediaMetaData;
+
+    private String mediaId;
 
     @BeforeEach
     public void setUp() {

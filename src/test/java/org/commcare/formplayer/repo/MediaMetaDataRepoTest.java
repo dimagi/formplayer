@@ -14,6 +14,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import java.util.UUID;
 
 
+/**
+ * Tests for {@link MediaMetaDataRepo}
+ */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing

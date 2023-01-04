@@ -4,6 +4,9 @@ import org.commcare.formplayer.util.Constants;
 
 import java.util.Arrays;
 
+/**
+ * Creates table for media metadata
+ */
 public class V26__init_media_meta_data extends BaseFormplayerMigration {
 
     @Override
