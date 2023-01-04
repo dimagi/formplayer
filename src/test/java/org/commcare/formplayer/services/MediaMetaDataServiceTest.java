@@ -23,7 +23,7 @@ import java.util.UUID;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing
 @ComponentScan(
-        basePackageClasses = {MediaMetaDataService.class, },
+        basePackageClasses = {MediaMetaDataService.class,},
         useDefaultFilters = false,
         includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
                 MediaMetaDataService.class})
@@ -42,9 +42,9 @@ public class MediaMetaDataServiceTest {
 
     @BeforeEach
     public void setUp() {
-         mediaId = UUID.randomUUID().toString();
-         mediaMetaData = new MediaMetadataRecord(
-                 mediaId,
+        mediaId = UUID.randomUUID().toString();
+        mediaMetaData = new MediaMetadataRecord(
+                mediaId,
                 "filePath",
                 null,
                 "contentType",

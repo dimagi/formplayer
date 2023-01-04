@@ -3,7 +3,6 @@ package org.commcare.formplayer.repo;
 
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ public class MediaMetaDataRepoTest {
 
     @Autowired
     public MediaMetaDataRepo mediaMetadataRepo;
-    
+
 
     private String sessionId;
 

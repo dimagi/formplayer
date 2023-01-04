@@ -13,7 +13,9 @@ public class V26__init_media_meta_data extends BaseFormplayerMigration {
                         "    id varchar NOT NULL,\n" +
                         "    filepath varchar NOT NULL,\n" +
                         "    formsessionid varchar,\n" +
-                        "    CONSTRAINT formSessionId_constraint FOREIGN KEY (formsessionid) REFERENCES formplayer_sessions (id) ON DELETE SET NULL,\n" +
+                        "    CONSTRAINT formSessionId_constraint FOREIGN KEY (formsessionid) REFERENCES "
+                        + "formplayer_sessions (id) ON DELETE SET NULL,\n"
+                        +
                         "    contenttype varchar,\n" +
                         "    username varchar NOT NULL,\n" +
                         "    asuser varchar,\n" +

@@ -1,15 +1,15 @@
 package org.commcare.formplayer.objects;
 
 import lombok.Getter;
-
 import lombok.Setter;
+
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
+
+import java.time.Instant;
 
 import javax.persistence.*;
 
-import java.time.Instant;
 
 /**
  * Model class representing a postgres entry for media metadata table
@@ -52,7 +52,8 @@ public class MediaMetadataRecord {
     @Column(name = "datecreated")
     private Instant datecreated;
 
-    public MediaMetadataRecord() { }
+    public MediaMetadataRecord() {
+    }
 
     public MediaMetadataRecord(
             String id,
@@ -76,9 +77,9 @@ public class MediaMetadataRecord {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "MediaMetaData [id=" + id + ", formSessionId=" + formSession.getId() + ", username=" + username
-                + ", asUser=" + asUser +  " domain=" + domain + ", filePath=" + filePath
+                + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
                 + ", contentType=" + contentType + "]";
     }
 }
