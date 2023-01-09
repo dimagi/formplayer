@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.sun.media.jfxmedia.events.NewFrameEvent;
+
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
@@ -92,6 +94,17 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         List<String> casesToBeClaimed = Arrays.asList("0156fa3e-093e-4136-b95c-01b13dae66c7",
                 "0156fa3e-093e-4136-b95c-01b13dae66c8");
         assertEquals(requestData.get("case_id"), casesToBeClaimed);
+
+        // Open a form and check the selected_values instance is correctly loaded
+        String guid = commandResponse.getSelections()[1];
+        selections = new String[]{"0", guid, "0"};
+        NewFormResponse newFormResponse = sessionNavigateWithQuery(selections,
+                APP_NAME,
+                null,
+                null,
+                NewFormResponse.class);
+        checkForSelectedEntitiesDatum(newFormResponse.getSessionId(), guid);
+        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
     }
 
     @Test
