@@ -2,6 +2,7 @@ package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.commcare.cases.entity.Entity;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
 import org.commcare.formplayer.util.FormplayerGraphUtil;
@@ -77,8 +78,9 @@ public class EntityDetailResponse {
             EvaluationContext ec,
             String title,
             boolean isFuzzySearchEnabled) {
-        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail,
-                references, ec, null, null, 0, isFuzzySearchEnabled);
+        List<Entity<TreeReference>> entityRefs = EntityListResponse.buildEntityList(detail, ec, references, null,
+                0, isFuzzySearchEnabled);
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(entityRefs, ec, null);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
         this.title = title;

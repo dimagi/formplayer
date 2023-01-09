@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,7 +27,6 @@ import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.ChangeLocaleRequestBean;
 import org.commcare.formplayer.beans.DeleteApplicationDbsRequestBean;
 import org.commcare.formplayer.beans.EvaluateXPathMenuRequestBean;
-import org.commcare.formplayer.beans.EvaluateXPathRequestBean;
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
@@ -52,6 +52,7 @@ import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.junit.FormSessionTest;
 import org.commcare.formplayer.junit.Installer;
 import org.commcare.formplayer.junit.RestoreFactoryExtension;
+import org.commcare.formplayer.junit.request.EvaluateXpathRequest;
 import org.commcare.formplayer.junit.request.NewFormRequest;
 import org.commcare.formplayer.junit.request.SubmitFormRequest;
 import org.commcare.formplayer.junit.request.SyncDbRequest;
@@ -621,21 +622,9 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
-        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue(
-                FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
-                EvaluateXPathRequestBean.class
-        );
-        populateFromSession(evaluateXPathRequestBean, sessionId);
-        evaluateXPathRequestBean.setSessionId(sessionId);
-        evaluateXPathRequestBean.setXpath(xPath);
-        evaluateXPathRequestBean.setDebugOutputLevel(Constants.BASIC_NO_TRACE);
-        return generateMockQuery(
-                ControllerType.DEBUGGER,
-                RequestType.POST,
-                Constants.URL_EVALUATE_XPATH,
-                evaluateXPathRequestBean,
-                EvaluateXPathResponseBean.class
-        );
+        return new EvaluateXpathRequest(mockDebuggerController, sessionId, xPath, formSessionService)
+                .request()
+                .bean();
     }
 
     EvaluateXPathResponseBean evaluateMenuXpath(String requestPath) throws Exception {
@@ -674,11 +663,12 @@ public class BaseTestClass {
      */
     protected void checkXpath(String sessionId, String xpath, String expectedValue)
             throws Exception {
-        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId, xpath);
-        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXpathResponseBean.getStatus());
-        String result = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
-        assertEquals(result, evaluateXpathResponseBean.getOutput());
+        new EvaluateXpathRequest(mockDebuggerController, sessionId, xpath, formSessionService)
+                .request()
+                .andExpectAll(
+                        jsonPath("status", equalTo(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)),
+                        jsonPath("output", hasXpath("/result", equalTo(expectedValue)))
+                );
     }
 
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
@@ -693,10 +683,14 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, clazz, false);
+        return getDetails(selections, testName, null, null,  clazz, false);
     }
 
-    <T> T getDetails(String[] selections, String testName, String locale, Class<T> clazz,
+    <T> T getDetails(String[] selections, String testName, QueryData queryData, Class<T> clazz) throws Exception {
+        return getDetails(selections, testName, null, queryData,  clazz, false);
+    }
+
+    <T> T getDetails(String[] selections, String testName, String locale, QueryData queryData, Class<T> clazz,
             boolean inline) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
@@ -704,6 +698,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setIsPersistent(inline);
+        sessionNavigationBean.setQueryData(queryData);
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
@@ -716,7 +711,7 @@ public class BaseTestClass {
     }
 
     <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, clazz, true);
+        return getDetails(selections, testName, null, null,  clazz, true);
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {

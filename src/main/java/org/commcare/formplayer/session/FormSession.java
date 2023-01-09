@@ -651,7 +651,8 @@ public class FormSession {
             answerIndex = session.getCurrentIndex();
         }
         MediaHandler mediaHandler = new MediaHandler(file);
-        String fileId = mediaHandler.saveFile(mediaDirectoryPath);
+        String fileId = mediaHandler.saveFile(mediaDirectoryPath, session, session.getUsername(), session.getAsUser(),
+                session.getDomain(), session.getAppId());
         cleanCurrentMedia(mediaHandler, mediaDirectoryPath, answerIndex);
         return fileId;
     }

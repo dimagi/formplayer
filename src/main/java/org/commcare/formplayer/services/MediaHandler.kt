@@ -1,5 +1,7 @@
 package org.commcare.formplayer.services
 
+import org.commcare.formplayer.objects.MediaMetadataRecord
+import org.commcare.formplayer.objects.SerializableFormSession
 import org.commcare.formplayer.services.MediaValidator.isFileTooLarge
 import org.commcare.formplayer.services.MediaValidator.isUnSupportedFileExtension
 import org.commcare.formplayer.services.MediaValidator.isUnsupportedMimeType
@@ -19,16 +21,37 @@ class MediaHandler(val file: MultipartFile) {
     /**
      * Saves file in the given parent directory
      */
-    fun saveFile(parentDirPath: Path): String {
+    fun saveFile(parentDirPath: Path, session: SerializableFormSession, username: String, asUser: String,
+                 domain: String, appId: String): String {
         validateFile()
         val fileId = PropertyUtils.genUUID()
         val parent = parentDirPath.toFile()
         parent.mkdirs()
         var fileIdWithExt = fileId
-        FileUtils.getExtension(file.originalFilename)?.let { fileIdWithExt = "$fileId.$it" }
-        val desintationFile = getMediaFilePath(parentDirPath, fileIdWithExt).toFile()
+        val fileExtension = FileUtils.getExtension(file.originalFilename)
+        fileExtension?.let { fileIdWithExt = "$fileId.$it" }
+        val filePath = getMediaFilePath(parentDirPath, fileIdWithExt)
+        val destinationFile = filePath.toFile()
+
+        val metaDataRecordToDelete = MediaMetaDataService().findByFilePath(filePath.toString())
+        val mediaMetaDataService = MediaMetaDataService()
+        metaDataRecordToDelete?.let{ mediaMetaDataService.deleteMetaDataById(it.id) }
+
         try {
-            FileUtils.copyFile(file.inputStream, desintationFile)
+            FileUtils.copyFile(file.inputStream, destinationFile)
+            val mediaMetaData = MediaMetadataRecord(
+                fileId,
+                filePath.toString(),
+                session,
+                fileExtension,
+                file.size.toInt(),
+                username,
+                asUser,
+                domain,
+                appId
+            )
+            mediaMetaDataService.saveMediaMetaData(mediaMetaData)
+
             return fileIdWithExt
         } catch (e: IOException) {
             throw IOException("Could not copy file to destination due to " + e.message, e)
