@@ -21,7 +21,7 @@ class MediaHandler(val file: MultipartFile) {
     /**
      * Saves file in the given parent directory
      */
-    fun saveFile(parentDirPath: Path, session: SerializableFormSession, username: String, asUser: String,
+    fun saveFile(parentDirPath: Path, session: SerializableFormSession, username: String, asUser: String?,
                  domain: String, appId: String): String {
         validateFile()
         val fileId = PropertyUtils.genUUID()
@@ -33,29 +33,27 @@ class MediaHandler(val file: MultipartFile) {
         val filePath = getMediaFilePath(parentDirPath, fileIdWithExt)
         val destinationFile = filePath.toFile()
 
-        val metaDataRecordToDelete = MediaMetaDataService().findByFilePath(filePath.toString())
-        val mediaMetaDataService = MediaMetaDataService()
-        metaDataRecordToDelete?.let{ mediaMetaDataService.deleteMetaDataById(it.id) }
 
         try {
             FileUtils.copyFile(file.inputStream, destinationFile)
-            val mediaMetaData = MediaMetadataRecord(
-                fileId,
-                filePath.toString(),
-                session,
-                fileExtension,
-                file.size.toInt(),
-                username,
-                asUser,
-                domain,
-                appId
-            )
-            mediaMetaDataService.saveMediaMetaData(mediaMetaData)
-
-            return fileIdWithExt
         } catch (e: IOException) {
             throw IOException("Could not copy file to destination due to " + e.message, e)
         }
+        val mediaMetaDataService = MediaMetaDataService()
+        val mediaMetaData = MediaMetadataRecord(
+            fileId,
+            filePath.toString(),
+            session,
+            fileExtension,
+            file.size.toInt(),
+            username,
+            asUser,
+            domain,
+            appId
+        )
+        mediaMetaDataService.saveMediaMetaData(mediaMetaData)
+
+        return fileIdWithExt
     }
 
     private fun validateFile() {
@@ -77,6 +75,12 @@ class MediaHandler(val file: MultipartFile) {
     }
 
     fun cleanMedia(parentDirPath: Path, fileId: String): Boolean {
+        try {
+            val mediaMetaDataService = MediaMetaDataService()
+            mediaMetaDataService.deleteMetaDataById(fileId)
+        } catch (e: Exception) {
+            // ignore, we don't want to crash even if delete fails
+        }
         val currentMedia = getMediaFilePath(parentDirPath, fileId).toFile()
         return currentMedia.delete()
     }

@@ -1,6 +1,8 @@
 package org.commcare.formplayer.tests;
 
 import static org.commcare.formplayer.util.Constants.PART_ANSWER;
+import static org.commcare.formplayer.junit.HasXpath.hasXpath;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
