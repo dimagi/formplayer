@@ -7,3 +7,5 @@ file.oversize.error.message=Selected file exceeds the file size limit of 3 MB. P
 form.upload.attachments.limit.exceeded=More than ${0} attachments found for this form.
 form.upload.attachment.invalid=Invalid file ${0} attached with this form.
 form.upload.attachment.oversize=File ${0} is more than the maximum limit of 3 MB.
+case.list.max.selection.error.singular=Too many cases(${0}) to proceed. Only 1 is allowed
+case.list.max.selection.error=Too many cases(${0}) to proceed. Only ${1} are allowed
