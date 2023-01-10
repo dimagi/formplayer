@@ -1,0 +1,21 @@
+<OpenRosaResponse>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>case create</username>
+        <password>
+            sha1$4JSloCqp4bcl$9123edc2ac2fba8b403c7366b8c72806662a188c
+        </password>
+        <uuid>test_case_id</uuid>
+        <date>2017-04-21</date>
+    </Registration>
+    <case case_id="test_case_id" date_modified="2015-02-18T21:06:25Z"
+        user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Test Case</case_name>
+            <owner_id>test_case_id</owner_id>
+        </create>
+        <update>
+            <test_value>initial</test_value>
+        </update>
+    </case>
+</OpenRosaResponse>

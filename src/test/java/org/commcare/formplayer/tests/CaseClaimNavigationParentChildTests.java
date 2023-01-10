@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -10,16 +12,16 @@ import com.google.common.collect.Multimap;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
+import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.utils.FileUtils;
-import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,8 +126,11 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
 
         Assertions.assertEquals(1, entityListResponse.getEntities().length);
         Assertions.assertEquals(PARENT_CASE_ID, entityListResponse.getEntities()[0].getId());
-
         selections.add(PARENT_CASE_ID);
+
+        Object[] expectedDetails = new Object[]{"Rubaroo", "A R Rahman", "50"};
+        testEntityDetail(appName, selections, queryData, expectedDetails);
+
         sessionNavigateWithQuery(selections,
                 appName,
                 queryData,
@@ -162,6 +167,18 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
                 appName,
                 queryData,
                 NewFormResponse.class);
+    }
+
+    private void testEntityDetail(String appName, ArrayList<String> selections, QueryData queryData,
+            Object[] expectedDetails)
+            throws Exception {
+        EntityDetailListResponse responseBean = getDetails(selections.toArray(new String[selections.size()]),
+                appName,
+                queryData,
+                EntityDetailListResponse.class);
+        EntityDetailResponse[] entityDetailResponse = responseBean.getEntityDetailList();
+        EntityDetailResponse entityDetailResponseItem = entityDetailResponse[0];
+        assertArrayEquals(expectedDetails, entityDetailResponseItem.getDetails());
     }
 
 
@@ -274,6 +291,10 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
     private void testParentSelection(String appName, QueryData queryData,
             ArrayList<String> selections) throws Exception {
         selections.add(PARENT_CASE_ID);
+
+        Object[] expectedDetails = new Object[]{"Rubaroo"};
+        testEntityDetail(appName, selections, queryData, expectedDetails);
+
         CommandListResponseBean commandListResponseBean = sessionNavigateWithQuery(selections,
                 appName,
                 queryData,
@@ -347,6 +368,11 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
     private void testChildSelection(String appName, QueryData queryData,
             ArrayList<String> selections, String subCaseSelectionId) throws Exception {
         selections.add(subCaseSelectionId);
+
+        String caseName = subCaseSelectionId.equals(PARENT_CASE_ID) ? "Rubaroo" : "Mumbai";
+        Object[] expectedDetails = new Object[]{caseName};
+        testEntityDetail(appName, selections, queryData, expectedDetails);
+
         CommandListResponseBean commandListResponseBean = sessionNavigateWithQuery(selections,
                 appName,
                 queryData,
