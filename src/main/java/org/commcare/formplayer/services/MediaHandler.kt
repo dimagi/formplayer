@@ -75,13 +75,18 @@ class MediaHandler(val file: MultipartFile) {
     }
 
     fun cleanMedia(parentDirPath: Path, fileId: String): Boolean {
-        try {
-            val mediaMetaDataService = MediaMetaDataService()
-            mediaMetaDataService.deleteMetaDataById(fileId)
-        } catch (e: Exception) {
-            // ignore, we don't want to crash even if delete fails
-        }
         val currentMedia = getMediaFilePath(parentDirPath, fileId).toFile()
-        return currentMedia.delete()
+        val deleted = currentMedia.delete()
+
+        if(deleted) {
+            try {
+                val mediaMetaDataService = MediaMetaDataService()
+                mediaMetaDataService.deleteMetaDataById(fileId)
+            } catch (e: Exception) {
+                // ignore, we don't want to crash even if delete fails
+            }
+        }
+
+        return deleted
     }
 }

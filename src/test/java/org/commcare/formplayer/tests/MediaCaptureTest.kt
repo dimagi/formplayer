@@ -6,12 +6,14 @@ import org.commcare.formplayer.beans.FormEntryResponseBean
 import org.commcare.formplayer.beans.NewFormResponse
 import org.commcare.formplayer.configuration.CacheConfiguration
 import org.commcare.formplayer.junit.FormSessionTest
+import org.commcare.formplayer.junit.MediaMetaDataServiceExtension
 import org.commcare.formplayer.junit.RestoreFactoryExtension
 import org.commcare.formplayer.junit.StorageFactoryExtension
 import org.commcare.formplayer.junit.request.AnswerMediaQuestionRequest
 import org.commcare.formplayer.junit.request.NewFormRequest
 import org.commcare.formplayer.junit.request.SubmitFormRequest
 import org.commcare.formplayer.services.FormSessionService
+import org.commcare.formplayer.services.MediaMetaDataService
 import org.commcare.formplayer.services.SubmitService
 import org.commcare.formplayer.util.Constants.PART_FILE
 import org.commcare.formplayer.utils.FileUtils
@@ -21,6 +23,7 @@ import org.javarosa.core.services.locale.Localization
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.fail
 import org.mockito.ArgumentMatchers.anyString
@@ -46,6 +49,7 @@ import java.nio.file.Paths
 @ContextConfiguration(classes = [TestContext::class, CacheConfiguration::class])
 @Import(FormController::class, FormSubmissionController::class)
 @FormSessionTest
+@ExtendWith(MediaMetaDataServiceExtension::class)
 class MediaCaptureTest {
 
     @Autowired
@@ -59,6 +63,9 @@ class MediaCaptureTest {
 
     @Autowired
     private lateinit var formSessionService: FormSessionService
+
+    @Autowired
+    private lateinit var mediaMetaDataService:  MediaMetaDataService
 
     companion object {
         const val USERNAME = "test"
