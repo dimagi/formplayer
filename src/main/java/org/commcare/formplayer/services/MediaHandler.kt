@@ -26,7 +26,8 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         session: SerializableFormSession,
         username: String,
         asUser: String?,
-        domain: String, appId: String
+        domain: String,
+        appId: String
     ): String {
         validateFile()
         val fileId = PropertyUtils.genUUID()
