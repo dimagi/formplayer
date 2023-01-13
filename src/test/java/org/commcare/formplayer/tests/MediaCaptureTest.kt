@@ -5,6 +5,7 @@ import org.commcare.formplayer.application.FormSubmissionController
 import org.commcare.formplayer.beans.FormEntryResponseBean
 import org.commcare.formplayer.beans.NewFormResponse
 import org.commcare.formplayer.configuration.CacheConfiguration
+import org.commcare.formplayer.exceptions.MediaMetaDataNotFoundException
 import org.commcare.formplayer.junit.FormSessionTest
 import org.commcare.formplayer.junit.MediaMetaDataServiceExtension
 import org.commcare.formplayer.junit.RestoreFactoryExtension
@@ -21,6 +22,7 @@ import org.commcare.formplayer.utils.TestContext
 import org.commcare.formplayer.web.client.WebClient
 import org.javarosa.core.services.locale.Localization
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -101,9 +103,9 @@ class MediaCaptureTest {
         val originalSavedFile = expectedFilePath.toFile()
         assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
         // check that metadata was created and values match expected
-        val metadata = mediaMetaDataService.findByFormSessionId(formResponse.session_id)
-        assertEquals(metadata.filePath, expectedFilePath.toString())
-        assertEquals(metadata.formSession.id, formResponse.session_id)
+        val originalMetadata = mediaMetaDataService.findByFormSessionId(formResponse.session_id)
+        assertEquals(originalMetadata.filePath, expectedFilePath.toString())
+        assertEquals(originalMetadata.formSession.id, formResponse.session_id)
         // upload an invalid file and check the old file remains as answer
         assertThrows<java.lang.Exception> {
             saveImage(formResponse, "media/invalid_extension.jppg", "invalid_extension.jppg")
@@ -115,6 +117,14 @@ class MediaCaptureTest {
         assertFalse("Old image is still present on the filesystem", originalSavedFile.exists())
         expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
         assertTrue("Could not find saved file on the filesystem", expectedFilePath.toFile().exists())
+        // check that metadata was replaced and values match expected
+        val originalMetadataId = originalMetadata.id
+        assertThrows<MediaMetaDataNotFoundException> {
+            mediaMetaDataService.findById(originalMetadataId)
+        }
+        val newMetadata = mediaMetaDataService.findByFilePath(expectedFilePath.toString())
+        assertNotEquals(newMetadata.id, originalMetadataId)
+        assertEquals(newMetadata.filePath, expectedFilePath.toString())
     }
 
     private fun getExpectedMediaPath(sessionId: String, responseBean: FormEntryResponseBean): Path {

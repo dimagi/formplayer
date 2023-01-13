@@ -3,7 +3,6 @@ package org.commcare.formplayer.services;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 
@@ -18,6 +17,10 @@ public class MediaMetaDataService {
 
     public int purge() {
         return mediaMetaDataRepo.deleteMetaDataWithoutFormSessionId();
+    }
+
+    public MediaMetadataRecord findById(String id) {
+        return mediaMetaDataRepo.findById(id).get();
     }
 
     public MediaMetadataRecord findByFormSessionId(String sessionId) {

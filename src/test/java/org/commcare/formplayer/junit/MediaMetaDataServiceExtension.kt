@@ -36,6 +36,19 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
             )
         )
 
+        Mockito.`when`(mediaMetaDataService.findById(ArgumentMatchers.anyString()))
+            .thenAnswer(
+                Answer { invocation ->
+                    val id = invocation.arguments[0] as String
+                    for (entry in metadataMap.entries) {
+                        if (entry.value.formSession.id == id) {
+                            return@Answer entry.value
+                        }
+                    }
+                    throw MediaMetaDataNotFoundException(id)
+                }
+            )
+
         Mockito.`when`(mediaMetaDataService.findByFormSessionId(ArgumentMatchers.anyString()))
             .thenAnswer(
                 Answer { invocation ->
@@ -49,10 +62,28 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
                 }
             )
 
-        Mockito.doAnswer { invocation ->
-            val key = invocation.arguments[0] as String
-            metadataMap.remove(key)
-            null
-        }.`when`(mediaMetaDataService).deleteMetaDataById(ArgumentMatchers.anyString())
+        Mockito.`when`(mediaMetaDataService.findByFilePath(ArgumentMatchers.anyString()))
+            .thenAnswer(
+                Answer { invocation ->
+                    val filePath = invocation.arguments[0] as String
+                    for (entry in metadataMap.entries) {
+                        if (entry.value.filePath == filePath) {
+                            return@Answer entry.value
+                        }
+                    }
+                    throw MediaMetaDataNotFoundException(filePath)
+                }
+            )
+
+        Mockito.`when`(mediaMetaDataService.deleteMetaDataById(ArgumentMatchers.anyString()))
+            .thenAnswer(
+                Answer { invocation ->
+                    val key = invocation.arguments[0] as String
+                    metadataMap.remove(key)
+                    val currentMap = metadataMap
+                }
+
+            )
+
     }
 }

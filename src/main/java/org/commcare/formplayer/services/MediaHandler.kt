@@ -40,7 +40,7 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
             throw IOException("Could not copy file to destination due to " + e.message, e)
         }
         val mediaMetaData = MediaMetadataRecord(
-            fileId,
+            fileIdWithExt,
             filePath.toString(),
             session,
             fileExtension,
