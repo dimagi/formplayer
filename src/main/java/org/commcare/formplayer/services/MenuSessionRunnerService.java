@@ -1,6 +1,5 @@
 package org.commcare.formplayer.services;
 
-import static org.commcare.formplayer.objects.QueryData.KEY_FORCE_MANUAL_SEARCH;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
 import org.apache.commons.logging.Log;
@@ -284,8 +283,8 @@ public class MenuSessionRunnerService {
                     break;
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
-                Screen nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData,
-                        needsFullEntityScreen, inputValidated, isDetailScreen);
+                Screen nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
+                        needsFullEntityScreen, isDetailScreen);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                     // we've reached the end of this navigation path and no form in sight
@@ -350,22 +349,18 @@ public class MenuSessionRunnerService {
      * - auto advance menu
      *
      * @param menuSession
-     * @param currentInput          The current input being processed
      * @param nextInput             The next input being processed or NO_SELECTION constant
      * @param queryData             Query data from the request
      * @param needsFullEntityScreen Whether the full entity screen is required
-     * @param inputValidated        Whether the input has been validated (allows skipping validation)
      * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      * @return
      * @throws CommCareSessionException
      */
     private Screen autoAdvanceSession(
             MenuSession menuSession,
-            String currentInput,
             String nextInput,
             QueryData queryData,
             boolean needsFullEntityScreen,
-            boolean inputValidated,
             boolean isDetailScreen) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
@@ -529,8 +524,8 @@ public class MenuSessionRunnerService {
                 return responseBean;
             }
 
-            autoAdvanceSession(menuSession, "", "", new QueryData(),
-                    false, false, false
+            autoAdvanceSession(menuSession, "", new QueryData(),
+                    false, false
             );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
