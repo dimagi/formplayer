@@ -19,7 +19,6 @@ import java.util.LinkedHashMap;
  * Test that end of form navigations used by Enikshay Private application work
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class EnikshayEndOfFormTests extends BaseTestClass {
 
     @Override

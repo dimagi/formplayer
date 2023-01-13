@@ -2,12 +2,14 @@ package org.commcare.formplayer.utils;
 
 import com.timgroup.statsd.StatsDClient;
 
+import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.TestInstallService;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
@@ -19,6 +21,7 @@ import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.VirtualDataInstanceService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
@@ -29,8 +32,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -49,6 +50,13 @@ public class TestContext {
 
     public TestContext() {
         MockitoAnnotations.openMocks(this);
+    }
+
+    @Bean
+    public SQLiteProperties sqliteProperties() {
+        SQLiteProperties sqLiteProperties = new SQLiteProperties();
+        sqLiteProperties.setDataDir("testdbs/");
+        return sqLiteProperties;
     }
 
     @Bean
@@ -74,7 +82,13 @@ public class TestContext {
     public FormSessionService formSessionService;
 
     @MockBean
+    public FormDefinitionService formDefinitionService;
+
+    @MockBean
     public MenuSessionService menuSessionService;
+
+    @MockBean
+    public VirtualDataInstanceService virtualDataInstanceService;
 
     @MockBean
     public WebClient webClient;
@@ -153,11 +167,6 @@ public class TestContext {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return Mockito.spy(ArchiveFileRoot.class);
-    }
-
-    @Bean
-    public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("case_search");
     }
 
     @Bean

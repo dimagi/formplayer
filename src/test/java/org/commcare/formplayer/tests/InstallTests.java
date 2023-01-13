@@ -15,7 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
  * Created by willpride on 1/14/16.
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class InstallTests extends BaseTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);

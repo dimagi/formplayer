@@ -1,23 +1,44 @@
 package org.commcare.formplayer.session;
 
-import datadog.trace.api.Trace;
-import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+import static org.commcare.session.SessionFrame.isEntitySelectionDatum;
+import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALUES;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.services.CaseSearchHelper;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.screens.FormplayerQueryScreen;
+import org.commcare.formplayer.screens.FormplayerSyncScreen;
+import org.commcare.formplayer.services.FormDefinitionService;
+import org.commcare.formplayer.services.FormplayerRemoteInstanceFetcher;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.InstallService;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.formplayer.util.StringUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
+import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormIdDatum;
+import org.commcare.suite.model.MultiSelectEntityDatum;
 import org.commcare.suite.model.SessionDatum;
-import org.commcare.util.screen.*;
+import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.MultiSelectEntityScreen;
+import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Screen;
+import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -28,24 +49,17 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.screens.FormplayerQueryScreen;
-import org.commcare.formplayer.screens.FormplayerSyncScreen;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.*;
-import org.commcare.formplayer.util.SessionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+import datadog.trace.api.Trace;
 
 
 /**
- * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
- * primarily includes module and form navigation, along with case list/details and case selection. When ready,
+ * This (along with FormSession) is a total god object. This manages everything from installation to form entry.
+ * This primarily includes module and form navigation, along with case list/details and case selection. When ready,
  * this object will create and hand off flow control to a FormSession object, loading up the proper session data.
  *
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
@@ -66,28 +80,29 @@ public class MenuSession implements HereFunctionHandlerListener {
     // Stores the entity screens created to manage state for the lifecycle of this request
     private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
     private boolean oneQuestionPerScreen;
-    private RemoteInstanceFetcher instanceFetcher;
+    private FormplayerRemoteInstanceFetcher instanceFetcher;
 
     private String smartLinkRedirect;
 
-    public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreFactory restoreFactory, RemoteInstanceFetcher instanceFetcher) throws Exception {
+    public MenuSession(SerializableMenuSession session,
+            FormplayerConfigEngine engine, CommCareSession commCareSession, RestoreFactory restoreFactory,
+            FormplayerRemoteInstanceFetcher instanceFetcher) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
-        this.engine = installService.configureApplication(session.getInstallReference(), session.isPreview()).first;
+        this.engine = engine;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
-                SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
-                engine.getPlatform(), sandbox, instanceFetcher);
+                commCareSession, engine.getPlatform(), sandbox, instanceFetcher);
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
     }
 
     public MenuSession(String username, String domain, String appId, String locale,
-                       InstallService installService, RestoreFactory restoreFactory, String host,
-                       boolean oneQuestionPerScreen, String asUser, boolean preview,
-                       RemoteInstanceFetcher instanceFetcher) throws Exception {
+            InstallService installService, RestoreFactory restoreFactory, String host,
+            boolean oneQuestionPerScreen, String asUser, boolean preview,
+            FormplayerRemoteInstanceFetcher instanceFetcher)
+            throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
@@ -100,19 +115,22 @@ public class MenuSession implements HereFunctionHandlerListener {
                 asUser,
                 preview
         );
-        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(resolvedInstallReference, preview);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(
+                resolvedInstallReference, preview);
         this.engine = install.first;
         if (install.second && !preview && !restoreFactory.getHasRestored()) {
             this.sandbox = restoreFactory.performTimedSync();
         }
         this.sandbox = restoreFactory.getSandbox();
-        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox, instanceFetcher);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
+                instanceFetcher);
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
-        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox, instanceFetcher);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
+                instanceFetcher);
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -120,20 +138,23 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     private void initializeBreadcrumbs() {
         this.breadcrumbs = new ArrayList<>();
-        this.breadcrumbs.add(SessionUtils.getAppTitle());
+        this.breadcrumbs.add(ScreenUtils.getAppTitle());
     }
 
     /**
-     * @param input           The user step input
-     * @param needsDetail     Whether a full entity screen is required for this request
-     *                        or if a list of references is sufficient
-     * @param inputValidated  Whether the input has been previously validated,
-     *                        allowing this step to skip validation
-     * @param allowAutoLaunch If this step is allowed to automatically launch an action,
-     *                        assuming it has an autolaunch action specified.
+     * @param input                 The user step input
+     * @param needsFullEntityScreen Whether a full entity screen is required for this request
+     *                              or if a list of references is sufficient
+     * @param inputValidated        Whether the input has been previously validated,
+     *                              allowing this step to skip validation
+     * @param allowAutoLaunch       If this step is allowed to automatically launch an action,
+     *                              assuming it has an autolaunch action specified.
+     * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean inputValidated, boolean allowAutoLaunch) throws CommCareSessionException {
-        Screen screen = getNextScreen(needsDetail);
+    public boolean handleInput(String input, boolean needsFullEntityScreen, boolean inputValidated,
+            boolean allowAutoLaunch, String[] selectedValues, boolean isDetailScreen)
+            throws CommCareSessionException {
+        Screen screen = getNextScreen(needsFullEntityScreen, isDetailScreen);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
             return false;
@@ -146,80 +167,76 @@ public class MenuSession implements HereFunctionHandlerListener {
                 addBreadcrumb = !autoLaunch;
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
-                    if (screen.shouldBeSkipped()) {
-                        return handleInput(input, true, inputValidated, allowAutoLaunch);
+                    // auto-launch takes preference over auto-select
+                    if (screen.shouldBeSkipped() && !autoLaunch &&
+                            entityScreen.autoSelectEntities(sessionWrapper)) {
+                        return handleInput(input, true, inputValidated, allowAutoLaunch, selectedValues,
+                                isDetailScreen);
                     }
-                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
                 } else {
-                    sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
+                    entityScreen.updateDatum(sessionWrapper, input);
                 }
             } else {
-                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
+            }
+
+            if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
+                    USE_SELECTED_VALUES)) {
+                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId());
             }
 
             if (addBreadcrumb) {
-                addTitle(input, screen);
+                breadcrumbs.add(screen.getBreadcrumb(input, sandbox, getSessionWrapper()));
             }
 
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
-                    " threw exception " + e.getMessage() + ". Please try reloading this application" +
+                    " threw exception " + e.getMessage() + ". Please try reloading this application"
+                    +
                     " and if the problem persists please report a bug.", e);
         }
     }
 
     /**
-     *
-     * @param screen The current screen that has been navigated to.
+     * @param screen          The current screen that has been navigated to.
      * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be.
-     * @throws CommCareSessionException
      * @return true if the session was advanced
+     * @throws CommCareSessionException
      */
-    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
+    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu)
+            throws CommCareSessionException {
         if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
             return false;
         }
         return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
     }
 
-    private void addTitle(String input, Screen previousScreen) {
-        if (previousScreen instanceof EntityScreen) {
-            try {
-                String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
-                if (caseName != null) {
-                    breadcrumbs.add(caseName);
-                    return;
-                }
-            } catch (NoSuchElementException e) {
-                // That's ok, just fallback quietly
-            }
-        }
-        breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
-    }
-
     /**
      * Get next screen for current request, based on current state of session,
      * with no performance optimization and autolaunching of actions not allowed.
      */
-    public Screen getNextScreen() throws CommCareSessionException {
-        return getNextScreen(true);
+    public Screen getNextScreen(boolean isDetailScreen) throws CommCareSessionException {
+        return getNextScreen(true, isDetailScreen);
     }
 
     /**
      * Get next screen for current request, based on current state of session,
      * with autolaunching of actions not allowed.
      *
-     * @param needsDetail Whether a full entity screen is required for this request
-     *                    or if a list of references is sufficient
+     * @param needsFullEntityScreen Whether a full entity screen is required for this request
+     *                              or if a list of references is sufficient
+     * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      */
     @Trace
-    public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
+    public Screen getNextScreen(boolean needsFullEntityScreen, boolean isDetailScreen)
+            throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
                 sessionWrapper.stepBack();
-                return getNextScreen();
+                return getNextScreen(isDetailScreen);
             }
             //XFORM TIME!
             return null;
@@ -227,17 +244,15 @@ public class MenuSession implements HereFunctionHandlerListener {
             MenuScreen menuScreen = new MenuScreen();
             menuScreen.init(sessionWrapper);
             return menuScreen;
-        } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
-            EntityScreen entityScreen = getEntityScreenForSession(needsDetail);
-            if (entityScreen.shouldBeSkipped()) {
-                return getNextScreen();
-            }
+        } else if (isEntitySelectionDatum(next)) {
+            EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, isDetailScreen);
             return entityScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
-            return getNextScreen();
+            return getNextScreen(isDetailScreen);
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen();
+            QueryScreen queryScreen = new FormplayerQueryScreen(
+                    this.instanceFetcher.getVirtualDataInstanceStorage());
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
@@ -255,7 +270,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen getEntityScreenForSession(boolean needsDetail) throws CommCareSessionException {
+    private EntityScreen getEntityScreenForSession(boolean needsFullEntityScreen, boolean isDetailScreen)
+            throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
         //This is only needed because with remote queries there can be nested datums with the same
@@ -264,7 +280,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
         String datumKey = datum.getDataId() + ", " + nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
-            EntityScreen entityScreen = createFreshEntityScreen(needsDetail);
+            EntityScreen entityScreen = createFreshEntityScreen(needsFullEntityScreen, datum, isDetailScreen);
             entityScreenCache.put(datumKey, entityScreen);
             return entityScreen;
         } else {
@@ -273,9 +289,15 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen createFreshEntityScreen(boolean needsDetail) throws CommCareSessionException {
-        EntityScreen entityScreen = new EntityScreen(false, needsDetail, sessionWrapper);
-        return entityScreen;
+    private EntityScreen createFreshEntityScreen(boolean needsFullEntityScreen,
+            EntityDatum datum, boolean isDetailScreen)
+            throws CommCareSessionException {
+        if (datum instanceof MultiSelectEntityDatum) {
+            return new MultiSelectEntityScreen(false, needsFullEntityScreen,
+                    sessionWrapper, instanceFetcher.getVirtualDataInstanceStorage(), isDetailScreen);
+        } else {
+            return new EntityScreen(false, needsFullEntityScreen, sessionWrapper, isDetailScreen);
+        }
     }
 
     private void computeDatum() {
@@ -291,9 +313,9 @@ public class MenuSession implements HereFunctionHandlerListener {
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
         if (datum instanceof FormIdDatum) {
             sessionWrapper.setXmlns(FunctionUtils.toString(form.eval(ec)));
-            sessionWrapper.setDatum("", "awful");
+            sessionWrapper.setEntityDatum("", "awful");
         } else {
-            sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
+            sessionWrapper.setEntityDatum(datum, FunctionUtils.toString(form.eval(ec)));
         }
     }
 
@@ -309,17 +331,25 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
-                                           FormplayerStorageFactory storageFactory,
-                                           CaseSearchHelper caseSearchHelper) throws Exception {
+            FormplayerStorageFactory storageFactory,
+            FormDefinitionService formDefinitionService) throws Exception {
         String formXmlns = sessionWrapper.getForm();
-        FormDef formDef = engine.loadFormByXmlns(formXmlns);
+        FormDef formDef = this.engine.loadFormByXmlns(formXmlns);
+        SerializableFormDefinition serializableFormDefinition = formDefinitionService.getOrCreateFormDefinition(
+                this.getAppId(),
+                formXmlns,
+                this.getAppVersion(),
+                formDef
+        );
         HashMap<String, String> sessionData = getSessionData();
-        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
-                sessionData, postUrl, session.getLocale(), session.getId(),
-                null, oneQuestionPerScreen,
-                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory,
-                false, null, new SessionFrame(sessionWrapper.getFrame()), caseSearchHelper);
+
+        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty(
+                "PostURL");
+        return new FormSession(sandbox, serializableFormDefinition, formDef, session.getUsername(),
+                session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
+                oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
+                storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
+                instanceFetcher);
     }
 
     public SessionWrapper getSessionWrapper() {

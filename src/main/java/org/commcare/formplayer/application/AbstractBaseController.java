@@ -15,6 +15,7 @@ import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 
@@ -28,6 +29,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected FormSessionService formSessionService;
+
+    @Autowired
+    private FormDefinitionService formDefinitionService;
 
     @Autowired
     protected MenuSessionService menuSessionService;
@@ -55,6 +59,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     private NotificationLogger notificationLogger;
+
+    @Autowired
+    private VirtualDataInstanceService virtualDataInstanceService;
 
 
     void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
@@ -87,22 +94,36 @@ public abstract class AbstractBaseController {
 
     @Nullable
     protected CommCareSession getCommCareSession(String menuSessionId) throws Exception {
-        if (menuSessionId == null) {
+        if (menuSessionId == null || menuSessionId.trim().equals("")) {
             return null;
         }
 
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(menuSessionId);
-        FormplayerConfigEngine engine = installService.configureApplication(serializableMenuSession.getInstallReference(), serializableMenuSession.isPreview()).first;
+        FormplayerConfigEngine engine = installService.configureApplication(
+                serializableMenuSession.getInstallReference(),
+                serializableMenuSession.isPreview()).first;
         return SessionSerializer.deserialize(engine.getPlatform(), serializableMenuSession.getCommcareSession());
     }
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
+        CommCareSession commCareSession = getCommCareSession(serializableFormSession.getMenuSessionId());
+        return getFormSession(serializableFormSession, commCareSession);
+    }
+
+    @NotNull
+    protected FormSession getFormSession(SerializableFormSession serializableFormSession,
+            @Nullable CommCareSession commCareSession) throws Exception {
+        FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
+                runnerService.getCaseSearchHelper(),
+                virtualDataInstanceService);
         return new FormSession(serializableFormSession,
                 restoreFactory,
                 formSendCalloutHandler,
                 storageFactory,
-                getCommCareSession(serializableFormSession.getMenuSessionId()),
-                runnerService.getCaseSearchHelper());
+                commCareSession,
+                formplayerRemoteInstanceFetcher,
+                formDefinitionService
+        );
     }
 
 }

@@ -12,10 +12,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
+import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
+import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.formplayer.services.HqUserDetailsService;
+import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.web.client.WebClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 
-@RestClientTest(components = {HqUserDetailsService.class})
+@RestClientTest(components = {HqUserDetailsService.class, WebClient.class})
 @AutoConfigureWebClient(registerRestTemplate = true)
 @TestPropertySource(properties = {
         "commcarehq.host=",
@@ -41,7 +46,22 @@ public class HqUserDetailsServiceTests {
 
     // mock this so we don't need to configure a DB
     @MockBean
+    public FormDefinitionRepo formDefinitionRepo;
+
+    // mock this so we don't need to configure a DB
+    @MockBean
     public MenuSessionRepo menuSessionRepo;
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    public VirtualDataInstanceRepo virtualDataInstanceRepo;
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    public MediaMetaDataRepo mediaMetaDataRepo;
+
+    @MockBean
+    public RestoreFactory RestoreFactory;
 
     @Autowired
     private ObjectMapper objectMapper;

@@ -17,6 +17,7 @@ import org.commcare.formplayer.util.NotificationLogger;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.JSONReporter;
+import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
@@ -150,8 +151,7 @@ public class UtilController {
             parser.attachReporter(reporter);
             parser.parse();
             reporter.setPassed();
-        } catch (XFormParseException xfpe) {
-            log.error("Validate Form threw exception", xfpe);
+        } catch (XFormParseException | XPathException xfpe) {
             reporter.setFailed(xfpe);
         } catch (Exception e) {
             log.error("Validate Form threw exception", e);

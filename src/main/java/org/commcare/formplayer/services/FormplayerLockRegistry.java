@@ -80,15 +80,15 @@ public class FormplayerLockRegistry implements LockRegistry {
                 return lock;
             }
             if (lock.isExpired()) {
-                evict(lock, lockKey);
+                evict(lock);
             }
             return lock;
         }
     }
 
-    private void evict(FormplayerReentrantLock lock, Object lockKey) {
+    private void evict(FormplayerReentrantLock lock) {
         Thread ownerThread = lock.getOwner();
-        log.error(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lockKey));
+        log.warn(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lock.lockKey));
         ownerThread.interrupt();
         try {
             ownerThread.join(5000);
@@ -96,13 +96,18 @@ public class FormplayerLockRegistry implements LockRegistry {
             throw new InterruptedRuntimeException(e);
         }
         if (ownerThread.isAlive()) {
-            log.error(String.format(
-                "Unable to evict thread %s owning lock with lock key %s. expired=%s, lockTime=%s(s)",
-                    ownerThread, lockKey, lock.isExpired(), lock.timeLocked()));
-            Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
-            e.setStackTrace(ownerThread.getStackTrace());
-            FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
+            logLockError(lock, String.format(
+                    "Unable to evict thread %s owning lock with lock key %s. expired=%s, lockTime=%s(s)",
+                    ownerThread, lock.lockKey, lock.isExpired(), lock.timeLocked()));
         }
+    }
+
+    public void logLockError(FormplayerReentrantLock lock, String logMessage) {
+        Thread ownerThread = lock.getOwner();
+        log.warn(logMessage);
+        Exception e = new Exception("Unable to get lock, owner thread has stack trace");
+        e.setStackTrace(ownerThread.getStackTrace());
+        FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
     }
 
     /**
@@ -117,7 +122,7 @@ public class FormplayerLockRegistry implements LockRegistry {
             if (!existingLock.isLocked()) {
                 return false;
             } else {
-                evict(existingLock, key);
+                evict(existingLock);
                 return true;
             }
         }

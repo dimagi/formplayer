@@ -1,9 +1,9 @@
 package org.commcare.formplayer.services;
 
 import com.google.common.collect.Multimap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -17,10 +17,9 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayInputStream;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 
 @CacheConfig(cacheNames = "case_search")
 @Component
-public class CaseSearchHelper implements RemoteInstanceFetcher {
+public class CaseSearchHelper {
 
     @Autowired
     CacheManager cacheManager;
@@ -42,34 +41,33 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    @Override
-    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
+    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source, boolean skipCache)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
 
         Cache cache = cacheManager.getCache("case_search");
-        URI uri = null;
-        try {
-            uri = new URI(source.getSourceUri());
-        } catch (URISyntaxException e) {
-            throw new InvalidStructureException("Invalid URI in source: " + uri);
+        String cacheKey = getCacheKey(source.getSourceUri(), requestData);
+        TreeElement cachedRoot = null;
+        if (skipCache) {
+            log.info("Skipping cache check for case search results");
+        } else {
+            cachedRoot = cache.get(cacheKey, TreeElement.class);
         }
-        String cacheKey = getCacheKey(uri, requestData);
-        TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
-            log.info(String.format("Using cached case search results for %s", uri));
+            log.info(String.format("Using cached case search results for %s", url));
             // Deep copy to avoid concurrency issues
-            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
+            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot),
+                    TreeElement.class);
             return copyOfRoot;
         }
 
-        log.info(String.format("Making case search request to url %s with data %s",  url, requestData));
         String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {
-            TreeElement root = ExternalDataInstance.parseExternalTree(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
+            TreeElement root = ExternalDataInstance.parseExternalTree(
+                    new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
             if (root != null) {
                 cache.put(cacheKey, root);
             }
@@ -79,27 +77,43 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
         throw new IOException("No response from server for case search query");
     }
 
-    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url, Multimap<String, String> requestData)
+    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url,
+            Multimap<String, String> requestData, boolean skipCache)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
-        ExternalDataInstanceSource source = new ExternalDataInstanceSource(instanceId, url.toString(), requestData, useCaseTemplate);
+        ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemote(
+                instanceId, null, useCaseTemplate, url.toString(), requestData);
 
-        TreeElement root = getExternalRoot(instanceId, source);
+        TreeElement root = getExternalRoot(instanceId, source, skipCache);
         source.init(root);
 
-        return ExternalDataInstance.buildFromRemote(
-                instanceId,
-                source);
+        return source.toInstance();
     }
 
-    private String getCacheKey(URI url, Multimap<String, String> queryParams) {
+    public void clearCacheForInstanceSource(ExternalDataInstanceSource source) throws InvalidStructureException {
+        if (source.getSourceUri() == null) {
+            return;
+        }
+        String cacheKey = getCacheKey(source.getSourceUri(), source.getRequestData());
+        Cache cache = cacheManager.getCache("case_search");
+        cache.evict(cacheKey);
+    }
+
+    private String getCacheKey(String url, Multimap<String, String> queryParams) throws InvalidStructureException {
+        URI uri = null;
+        try {
+            uri = new URI(url);
+        } catch (URISyntaxException e) {
+            throw new InvalidStructureException("Invalid URI in source: " + url);
+        }
+
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());
         if (restoreFactory.getAsUsername() != null) {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
-        builder.append("_").append(url);
+        builder.append("_").append(uri);
         for (String key : queryParams.keySet()) {
             builder.append("_").append(key);
             for (String value : queryParams.get(key)) {

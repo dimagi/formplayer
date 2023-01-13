@@ -1,11 +1,9 @@
 package org.commcare.formplayer.beans.menus;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
+import org.commcare.suite.model.QueryPromptCondition;
 import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.utils.ItemSetUtils;
 import org.javarosa.core.util.OrderedHashtable;
@@ -21,14 +19,22 @@ import java.util.Hashtable;
 public class QueryResponseBean extends MenuBean {
 
     private DisplayElement[] displays;
-    private String queryKey;
     private final String type = "query";
+    private String description;
 
     QueryResponseBean() {
     }
 
     public DisplayElement[] getDisplays() {
         return displays;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     private void setDisplays(DisplayElement[] displays) {
@@ -38,6 +44,8 @@ public class QueryResponseBean extends MenuBean {
     public QueryResponseBean(QueryScreen queryScreen, SessionWrapper session) {
         OrderedHashtable<String, QueryPrompt> queryPromptMap = queryScreen.getUserInputDisplays();
         Hashtable<String, String> currentAnswers = queryScreen.getCurrentAnswers();
+        Hashtable<String, String> errors = queryScreen.getErrors();
+        Hashtable<String, Boolean> requiredPrompts = queryScreen.getRequiredPrompts();
         displays = new DisplayElement[queryPromptMap.size()];
         int count = 0;
         for (String key : Collections.list(queryPromptMap.keys())) {
@@ -69,6 +77,8 @@ public class QueryResponseBean extends MenuBean {
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
+            String requiredMessage = queryPromptItem.getRequiredMessage(session.getEvaluationContext());
+            boolean isRequired = requiredPrompts.containsKey(key) && requiredPrompts.get(key);
             displays[count] = new DisplayElement(queryPromptItem.getDisplay(),
                     session.getEvaluationContext(),
                     key,
@@ -77,30 +87,26 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.getHidden(),
                     currentAnswer,
                     choiceLabels,
-                    queryPromptItem.isAllowBlankValue());
+                    queryPromptItem.isAllowBlankValue(),
+                    isRequired,
+                    requiredMessage,
+                    errors.get(key)
+                    );
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
-        this.queryKey = session.getCommand();
+        setDescription(queryScreen.getDescriptionText());
+        setQueryKey(session.getCommand());
     }
 
     @Override
     public String toString() {
         return "QueryResponseBean [displays=" + Arrays.toString(displays)
+                + "description=" + getDescription()
                 + "MenuBean= " + super.toString() + "]";
     }
 
     public String getType() {
         return type;
-    }
-
-    @JsonGetter(value = "queryKey")
-    public String getQueryKey() {
-        return queryKey;
-    }
-
-    @JsonSetter(value = "queryKey")
-    public void setQueryKey(String queryKey) {
-        this.queryKey = queryKey;
     }
 }

@@ -17,7 +17,6 @@ import org.springframework.test.context.ContextConfiguration;
  * expansion, selects from itemsets, conditional selects
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class GroupTests extends BaseTestClass {
 
     @BeforeEach

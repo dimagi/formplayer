@@ -581,6 +581,11 @@ public class SqlStorage<T extends Persistable>
         }
     }
 
+    @Override
+    public Class<?> getPrototype() {
+        return prototype;
+    }
+
 
     /**
      * Retrieves a set of the models in storage based on a list of values matching one if the

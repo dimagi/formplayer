@@ -1,5 +1,6 @@
 package org.commcare.formplayer.screens;
 
+import org.commcare.core.interfaces.VirtualDataInstanceStorage;
 import org.commcare.util.screen.QueryScreen;
 
 /**
@@ -7,8 +8,8 @@ import org.commcare.util.screen.QueryScreen;
  */
 public class FormplayerQueryScreen extends QueryScreen {
 
-    public FormplayerQueryScreen() {
-        super(null, null, null);
+    public FormplayerQueryScreen(VirtualDataInstanceStorage instanceStorage) {
+        super(null, null, null, instanceStorage, null);
     }
 
 }

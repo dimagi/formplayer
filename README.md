@@ -26,6 +26,12 @@ Download submodule dependencies
 
     $ git submodule update --init --recursive
 
+Mac users may need to comment out references to micrometer in the following files in order to run formplayer:
+
+    build.gradle
+
+    src/main/java/org/commcare/formplayer/application/WebAppContext.java
+
 To make properties file:
 
     $ cp config/application.example.properties config/application.properties  # Update properties as necessary (the defaults are fine for running locally)
@@ -58,6 +64,9 @@ To test:
 
     # to run in continuous mode
     $ ./gradlew test -t
+    
+    # to run tests from libs/commcare
+    $ ./gradlew :commcare:test --tests org.commcare.cases.test.CaseXPathQueryTest
 
 When building on Linux it is sometimes necessary to run:
 

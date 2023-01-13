@@ -143,6 +143,9 @@ public class LockAspect {
             return lock;
         } else {
             log.info(String.format("Unable to obtain lock for username %s", username));
+            userLockRegistry.logLockError(lock, String.format(
+                    "Unable to obtain lock with lock key %s. expired=%s, lockTime=%s(s)",
+                    username, lock.isExpired(), lock.timeLocked()));
             throw new LockError();
         }
     }

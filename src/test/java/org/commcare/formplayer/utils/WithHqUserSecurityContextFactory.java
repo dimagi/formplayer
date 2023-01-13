@@ -6,25 +6,21 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * A WithSecurityContextFactory that works with {@link WithHqUser}.
  *
  * @see WithHqUser
  */
-final class WithHqUserSecurityContextFactory implements WithSecurityContextFactory<WithHqUser> {
+public final class WithHqUserSecurityContextFactory implements WithSecurityContextFactory<WithHqUser> {
 
     @Override
     public SecurityContext createSecurityContext(WithHqUser withUser) {
-        String username = StringUtils.hasLength(withUser.username()) ? withUser.username()
-                : withUser.value();
-        Assert.notNull(username, () -> withUser
-                + " cannot have null username on both username and value properties");
-        HqUserDetailsBean principal = new HqUserDetailsBean(withUser.domain(), withUser.domains(),
-                username,
-                withUser.isSuperUser(), withUser.enabledToggles(), withUser.enabledPreviews());
+        return createSecurityContext(new HqUserDetails(withUser));
+    }
+
+    public static SecurityContext createSecurityContext(HqUserDetails details) {
+        HqUserDetailsBean principal = details.toBean();
         Authentication authentication = new PreAuthenticatedAuthenticationToken(principal,
                 "sessionId", principal.getAuthorities());
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -32,4 +28,8 @@ final class WithHqUserSecurityContextFactory implements WithSecurityContextFacto
         return context;
     }
 
+    public static void setSecurityContext(HqUserDetails details) {
+        SecurityContext context = createSecurityContext(details);
+        SecurityContextHolder.setContext(context);
+    }
 }

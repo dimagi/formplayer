@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.commcare.formplayer.application.UtilController;
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
@@ -38,7 +39,8 @@ import java.nio.charset.Charset;
         UtilController.class,
         TestContext.class,
         WebSecurityConfig.class,
-        MultipleReadRequestWrappingFilter.class
+        MultipleReadRequestWrappingFilter.class,
+        CacheConfiguration.class
 })
 public class HmacAuthTests {
 
@@ -65,9 +67,9 @@ public class HmacAuthTests {
         MockHttpServletRequestBuilder builder = getRelaxedEndpointRequestBuilder()
                 .header(Constants.HMAC_HEADER, hmac);
         this.testEndpoint(builder,
+                status().isOk(),
                 jsonPath("$.validated", is(true)),
-                jsonPath("$.problems", hasSize(0)),
-                status().isOk()
+                jsonPath("$.problems", hasSize(0))
         );
     }
 

@@ -14,8 +14,10 @@ import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
@@ -96,7 +98,8 @@ public class FormSession {
             FormSendCalloutHandler formSendCalloutHandler,
             FormplayerStorageFactory storageFactory,
             @Nullable CommCareSession commCareSession,
-            RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RemoteInstanceFetcher instanceFetcher,
+            FormDefinitionService formDefinitionService) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -105,9 +108,11 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
-        this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
-        loadInstanceXml(formDef, session.getInstanceXml());
-        formDef.setSendCalloutHandler(formSendCalloutHandler);
+
+        this.formDef = formDefinitionService.getFormDef(this.session);
+
+        loadInstanceXml(this.formDef, session.getInstanceXml());
+        this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
 
         if (session.isOneQuestionPerScreen() || session.isInPromptMode()) {
@@ -126,6 +131,7 @@ public class FormSession {
     }
 
     public FormSession(UserSqlSandbox sandbox,
+            SerializableFormDefinition serializableFormDefinition,
             FormDef formDef,
             String username,
             String domain,
@@ -144,14 +150,14 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher) throws Exception {
-
+        // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
-        session = new SerializableFormSession(
+        this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
-        session.setFormXml(FormDefStringSerializer.serialize(this.formDef));
+        this.session.setFormDefinition(serializableFormDefinition);
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
@@ -235,8 +241,8 @@ public class FormSession {
         try {
             formEntryController.setLanguage(session.getInitLang());
         } catch (UnregisteredLocaleException e) {
-            log.error("Couldn't find locale " + session.getInitLang()
-                    + " for user " + session.getUsername());
+            log.info("Couldn't find form locale '" + session.getInitLang()
+                    + "' for user " + session.getUsername());
         }
     }
 
@@ -629,5 +635,9 @@ public class FormSession {
 
     public SerializableFormSession getSerializableSession() {
         return session;
+    }
+
+    public FormDef getFormDef() {
+        return formDef;
     }
 }

@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FunctionHandler;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,9 @@ public class FormSessionRepoTest {
 
     @Autowired
     FormSessionRepo formSessionRepo;
+
+    @Autowired
+    FormDefinitionRepo formDefinitionRepo;
 
     @Autowired
     private EntityManager entityManager;
@@ -198,6 +202,30 @@ public class FormSessionRepoTest {
         assertThat(remainingIds.size()).isEqualTo(3);
     }
 
+    @Test
+    public void testFormDefinitionRelationship() {
+        SerializableFormDefinition formDef = new SerializableFormDefinition(
+                "appId",
+                "formXmlns",
+                "formVersion",
+                "formXml"
+        );
+        this.formDefinitionRepo.save(formDef);
+        SerializableFormSession session = getSession();
+        session.setFormDefinition(formDef);
+        this.formSessionRepo.save(session);
+
+        SerializableFormSession refetchedSession = this.formSessionRepo.getById(session.getId());
+        SerializableFormDefinition formDefOnSession = refetchedSession.getFormDefinition();
+
+        assertThat(formDefOnSession).isNotNull();
+        assertThat(formDefOnSession.getDateCreated()).isEqualTo(formDef.getDateCreated());
+        assertThat(formDefOnSession.getAppId()).isEqualTo("appId");
+        assertThat(formDefOnSession.getFormXmlns()).isEqualTo("formXmlns");
+        assertThat(formDefOnSession.getFormVersion()).isEqualTo("formVersion");
+        assertThat(formDefOnSession.getSerializedFormDef()).isEqualTo("formXml");
+    }
+
     private SerializableFormSession getSession() {
         return getSession("domain", "More Momo", null);
     }
@@ -216,7 +244,6 @@ public class FormSessionRepoTest {
                 ImmutableMap.of("count", functionHandlers)
         );
         session.setInstanceXml("xml");
-        session.setFormXml("form xml");
         return session;
     }
 }

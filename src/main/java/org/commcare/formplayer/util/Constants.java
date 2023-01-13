@@ -87,6 +87,9 @@ public class Constants {
     public static final String POSTGRES_AUTH_TOKEN_TABLE_NAME = "authtoken_token";
     public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
+    public static final String POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME = "virtual_data_instance";
+
+    public static final String POSTGRES_MEDIA_META_DATA_TABLE_NAME = "media_meta_data";
 
     public static final String SESSION_DETAILS_VIEW = "/hq/admin/session_details/";
 
@@ -146,6 +149,7 @@ public class Constants {
         public static final String PROCESS_ANSWER = "process_answer";
         public static final String UPDATE_SESSION = "update_session";
         public static final String COMPILE_RESPONSE = "compile_response";
+        public static final String BUILD_RESTORE_URL = "build_restore_url";
     }
 
     // Requests
@@ -160,6 +164,9 @@ public class Constants {
     public static final String DATADOG_ERRORS_LOCK = "errors.lock";
     public static final String DATADOG_ERRORS_NOTIFICATIONS = "errors.notifications";
 
+    // Cache Names
+    public static final String VIRTUAL_DATA_INSTANCES_CACHE = "virtual_data_instances";
+
     // End Datadog metrics
 
     public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
@@ -169,6 +176,7 @@ public class Constants {
 
     public static final String TOGGLE_DETAILED_TAGGING = "DETAILED_TAGGING";
     public static final String TOGGLE_SESSION_ENDPOINTS = "SESSION_ENDPOINTS";
+    public static final String TOGGLE_INCLUDE_STATE_HASH = "FORMPLAYER_INCLUDE_STATE_HASH";
 
     public static final String AUTHORITY_COMMCARE = "COMMCARE";
 }
