@@ -16,7 +16,7 @@ import java.nio.file.Paths
 /**
  * Supporting methods to process and save media files on the filesystem
  */
-class MediaHandler(val file: MultipartFile) {
+class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaDataService) {
 
     /**
      * Saves file in the given parent directory
@@ -39,7 +39,6 @@ class MediaHandler(val file: MultipartFile) {
         } catch (e: IOException) {
             throw IOException("Could not copy file to destination due to " + e.message, e)
         }
-        val mediaMetaDataService = MediaMetaDataService()
         val mediaMetaData = MediaMetadataRecord(
             fileId,
             filePath.toString(),
@@ -80,7 +79,6 @@ class MediaHandler(val file: MultipartFile) {
 
         if(deleted) {
             try {
-                val mediaMetaDataService = MediaMetaDataService()
                 mediaMetaDataService.deleteMetaDataById(fileId)
             } catch (e: Exception) {
                 // ignore, we don't want to crash even if delete fails

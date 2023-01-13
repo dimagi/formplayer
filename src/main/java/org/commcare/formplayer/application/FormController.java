@@ -27,6 +27,7 @@ import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.MediaMetaDataService;
 import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
@@ -66,29 +67,58 @@ import io.sentry.Sentry;
 @EnableAutoConfiguration
 public class FormController extends AbstractBaseController {
 
+    private final Log log = LogFactory.getLog(FormController.class);
+    private final ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private MediaMetaDataService mediaMetaDataService;
     @Autowired
     private SubmitService submitService;
-
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
-
     @Autowired
     private FormplayerStorageFactory storageFactory;
-
     @Autowired
     private RedisTemplate redisVolatilityDict;
-
     @Autowired
     private FormplayerDatadog datadog;
-
     @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
-
     @Value("${commcarehq.host}")
     private String host;
 
-    private final Log log = LogFactory.getLog(FormController.class);
-    private final ObjectMapper mapper = new ObjectMapper();
+    // Iterate over all answers and attempt to save them to check for validity.
+    public static HashMap<String, ErrorBean> validateAnswers(FormEntryController formEntryController,
+            FormEntryModel formEntryModel,
+            @Nullable Map<String, Object> answers,
+            boolean skipValidation) {
+        HashMap<String, ErrorBean> errors = new HashMap<>();
+        if (answers != null) {
+            for (String key : answers.keySet()) {
+                int questionType = JsonActionUtils.getQuestionType(formEntryModel, key, formEntryModel.getForm());
+                if (!(questionType == FormEntryController.EVENT_QUESTION)) {
+                    continue;
+                }
+                String answer = answers.get(key) == null ? null : answers.get(key).toString();
+                JSONObject answerResult =
+                        JsonActionUtils.questionAnswerToJson(formEntryController,
+                                formEntryModel,
+                                answer,
+                                key,
+                                false,
+                                null,
+                                skipValidation,
+                                false);
+                if (!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(
+                        Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
+                    ErrorBean error = new ErrorBean();
+                    error.setStatus(answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).toString());
+                    error.setType(answerResult.getString(ApiConstants.ERROR_TYPE_KEY));
+                    errors.put(key, error);
+                }
+            }
+        }
+        return errors;
+    }
 
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
@@ -166,7 +196,8 @@ public class FormController extends AbstractBaseController {
         if (file != null) {
             fileId = categoryTimingHelper.timed(
                     Constants.TimingCategories.PROCESS_MEDIA,
-                    () -> formEntrySession.saveMediaAnswer(file, answerQuestionBean.getFormIndex(), mediaDirPath)
+                    () -> formEntrySession.saveMediaAnswer(file, answerQuestionBean.getFormIndex(), mediaDirPath,
+                            mediaMetaDataService)
             );
         }
 
@@ -201,40 +232,6 @@ public class FormController extends AbstractBaseController {
         );
 
         return responseBean;
-    }
-
-    // Iterate over all answers and attempt to save them to check for validity.
-    public static HashMap<String, ErrorBean> validateAnswers(FormEntryController formEntryController,
-            FormEntryModel formEntryModel,
-            @Nullable Map<String, Object> answers,
-            boolean skipValidation) {
-        HashMap<String, ErrorBean> errors = new HashMap<>();
-        if (answers != null) {
-            for (String key : answers.keySet()) {
-                int questionType = JsonActionUtils.getQuestionType(formEntryModel, key, formEntryModel.getForm());
-                if (!(questionType == FormEntryController.EVENT_QUESTION)) {
-                    continue;
-                }
-                String answer = answers.get(key) == null ? null : answers.get(key).toString();
-                JSONObject answerResult =
-                        JsonActionUtils.questionAnswerToJson(formEntryController,
-                                formEntryModel,
-                                answer,
-                                key,
-                                false,
-                                null,
-                                skipValidation,
-                                false);
-                if (!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(
-                        Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
-                    ErrorBean error = new ErrorBean();
-                    error.setStatus(answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).toString());
-                    error.setType(answerResult.getString(ApiConstants.ERROR_TYPE_KEY));
-                    errors.put(key, error);
-                }
-            }
-        }
-        return errors;
     }
 
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.POST)

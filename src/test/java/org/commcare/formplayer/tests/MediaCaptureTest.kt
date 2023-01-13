@@ -65,7 +65,7 @@ class MediaCaptureTest {
     private lateinit var formSessionService: FormSessionService
 
     @Autowired
-    private lateinit var mediaMetaDataService:  MediaMetaDataService
+    private lateinit var mediaMetaDataService: MediaMetaDataService
 
     companion object {
         const val USERNAME = "test"
@@ -100,7 +100,10 @@ class MediaCaptureTest {
         var expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
         val originalSavedFile = expectedFilePath.toFile()
         assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
-
+        // check that metadata was created and values match expected
+        val metadata = mediaMetaDataService.findByFormSessionId(formResponse.session_id)
+        assertEquals(metadata.filePath, expectedFilePath.toString())
+        assertEquals(metadata.formSession.id, formResponse.session_id)
         // upload an invalid file and check the old file remains as answer
         assertThrows<java.lang.Exception> {
             saveImage(formResponse, "media/invalid_extension.jppg", "invalid_extension.jppg")

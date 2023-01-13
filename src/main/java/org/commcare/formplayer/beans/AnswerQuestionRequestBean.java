@@ -23,6 +23,9 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     @Nullable
     private Map<String, Object> answersToValidate;
 
+    @Nullable
+    public String metadataId;
+
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionRequestBean() {
     }
