@@ -22,7 +22,10 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
      * Saves file in the given parent directory
      */
     fun saveFile(
-        parentDirPath: Path, session: SerializableFormSession, username: String, asUser: String?,
+        parentDirPath: Path,
+        session: SerializableFormSession,
+        username: String,
+        asUser: String?,
         domain: String, appId: String
     ): String {
         validateFile()

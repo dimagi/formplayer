@@ -10,7 +10,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.stubbing.Answer
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import java.util.*
 
 /**
  * Junit extension that configures the mock MediaMetaDataService
@@ -80,7 +79,6 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
                 Answer { invocation ->
                     val key = invocation.arguments[0] as String
                     metadataMap.remove(key)
-                    val currentMap = metadataMap
                 }
 
             )
