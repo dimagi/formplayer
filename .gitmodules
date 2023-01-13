@@ -1,3 +1,4 @@
 [submodule "libs/commcare"]
 	path = libs/commcare
-	url = https://github.com/dimagi/commcare.git
+	url = https://github.com/dimagi/commcare-core.git
+	branch = formplayer
