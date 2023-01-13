@@ -21,8 +21,10 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
     /**
      * Saves file in the given parent directory
      */
-    fun saveFile(parentDirPath: Path, session: SerializableFormSession, username: String, asUser: String?,
-                 domain: String, appId: String): String {
+    fun saveFile(
+        parentDirPath: Path, session: SerializableFormSession, username: String, asUser: String?,
+        domain: String, appId: String
+    ): String {
         validateFile()
         val fileId = PropertyUtils.genUUID()
         val parent = parentDirPath.toFile()
@@ -32,7 +34,6 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         fileExtension?.let { fileIdWithExt = "$fileId.$it" }
         val filePath = getMediaFilePath(parentDirPath, fileIdWithExt)
         val destinationFile = filePath.toFile()
-
 
         try {
             FileUtils.copyFile(file.inputStream, destinationFile)
@@ -77,7 +78,7 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         val currentMedia = getMediaFilePath(parentDirPath, fileId).toFile()
         val deleted = currentMedia.delete()
 
-        if(deleted) {
+        if (deleted) {
             try {
                 mediaMetaDataService.deleteMetaDataById(fileId)
             } catch (e: Exception) {

@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface MediaMetaDataRepo extends JpaRepository<MediaMetadataRecord, String> {
 
     Optional<MediaMetadataRecord> findByFormSessionId(String formSessionId);
+
     Optional<MediaMetadataRecord> findByFilePath(String filePath);
 
     @Modifying

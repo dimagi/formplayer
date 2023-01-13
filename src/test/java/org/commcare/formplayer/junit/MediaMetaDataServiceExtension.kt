@@ -84,6 +84,5 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
                 }
 
             )
-
     }
 }
