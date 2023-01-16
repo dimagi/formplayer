@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import org.commcare.formplayer.exceptions.MediaMetaDataNotFoundException;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,11 @@ public class MediaMetaDataService {
     }
 
     public MediaMetadataRecord findById(String id) {
-        return mediaMetaDataRepo.findById(id).get();
+        try {
+            return mediaMetaDataRepo.findById(id).get();
+        } catch (MediaMetaDataNotFoundException e) {
+            throw e;
+        }
     }
 
     public void saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {

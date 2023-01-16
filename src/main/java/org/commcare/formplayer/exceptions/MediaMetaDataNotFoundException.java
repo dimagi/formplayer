@@ -1,7 +1,7 @@
 package org.commcare.formplayer.exceptions;
 
 /**
- * Throw whenever a user tries to access a media metadata that does not exist.
+ * Throw whenever a user tries to access a media metadata record that does not exist.
  */
 public class MediaMetaDataNotFoundException extends RuntimeException {
     public MediaMetaDataNotFoundException(String val) {
