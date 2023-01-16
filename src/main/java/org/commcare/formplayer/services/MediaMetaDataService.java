@@ -23,14 +23,6 @@ public class MediaMetaDataService {
         return mediaMetaDataRepo.findById(id).get();
     }
 
-    public MediaMetadataRecord findByFormSessionId(String sessionId) {
-        return mediaMetaDataRepo.findByFormSessionId(sessionId).get();
-    }
-
-    public MediaMetadataRecord findByFilePath(String filePath) {
-        return mediaMetaDataRepo.findByFilePath(filePath).get();
-    }
-
     public void saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
         mediaMetaDataRepo.save(mediaMetadataRecord);
     }

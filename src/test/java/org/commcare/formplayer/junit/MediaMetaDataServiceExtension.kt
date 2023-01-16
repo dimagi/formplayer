@@ -39,38 +39,10 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
             .thenAnswer(
                 Answer { invocation ->
                     val id = invocation.arguments[0] as String
-                    for (entry in metadataMap.entries) {
-                        if (entry.value.formSession.id == id) {
-                            return@Answer entry.value
-                        }
+                    if (metadataMap.containsKey(id)) {
+                        return@Answer metadataMap[id]
                     }
                     throw MediaMetaDataNotFoundException(id)
-                }
-            )
-
-        Mockito.`when`(mediaMetaDataService.findByFormSessionId(ArgumentMatchers.anyString()))
-            .thenAnswer(
-                Answer { invocation ->
-                    val sessionId = invocation.arguments[0] as String
-                    for (entry in metadataMap.entries) {
-                        if (entry.value.formSession.id == sessionId) {
-                            return@Answer entry.value
-                        }
-                    }
-                    throw MediaMetaDataNotFoundException(sessionId)
-                }
-            )
-
-        Mockito.`when`(mediaMetaDataService.findByFilePath(ArgumentMatchers.anyString()))
-            .thenAnswer(
-                Answer { invocation ->
-                    val filePath = invocation.arguments[0] as String
-                    for (entry in metadataMap.entries) {
-                        if (entry.value.filePath == filePath) {
-                            return@Answer entry.value
-                        }
-                    }
-                    throw MediaMetaDataNotFoundException(filePath)
                 }
             )
 

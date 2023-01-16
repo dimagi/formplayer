@@ -45,7 +45,7 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
             throw IOException("Could not copy file to destination due to " + e.message, e)
         }
         val mediaMetaData = MediaMetadataRecord(
-            fileIdWithExt,
+            fileId,
             filePath.toString(),
             session,
             fileExtension,
@@ -81,10 +81,10 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
     fun cleanMedia(parentDirPath: Path, fileId: String): Boolean {
         val currentMedia = getMediaFilePath(parentDirPath, fileId).toFile()
         val deleted = currentMedia.delete()
-
+        val metadataId = fileId.substring(0, fileId.indexOf("."))
         if (deleted) {
             try {
-                mediaMetaDataService.deleteMetaDataById(fileId)
+                mediaMetaDataService.deleteMetaDataById(metadataId)
             } catch (e: Exception) {
                 // ignore, we don't want to crash even if delete fails
             }

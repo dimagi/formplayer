@@ -103,7 +103,9 @@ class MediaCaptureTest {
         val originalSavedFile = expectedFilePath.toFile()
         assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
         // check that metadata was created and values match expected
-        val originalMetadata = mediaMetaDataService.findByFormSessionId(formResponse.session_id)
+        val fileName = expectedFilePath.fileName.toString()
+        val metadataId = fileName.substring(0, fileName.indexOf("."))
+        val originalMetadata = mediaMetaDataService.findById(metadataId)
         assertEquals(originalMetadata.filePath, expectedFilePath.toString())
         assertEquals(originalMetadata.formSession.id, formResponse.session_id)
         // upload an invalid file and check the old file remains as answer
@@ -118,11 +120,13 @@ class MediaCaptureTest {
         expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
         assertTrue("Could not find saved file on the filesystem", expectedFilePath.toFile().exists())
         // check that metadata was replaced and values match expected
+        val newFileName = expectedFilePath.fileName.toString()
+        val newMetadataId = newFileName.substring(0, newFileName.indexOf("."))
         val originalMetadataId = originalMetadata.id
         assertThrows<MediaMetaDataNotFoundException> {
             mediaMetaDataService.findById(originalMetadataId)
         }
-        val newMetadata = mediaMetaDataService.findByFilePath(expectedFilePath.toString())
+        val newMetadata = mediaMetaDataService.findById(newMetadataId)
         assertNotEquals(newMetadata.id, originalMetadataId)
         assertEquals(newMetadata.filePath, expectedFilePath.toString())
     }
