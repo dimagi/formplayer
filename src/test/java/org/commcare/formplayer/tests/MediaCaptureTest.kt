@@ -13,6 +13,7 @@ import org.commcare.formplayer.junit.StorageFactoryExtension
 import org.commcare.formplayer.junit.request.AnswerMediaQuestionRequest
 import org.commcare.formplayer.junit.request.NewFormRequest
 import org.commcare.formplayer.junit.request.SubmitFormRequest
+import org.commcare.formplayer.objects.MediaMetadataRecord
 import org.commcare.formplayer.services.FormSessionService
 import org.commcare.formplayer.services.MediaMetaDataService
 import org.commcare.formplayer.services.SubmitService
@@ -46,6 +47,7 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.fileSize
 
 @WebMvcTest
 @ContextConfiguration(classes = [TestContext::class, CacheConfiguration::class])
@@ -106,8 +108,18 @@ class MediaCaptureTest {
         val fileName = expectedFilePath.fileName.toString()
         val metadataId = fileName.substring(0, fileName.indexOf("."))
         val originalMetadata = mediaMetaDataService.findById(metadataId)
-        assertEquals(originalMetadata.filePath, expectedFilePath.toString())
-        assertEquals(originalMetadata.formSession.id, formResponse.session_id)
+        assertTrue("Media metadata does not match expected values", validateMetadataProperties(
+            originalMetadata,
+            metadataId,
+            expectedFilePath.toString(),
+            formResponse.session_id,
+            "jpg",
+            expectedFilePath.fileSize().toInt(),
+            "test",
+            null,
+            "test",
+            "10a706429116a3e55f1d1302cd3db69f"
+        ))
         // upload an invalid file and check the old file remains as answer
         assertThrows<java.lang.Exception> {
             saveImage(formResponse, "media/invalid_extension.jppg", "invalid_extension.jppg")
@@ -135,6 +147,33 @@ class MediaCaptureTest {
         val imageResponse = responseBean.tree[IMAGE_CAPTURE_INDEX]
         val fileName = (imageResponse.answer as String)
         return Paths.get("forms", USERNAME, DOMAIN, APP_ID, sessionId, "media", fileName)
+    }
+
+    private fun validateMetadataProperties(
+        record: MediaMetadataRecord,
+        id: String,
+        filePath: String,
+        formSessionId: String,
+        contentType: String,
+        contentLength: Int?,
+        username: String,
+        asUser: String?,
+        domain: String,
+        appId: String?,
+    ): Boolean {
+        if (record.id != id ||
+            record.filePath != filePath ||
+            record.formSession.id != formSessionId ||
+            record.contentType != contentType ||
+            record.contentLength != contentLength ||
+            record.username != username ||
+            record.asUser != asUser ||
+            record.domain != domain ||
+            record.appId != appId
+            ) {
+            return false
+        }
+        return true
     }
 
     @Test
