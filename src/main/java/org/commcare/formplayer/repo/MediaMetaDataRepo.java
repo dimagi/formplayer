@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,8 +15,6 @@ import java.util.Optional;
 public interface MediaMetaDataRepo extends JpaRepository<MediaMetadataRecord, String> {
 
     Optional<MediaMetadataRecord> findByFormSessionId(String formSessionId);
-
-    Optional<MediaMetadataRecord> findByFilePath(String filePath);
 
     @Modifying
     @Transactional
