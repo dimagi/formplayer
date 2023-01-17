@@ -6,6 +6,8 @@ import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 
 /**
  * Service for managing media metadata
@@ -21,11 +23,11 @@ public class MediaMetaDataService {
     }
 
     public MediaMetadataRecord findById(String id) {
-        try {
-            return mediaMetaDataRepo.findById(id).get();
-        } catch (MediaMetaDataNotFoundException e) {
-            throw e;
+        Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findById(id);
+        if (record.isPresent()) {
+            throw new MediaMetaDataNotFoundException(id);
         }
+        return record.get();
     }
 
     public void saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
