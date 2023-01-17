@@ -237,7 +237,7 @@ public class FormSession {
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
         StringReader stringReader = new StringReader(instanceContent);
         XFormParser xFormParser = new XFormParser(stringReader);
-        XFormParser.loadXmlInstance(formDef, stringReader);
+        xFormParser.loadXmlInstance(formDef, stringReader);
     }
 
     private void initLocale() {
