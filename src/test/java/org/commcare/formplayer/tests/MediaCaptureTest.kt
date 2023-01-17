@@ -108,18 +108,21 @@ class MediaCaptureTest {
         val fileName = expectedFilePath.fileName.toString()
         val metadataId = fileName.substring(0, fileName.indexOf("."))
         val originalMetadata = mediaMetaDataService.findById(metadataId)
-        assertTrue("Media metadata does not match expected values", validateMetadataProperties(
-            originalMetadata,
-            metadataId,
-            expectedFilePath.toString(),
-            formResponse.session_id,
-            "jpg",
-            expectedFilePath.fileSize().toInt(),
-            "test",
-            null,
-            "test",
-            "10a706429116a3e55f1d1302cd3db69f"
-        ))
+        assertTrue(
+            "Media metadata does not match expected values",
+            validateMetadataProperties(
+                originalMetadata,
+                metadataId,
+                expectedFilePath.toString(),
+                formResponse.session_id,
+                "jpg",
+                expectedFilePath.fileSize().toInt(),
+                "test",
+                null,
+                "test",
+                "10a706429116a3e55f1d1302cd3db69f"
+            )
+        )
         // upload an invalid file and check the old file remains as answer
         assertThrows<java.lang.Exception> {
             saveImage(formResponse, "media/invalid_extension.jppg", "invalid_extension.jppg")
@@ -170,7 +173,7 @@ class MediaCaptureTest {
             record.asUser != asUser ||
             record.domain != domain ||
             record.appId != appId
-            ) {
+        ) {
             return false
         }
         return true
