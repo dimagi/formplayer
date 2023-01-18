@@ -1,10 +1,12 @@
 package org.commcare.formplayer.services;
 
+import org.commcare.formplayer.exceptions.MediaMetaDataNotFoundException;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 
 /**
@@ -18,6 +20,14 @@ public class MediaMetaDataService {
 
     public int purge() {
         return mediaMetaDataRepo.deleteMetaDataWithoutFormSessionId();
+    }
+
+    public MediaMetadataRecord findById(String id) {
+        Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findById(id);
+        if (!record.isPresent()) {
+            throw new MediaMetaDataNotFoundException(id);
+        }
+        return record.get();
     }
 
     public void saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
