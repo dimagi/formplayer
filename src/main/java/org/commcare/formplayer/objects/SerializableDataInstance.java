@@ -1,5 +1,6 @@
 package org.commcare.formplayer.objects;
 
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -94,9 +95,10 @@ public class SerializableDataInstance {
         if (!instanceId.equals(getInstanceId())) {
             root = TreeUtilities.renameInstance(root, instanceId);
         }
+        String refScheme = VirtualInstances.getReferenceScheme(getReference());
+        String referenceForInstanceId = VirtualInstances.getInstanceReference(refScheme, instanceId);
         ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
-                        instanceId, root, getReference(), isUseCaseTemplate(), key);
+                        instanceId, root, referenceForInstanceId, isUseCaseTemplate(), key);
         return instanceSource.toInstance();
     }
-
 }
