@@ -16,6 +16,8 @@ public interface MediaMetaDataRepo extends JpaRepository<MediaMetadataRecord, St
 
     Optional<MediaMetadataRecord> findByFormSessionId(String formSessionId);
 
+    List<MediaMetadataRecord> findAllFormSessionIsNull();
+
     @Modifying
     @Transactional
     @Query("DELETE FROM MediaMetadataRecord WHERE formSession IS NULL")

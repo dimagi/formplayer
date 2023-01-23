@@ -6,6 +6,7 @@ import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -17,10 +18,6 @@ public class MediaMetaDataService {
 
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
-
-    public int purge() {
-        return mediaMetaDataRepo.deleteMetaDataWithoutFormSessionId();
-    }
 
     public MediaMetadataRecord findById(String id) {
         Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findById(id);
@@ -36,5 +33,9 @@ public class MediaMetaDataService {
 
     public void deleteMetaDataById(String id) {
         mediaMetaDataRepo.deleteById(id);
+    }
+
+    public List<MediaMetadataRecord> findAllWithNullFormsession() {
+        return mediaMetaDataRepo.findAllFormSessionIsNull();
     }
 }

@@ -87,4 +87,16 @@ public class MediaMetadataRecord {
                 + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
                 + ", contentType=" + contentType + "]";
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
 }
