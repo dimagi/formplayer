@@ -517,7 +517,7 @@ public class EntityListResponse extends MenuBean {
         this.noItemsText = noItemsText;
     }
 
-    public String getNoItemsText(){
+    public String getNoItemsText() {
         return noItemsText;
     }
 
