@@ -89,6 +89,8 @@ public class Constants {
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
     public static final String POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME = "virtual_data_instance";
 
+    public static final String POSTGRES_MEDIA_META_DATA_TABLE_NAME = "media_meta_data";
+
     public static final String SESSION_DETAILS_VIEW = "/hq/admin/session_details/";
 
     // Couch databases
