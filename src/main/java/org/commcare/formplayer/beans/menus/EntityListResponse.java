@@ -21,6 +21,7 @@ import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.util.NoLocalizedTextException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +45,7 @@ public class EntityListResponse extends MenuBean {
     private int numEntitiesPerRow;
     private boolean useUniformUnits;
     private int[] sortIndices;
+    private String noItemsText;
 
     private int pageCount;
     private int currentPage;
@@ -109,6 +111,7 @@ public class EntityListResponse extends MenuBean {
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
+            setNoItemsText(getNoItemsTextLocaleString(detail));
         }
 
         processTitle(session);
@@ -406,6 +409,7 @@ public class EntityListResponse extends MenuBean {
     @Override
     public String toString() {
         return "EntityListResponse [Title= " + getTitle() +
+                ", noItemsText=" + getNoItemsText() +
                 ", styles=" + Arrays.toString(styles) +
                 ", action=" + Arrays.toString(actions) +
                 ", parent=" + super.toString() +
@@ -507,5 +511,24 @@ public class EntityListResponse extends MenuBean {
 
     public void setMaxSelectValue(int maxSelectValue) {
         this.maxSelectValue = maxSelectValue;
+    }
+
+    private void setNoItemsText(String noItemsText) {
+        this.noItemsText = noItemsText;
+    }
+
+    public String getNoItemsText() {
+        return noItemsText;
+    }
+
+    private String getNoItemsTextLocaleString(Detail detail) {
+        String noItemsTextString;
+        try {
+            noItemsTextString = detail.getNoItemsText().evaluate();
+        } catch (NoLocalizedTextException | NullPointerException e) {
+            String noItemsTextStringLegacy = "List is empty.";
+            return noItemsTextStringLegacy;
+        }
+        return noItemsTextString;
     }
 }
