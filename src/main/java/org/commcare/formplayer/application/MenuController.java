@@ -55,7 +55,6 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getOffset(),
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex(),
-                    sessionNavigationBean.isForceManualAction(),
                     sessionNavigationBean.getCasesPerPage(),
                     sessionNavigationBean.getSmartLinkTemplate(),
                     sessionNavigationBean.getSelectedValues()
@@ -82,7 +81,6 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
-                sessionNavigationBean.isForceManualAction(),
                 sessionNavigationBean.getCasesPerPage(),
                 sessionNavigationBean.getSmartLinkTemplate(),
                 sessionNavigationBean.getSelectedValues()
@@ -141,7 +139,6 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
-                sessionNavigationBean.isForceManualAction(),
                 sessionNavigationBean.getCasesPerPage(),
                 sessionNavigationBean.getSmartLinkTemplate(),
                 sessionNavigationBean.getSelectedValues()
