@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Instant
 
 /**
  * Supporting methods to process and save media files on the filesystem
@@ -93,13 +94,13 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         return deleted
     }
 
-    fun purge(): Int {
+    fun purge(instant: Instant): Int {
         val metadataToDelete = mediaMetaDataService.findAllWithNullFormsession()
         var deletedCount = 0
         for (metadata in metadataToDelete) {
             val deletedSuccessfully = cleanMedia(Paths.get(metadata.filePath), metadata.id + "." + metadata.contentType)
-            if (deletedSuccessfully) deletedCount++;
+            if (deletedSuccessfully) deletedCount++
         }
-        return deletedCount;
+        return deletedCount
     }
 }

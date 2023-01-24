@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.CheckedFunction;
-import org.commcare.formplayer.utils.CheckedRunnableInt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -45,7 +44,7 @@ public class ScheduledTasks {
         log.info("Starting purge scheduled task.");
         doTimedPurge("formSession", formSessionService::purge);
         doTimedPurge("virtualDataInstance", virtualDataInstanceService::purge);
-        doMediaPurge("media", mediaHandler::purge);
+        doTimedPurge("media", mediaHandler::purge);
         datadogStatsDClient.increment(
                 String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "timesRun")
         );
@@ -56,22 +55,6 @@ public class ScheduledTasks {
         log.info("Beginning purge for " + tag);
         long start = System.currentTimeMillis();
         int deletedRows = purgeable.apply(cutoff);
-        long elapsed = System.currentTimeMillis() - start;
-        log.info(String.format("Purged %d records in %d ms for %s", deletedRows, elapsed, tag));
-        datadogStatsDClient.count(
-                String.format("%s.%s.%s", Constants.SCHEDULED_TASKS_PURGE, "deletedRows", tag),
-                deletedRows
-        );
-        datadogStatsDClient.time(
-                String.format("%s.%s.%s", Constants.SCHEDULED_TASKS_PURGE, "timeInMillis", tag),
-                elapsed
-        );
-    }
-
-    private void doMediaPurge(String tag, CheckedRunnableInt purgeable) {
-        log.info("Beginning purge for " + tag);
-        long start = System.currentTimeMillis();
-        int deletedRows = purgeable.run();
         long elapsed = System.currentTimeMillis() - start;
         log.info(String.format("Purged %d records in %d ms for %s", deletedRows, elapsed, tag));
         datadogStatsDClient.count(
