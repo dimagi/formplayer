@@ -652,11 +652,7 @@ public class FormSession {
         Object currentAnswer = getCurrentAnswer(answerIndex);
         if (currentAnswer != null) {
             String currentFileId = (String)currentAnswer;
-            boolean deleted = mediaHandler.cleanMedia(mediaDirectoryPath, currentFileId);
-            if (!deleted) {
-                log.info("Could not delete media at path " + mediaHandler.getMediaFilePath(mediaDirectoryPath,
-                        currentFileId));
-            }
+            mediaHandler.cleanMedia(mediaDirectoryPath, currentFileId);
         }
     }
 

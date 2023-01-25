@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services
 
+import org.apache.juli.logging.LogFactory
 import org.commcare.formplayer.objects.MediaMetadataRecord
 import org.commcare.formplayer.objects.SerializableFormSession
 import org.commcare.formplayer.services.MediaValidator.isFileTooLarge
@@ -18,6 +19,8 @@ import java.time.Instant
  * Supporting methods to process and save media files on the filesystem
  */
 class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaDataService) {
+
+    val log = LogFactory.getLog(this.javaClass)
 
     /**
      * Saves file in the given parent directory
@@ -87,10 +90,12 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
             try {
                 mediaMetaDataService.deleteMetaDataById(metadataId)
             } catch (e: Exception) {
-                // ignore, we don't want to crash even if delete fails
+                // just log, we don't want to crash even if delete fails
+                log.info("Could not delete media data record for media id $metadataId")
             }
+        } else {
+            log.info("Could not delete media from filesystem at path $currentMedia")
         }
-
         return deleted
     }
 
