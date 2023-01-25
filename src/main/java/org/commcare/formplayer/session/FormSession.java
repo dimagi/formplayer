@@ -643,16 +643,16 @@ public class FormSession {
         MediaHandler mediaHandler = new MediaHandler(file, mediaMetaDataService);
         String fileId = mediaHandler.saveFile(mediaDirectoryPath, session, session.getUsername(),
                 session.getAsUser(), session.getDomain(), session.getAppId());
-        cleanCurrentMedia(mediaHandler, mediaDirectoryPath, answerIndex);
+        cleanCurrentMedia(mediaDirectoryPath, answerIndex, mediaMetaDataService);
         return fileId;
     }
 
-    private void cleanCurrentMedia(MediaHandler mediaHandler, Path mediaDirectoryPath,
-            String answerIndex) {
+    private void cleanCurrentMedia(Path mediaDirectoryPath,
+            String answerIndex, MediaMetaDataService mediaMetaDataService) {
         Object currentAnswer = getCurrentAnswer(answerIndex);
         if (currentAnswer != null) {
             String currentFileId = (String)currentAnswer;
-            mediaHandler.cleanMedia(mediaDirectoryPath, currentFileId);
+            MediaHandler.cleanMedia(mediaDirectoryPath, currentFileId, mediaMetaDataService);
         }
     }
 
