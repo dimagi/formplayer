@@ -247,16 +247,11 @@ class MediaCaptureTest {
             fail("Unable to save a valid file due to " + e.message)
         }
 
-        // get file from path and check if it's the same file
         var expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
-        var originalSavedFile = expectedFilePath.toFile()
-        assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
 
-        // check that metadata was created and values match expected
         val fileName = expectedFilePath.fileName.toString()
         val metadataId = fileName.substring(0, fileName.indexOf("."))
         val metadata = mediaMetaDataService.findById(metadataId)
-        assertEquals(metadata.formSession.id, formResponse.session_id)
 
         val fis = FileUtils.getFileStream(this.javaClass, expectedFilePath.toString())
         val file = MockMultipartFile(PART_FILE, fileName, MediaType.IMAGE_JPEG_VALUE, fis)

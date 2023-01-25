@@ -94,6 +94,9 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         return deleted
     }
 
+    /**
+     * Deletes obsolete media files and metadata
+     */
     fun purge(instant: Instant): Int {
         val metadataToDelete = mediaMetaDataService.findAllWithNullFormsession()
         var deletedCount = 0
