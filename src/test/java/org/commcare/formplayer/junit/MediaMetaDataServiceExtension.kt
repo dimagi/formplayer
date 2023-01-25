@@ -54,5 +54,19 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
                 }
 
             )
+
+        Mockito.`when`(mediaMetaDataService.findAllWithNullFormsession())
+            .thenAnswer(
+                Answer { invocation ->
+                    var mediaRecordList = arrayListOf<MediaMetadataRecord>()
+                    for (record in metadataMap) {
+                        if (record.value.formSession == null) {
+                            mediaRecordList.add(record.value)
+                        }
+                    }
+
+                    return@Answer mediaRecordList
+                }
+            )
     }
 }

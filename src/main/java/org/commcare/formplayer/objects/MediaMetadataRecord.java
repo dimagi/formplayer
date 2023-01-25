@@ -83,7 +83,11 @@ public class MediaMetadataRecord {
 
     @Override
     public String toString() {
-        return "MediaMetaData [id=" + id + ", formSessionId=" + formSession.getId() + ", username=" + username
+        String formSessionId = "";
+        if (formSession != null) {
+            formSessionId = formSession.getId();
+        }
+        return "MediaMetaData [id=" + id + ", formSessionId=" + formSessionId + ", username=" + username
                 + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
                 + ", contentType=" + contentType + "]";
     }

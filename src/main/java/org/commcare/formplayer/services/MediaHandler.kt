@@ -98,7 +98,9 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         val metadataToDelete = mediaMetaDataService.findAllWithNullFormsession()
         var deletedCount = 0
         for (metadata in metadataToDelete) {
-            val deletedSuccessfully = cleanMedia(Paths.get(metadata.filePath), metadata.id + "." + metadata.contentType)
+            val parentPath = Paths.get(metadata.filePath).parent
+            val fileIdWithExt = metadata.id + "." + metadata.contentType
+            val deletedSuccessfully = cleanMedia(parentPath, fileIdWithExt)
             if (deletedSuccessfully) deletedCount++
         }
         return deletedCount

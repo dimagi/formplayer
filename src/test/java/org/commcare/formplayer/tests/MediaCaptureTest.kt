@@ -15,6 +15,7 @@ import org.commcare.formplayer.junit.request.NewFormRequest
 import org.commcare.formplayer.junit.request.SubmitFormRequest
 import org.commcare.formplayer.objects.MediaMetadataRecord
 import org.commcare.formplayer.services.FormSessionService
+import org.commcare.formplayer.services.MediaHandler
 import org.commcare.formplayer.services.MediaMetaDataService
 import org.commcare.formplayer.services.SubmitService
 import org.commcare.formplayer.util.Constants.PART_FILE
@@ -47,6 +48,7 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Instant
 import kotlin.io.path.fileSize
 
 @WebMvcTest
@@ -233,6 +235,43 @@ class MediaCaptureTest {
                 String.format("form-data; name=\"%s\"; filename=\"%s\"", fileName, fileName)
             assertEquals(expectedContentDisposition, contentDisposition!![0])
         }
+    }
+
+    @Test
+    fun testPurgeMedia() {
+        val formResponse = startImageCaptureForm()
+        val responseBean: FormEntryResponseBean
+        try {
+            responseBean = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
+        } catch (e: Exception) {
+            fail("Unable to save a valid file due to " + e.message)
+        }
+
+        // get file from path and check if it's the same file
+        var expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
+        var originalSavedFile = expectedFilePath.toFile()
+        assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
+
+        // check that metadata was created and values match expected
+        val fileName = expectedFilePath.fileName.toString()
+        val metadataId = fileName.substring(0, fileName.indexOf("."))
+        val metadata = mediaMetaDataService.findById(metadataId)
+        assertEquals(metadata.formSession.id, formResponse.session_id)
+
+        val fis = FileUtils.getFileStream(this.javaClass, expectedFilePath.toString())
+        val file = MockMultipartFile(PART_FILE, fileName, MediaType.IMAGE_JPEG_VALUE, fis)
+
+        metadata.formSession = null
+        mediaMetaDataService.saveMediaMetaData(metadata)
+
+        val mediaHandler = MediaHandler(file, mediaMetaDataService)
+        val purgeCount = mediaHandler.purge(Instant.now())
+
+        assertEquals(purgeCount, 1)
+        assertThrows<MediaMetaDataNotFoundException> { mediaMetaDataService.findById(metadata.id) }
+
+        val deletedFile = expectedFilePath.toFile()
+        assertFalse("File was not deleted successfully.", deletedFile.exists())
     }
 
     private fun checkContentType(expectedContentType: String, filePart: HttpEntity<*>) {
