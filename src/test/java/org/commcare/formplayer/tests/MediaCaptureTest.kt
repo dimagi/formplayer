@@ -15,7 +15,6 @@ import org.commcare.formplayer.junit.request.NewFormRequest
 import org.commcare.formplayer.junit.request.SubmitFormRequest
 import org.commcare.formplayer.objects.MediaMetadataRecord
 import org.commcare.formplayer.services.FormSessionService
-import org.commcare.formplayer.services.MediaHandler
 import org.commcare.formplayer.services.MediaMetaDataService
 import org.commcare.formplayer.services.SubmitService
 import org.commcare.formplayer.util.Constants.PART_FILE

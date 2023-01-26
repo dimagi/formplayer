@@ -49,7 +49,7 @@ public class MediaMetaDataService {
     /**
      * Deletes obsolete media files and metadata
      */
-     public Integer purge(Instant instant) {
+    public Integer purge(Instant instant) {
         MediaMetaDataService mediaMetadataService = mediaMetaDataService;
         List<MediaMetadataRecord> metadataToDelete = mediaMetaDataService.findAllWithNullFormsession();
         Integer deletedCount = 0;
@@ -58,7 +58,9 @@ public class MediaMetaDataService {
             Path parentPath = Paths.get(metadata.getFilePath()).getParent();
             String fileIdWithExt = metadata.getId() + "." + metadata.getContentType();
             Boolean deletedSuccessfully = cleanMedia(parentPath, fileIdWithExt, mediaMetadataService);
-            if (deletedSuccessfully) deletedCount++;
+            if (deletedSuccessfully) {
+                deletedCount++;
+            }
         }
         return deletedCount;
     }
