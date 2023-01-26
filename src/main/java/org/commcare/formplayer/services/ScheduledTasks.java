@@ -33,7 +33,7 @@ public class ScheduledTasks {
     private VirtualDataInstanceService virtualDataInstanceService;
 
     @Autowired
-    private MediaHandler mediaHandler;
+    private MediaMetaDataService mediaMetaDataService;
 
     // the default "0 0 0 * * *" schedule means midnight each night
     @Scheduled(cron = "${commcare.formplayer.scheduledTasks.purge.cron:0 0 0 * * *}")
@@ -44,7 +44,7 @@ public class ScheduledTasks {
         log.info("Starting purge scheduled task.");
         doTimedPurge("formSession", formSessionService::purge);
         doTimedPurge("virtualDataInstance", virtualDataInstanceService::purge);
-        doTimedPurge("media", mediaHandler::purge);
+        doTimedPurge("media", mediaMetaDataService::purge);
         datadogStatsDClient.increment(
                 String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "timesRun")
         );

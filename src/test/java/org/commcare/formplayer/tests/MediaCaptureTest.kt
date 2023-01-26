@@ -253,16 +253,12 @@ class MediaCaptureTest {
         val metadataId = fileName.substring(0, fileName.indexOf("."))
         val metadata = mediaMetaDataService.findById(metadataId)
 
-        val fis = FileUtils.getFileStream(this.javaClass, expectedFilePath.toString())
-        val file = MockMultipartFile(PART_FILE, fileName, MediaType.IMAGE_JPEG_VALUE, fis)
-
         metadata.formSession = null
         mediaMetaDataService.saveMediaMetaData(metadata)
 
-        val mediaHandler = MediaHandler(file, mediaMetaDataService)
-        val purgeCount = mediaHandler.purge(Instant.now())
+        val purgeCount = mediaMetaDataService.purge(Instant.now())
 
-        assertEquals(purgeCount, 1)
+        assertEquals(1, purgeCount)
         assertThrows<MediaMetaDataNotFoundException> { mediaMetaDataService.findById(metadata.id) }
 
         val deletedFile = expectedFilePath.toFile()

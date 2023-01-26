@@ -101,19 +101,4 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
             throw RuntimeException(fileOversizeError)
         }
     }
-
-    /**
-     * Deletes obsolete media files and metadata
-     */
-    fun purge(instant: Instant): Int {
-        val metadataToDelete = mediaMetaDataService.findAllWithNullFormsession()
-        var deletedCount = 0
-        for (metadata in metadataToDelete) {
-            val parentPath = Paths.get(metadata.filePath).parent
-            val fileIdWithExt = metadata.id + "." + metadata.contentType
-            val deletedSuccessfully = cleanMedia(parentPath, fileIdWithExt, mediaMetaDataService)
-            if (deletedSuccessfully) deletedCount++
-        }
-        return deletedCount
-    }
 }
