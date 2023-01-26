@@ -24,8 +24,7 @@ public class MediaMetaDataService {
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
 
-    @Autowired
-    private MediaMetaDataService mediaMetaDataService;
+    private MediaMetaDataService mediaMetaDataService = this;
 
     public MediaMetadataRecord findById(String id) {
         Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findById(id);
@@ -51,9 +50,9 @@ public class MediaMetaDataService {
      * Deletes obsolete media files and metadata
      */
      public Integer purge(Instant instant) {
+        MediaMetaDataService mediaMetadataService = mediaMetaDataService;
         List<MediaMetadataRecord> metadataToDelete = mediaMetaDataService.findAllWithNullFormsession();
         Integer deletedCount = 0;
-        MediaMetaDataService mediaMetadataService = mediaMetaDataService;
         for (int i = 0; i < metadataToDelete.size(); i++) {
             MediaMetadataRecord metadata = metadataToDelete.get(i);
             Path parentPath = Paths.get(metadata.getFilePath()).getParent();
