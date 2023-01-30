@@ -1,5 +1,7 @@
 package org.commcare.formplayer.objects;
 
+import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -94,9 +96,18 @@ public class SerializableDataInstance {
         if (!instanceId.equals(getInstanceId())) {
             root = TreeUtilities.renameInstance(root, instanceId);
         }
+        String reference = getReference();
+        String newReference;
+        if (CommCareInstanceInitializer.isNonUniqueReference(reference)) {
+            // If old reference shceme we don't wanna change anything
+            // should be removed once we migrate all instances to new unique reference scheme
+            newReference = reference;
+        } else {
+            String refScheme = VirtualInstances.getReferenceScheme(reference);
+            newReference = VirtualInstances.getInstanceReference(refScheme, instanceId);
+        }
         ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
-                        instanceId, root, getReference(), isUseCaseTemplate(), key);
+                        instanceId, root, newReference, isUseCaseTemplate(), key);
         return instanceSource.toInstance();
     }
-
 }
