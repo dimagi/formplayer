@@ -6,8 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.sun.media.jfxmedia.events.NewFrameEvent;
-
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
