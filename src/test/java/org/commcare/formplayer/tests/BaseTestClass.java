@@ -687,11 +687,11 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, null,  clazz, false);
+        return getDetails(selections, testName, null, null, clazz, false);
     }
 
     <T> T getDetails(String[] selections, String testName, QueryData queryData, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, queryData,  clazz, false);
+        return getDetails(selections, testName, null, queryData, clazz, false);
     }
 
     <T> T getDetails(String[] selections, String testName, String locale, QueryData queryData, Class<T> clazz,
@@ -715,7 +715,7 @@ public class BaseTestClass {
     }
 
     <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, null,  clazz, true);
+        return getDetails(selections, testName, null, null, clazz, true);
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
@@ -1055,7 +1055,7 @@ public class BaseTestClass {
                 "instance('selected_cases')/results");
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         for (int i = 0; i < expectedCases.length; i++) {
-            String xpathRef = "/result/results/value[" + (i+1) + "]";
+            String xpathRef = "/result/results/value[" + (i + 1) + "]";
             assertThat(evaluateXpathResponseBean.getOutput(), hasXpath(xpathRef, equalTo(expectedCases[i])));
         }
 
