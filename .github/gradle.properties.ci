@@ -1,1 +1,1 @@
-org.gradle.jvmargs=-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:MaxPermSize=256m
+org.gradle.jvmargs=-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError
