@@ -58,4 +58,4 @@ submodules:
     trunk: formplayer
     branches:
         - java-17-update # Ahmad Dec 13
-        - jt/ush-2683_custom_text_for_case_list_empty_state #J an 17
+        - jt/ush-2869_redeploy_empty_state_text # Jonathan T. Jan 30
