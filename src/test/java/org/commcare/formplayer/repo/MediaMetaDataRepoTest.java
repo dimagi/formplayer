@@ -28,26 +28,18 @@ public class MediaMetaDataRepoTest {
     @Autowired
     public MediaMetaDataRepo mediaMetadataRepo;
 
-
-    private String sessionId;
-
     private String mediaId;
 
     private SerializableFormSession session;
 
-
     @BeforeEach
     void setUp() {
-        sessionId = UUID.randomUUID().toString();
+        session = formSessionRepo.saveAndFlush(new SerializableFormSession());
         mediaId = UUID.randomUUID().toString();
-        session = new SerializableFormSession(sessionId);
-        formSessionRepo.save(session);
     }
-
 
     @Test
     public void testSaveAndLoad() {
-
         MediaMetadataRecord mediaMetaData = new MediaMetadataRecord(
                 mediaId,
                 "filePath",
@@ -59,13 +51,9 @@ public class MediaMetaDataRepoTest {
                 "domain",
                 "appid"
         );
-
         Assertions.assertNotNull(mediaMetaData);
-
-        mediaMetadataRepo.save(mediaMetaData);
-
+        mediaMetadataRepo.saveAndFlush(mediaMetaData);
         Assertions.assertNotNull(session);
-
         Assertions.assertEquals(session.getId(), mediaMetaData.getFormSession().getId());
     }
 
