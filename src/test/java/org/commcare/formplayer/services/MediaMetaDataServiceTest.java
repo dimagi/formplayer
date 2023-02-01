@@ -59,25 +59,17 @@ public class MediaMetaDataServiceTest {
     @Test
     public void testSaveMetaData() {
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
-
         Optional<MediaMetadataRecord> fetchedMediaMetaData = mediaMetaDataRepo.findById(mediaMetaData.getId());
-
         Assertions.assertTrue(fetchedMediaMetaData.isPresent());
     }
 
     @Test
     public void testDelete() {
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
-
         Optional<MediaMetadataRecord> fetchedMediaMetaData = mediaMetaDataRepo.findById(mediaMetaData.getId());
-
         Assertions.assertTrue(fetchedMediaMetaData.isPresent());
-
         mediaMetaDataService.deleteMetaDataById(mediaMetaData.getId());
-
         fetchedMediaMetaData = mediaMetaDataRepo.findById(mediaMetaData.getId());
-
         Assertions.assertFalse(fetchedMediaMetaData.isPresent());
     }
-
 }
