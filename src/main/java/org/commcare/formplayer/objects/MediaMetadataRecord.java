@@ -2,6 +2,7 @@ package org.commcare.formplayer.objects;
 
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
 
@@ -11,7 +12,10 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +26,7 @@ import lombok.Setter;
 @Entity
 @Table(name = Constants.POSTGRES_MEDIA_META_DATA_TABLE_NAME)
 @Getter
-public class MediaMetadataRecord {
+public class MediaMetadataRecord implements Persistable<String> {
 
     @Id
     private String id;
@@ -57,6 +61,10 @@ public class MediaMetadataRecord {
     @Column(name = "datecreated")
     private Instant datecreated;
 
+    @Transient
+    private boolean update;
+
+
     public MediaMetadataRecord() {
     }
 
@@ -86,5 +94,29 @@ public class MediaMetadataRecord {
         return "MediaMetaData [id=" + id + ", formSessionId=" + formSession.getId() + ", username=" + username
                 + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
                 + ", contentType=" + contentType + "]";
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    public boolean isUpdate() {
+        return this.update;
+    }
+
+    public void setUpdate(boolean update) {
+        this.update = update;
+    }
+
+    @Override
+    public boolean isNew() {
+        return !this.update;
+    }
+
+    @PrePersist
+    @PostLoad
+    void markUpdated() {
+        this.update = true;
     }
 }
