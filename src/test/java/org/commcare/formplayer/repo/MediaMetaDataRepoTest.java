@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.UUID;
 
+import javax.persistence.EntityManager;
+
 
 /**
  * Tests for {@link MediaMetaDataRepo}
@@ -31,6 +33,9 @@ public class MediaMetaDataRepoTest {
     private String mediaId;
 
     private SerializableFormSession session;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -51,10 +56,31 @@ public class MediaMetaDataRepoTest {
                 "domain",
                 "appid"
         );
-        Assertions.assertNotNull(mediaMetaData);
-        mediaMetadataRepo.saveAndFlush(mediaMetaData);
+        MediaMetadataRecord savedMediaRecord = mediaMetadataRepo.saveAndFlush(mediaMetaData);
         Assertions.assertNotNull(session);
-        Assertions.assertEquals(session.getId(), mediaMetaData.getFormSession().getId());
+        Assertions.assertEquals(session.getId(), savedMediaRecord.getFormSession().getId());
     }
 
+    @Test
+    public void testFormSessionCascadeAsNull() {
+        MediaMetadataRecord mediaMetaData = new MediaMetadataRecord(
+                mediaId,
+                "filePath",
+                session,
+                "contentType",
+                4,
+                "username",
+                "asUser",
+                "domain",
+                "appid"
+        );
+        MediaMetadataRecord savedMediaRecord = mediaMetadataRepo.saveAndFlush(mediaMetaData);
+
+        // delete form session
+        formSessionRepo.delete(session);
+        entityManager.flush();
+        entityManager.clear();
+        // get the meta data record to verify if the form session is set to null
+        Assertions.assertNull(mediaMetadataRepo.findById(savedMediaRecord.getId()).get().getFormSession());
+    }
 }
