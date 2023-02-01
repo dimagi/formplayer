@@ -526,8 +526,7 @@ public class EntityListResponse extends MenuBean {
         try {
             noItemsTextString = detail.getNoItemsText().evaluate();
         } catch (NoLocalizedTextException | NullPointerException e) {
-            String noItemsTextStringLegacy = "List is empty.";
-            return noItemsTextStringLegacy;
+            return null;
         }
         return noItemsTextString;
     }
