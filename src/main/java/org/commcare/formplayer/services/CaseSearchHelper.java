@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
+import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
@@ -41,7 +42,7 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source, boolean skipCache)
+    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source, boolean skipCache)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
         Multimap<String, String> requestData = source.getRequestData();
@@ -84,7 +85,7 @@ public class CaseSearchHelper {
         ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemote(
                 instanceId, null, useCaseTemplate, url.toString(), requestData);
 
-        TreeElement root = getExternalRoot(instanceId, source, skipCache);
+        AbstractTreeElement root = getExternalRoot(instanceId, source, skipCache);
         source.init(root);
 
         return source.toInstance();

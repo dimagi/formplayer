@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.VirtualDataInstanceStorage;
+import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
@@ -26,7 +27,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
     }
 
     @Override
-    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
+    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
             throws RemoteInstanceException {
         if (source.getSourceUri() != null) {
             try {
@@ -40,7 +41,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
             }
         } else if (source.getStorageReferenceId() != null) {
             ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId(), instanceId);
-            return (TreeElement)instance.getRoot();
+            return instance.getRoot();
         }
         throw new RemoteInstanceException("Could not retrieve data for instance " + instanceId
                 + ". Implementations for ExternalDataInstanceSource must define one of sourceUri or "
