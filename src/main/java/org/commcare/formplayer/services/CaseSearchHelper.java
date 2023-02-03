@@ -10,6 +10,7 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.utils.TreeUtilities;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -67,7 +68,7 @@ public class CaseSearchHelper {
         String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {
-            TreeElement root = ExternalDataInstance.parseExternalTree(
+            TreeElement root = TreeUtilities.xmlStreamToTreeElement(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
             if (root != null) {
                 cache.put(cacheKey, root);
