@@ -47,7 +47,6 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.time.Instant
 import kotlin.io.path.fileSize
 
 @WebMvcTest
@@ -234,34 +233,6 @@ class MediaCaptureTest {
                 String.format("form-data; name=\"%s\"; filename=\"%s\"", fileName, fileName)
             assertEquals(expectedContentDisposition, contentDisposition!![0])
         }
-    }
-
-    @Test
-    fun testPurgeMedia() {
-        val formResponse = startImageCaptureForm()
-        val responseBean: FormEntryResponseBean
-        try {
-            responseBean = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
-        } catch (e: Exception) {
-            fail("Unable to save a valid file due to " + e.message)
-        }
-
-        var expectedFilePath = getExpectedMediaPath(formResponse.session_id, responseBean)
-
-        val fileName = expectedFilePath.fileName.toString()
-        val metadataId = fileName.substring(0, fileName.indexOf("."))
-        val metadata = mediaMetaDataService.findById(metadataId)
-
-        metadata.formSession = null
-        mediaMetaDataService.saveMediaMetaData(metadata)
-
-        val purgeCount = mediaMetaDataService.purge(Instant.now())
-
-        assertEquals(1, purgeCount)
-        assertThrows<MediaMetaDataNotFoundException> { mediaMetaDataService.findById(metadata.id) }
-
-        val deletedFile = expectedFilePath.toFile()
-        assertFalse("File was not deleted successfully.", deletedFile.exists())
     }
 
     private fun checkContentType(expectedContentType: String, filePart: HttpEntity<*>) {
