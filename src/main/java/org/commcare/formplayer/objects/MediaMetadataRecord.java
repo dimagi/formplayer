@@ -91,8 +91,8 @@ public class MediaMetadataRecord {
 
     @Override
     public String toString() {
-        return "MediaMetaData [fileId=" + fileId + ", formSessionId=" + formSession.getId() + ", username=" + username
-                + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
+        return "MediaMetaData [fileId=" + fileId + ", formSessionId=" + formSession.getId() + ", username="
+                + username + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
                 + ", contentType=" + contentType + "]";
     }
 
