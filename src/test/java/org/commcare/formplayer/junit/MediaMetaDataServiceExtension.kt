@@ -27,7 +27,7 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
 
         Mockito.doAnswer { invocation ->
             val mediaMetadataRecord = invocation.arguments[0] as MediaMetadataRecord
-            metadataMap[mediaMetadataRecord.id] = mediaMetadataRecord
+            metadataMap[mediaMetadataRecord.fileId] = mediaMetadataRecord
             mediaMetadataRecord
         }.`when`(mediaMetaDataService).saveMediaMetaData(
             ArgumentMatchers.any(
@@ -38,11 +38,11 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
         Mockito.`when`(mediaMetaDataService.findById(ArgumentMatchers.anyString()))
             .thenAnswer(
                 Answer { invocation ->
-                    val id = invocation.arguments[0] as String
-                    if (metadataMap.containsKey(id)) {
-                        return@Answer metadataMap[id]
+                    val fileId = invocation.arguments[0] as String
+                    if (metadataMap.containsKey(fileId)) {
+                        return@Answer metadataMap[fileId]
                     }
-                    throw MediaMetaDataNotFoundException(id)
+                    throw MediaMetaDataNotFoundException(fileId)
                 }
             )
 
@@ -55,7 +55,7 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
 
             )
 
-        Mockito.`when`(mediaMetaDataService.findAllWithNullFormsession())
+        Mockito.`when`(mediaMetaDataService.findAllWithNullFormSession())
             .thenAnswer(
                 Answer { invocation ->
                     var mediaRecordList = arrayListOf<MediaMetadataRecord>()

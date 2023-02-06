@@ -24,8 +24,6 @@ public class MediaMetaDataService {
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
 
-    private MediaMetaDataService mediaMetaDataService = this;
-
     public MediaMetadataRecord findById(String id) {
         Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findById(id);
         if (!record.isPresent()) {
@@ -34,30 +32,33 @@ public class MediaMetaDataService {
         return record.get();
     }
 
-    public void saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
-        mediaMetaDataRepo.save(mediaMetadataRecord);
+    public MediaMetadataRecord saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
+        return mediaMetaDataRepo.save(mediaMetadataRecord);
     }
 
     public void deleteMetaDataById(String id) {
         mediaMetaDataRepo.deleteById(id);
     }
 
-    public List<MediaMetadataRecord> findAllWithNullFormsession() {
-        return mediaMetaDataRepo.findAllFormSessionIsNull();
+    public List<MediaMetadataRecord> findAllWithNullFormSession() {
+        return mediaMetaDataRepo.getFormSessionIsNull();
+    }
+
+    public List<MediaMetadataRecord> findAll() {
+        return mediaMetaDataRepo.findAll();
     }
 
     /**
      * Deletes obsolete media files and metadata
      */
     public Integer purge(Instant instant) {
-        MediaMetaDataService mediaMetadataService = mediaMetaDataService;
-        List<MediaMetadataRecord> metadataToDelete = mediaMetaDataService.findAllWithNullFormsession();
+        List<MediaMetadataRecord> metadataToDelete = findAllWithNullFormSession();
         Integer deletedCount = 0;
         for (int i = 0; i < metadataToDelete.size(); i++) {
             MediaMetadataRecord metadata = metadataToDelete.get(i);
             Path parentPath = Paths.get(metadata.getFilePath()).getParent();
             String fileIdWithExt = metadata.getId() + "." + metadata.getContentType();
-            Boolean deletedSuccessfully = cleanMedia(parentPath, fileIdWithExt, mediaMetadataService);
+            Boolean deletedSuccessfully = cleanMedia(parentPath, fileIdWithExt, this);
             if (deletedSuccessfully) {
                 deletedCount++;
             }
