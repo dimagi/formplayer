@@ -43,8 +43,17 @@ public class MediaMetaDataServiceTest {
     @BeforeEach
     public void setUp() {
         fileId = UUID.randomUUID().toString();
-        mediaMetaData = new MediaMetadataRecord(fileId, "filePath", null, "contentType", 4, "username", "asUser",
-                "domain", "appid");
+        mediaMetaData = new MediaMetadataRecord(
+                fileId,
+                "filePath",
+                null,
+                "contentType",
+                4,
+                "username",
+                "asUser",
+                "domain",
+                "appid"
+        );
         when(mediaMetaDataRepo.save(any())).thenAnswer(new Answer<MediaMetadataRecord>() {
             @Override
             public MediaMetadataRecord answer(InvocationOnMock invocation) throws Throwable {
