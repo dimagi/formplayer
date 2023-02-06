@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,14 +46,19 @@ public class MediaMetaDataServiceTest {
     private MediaMetaDataRepo mediaMetaDataRepo;
     private String fileId;
 
+    private File testFile;
+
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         fileId = UUID.randomUUID().toString();
+        testFile = new File("./media" + fileId + ".jpg");
+        testFile.createNewFile();
+
         mediaMetaData = new MediaMetadataRecord(
                 fileId,
-                "filePath",
+                "/testfile.jpg",
                 null,
-                "contentType",
+                "jpg",
                 4,
                 "username",
                 "asUser",
@@ -77,6 +88,20 @@ public class MediaMetaDataServiceTest {
             mediaMetaData = null;
             return null;
         }).when(mediaMetaDataRepo).deleteById(any());
+
+        when(mediaMetaDataRepo.getFormSessionIsNull()).thenAnswer(new Answer<List<MediaMetadataRecord>>() {
+            @Override
+            public List<MediaMetadataRecord> answer(InvocationOnMock invocation) throws Throwable {
+                List<MediaMetadataRecord> recordsList = new ArrayList<>();
+                recordsList.add(mediaMetaData);
+                return recordsList;
+            }
+        });
+    }
+
+    @AfterEach
+    public void tearDown() {
+        testFile.delete();
     }
 
     @Test
@@ -97,6 +122,12 @@ public class MediaMetaDataServiceTest {
         Assertions.assertFalse(newlyFetchedMediaMetaData.isPresent());
     }
 
+    @Test
+    public void testPurge() {
+        Assertions.assertTrue(testFile.exists());
+        Integer purgeCount = mediaMetaDataService.purge(Instant.now());
+        Assertions.assertEquals(1, purgeCount);
+    }
 
     @ComponentScan(basePackageClasses = {
             MediaMetaDataService.class}, useDefaultFilters = false, includeFilters = @ComponentScan.Filter(type

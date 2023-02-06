@@ -57,7 +57,7 @@ public class MediaMetaDataService {
         for (int i = 0; i < metadataToDelete.size(); i++) {
             MediaMetadataRecord metadata = metadataToDelete.get(i);
             Path parentPath = Paths.get(metadata.getFilePath()).getParent();
-            String fileIdWithExt = metadata.getId() + "." + metadata.getContentType();
+            String fileIdWithExt = metadata.getFileId() + "." + metadata.getContentType();
             Boolean deletedSuccessfully = cleanMedia(parentPath, fileIdWithExt, this);
             if (deletedSuccessfully) {
                 deletedCount++;
