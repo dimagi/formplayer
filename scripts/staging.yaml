@@ -51,11 +51,8 @@ trunk: master
 name: autostaging
 branches:
     - java-17-update # Ahmad Dec 13
-    - jt/ush-2683_custom_text_for_case_list_empty_state # Jan 17
-    - virtualInstanceIssue # Shubham 24 Jan
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
         - java-17-update # Ahmad Dec 13
-        - jt/ush-2683_custom_text_for_case_list_empty_state #J an 17

@@ -1,25 +1,18 @@
 package org.commcare.formplayer.tests;
 
-import static org.commcare.formplayer.junit.HasXpath.hasXpath;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.commcare.formplayer.junit.HasXpath;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
-import org.commcare.formplayer.junit.request.EvaluateXpathRequest;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.util.Constants;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +64,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         selections = formResp.getSelections();
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
-        checkForSelectedEntitiesDatum(formRespUsingGuid.getSessionId(), selections);
+        checkForSelectedEntitiesDatum(formRespUsingGuid.getSessionId(), selections[2]);
         checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selectedValues);
     }
 
@@ -88,29 +81,6 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         } catch (Exception e) {
             fail("Session Navigation failed for pre-validated input", e);
         }
-    }
-
-
-    // Ensure that 'selected_cases' instance is populated correctly
-    private void checkForSelectedEntitiesInstance(String sessionId, String[] expectedCases) throws Exception {
-        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
-                "instance('selected_cases')/results");
-        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        for (int i = 0; i < expectedCases.length; i++) {
-            String xpathRef = "/result/results[@id='selected_cases']/value[" + (i+1) + "]";
-            assertThat(evaluateXpathResponseBean.getOutput(), hasXpath(xpathRef, equalTo(expectedCases[i])));
-        }
-
-    }
-
-    // Ensure that the instance datum is set correctly to the guid
-    private void checkForSelectedEntitiesDatum(String sessionId, String[] selections) throws Exception {
-        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
-                "instance('commcaresession')/session/data/selected_cases");
-        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        String guid = selections[selections.length - 1];
-        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>" + guid + "</result>\n";
-        assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
 
     @Test
@@ -144,7 +114,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertTrue(submitResponse.getStatus().contentEquals("success"));
         NewFormResponse newFormResponse = getNextScreenForEofNavigation(submitResponse,
                 NewFormResponse.class);
-        checkForSelectedEntitiesDatum(newFormResponse.getSessionId(), newFormResponse.getSelections());
+        checkForSelectedEntitiesDatum(newFormResponse.getSessionId(), newFormResponse.getSelections()[2]);
         checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
     }
 

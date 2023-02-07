@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 import static org.commcare.formplayer.junit.HasXpath.hasXpath;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -686,11 +687,11 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, null,  clazz, false);
+        return getDetails(selections, testName, null, null, clazz, false);
     }
 
     <T> T getDetails(String[] selections, String testName, QueryData queryData, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, queryData,  clazz, false);
+        return getDetails(selections, testName, null, queryData, clazz, false);
     }
 
     <T> T getDetails(String[] selections, String testName, String locale, QueryData queryData, Class<T> clazz,
@@ -714,7 +715,7 @@ public class BaseTestClass {
     }
 
     <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, null,  clazz, true);
+        return getDetails(selections, testName, null, null, clazz, true);
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
@@ -1046,5 +1047,26 @@ public class BaseTestClass {
                 .as("check file extension: %s", path)
                 .anyMatch(path::endsWith);
         return true;
+    }
+
+    // Ensure that 'selected_cases' instance is populated correctly
+    protected void checkForSelectedEntitiesInstance(String sessionId, String[] expectedCases) throws Exception {
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
+                "instance('selected_cases')/results");
+        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        for (int i = 0; i < expectedCases.length; i++) {
+            String xpathRef = "/result/results/value[" + (i + 1) + "]";
+            assertThat(evaluateXpathResponseBean.getOutput(), hasXpath(xpathRef, equalTo(expectedCases[i])));
+        }
+
+    }
+
+    // Ensure that the instance datum is set correctly to the guid
+    protected void checkForSelectedEntitiesDatum(String sessionId, String guid) throws Exception {
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
+                "instance('commcaresession')/session/data/selected_cases");
+        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>" + guid + "</result>\n";
+        assertEquals(evaluateXpathResponseBean.getOutput(), result);
     }
 }

@@ -9,6 +9,7 @@
 			</instance>
 			<instance src="jr://instance/casedb" id="casedb"/>
 			<instance src="jr://instance/session" id="commcaresession"/>
+			<instance id="selected_cases" src="jr://instance/selected-entities/selected_cases"/>
 			<itext>
 				<translation lang="en" default="">
 					<text id="welcome_message-label">
@@ -16,7 +17,7 @@
 					</text>
 				</translation>
 			</itext>
-		<bind calculate="instance('commcaresession')/session/data/case_id" nodeset="/data/case/@case_id"/></model>
+		</model>
 	</h:head>
 	<h:body>
 		<trigger ref="/data/welcome_message" appearance="minimal">
