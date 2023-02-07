@@ -156,8 +156,7 @@ public class MenuSessionRunnerService {
         if (nextScreen instanceof MenuScreen) {
             menuResponseBean = new CommandListResponseBean(
                     (MenuScreen)nextScreen,
-                    menuSession.getSessionWrapper(),
-                    menuSession.getId()
+                    menuSession.getSessionWrapper()
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             Sentry.setTag(Constants.MODULE_TAG, "menu");
