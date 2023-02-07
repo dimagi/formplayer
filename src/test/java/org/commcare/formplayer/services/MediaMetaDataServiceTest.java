@@ -90,7 +90,7 @@ public class MediaMetaDataServiceTest {
             return null;
         }).when(mediaMetaDataRepo).deleteById(any());
 
-        when(mediaMetaDataRepo.getFormSessionIsNull()).thenAnswer(new Answer<List<MediaMetadataRecord>>() {
+        when(mediaMetaDataRepo.findByFormSessionIsNull()).thenAnswer(new Answer<List<MediaMetadataRecord>>() {
             @Override
             public List<MediaMetadataRecord> answer(InvocationOnMock invocation) throws Throwable {
                 List<MediaMetadataRecord> recordsList = new ArrayList<>();

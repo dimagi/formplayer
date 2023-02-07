@@ -41,7 +41,7 @@ public class MediaMetaDataService {
     }
 
     public List<MediaMetadataRecord> findAllWithNullFormSession() {
-        return mediaMetaDataRepo.getFormSessionIsNull();
+        return mediaMetaDataRepo.findByFormSessionIsNull();
     }
 
     /**

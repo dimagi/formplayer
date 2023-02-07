@@ -13,5 +13,6 @@ public interface MediaMetaDataRepo extends JpaRepository<MediaMetadataRecord, St
 
     List<MediaMetadataRecord> findByFormSession(String formSessionId);
 
-    List<MediaMetadataRecord> getFormSessionIsNull();
+//    @Query(value = "SELECT * FROM media_meta_data WHERE formsessionid IS NULL", nativeQuery = true)
+    List<MediaMetadataRecord> findByFormSessionIsNull();
 }

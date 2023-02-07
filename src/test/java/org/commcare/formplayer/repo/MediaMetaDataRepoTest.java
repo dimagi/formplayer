@@ -103,7 +103,7 @@ public class MediaMetaDataRepoTest {
 
         Optional<MediaMetadataRecord> fetchedMediaMetaData = mediaMetadataRepo.findById(mediaMetaData.getId());
         Assertions.assertTrue(fetchedMediaMetaData.isPresent());
-        List<MediaMetadataRecord> records = mediaMetadataRepo.getFormSessionIsNull();
+        List<MediaMetadataRecord> records = mediaMetadataRepo.findByFormSessionIsNull();
         Assertions.assertEquals(1, records.size());
     }
 }
