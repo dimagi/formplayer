@@ -51,12 +51,11 @@ public class MediaMetaDataServiceTest {
     @BeforeEach
     public void setUp() throws IOException {
         fileId = UUID.randomUUID().toString();
-        testFile = new File("./media" + fileId + ".jpg");
+        testFile = new File("media/" + fileId + ".jpg");
         testFile.createNewFile();
-
         mediaMetaData = new MediaMetadataRecord(
                 fileId,
-                "/testfile.jpg",
+                "media/" + fileId + ".jpg",
                 null,
                 "jpg",
                 4,
@@ -65,6 +64,7 @@ public class MediaMetaDataServiceTest {
                 "domain",
                 "appid"
         );
+        
         when(mediaMetaDataRepo.save(any())).thenAnswer(new Answer<MediaMetadataRecord>() {
             @Override
             public MediaMetadataRecord answer(InvocationOnMock invocation) throws Throwable {
@@ -128,8 +128,6 @@ public class MediaMetaDataServiceTest {
         Integer purgeCount = mediaMetaDataService.purge(Instant.now());
         Assertions.assertEquals(1, purgeCount);
         Assertions.assertFalse(testFile.exists());
-
-
     }
 
     @ComponentScan(basePackageClasses = {
