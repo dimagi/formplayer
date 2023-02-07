@@ -45,17 +45,18 @@ public class MediaMetaDataServiceTest {
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
     private String fileId;
-
     private File testFile;
+    private String testFilePath;
 
     @BeforeEach
     public void setUp() throws IOException {
         fileId = UUID.randomUUID().toString();
-        testFile = new File("media/" + fileId + ".jpg");
+        testFilePath = "media/" + fileId + ".jpg";
+        testFile = new File(testFilePath);
         testFile.createNewFile();
         mediaMetaData = new MediaMetadataRecord(
                 fileId,
-                "media/" + fileId + ".jpg",
+                testFilePath,
                 null,
                 "jpg",
                 4,
