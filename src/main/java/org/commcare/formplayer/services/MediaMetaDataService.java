@@ -44,10 +44,6 @@ public class MediaMetaDataService {
         return mediaMetaDataRepo.getFormSessionIsNull();
     }
 
-    public List<MediaMetadataRecord> findAll() {
-        return mediaMetaDataRepo.findAll();
-    }
-
     /**
      * Deletes obsolete media files and metadata
      */
