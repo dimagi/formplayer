@@ -26,6 +26,12 @@ public class SessionNavigationBean extends InstallRequestBean {
     private int casesPerPage;
     private String[] selectedValues;
 
+    /**
+     * Form session ID used to prevent attempts to navigate into a form session
+     * e.g. pressing the back button
+     */
+    private String formSessionId;
+
     public String[] getSelections() {
         return selections;
     }
@@ -134,5 +140,15 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "selected_values")
     public void setSelectedValues(String[] selectedValues) {
         this.selectedValues = selectedValues;
+    }
+
+    @JsonGetter(value = "form_session_id")
+    public String getFormSessionId() {
+        return formSessionId;
+    }
+
+    @JsonSetter(value = "form_session_id")
+    public void setFormSessionId(String formSessionId) {
+        this.formSessionId = formSessionId;
     }
 }
