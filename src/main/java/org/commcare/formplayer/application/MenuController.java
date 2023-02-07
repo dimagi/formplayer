@@ -56,7 +56,6 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex(),
                     sessionNavigationBean.getCasesPerPage(),
-                    sessionNavigationBean.getSmartLinkTemplate(),
                     sessionNavigationBean.getSelectedValues()
             );
             logNotification(baseResponseBean.getNotification(),request);
@@ -82,7 +81,6 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
-                sessionNavigationBean.getSmartLinkTemplate(),
                 sessionNavigationBean.getSelectedValues()
         );
         logNotification(baseResponseBean.getNotification(),request);
@@ -140,7 +138,6 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
-                sessionNavigationBean.getSmartLinkTemplate(),
                 sessionNavigationBean.getSelectedValues()
         );
         logNotification(response.getNotification(), request);

@@ -24,7 +24,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     private boolean isPersistent;
     private int sortIndex;
     private int casesPerPage;
-    private String smartLinkTemplate;
     private String[] selectedValues;
 
     public String[] getSelections() {
@@ -107,16 +106,6 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setIsPersistent(boolean persistent) {
         isPersistent = persistent;
-    }
-
-    @JsonGetter(value = "smart_link_template")
-    public String getSmartLinkTemplate() {
-        return smartLinkTemplate;
-    }
-
-    @JsonSetter(value = "smart_link_template")
-    public void setSmartLinkTemplate(String smartLinkTemplate) {
-        this.smartLinkTemplate = smartLinkTemplate;
     }
 
     public int getSortIndex() {

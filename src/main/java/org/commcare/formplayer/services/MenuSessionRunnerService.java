@@ -124,7 +124,7 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null, 0, null);
+        return getNextMenu(menuSession, null, 0, "", 0, null, 0);
     }
 
     @Trace
@@ -134,8 +134,7 @@ public class MenuSessionRunnerService {
             String searchText,
             int sortIndex,
             QueryData queryData,
-            int casesPerPage,
-            String smartLinkTemplate) throws Exception {
+            int casesPerPage) throws Exception {
         Screen nextScreen = menuSession.getNextScreen(detailSelection != null);
 
         // No next menu screen? Start form entry!
@@ -166,7 +165,7 @@ public class MenuSessionRunnerService {
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
                     return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData,
-                            casesPerPage, smartLinkTemplate);
+                            casesPerPage);
                 }
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
@@ -219,7 +218,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections, QueryData queryData) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, queryData,
-                0, null, 0, 0, null, null);
+                0, null, 0, 0, null);
     }
 
     /**
@@ -246,7 +245,6 @@ public class MenuSessionRunnerService {
             String searchText,
             int sortIndex,
             int casesPerPage,
-            String smartLinkTemplate,
             String[] selectedValues) throws Exception {
         NotificationMessage notificationMessage = null;
         try {
@@ -259,8 +257,7 @@ public class MenuSessionRunnerService {
                         searchText,
                         sortIndex,
                         queryData,
-                        casesPerPage,
-                        smartLinkTemplate
+                        casesPerPage
                 );
             }
             for (int i = 1; i <= selections.length; i++) {
@@ -321,8 +318,7 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex,
                 queryData,
-                casesPerPage,
-                smartLinkTemplate
+                casesPerPage
         );
         restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
