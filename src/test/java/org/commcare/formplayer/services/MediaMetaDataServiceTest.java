@@ -127,6 +127,9 @@ public class MediaMetaDataServiceTest {
         Assertions.assertTrue(testFile.exists());
         Integer purgeCount = mediaMetaDataService.purge(Instant.now());
         Assertions.assertEquals(1, purgeCount);
+        Assertions.assertFalse(testFile.exists());
+
+
     }
 
     @ComponentScan(basePackageClasses = {
