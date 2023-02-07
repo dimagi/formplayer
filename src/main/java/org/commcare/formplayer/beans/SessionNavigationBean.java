@@ -20,7 +20,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     private HashMap<String, String> endpointArgs;
     private String searchText;
     private String geoLocation;
-    private String menuSessionId;
     private QueryData queryData;
     private boolean isPersistent;
     private int sortIndex;
@@ -38,7 +37,7 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     @Override
     public String toString() {
-        return "SessionNavigationBean [id= " + menuSessionId +
+        return "SessionNavigationBean [" +
                 ", selections=" + Arrays.toString(selections) +
                 ", parent=" + super.toString() +
                 ", queryData" + queryData + "]";
@@ -80,16 +79,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "search_text")
     public void setSearchText(String searchText) {
         this.searchText = searchText;
-    }
-
-    @JsonGetter(value = "menu_session_id")
-    public String getMenuSessionId() {
-        return menuSessionId;
-    }
-
-    @JsonSetter(value = "menu_session_id")
-    public void setMenuSessionId(String menuSessionId) {
-        this.menuSessionId = menuSessionId;
     }
 
     @JsonGetter(value = "query_data")
