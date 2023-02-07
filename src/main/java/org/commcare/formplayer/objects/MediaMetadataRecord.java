@@ -31,7 +31,6 @@ public class MediaMetadataRecord {
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    @Setter
     @Column(name = "fileid", updatable = false)
     private String fileId;
 
