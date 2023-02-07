@@ -51,8 +51,6 @@ trunk: master
 name: autostaging
 branches:
     - java-17-update # Ahmad Dec 13
-    - virtualInstanceIssue # Shubham 24 Jan
-    - jt/ush-2869_redeploy_empty_state_text # Jonathan T. Jan 30
 submodules:
   libs/commcare:
     trunk: formplayer
