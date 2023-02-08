@@ -51,6 +51,7 @@ trunk: master
 name: autostaging
 branches:
     - java-17-update # Ahmad Dec 13
+    - saveMediaAttachment # Robert Feb 8
 submodules:
   libs/commcare:
     trunk: formplayer
