@@ -7,7 +7,7 @@ import java.util.Arrays;
 /**
  * Updates media_meta_data table with fileid column and assigns a value if filed is null
  */
-public class V27_media_meta_data_fileid extends BaseFormplayerMigration {
+public class V27__media_meta_data_fileid extends BaseFormplayerMigration {
     @Override
     public Iterable<String> getSqlStatements() {
         String table = Constants.POSTGRES_MEDIA_META_DATA_TABLE_NAME;
