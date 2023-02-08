@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services
 
+import org.apache.juli.logging.LogFactory
 import org.commcare.formplayer.objects.MediaMetadataRecord
 import org.commcare.formplayer.objects.SerializableFormSession
 import org.commcare.formplayer.services.MediaValidator.isFileTooLarge
@@ -17,6 +18,32 @@ import java.nio.file.Paths
  * Supporting methods to process and save media files on the filesystem
  */
 class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaDataService) {
+
+    companion object {
+        val log = LogFactory.getLog(this.javaClass)
+
+        private fun getMediaFilePath(parentDirPath: Path, fileId: String): Path {
+            return Paths.get(parentDirPath.toString(), fileId)
+        }
+
+        @JvmStatic
+        fun cleanMedia(parentDirPath: Path, fileIdWithExt: String, mediaMetaDataService: MediaMetaDataService): Boolean {
+            val currentMedia = getMediaFilePath(parentDirPath, fileIdWithExt).toFile()
+            val deleted = currentMedia.delete()
+            val metadataId = fileIdWithExt.substring(0, fileIdWithExt.indexOf("."))
+            if (deleted) {
+                try {
+                    mediaMetaDataService.deleteMetaDataById(metadataId)
+                } catch (e: Exception) {
+                    // just log, we don't want to crash even if delete fails
+                    log.info("Could not delete media data record for media id $metadataId")
+                }
+            } else {
+                log.info("Could not delete media from filesystem at path $currentMedia")
+            }
+            return deleted
+        }
+    }
 
     /**
      * Saves file in the given parent directory
@@ -72,24 +99,5 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
             val fileOversizeError = Localization.get("file.oversize.error.message")
             throw RuntimeException(fileOversizeError)
         }
-    }
-
-    fun getMediaFilePath(parentDirPath: Path, fileId: String): Path {
-        return Paths.get(parentDirPath.toString(), fileId)
-    }
-
-    fun cleanMedia(parentDirPath: Path, fileIdWithExt: String): Boolean {
-        val currentMedia = getMediaFilePath(parentDirPath, fileIdWithExt).toFile()
-        val deleted = currentMedia.delete()
-        val metadataId = fileIdWithExt.substring(0, fileIdWithExt.indexOf("."))
-        if (deleted) {
-            try {
-                mediaMetaDataService.deleteMetaDataById(metadataId)
-            } catch (e: Exception) {
-                // ignore, we don't want to crash even if delete fails
-            }
-        }
-
-        return deleted
     }
 }
