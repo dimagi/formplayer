@@ -651,7 +651,6 @@ public class BaseTestClass {
         evaluateXPathRequestBean.setUsername(menuSession.getUsername());
         evaluateXPathRequestBean.setDomain(menuSession.getDomain());
         evaluateXPathRequestBean.setRestoreAs(menuSession.getAsUser());
-        evaluateXPathRequestBean.setMenuSessionId(menuSessionId);
         evaluateXPathRequestBean.setXpath(xpath);
         return generateMockQuery(
                 ControllerType.DEBUGGER,
