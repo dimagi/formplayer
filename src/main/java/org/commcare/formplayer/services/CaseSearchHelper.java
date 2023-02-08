@@ -43,8 +43,10 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source, boolean skipCache)
-            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
+    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
+            boolean skipCache)
+            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
+            IOException {
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
@@ -81,7 +83,8 @@ public class CaseSearchHelper {
 
     public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url,
             Multimap<String, String> requestData, boolean skipCache)
-            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
+            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
+            IOException {
 
         ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemote(
                 instanceId, null, useCaseTemplate, url.toString(), requestData);
