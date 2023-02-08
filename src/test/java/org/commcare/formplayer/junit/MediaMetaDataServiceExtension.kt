@@ -35,7 +35,7 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
             )
         )
 
-        Mockito.`when`(mediaMetaDataService.findById(ArgumentMatchers.anyString()))
+        Mockito.`when`(mediaMetaDataService.findByFileId(ArgumentMatchers.anyString()))
             .thenAnswer(
                 Answer { invocation ->
                     val fileId = invocation.arguments[0] as String

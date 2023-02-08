@@ -106,13 +106,13 @@ class MediaCaptureTest {
         assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
         // check that metadata was created and values match expected
         val fileName = expectedFilePath.fileName.toString()
-        val metadataId = fileName.substring(0, fileName.indexOf("."))
-        val originalMetadata = mediaMetaDataService.findById(metadataId)
+        val fileId = fileName.substring(0, fileName.indexOf("."))
+        val originalMetadata = mediaMetaDataService.findByFileId(fileId)
         assertTrue(
             "Media metadata does not match expected values",
             validateMetadataProperties(
                 originalMetadata,
-                metadataId,
+                fileId,
                 expectedFilePath.toString(),
                 formResponse.session_id,
                 "jpg",
@@ -137,12 +137,12 @@ class MediaCaptureTest {
         // check that metadata was replaced and values match expected
         val newFileName = expectedFilePath.fileName.toString()
         val newMetadataId = newFileName.substring(0, newFileName.indexOf("."))
-        val originalMetadataId = originalMetadata.id
+        val originalMetadataFileId = originalMetadata.fileId
         assertThrows<MediaMetaDataNotFoundException> {
-            mediaMetaDataService.findById(originalMetadataId)
+            mediaMetaDataService.findByFileId(originalMetadataFileId)
         }
-        val newMetadata = mediaMetaDataService.findById(newMetadataId)
-        assertNotEquals(newMetadata.id, originalMetadataId)
+        val newMetadata = mediaMetaDataService.findByFileId(newMetadataId)
+        assertNotEquals(newMetadata.fileId, originalMetadataFileId)
         assertEquals(newMetadata.filePath, expectedFilePath.toString())
     }
 
@@ -154,7 +154,7 @@ class MediaCaptureTest {
 
     private fun validateMetadataProperties(
         record: MediaMetadataRecord,
-        id: String,
+        fileId: String,
         filePath: String,
         formSessionId: String,
         contentType: String,
@@ -164,7 +164,7 @@ class MediaCaptureTest {
         domain: String,
         appId: String?,
     ): Boolean {
-        if (record.id != id ||
+        if (record.fileId != fileId ||
             record.filePath != filePath ||
             record.formSession.id != formSessionId ||
             record.contentType != contentType ||

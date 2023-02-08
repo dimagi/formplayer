@@ -24,8 +24,8 @@ public class MediaMetaDataService {
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
 
-    public MediaMetadataRecord findById(String id) {
-        Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findById(id);
+    public MediaMetadataRecord findByFileId(String id) {
+        Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findByFileId(id);
         if (!record.isPresent()) {
             throw new MediaMetaDataNotFoundException(id);
         }
