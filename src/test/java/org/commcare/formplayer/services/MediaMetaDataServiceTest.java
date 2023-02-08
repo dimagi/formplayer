@@ -51,7 +51,7 @@ public class MediaMetaDataServiceTest {
     @BeforeEach
     public void setUp() throws IOException {
         fileId = UUID.randomUUID().toString();
-        testFilePath = "media/" + fileId + ".jpg";
+        testFilePath = "src/test/resources/media/" + fileId + ".jpg";
         testFile = new File(testFilePath);
         testFile.createNewFile();
         mediaMetaData = new MediaMetadataRecord(
