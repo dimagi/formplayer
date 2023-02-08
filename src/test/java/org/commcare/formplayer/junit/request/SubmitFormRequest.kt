@@ -10,7 +10,7 @@ import org.springframework.test.web.servlet.MockMvc
  * Request class for making a mock request submits a form.
  */
 class SubmitFormRequest(mockMvc: MockMvc) : MockRequest<SubmitRequestBean, SubmitResponseBean>(
-    mockMvc, Constants.URL_SUBMIT_FORM, SubmitResponseBean::class
+    mockMvc, Constants.URL_SUBMIT_FORM, SubmitResponseBean::class.java
 ) {
 
     fun request(requestPath: String, sessionId: String): Response<SubmitResponseBean> {

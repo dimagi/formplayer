@@ -17,7 +17,7 @@ class NewFormRequest(
     private val webClientMock: WebClient,
     private val formPath: String
     ) : MockRequest<NewSessionRequestBean, NewFormResponse>(
-    mockMvc, Constants.URL_NEW_SESSION, NewFormResponse::class
+    mockMvc, Constants.URL_NEW_SESSION, NewFormResponse::class.java
 ) {
 
     fun request(requestPath: String): Response<NewFormResponse> {

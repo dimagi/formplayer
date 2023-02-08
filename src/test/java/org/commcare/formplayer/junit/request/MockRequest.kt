@@ -9,15 +9,14 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import javax.servlet.http.Cookie
-import kotlin.reflect.KClass
 
 /**
  * Base class for mock requests
  */
-open class MockRequest<B, T : Any>(
+open class MockRequest<B, out T : Any>(
     private val mockMvc: MockMvc,
     private val requestPath: String,
-    private val kClass: KClass<T>
+    private val kClass: Class<T>
 ) {
 
     internal val mapper = ObjectMapper()

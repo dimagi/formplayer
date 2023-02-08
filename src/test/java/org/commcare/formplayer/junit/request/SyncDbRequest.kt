@@ -13,7 +13,7 @@ class SyncDbRequest(
     mockMvc: MockMvc,
     private val restoreFactory: RestoreFactory
     ) : MockRequest<SyncDbRequestBean, SyncDbResponseBean>(
-    mockMvc, Constants.URL_SYNC_DB, SyncDbResponseBean::class
+    mockMvc, Constants.URL_SYNC_DB, SyncDbResponseBean::class.java
 ) {
 
     fun request(): Response<SyncDbResponseBean> {
