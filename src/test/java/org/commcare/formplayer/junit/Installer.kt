@@ -94,11 +94,11 @@ class Installer(
             for (template in paths) {
                 val path = String.format(template, nameOrPath)
                 if (checkInstallReference(path)) {
-                    log.info(String.format("Found install reference at %s", path))
+                    log.info("Found install reference at $path")
                     return path
                 }
             }
-            throw RuntimeException(String.format("Unable to find install reference for %s", nameOrPath))
+            throw RuntimeException("Unable to find install reference for $nameOrPath")
         }
 
         /**
