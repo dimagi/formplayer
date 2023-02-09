@@ -10,7 +10,7 @@ import org.springframework.test.web.servlet.ResultMatcher
  * Wrapper class for MockMVC responses that gives access ot the response bean as well as the
  * ResultActions object.
  */
-class Response<out T: Any>(
+class Response<out T : Any>(
     private val mapper: ObjectMapper,
     val response: ResultActions,
     private val kClass: Class<T>

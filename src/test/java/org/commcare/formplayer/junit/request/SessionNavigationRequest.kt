@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc
  *     responseBean: CommandListResponseBean = response.bean()
  * </pre>
  */
-class SessionNavigationRequest<out T: BaseResponseBean>(
+class SessionNavigationRequest<out T : BaseResponseBean>(
     mockMvc: MockMvc,
     kClass: Class<T>,
     val installReference: String? = null
@@ -61,5 +61,4 @@ class SessionNavigationRequest<out T: BaseResponseBean>(
         sessionNavigationBean.selections = selections
         return sessionNavigationBean
     }
-
 }

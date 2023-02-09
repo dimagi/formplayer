@@ -18,7 +18,7 @@ class SubmitFormRequest(mockMvc: MockMvc) : MockRequest<SubmitRequestBean, Submi
         bean.sessionId = sessionId
         bean.answers = answers
         bean.isPrevalidated = prevalidated
-        return requestWithBean(bean);
+        return requestWithBean(bean)
     }
 
     fun request(requestPath: String, sessionId: String): Response<SubmitResponseBean> {

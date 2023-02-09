@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest
 @Import({MenuController.class, FormSubmissionController.class})
-@ContextConfiguration(classes={TestContext.class, CacheConfiguration.class})
+@ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 @FormSessionTest
 public class BackNavigationTests {
 
@@ -105,7 +105,7 @@ public class BackNavigationTests {
         String sessionId = formResponse.bean().getSessionId();
 
         SubmitResponseBean submitResponseBean = new SubmitFormRequest(mockMvc).request(
-                sessionId, ImmutableMap.of("0", "1" ), true
+                sessionId, ImmutableMap.of("0", "1"), true
         ).bean();
         assertThat(submitResponseBean.getStatus()).isEqualTo("success");
 
@@ -115,9 +115,11 @@ public class BackNavigationTests {
         assertThat(backResponse.getTitle()).isEqualTo("Minimize Duplicates");
     }
 
-    private <T extends BaseResponseBean> Response<T> navigate(String[] selections, Class<T> responseClass, String sessionId) {
+    private <T extends BaseResponseBean> Response<T> navigate(
+            String[] selections, Class<T> responseClass, String sessionId) {
         String installReference = Installer.getInstallReference("basic");
-        SessionNavigationRequest<T> request = new SessionNavigationRequest<>(mockMvc, responseClass, installReference);
+        SessionNavigationRequest<T> request = new SessionNavigationRequest<>(
+                mockMvc, responseClass, installReference);
         SessionNavigationBean bean = request.getNavigationBean(selections);
         if (sessionId != null) {
             bean.setFormSessionId(sessionId);
