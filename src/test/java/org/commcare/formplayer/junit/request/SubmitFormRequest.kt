@@ -10,8 +10,16 @@ import org.springframework.test.web.servlet.MockMvc
  * Request class for making a mock request submits a form.
  */
 class SubmitFormRequest(mockMvc: MockMvc) : MockRequest<SubmitRequestBean, SubmitResponseBean>(
-    mockMvc, Constants.URL_SUBMIT_FORM, SubmitResponseBean::class
+    mockMvc, Constants.URL_SUBMIT_FORM, SubmitResponseBean::class.java
 ) {
+
+    fun request(sessionId: String, answers: Map<String, Any>, prevalidated: Boolean): Response<SubmitResponseBean> {
+        val bean = SubmitRequestBean()
+        bean.sessionId = sessionId
+        bean.answers = answers
+        bean.isPrevalidated = prevalidated
+        return requestWithBean(bean)
+    }
 
     fun request(requestPath: String, sessionId: String): Response<SubmitResponseBean> {
         val requestPayload = FileUtils.getFile(this.javaClass, requestPath)

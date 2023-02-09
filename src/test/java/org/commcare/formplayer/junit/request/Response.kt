@@ -5,21 +5,20 @@ import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.ResultHandler
 import org.springframework.test.web.servlet.ResultMatcher
-import kotlin.reflect.KClass
 
 /**
  * Wrapper class for MockMVC responses that gives access ot the response bean as well as the
  * ResultActions object.
  */
-class Response<T : Any>(
+class Response<out T : Any>(
     private val mapper: ObjectMapper,
     val response: ResultActions,
-    private val kClass: KClass<T>
+    private val kClass: Class<T>
 ) : ResultActions {
 
     fun bean(): T {
         return mapper.readValue(
-            response.andReturn().response.contentAsString, kClass.java
+            response.andReturn().response.contentAsString, kClass
         )
     }
 
