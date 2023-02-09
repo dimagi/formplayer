@@ -52,6 +52,7 @@ name: autostaging
 branches:
     - java-17-update # Ahmad Dec 13
     - saveMediaAttachment # Robert Feb 8
+    - sk/session-id-validation  # Simon Feb 9
 submodules:
   libs/commcare:
     trunk: formplayer
