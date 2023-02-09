@@ -13,6 +13,14 @@ class SubmitFormRequest(mockMvc: MockMvc) : MockRequest<SubmitRequestBean, Submi
     mockMvc, Constants.URL_SUBMIT_FORM, SubmitResponseBean::class.java
 ) {
 
+    fun request(sessionId: String, answers: Map<String, Object>, prevalidated: Boolean): Response<SubmitResponseBean> {
+        val bean = SubmitRequestBean()
+        bean.sessionId = sessionId
+        bean.answers = answers
+        bean.isPrevalidated = prevalidated
+        return requestWithBean(bean);
+    }
+
     fun request(requestPath: String, sessionId: String): Response<SubmitResponseBean> {
         val requestPayload = FileUtils.getFile(this.javaClass, requestPath)
         val bean = mapper.readValue(requestPayload, SubmitRequestBean::class.java)
