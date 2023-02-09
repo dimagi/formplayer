@@ -13,7 +13,7 @@ class SubmitFormRequest(mockMvc: MockMvc) : MockRequest<SubmitRequestBean, Submi
     mockMvc, Constants.URL_SUBMIT_FORM, SubmitResponseBean::class.java
 ) {
 
-    fun request(sessionId: String, answers: Map<String, Object>, prevalidated: Boolean): Response<SubmitResponseBean> {
+    fun request(sessionId: String, answers: Map<String, Any>, prevalidated: Boolean): Response<SubmitResponseBean> {
         val bean = SubmitRequestBean()
         bean.sessionId = sessionId
         bean.answers = answers
