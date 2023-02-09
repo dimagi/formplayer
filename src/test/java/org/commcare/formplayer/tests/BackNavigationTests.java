@@ -49,28 +49,8 @@ public class BackNavigationTests {
             .withUser("back_nav").withDomain("back_nav").build();
 
     @Test
-    public void testGoBackToFormListForModule() throws Exception {
-        // navigate to 'Case Tests' -> 'Create a Case' form
-        String[] selections = {"2", "0"};
-
-        String sessionId = navigate(selections, NewFormResponse.class, null).getSessionId();
-
-        SubmitResponseBean submitResponseBean = new SubmitFormRequest(mockMvc).request(
-                sessionId, ImmutableMap.of("0", "name", "1", "1"), true
-        ).bean();
-        assertEquals("success", submitResponseBean.getStatus());
-
-        // performing the same navigation again (but with the sessionId) should put us back at the
-        // form list screen for the 'Case Tests' (m2) module
-        CommandListResponseBean backResponse = navigate(selections, CommandListResponseBean.class, sessionId);
-        assertThat(backResponse.getCommands())
-                .hasSize(6)
-                .anyMatch(command -> command.getIndex() == 0 && command.getDisplayText().equals("Create a Case"));
-    }
-
-    @Test
     public void testGoBackToCaseList() throws Exception {
-        // navigate to 'Case Tests' -> 'Update a Case' form with 'c3' case
+        // navigate to 'Case Tests' -> 'Update a Case' -> [c3]
         String[] selections = {"2", "1", "124938b2-c228-4107-b7e6-31a905c3f4ff"};
 
         String sessionId = navigate(selections, NewFormResponse.class, null).getSessionId();
@@ -84,6 +64,49 @@ public class BackNavigationTests {
         // case list screen
         EntityListResponse backResponse = navigate(selections, EntityListResponse.class, sessionId);
         assertThat(backResponse.getTitle()).isEqualTo("Update a Case");
+    }
+
+    @Test
+    public void testGoBackToCaseFormList() throws Exception {
+        // navigate to 'Minimize Duplicates' -> [c3] -> 'Update a Case'
+        String[] selections = {"5", "124938b2-c228-4107-b7e6-31a905c3f4ff", "0"};
+
+        NewFormResponse formResponse = navigate(selections, NewFormResponse.class, null);
+        assertThat(formResponse.getTitle()).isEqualTo("Update a Case");
+        String sessionId = formResponse.getSessionId();
+
+        SubmitResponseBean submitResponseBean = new SubmitFormRequest(mockMvc).request(
+                sessionId, ImmutableMap.of("4", 1 ), true
+        ).bean();
+        assertEquals("success", submitResponseBean.getStatus());
+
+        // performing the same navigation again (but with the sessionId) should put us back at the
+        // case list screen (since the selected case is now closed)
+        CommandListResponseBean backResponse = navigate(selections, CommandListResponseBean.class, sessionId);
+        assertThat(backResponse.getTitle()).isEqualTo("Minimize Duplicates");
+        assertThat(backResponse.getCommands()).hasSize(2)
+                .extracting("displayText")
+                .containsExactly("Update a Case", "Close a Case");
+    }
+
+    @Test
+    public void testGoBackToCaseListAfterCaseClosed() throws Exception {
+        // navigate to 'Minimize Duplicates' -> [c3] -> 'Close a Case'
+        String[] selections = {"5", "124938b2-c228-4107-b7e6-31a905c3f4ff", "1"};
+
+        NewFormResponse formResponse = navigate(selections, NewFormResponse.class, null);
+        assertThat(formResponse.getTitle()).isEqualTo("Close a Case");
+        String sessionId = formResponse.getSessionId();
+
+        SubmitResponseBean submitResponseBean = new SubmitFormRequest(mockMvc).request(
+                sessionId, ImmutableMap.of("0", "1" ), true
+        ).bean();
+        assertEquals("success", submitResponseBean.getStatus());
+
+        // performing the same navigation again (but with the sessionId) should put us back at the
+        // case list screen (since the selected case is now closed)
+        EntityListResponse backResponse = navigate(selections, EntityListResponse.class, sessionId);
+        assertThat(backResponse.getTitle()).isEqualTo("Minimize Duplicates");
     }
 
     private <T extends BaseResponseBean> T navigate(String[] selections, Class<T> responseClass, String sessionId) throws Exception {
