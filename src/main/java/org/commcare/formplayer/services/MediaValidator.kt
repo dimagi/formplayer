@@ -11,8 +11,29 @@ object MediaValidator {
 
     // 3 MB size limit
     private const val MAX_BYTES_PER_ATTACHMENT = (3 * 1048576 - 1024).toLong()
-    private val SUPPORTED_FILE_EXTS = ImmutableList.of(".jpg", "jpeg", "png", "pdf")
-    private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application/pdf")
+    private val SUPPORTED_FILE_EXTS = ImmutableList.of(
+        ".jpg",
+        "jpeg",
+        "png",
+        "pdf",
+        "3gpp",
+        "3gp",
+        "3ga",
+        "3g2",
+        "mp3",
+        "wav",
+        "amr",
+        "mp4",
+        "3gp2",
+        "mpg4",
+        "mpeg4",
+        "m4v",
+        "mpg",
+        "mpeg",
+        "qcp",
+        "ogg"
+    )
+    private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application/pdf", "audio", "video")
 
     @JvmStatic
     fun isFileTooLarge(size: Long): Boolean {
