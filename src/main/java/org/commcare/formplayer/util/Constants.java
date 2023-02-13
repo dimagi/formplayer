@@ -5,19 +5,20 @@ package org.commcare.formplayer.util;
  */
 public class Constants {
     //URLS
-    public final static String URL_NEW_SESSION = "new-form";
-    public final static String URL_INCOMPLETE_SESSION = "incomplete-form";
-    public final static String URL_DELETE_INCOMPLETE_SESSION = "delete-incomplete-form";
-    public final static String URL_ANSWER_QUESTION = "answer";
-    public final static String URL_CURRENT = "current";
-    public final static String URL_SUBMIT_FORM = "submit-all";
-    public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
-    public final static String URL_EVALUATE_MENU_XPATH = "evaluate-menu-xpath";
-    public final static String URL_NEW_REPEAT = "new-repeat";
-    public final static String URL_DELETE_REPEAT = "delete-repeat";
-    public final static String URL_SYNC_DB = "sync-db";
-    public final static String URL_LIST_SESSIONS = "sessions";
-    public final static String URL_GET_SESSION = "get_session";
+    public static final String URL_NEW_SESSION = "new-form";
+    public static final String URL_INCOMPLETE_SESSION = "incomplete-form";
+    public static final String URL_DELETE_INCOMPLETE_SESSION = "delete-incomplete-form";
+    public static final String URL_ANSWER_QUESTION = "answer";
+    public static final String URL_ANSWER_MEDIA_QUESTION = "answer_media";
+    public static final String URL_CURRENT = "current";
+    public static final String URL_SUBMIT_FORM = "submit-all";
+    public static final String URL_EVALUATE_XPATH = "evaluate-xpath";
+    public static final String URL_EVALUATE_MENU_XPATH = "evaluate-menu-xpath";
+    public static final String URL_NEW_REPEAT = "new-repeat";
+    public static final String URL_DELETE_REPEAT = "delete-repeat";
+    public static final String URL_SYNC_DB = "sync-db";
+    public static final String URL_LIST_SESSIONS = "sessions";
+    public static final String URL_GET_SESSION = "get_session";
     public static final String URL_UPDATE = "update";
     public static final String URL_INITIAL_MENU_NAVIGATION = "navigate_menu_start";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
@@ -42,6 +43,10 @@ public class Constants {
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
     public static final String URL_DEBUGGER_MENU_CONTENT = "menu_debugger_content";
+
+    // Multipart part names
+    public static final String PART_FILE = "file";
+    public static final String PART_ANSWER = "answer";
 
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
@@ -147,6 +152,7 @@ public class Constants {
         public static final String GET_SESSION = "get_session";
         public static final String INITIALIZE_SESSION = "initialize_session";
         public static final String PROCESS_ANSWER = "process_answer";
+        public static final String PROCESS_MEDIA = "process_media";
         public static final String UPDATE_SESSION = "update_session";
         public static final String COMPILE_RESPONSE = "compile_response";
         public static final String BUILD_RESTORE_URL = "build_restore_url";

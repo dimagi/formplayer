@@ -1,6 +1,11 @@
 package org.commcare.formplayer.application;
 
-import io.sentry.Sentry;
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
+import static org.commcare.formplayer.services.MediaValidator.isFileTooLarge;
+import static org.commcare.formplayer.services.MediaValidator.isUnSupportedFileExtension;
+import static org.commcare.formplayer.services.MediaValidator.isUnsupportedMimeType;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
@@ -15,11 +20,11 @@ import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
+import org.commcare.formplayer.exceptions.FormAttachmentException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -31,30 +36,46 @@ import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.ProcessingStep;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
-import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.StackFrameStep;
-import org.javarosa.core.model.instance.ExternalDataInstanceSource;
+import org.commcare.util.FileUtils;
+import org.javarosa.core.services.locale.Localization;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import datadog.trace.api.Trace;
-import lombok.SneakyThrows;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
-import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
-import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
+import datadog.trace.api.Trace;
+import io.sentry.Sentry;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -84,14 +105,17 @@ public class FormSubmissionController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(FormSubmissionController.class);
 
+    @Value("${form.submit.max_attachments}")
+    private Integer maxAttachmentsPerForm;
+
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
-                                         @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
-                                         HttpServletRequest request) throws Exception {
+            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
+            HttpServletRequest request) throws Exception {
         FormSubmissionContext context = getFormProcessingContext(request, submitRequestBean);
 
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
@@ -120,7 +144,8 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.getResponse();
     }
 
-    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, SubmitRequestBean submitRequestBean) throws Exception {
+    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request,
+            SubmitRequestBean submitRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 submitRequestBean.getSessionId());
 
@@ -163,10 +188,10 @@ public class FormSubmissionController extends AbstractBaseController {
      * and empty response to continue.
      *
      * @param request The HTTP Request object
-     * @param step A supplier object that performs one unit of form processing and returns
-     *             a SubmitResponseBean.
+     * @param step    A supplier object that performs one unit of form processing and returns
+     *                a SubmitResponseBean.
      * @return Empty Optional if the processing should continue otherwise an Optional containing the
-     *          error response.
+     * error response.
      */
     private Optional<SubmitResponseBean> executeStep(HttpServletRequest request, ProcessingStep step) {
         SubmitResponseBean response = null;
@@ -218,8 +243,11 @@ public class FormSubmissionController extends AbstractBaseController {
             restoreFactory.setAutoCommit(false);
             processXmlInner(context);
 
+            FormSession formSession = context.getFormEntrySession();
+            MultiValueMap<String, HttpEntity<Object>> body = getMultiPartFormBody(formSession);
+
             String response = submitService.submitForm(
-                    context.getFormEntrySession().getInstanceXml(false),
+                    body,
                     context.getFormEntrySession().getPostUrl()
             );
             parseSubmitResponseMessage(response, context.getResponse());
@@ -248,6 +276,67 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
+    private MultiValueMap<String, HttpEntity<Object>> getMultiPartFormBody(FormSession formSession)
+            throws IOException {
+        MultiValueMap<String, HttpEntity<Object>> body = new LinkedMultiValueMap<>();
+
+        // Add any media files associated with the form
+        Path mediaDirPath = formSession.getMediaDirectoryPath(restoreFactory.getDomain(),
+                restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
+        File mediaFile = mediaDirPath.toFile();
+        if (mediaFile.exists()) {
+            File[] files = Objects.requireNonNull(mediaDirPath.toFile().listFiles());
+            if (files.length > maxAttachmentsPerForm) {
+                failWithError("form.upload.attachments.limit.exceeded", maxAttachmentsPerForm.toString());
+            }
+            for (File file : files) {
+                validateFile(file);
+
+                String contentType = FileUtils.getContentType(file);
+                if (!StringUtils.hasText(contentType)) {
+                    contentType = "application/octet-stream";
+                }
+
+                HttpEntity<Object> filePart = createFilePart(file.getName(), file.getName(),
+                        Files.readAllBytes(file.toPath()), contentType);
+                body.add(file.getName(), filePart);
+            }
+        }
+
+        // Add the form xml
+        HttpEntity<Object> xmlPart = createFilePart("xml_submission_file", "xml_submission_file.xml",
+                formSession.getInstanceXml(false), "text/xml");
+        body.add("xml_submission_file", xmlPart);
+        return body;
+    }
+
+    private void validateFile(File file) throws FileNotFoundException {
+        if (isUnSupportedFileExtension(file.getName()) && isUnsupportedMimeType(new FileInputStream(file),
+                file.getName())) {
+            failWithError("form.upload.attachment.invalid", file.getName());
+        } else if (isFileTooLarge(file.length())) {
+            failWithError("form.upload.attachment.oversize", file.getName());
+        }
+    }
+
+    private void failWithError(String localeKey, String... args) {
+        String attachmentsThresholdError = Localization.get(localeKey, args);
+        throw new FormAttachmentException(attachmentsThresholdError);
+    }
+
+    private static HttpEntity<Object> createFilePart(String partName, String fileName, Object content,
+            String contentType) {
+        MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+        ContentDisposition contentDisposition = ContentDisposition
+                .builder("form-data")
+                .name(partName)
+                .filename(fileName)
+                .build();
+        fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+        fileMap.add(HttpHeaders.CONTENT_TYPE, contentType);
+        return new HttpEntity<>(content, fileMap);
+    }
+
     private void processXmlInner(FormSubmissionContext context) throws Exception {
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(
                 restoreFactory.getSqlSandbox(),
@@ -255,31 +344,32 @@ public class FormSubmissionController extends AbstractBaseController {
         );
         FormRecordProcessorHelper.processXML(factory, context.getFormEntrySession().submitGetXml());
         categoryTimingHelper.timed(
-            Constants.TimingCategories.PURGE_CASES,
-            () -> {
-                if (factory.wereCaseIndexesDisrupted() && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
-                    FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
-                }
-            },
-            context.getMetricsTags()
+                Constants.TimingCategories.PURGE_CASES,
+                () -> {
+                    if (factory.wereCaseIndexesDisrupted()
+                            && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
+                        FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
+                    }
+                },
+                context.getMetricsTags()
         );
     }
 
     @Trace
     private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {
         Object nextScreen = categoryTimingHelper.timed(
-            Constants.TimingCategories.END_OF_FORM_NAV,
-            () -> {
-                if (context.getSerializableMenuSession() == null) {
-                    return null;
-                }
-                return doEndOfFormNav(
-                        context.getSerializableMenuSession(),
-                        context.getEngine(),
-                        context.getCommCareSession()
-                );
-            },
-            context.getMetricsTags()
+                Constants.TimingCategories.END_OF_FORM_NAV,
+                () -> {
+                    if (context.getSerializableMenuSession() == null) {
+                        return null;
+                    }
+                    return doEndOfFormNav(
+                            context.getSerializableMenuSession(),
+                            context.getEngine(),
+                            context.getCommCareSession()
+                    );
+                },
+                context.getMetricsTags()
         );
         context.getResponse().setNextScreen(nextScreen);
         return context.success();
