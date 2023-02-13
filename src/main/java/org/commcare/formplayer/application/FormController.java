@@ -170,7 +170,8 @@ public class FormController extends AbstractBaseController {
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
             @RequestPart(PART_FILE) MultipartFile file)
             throws Exception {
-        return saveAnswer(answerQuestionBean, file);
+        throw new RuntimeException("Test Error, Please Ignore. Gracias");
+//        return saveAnswer(answerQuestionBean, file);
     }
 
     private FormEntryResponseBean saveAnswer(AnswerQuestionRequestBean answerQuestionBean,
