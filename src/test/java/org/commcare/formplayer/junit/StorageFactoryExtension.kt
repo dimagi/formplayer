@@ -1,5 +1,7 @@
 package org.commcare.formplayer.junit
 
+import org.commcare.formplayer.application.SQLiteProperties
+import org.commcare.formplayer.sandbox.SqlSandboxUtils
 import org.commcare.formplayer.services.FormplayerStorageFactory
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
@@ -56,11 +58,12 @@ class StorageFactoryExtension(
         storageFactory = SpringExtension.getApplicationContext(context).getBean(FormplayerStorageFactory::class.java)
     }
 
-    override fun beforeEach(context: ExtensionContext?) {
+    override fun beforeEach(context: ExtensionContext) {
         storageFactory.configure(username, domain, appId, asUser, asCaseId)
     }
 
-    override fun afterEach(context: ExtensionContext?) {
+    override fun afterEach(context: ExtensionContext) {
         storageFactory.sqLiteDB.closeConnection()
+        SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir())
     }
 }

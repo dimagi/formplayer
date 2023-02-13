@@ -20,13 +20,17 @@ public class SessionNavigationBean extends InstallRequestBean {
     private HashMap<String, String> endpointArgs;
     private String searchText;
     private String geoLocation;
-    private String menuSessionId;
     private QueryData queryData;
     private boolean isPersistent;
     private int sortIndex;
     private int casesPerPage;
-    private String smartLinkTemplate;
     private String[] selectedValues;
+
+    /**
+     * Form session ID used to prevent attempts to navigate into a form session
+     * e.g. pressing the back button
+     */
+    private String formSessionId;
 
     public String[] getSelections() {
         return selections;
@@ -38,7 +42,7 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     @Override
     public String toString() {
-        return "SessionNavigationBean [id= " + menuSessionId +
+        return "SessionNavigationBean [" +
                 ", selections=" + Arrays.toString(selections) +
                 ", parent=" + super.toString() +
                 ", queryData" + queryData + "]";
@@ -82,16 +86,6 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.searchText = searchText;
     }
 
-    @JsonGetter(value = "menu_session_id")
-    public String getMenuSessionId() {
-        return menuSessionId;
-    }
-
-    @JsonSetter(value = "menu_session_id")
-    public void setMenuSessionId(String menuSessionId) {
-        this.menuSessionId = menuSessionId;
-    }
-
     @JsonGetter(value = "query_data")
     public QueryData getQueryData() {
         return queryData;
@@ -120,16 +114,6 @@ public class SessionNavigationBean extends InstallRequestBean {
         isPersistent = persistent;
     }
 
-    @JsonGetter(value = "smart_link_template")
-    public String getSmartLinkTemplate() {
-        return smartLinkTemplate;
-    }
-
-    @JsonSetter(value = "smart_link_template")
-    public void setSmartLinkTemplate(String smartLinkTemplate) {
-        this.smartLinkTemplate = smartLinkTemplate;
-    }
-
     public int getSortIndex() {
         return sortIndex;
     }
@@ -156,5 +140,15 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "selected_values")
     public void setSelectedValues(String[] selectedValues) {
         this.selectedValues = selectedValues;
+    }
+
+    @JsonGetter(value = "form_session_id")
+    public String getFormSessionId() {
+        return formSessionId;
+    }
+
+    @JsonSetter(value = "form_session_id")
+    public void setFormSessionId(String formSessionId) {
+        this.formSessionId = formSessionId;
     }
 }

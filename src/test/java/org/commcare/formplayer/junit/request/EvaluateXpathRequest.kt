@@ -17,7 +17,7 @@ class EvaluateXpathRequest(
     private val xpath: String,
     private val formSessionService: FormSessionService
 ) : MockRequest<EvaluateXPathRequestBean, EvaluateXPathResponseBean>(
-    mockMvc, Constants.URL_EVALUATE_XPATH, EvaluateXPathResponseBean::class
+    mockMvc, Constants.URL_EVALUATE_XPATH, EvaluateXPathResponseBean::class.java
 ) {
 
     fun request(): Response<EvaluateXPathResponseBean> {
