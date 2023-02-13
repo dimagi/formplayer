@@ -56,8 +56,8 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex(),
                     sessionNavigationBean.getCasesPerPage(),
-                    sessionNavigationBean.getSmartLinkTemplate(),
-                    sessionNavigationBean.getSelectedValues()
+                    sessionNavigationBean.getSelectedValues(),
+                    null
             );
             logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
@@ -82,8 +82,8 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
-                sessionNavigationBean.getSmartLinkTemplate(),
-                sessionNavigationBean.getSelectedValues()
+                sessionNavigationBean.getSelectedValues(),
+                null
         );
         logNotification(baseResponseBean.getNotification(),request);
 
@@ -140,8 +140,8 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
-                sessionNavigationBean.getSmartLinkTemplate(),
-                sessionNavigationBean.getSelectedValues()
+                sessionNavigationBean.getSelectedValues(),
+                sessionNavigationBean.getFormSessionId()
         );
         logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);

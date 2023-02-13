@@ -124,7 +124,7 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null, 0, null);
+        return getNextMenu(menuSession, null, 0, "", 0, null, 0);
     }
 
     @Trace
@@ -134,8 +134,7 @@ public class MenuSessionRunnerService {
             String searchText,
             int sortIndex,
             QueryData queryData,
-            int casesPerPage,
-            String smartLinkTemplate) throws Exception {
+            int casesPerPage) throws Exception {
         Screen nextScreen = menuSession.getNextScreen(detailSelection != null);
 
         // No next menu screen? Start form entry!
@@ -156,8 +155,7 @@ public class MenuSessionRunnerService {
         if (nextScreen instanceof MenuScreen) {
             menuResponseBean = new CommandListResponseBean(
                     (MenuScreen)nextScreen,
-                    menuSession.getSessionWrapper(),
-                    menuSession.getId()
+                    menuSession.getSessionWrapper()
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             Sentry.setTag(Constants.MODULE_TAG, "menu");
@@ -167,7 +165,7 @@ public class MenuSessionRunnerService {
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
                     return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData,
-                            casesPerPage, smartLinkTemplate);
+                            casesPerPage);
                 }
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
@@ -247,9 +245,10 @@ public class MenuSessionRunnerService {
             String searchText,
             int sortIndex,
             int casesPerPage,
-            String smartLinkTemplate,
-            String[] selectedValues) throws Exception {
+            String[] selectedValues,
+            String formSessionId) throws Exception {
         NotificationMessage notificationMessage = null;
+        boolean nonAppNav = formSessionId != null;
         try {
             // If we have no selections, we're are the root screen.
             if (selections == null) {
@@ -260,9 +259,15 @@ public class MenuSessionRunnerService {
                         searchText,
                         sortIndex,
                         queryData,
-                        casesPerPage,
-                        smartLinkTemplate
+                        casesPerPage
                 );
+            }
+            if (nonAppNav) {
+                // User has navigated with a session ID. This means they have navigated 'back' or via
+                // another non-app mechanism. In this case remove the last selection so that they don't
+                // re-enter the form. This will have the effect of navigating to the screen prior to
+                // the form if possible.
+                selections = Arrays.copyOf(selections, selections.length - 1);
             }
             for (int i = 1; i <= selections.length; i++) {
                 String selection = selections[i - 1];
@@ -311,8 +316,11 @@ public class MenuSessionRunnerService {
                 }
             }
         } catch (CommCareSessionException ccse) {
-            notificationMessage = new NotificationMessage(ccse.getMessage(), true,
-                    NotificationMessage.Tag.menu);
+            // don't show a message in cases where the user is doing 'non-app' navigation
+            if (!nonAppNav) {
+                notificationMessage = new NotificationMessage(ccse.getMessage(), true,
+                        NotificationMessage.Tag.menu);
+            }
         }
 
         BaseResponseBean nextResponse = getNextMenu(
@@ -322,8 +330,7 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex,
                 queryData,
-                casesPerPage,
-                smartLinkTemplate
+                casesPerPage
         );
         restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
