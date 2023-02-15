@@ -47,7 +47,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
     }
 
     @Override
-    public ExternalDataInstance read(String key, String instanceId) {
+    public ExternalDataInstance read(String key, String instanceId, String refId) {
         String namespaceKey = namespaceKey(key);
         Cache cache = cacheManager.getCache(VIRTUAL_DATA_INSTANCES_CACHE);
         SerializableDataInstance savedInstance = cache.get(namespaceKey, SerializableDataInstance.class);
@@ -58,7 +58,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
             }
         }
         if (validateInstance(savedInstance, key)) {
-            return savedInstance.toInstance(instanceId, key);
+            return savedInstance.toInstance(instanceId, key, refId);
         }
         throw new InstanceNotFoundException(key, getNamespace());
     }

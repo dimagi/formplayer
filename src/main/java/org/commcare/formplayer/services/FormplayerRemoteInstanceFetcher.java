@@ -27,7 +27,7 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
     }
 
     @Override
-    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
+    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source, String refId)
             throws RemoteInstanceException {
         if (source.getSourceUri() != null) {
             try {
@@ -40,7 +40,8 @@ public class FormplayerRemoteInstanceFetcher implements RemoteInstanceFetcher {
                         + instanceId + ". Please try opening the form again.", e);
             }
         } else if (source.getStorageReferenceId() != null) {
-            ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId(), instanceId);
+            ExternalDataInstance instance = mVirtualDataInstanceStorage.read(source.getStorageReferenceId(),
+                    instanceId, refId);
             return instance.getRoot();
         }
         throw new RemoteInstanceException("Could not retrieve data for instance " + instanceId
