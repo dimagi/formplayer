@@ -91,7 +91,7 @@ public class SerializableDataInstance {
      * @param key The storage key without the namespace
      * @return
      */
-    public ExternalDataInstance toInstance(String instanceId, String key) {
+    public ExternalDataInstance toInstance(String instanceId, String key, String refId) {
         TreeElement root = getInstanceXml();
         if (!instanceId.equals(getInstanceId())) {
             root = TreeUtilities.renameInstance(root, instanceId);
@@ -104,7 +104,7 @@ public class SerializableDataInstance {
             newReference = reference;
         } else {
             String refScheme = VirtualInstances.getReferenceScheme(reference);
-            newReference = VirtualInstances.getInstanceReference(refScheme, instanceId);
+            newReference = VirtualInstances.getInstanceReference(refScheme, refId);
         }
         ExternalDataInstanceSource instanceSource = ExternalDataInstanceSource.buildVirtual(
                         instanceId, root, newReference, isUseCaseTemplate(), key);
