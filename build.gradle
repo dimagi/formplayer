@@ -52,8 +52,8 @@ ext {
     shedlockVersion = '4.43.0'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 idea {
     module {
@@ -189,5 +189,11 @@ jacocoTestReport {
     reports {
         xml.enabled true
         html.enabled true
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
