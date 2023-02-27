@@ -31,13 +31,13 @@ import java.util.Vector;
  * @author ctsims
  */
 public class FormplayerCaseIndexTable implements CaseIndexTable {
-    public static final String TABLE_NAME = "case_index_storage";
 
     private static final String COL_CASE_RECORD_ID = "case_rec_id";
     private static final String COL_INDEX_NAME = "name";
     private static final String COL_INDEX_TYPE = "type";
     private static final String COL_INDEX_TARGET = "target";
     private static final String COL_INDEX_RELATIONSHIP = "relationship";
+    private static final String CASE_INDEX_STORAGE_TABLE_NAME = "case_index_storage";
 
     ConnectionHandler connectionHandler;
 
@@ -52,8 +52,8 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         createIndexes(connectionHandler.getConnection());
     }
 
-    private static String getTableDefinition() {
-        return "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
+    private String getTableDefinition() {
+        return "CREATE TABLE IF NOT EXISTS " + getTableName() + "(" +
                 DatabaseHelper.ID_COL + " INTEGER PRIMARY KEY, " +
                 COL_CASE_RECORD_ID + ", " +
                 COL_INDEX_NAME + ", " +
@@ -63,16 +63,20 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 ")";
     }
 
-    private static void createIndexes(Connection connection) {
+    protected String getTableName() {
+        return CASE_INDEX_STORAGE_TABLE_NAME;
+    }
+
+    private void createIndexes(Connection connection) {
         String recordFirstIndexId = "RECORD_NAME_ID_TARGET";
         String recordFirstIndex = COL_CASE_RECORD_ID + ", " + COL_INDEX_NAME + ", " + COL_INDEX_TARGET;
         execSql(connection,
-                DatabaseIndexingUtils.indexOnTableCommand(recordFirstIndexId, TABLE_NAME, recordFirstIndex));
+                DatabaseIndexingUtils.indexOnTableCommand(recordFirstIndexId, getTableName(), recordFirstIndex));
 
         String typeFirstIndexId = "NAME_TARGET_RECORD";
         String typeFirstIndex = COL_INDEX_NAME + ", " + COL_CASE_RECORD_ID + ", " + COL_INDEX_TARGET;
         execSql(connection,
-                DatabaseIndexingUtils.indexOnTableCommand(typeFirstIndexId, TABLE_NAME, typeFirstIndex));
+                DatabaseIndexingUtils.indexOnTableCommand(typeFirstIndexId, getTableName(), typeFirstIndex));
     }
 
     /**
@@ -87,7 +91,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
             contentValues.put(COL_INDEX_TARGET, ci.getTarget());
             contentValues.put(COL_INDEX_RELATIONSHIP, ci.getRelationship());
-            SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues);
+            SqlHelper.basicInsert(connectionHandler.getConnection(), getTableName(), contentValues);
         }
     }
 
@@ -98,7 +102,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     public void clearCaseIndices(int recordId) {
         String recordIdString = String.valueOf(recordId);
         SqlHelper.deleteFromTableWhere(connectionHandler.getConnection(),
-                TABLE_NAME,
+                getTableName(),
                 COL_CASE_RECORD_ID + "= CAST(? as INT)",
                 recordIdString);
     }
@@ -110,7 +114,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(idsToClear);
         for (Pair<String, String[]> whereParams : whereParamList) {
             SqlHelper.deleteFromTableWhere(connectionHandler.getConnection(),
-                    TABLE_NAME,
+                    getTableName(),
                     COL_CASE_RECORD_ID + " IN " + whereParams.first,
                     whereParams.second);
         }
@@ -123,7 +127,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectProjectionStatement(
                 connectionHandler.getConnection(),
-                TABLE_NAME,
+                getTableName(),
                 projection)) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
                 while (resultSet.next()) {
@@ -160,13 +164,13 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         if (log.isTraceEnabled()) {
             String query = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?", COL_CASE_RECORD_ID,
-                    TABLE_NAME, COL_INDEX_NAME, COL_INDEX_TARGET);
+                    getTableName(), COL_INDEX_NAME, COL_INDEX_TARGET);
             SqlHelper.explainSql(connectionHandler.getConnection(), query, args);
         }
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
                 connectionHandler.getConnection(),
-                TABLE_NAME,
+                getTableName(),
                 new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
                 args)) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
@@ -197,7 +201,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
                 connectionHandler.getConnection(),
-                TABLE_NAME,
+                getTableName(),
                 whereExpr,
                 args)) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
@@ -216,7 +220,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(
                 connectionHandler.getConnection(),
-                TABLE_NAME,
+                getTableName(),
                 new String[]{COL_INDEX_NAME},
                 args)) {
 
@@ -268,7 +272,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                                 "%s IN %s",
 
                         COL_CASE_RECORD_ID, UserSqlSandbox.FORMPLAYER_CASE + "." + DatabaseHelper.ID_COL,
-                        TABLE_NAME,
+                        getTableName(),
                         UserSqlSandbox.FORMPLAYER_CASE,
                         COL_INDEX_TARGET, caseIdIndex,
                         COL_INDEX_NAME, indexName,
