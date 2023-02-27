@@ -53,22 +53,12 @@ public class CaseSearchHelper {
 
         Cache cache = cacheManager.getCache("case_search");
         String cacheKey = getCacheKey(source.getSourceUri(), requestData);
-        TreeElement cachedRoot = null;
-        if (skipCache) {
-            log.info("Skipping cache check for case search results");
-        } else {
-            cachedRoot = cache.get(cacheKey, TreeElement.class);
-        }
+        TreeElement cachedRoot = getCachedRoot(cache, cacheKey, url, skipCache);
         if (cachedRoot != null) {
-            log.info(String.format("Using cached case search results for %s", url));
-            // Deep copy to avoid concurrency issues
-            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot),
-                    TreeElement.class);
-            return copyOfRoot;
+            return cachedRoot;
         }
 
         String responseString = webClient.postFormData(url, requestData);
-
         if (responseString != null) {
             TreeElement root = TreeUtilities.xmlStreamToTreeElement(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
@@ -79,6 +69,22 @@ public class CaseSearchHelper {
         }
 
         throw new IOException("No response from server for case search query");
+    }
+
+    private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
+        if (skipCache) {
+            log.info("Skipping cache check for case search results");
+        } else {
+            TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
+            if (cachedRoot != null) {
+                log.info(String.format("Using cached case search results for %s", url));
+                // Deep copy to avoid concurrency issues
+                TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot),
+                        TreeElement.class);
+                return copyOfRoot;
+            }
+        }
+        return null;
     }
 
     public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url,
