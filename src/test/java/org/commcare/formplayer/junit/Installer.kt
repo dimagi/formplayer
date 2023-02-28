@@ -3,6 +3,8 @@ package org.commcare.formplayer.junit
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import org.apache.commons.logging.LogFactory
+import org.assertj.core.api.Assertions
 import org.commcare.formplayer.auth.DjangoAuth
 import org.commcare.formplayer.beans.InstallRequestBean
 import org.commcare.formplayer.beans.menus.CommandListResponseBean
@@ -18,6 +20,7 @@ import org.commcare.modern.util.Pair
 import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
+import java.io.File
 import java.io.IOException
 import java.io.StringReader
 
@@ -67,6 +70,36 @@ class Installer(
 
     companion object {
         private val mapper = ObjectMapper()
+        private val log = LogFactory.getLog(Installer::class.java)
+
+        /**
+         * Turn a test name or relative path into an app install reference.
+         *
+         * Accepts:
+         * * an archive name in `src/test/resources/archives`
+         * * an exploded archive directly in `src/test/resources/archives`
+         * * any path relative to src/test/resources` that points to an exploded archive directory
+         * * any path relative to src/test/resources` that points to a CCZ or profile.ccpr file
+         */
+        @JvmStatic
+        fun getInstallReference(nameOrPath: String): String {
+            if (checkInstallReference(nameOrPath)) {
+                return nameOrPath
+            }
+            val paths = arrayOf(
+                "%s/profile.ccpr",
+                "archives/%s.ccz",
+                "archives/%s/profile.ccpr"
+            )
+            for (template in paths) {
+                val path = String.format(template, nameOrPath)
+                if (checkInstallReference(path)) {
+                    log.info("Found install reference at $path")
+                    return path
+                }
+            }
+            throw RuntimeException("Unable to find install reference for $nameOrPath")
+        }
 
         /**
          * Utility method to extract the 'installReference' field from test JSON files and map the
@@ -81,7 +114,7 @@ class Installer(
         @Throws(IOException::class)
         fun <T> getInstallReferenceAndBean(requestPath: String, clazz: Class<T>): Pair<String, T> {
             val root: JsonNode = mapper.readTree(
-                StringReader(FileUtils.getFile(this.javaClass, requestPath))
+                StringReader(FileUtils.getFile(this::class.java, requestPath))
             )
             val installReference = (root as ObjectNode).remove("installReference").asText()
             val beanContent: String = mapper.writeValueAsString(root)
@@ -104,6 +137,18 @@ class Installer(
             Mockito.mockStatic(SessionUtils::class.java, answer).use { _ ->
                 return supplier.get()
             }
+        }
+
+        private fun checkInstallReference(path: String): Boolean {
+            val resource = this::class.java.classLoader.getResource(path) ?: return false
+            val file = File(resource.file)
+            if (file.isDirectory) {
+                return false
+            }
+            Assertions.assertThat(arrayOf(".ccz", ".ccpr"))
+                .`as`("check file extension: %s", path)
+                .anyMatch { s: String? -> path.endsWith(s!!) }
+            return true
         }
     }
 }

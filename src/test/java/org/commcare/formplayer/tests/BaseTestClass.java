@@ -653,7 +653,6 @@ public class BaseTestClass {
         evaluateXPathRequestBean.setUsername(menuSession.getUsername());
         evaluateXPathRequestBean.setDomain(menuSession.getDomain());
         evaluateXPathRequestBean.setRestoreAs(menuSession.getAsUser());
-        evaluateXPathRequestBean.setMenuSessionId(menuSessionId);
         evaluateXPathRequestBean.setXpath(xpath);
         return generateMockQuery(
                 ControllerType.DEBUGGER,
@@ -708,7 +707,7 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference(getInstallReference(testName),
+        return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_DETAILS,
@@ -745,7 +744,7 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference(getInstallReference(testName),
+        return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -761,7 +760,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSortIndex(sortIndex);
-        return generateMockQueryWithInstallReference(getInstallReference(testName),
+        return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -780,7 +779,7 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference(getInstallReference(testName),
+        return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -797,7 +796,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSelectedValues(selectedValues);
-        return generateMockQueryWithInstallReference(getInstallReference(testName),
+        return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -817,7 +816,7 @@ public class BaseTestClass {
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
-        return generateMockQueryWithInstallReference(getInstallReference(testName),
+        return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_ENDPOINT,
@@ -852,7 +851,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setQueryData(queryData);
         sessionNavigationBean.setSelectedValues(selectedValues);
-        return generateMockQueryWithInstallReference(getInstallReference(testName),
+        return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
@@ -1006,49 +1005,6 @@ public class BaseTestClass {
                 serializableMenuSession.isPreview()).first;
         return SessionSerializer.deserialize(engine.getPlatform(),
                 serializableMenuSession.getCommcareSession());
-    }
-
-    /**
-     * Turn a test name or relative path into an app install reference.
-     *
-     * Accepts:
-     * * an archive name in `src/test/resources/archives`
-     * * an exploded archive directly in `src/test/resources/archives`
-     * * any path relative to src/test/resources` that points to an exploded archive directory
-     * * any path relative to src/test/resources` that points to a CCZ or profile.ccpr file
-     */
-    private String getInstallReference(String nameOrPath) {
-        if (checkInstallReference(nameOrPath)) {
-            return nameOrPath;
-        }
-        String[] paths = {
-                "%s/profile.ccpr",
-                "archives/%s.ccz",
-                "archives/%s/profile.ccpr"
-        };
-        for (String template : paths) {
-            String path = String.format(template, nameOrPath);
-            if (checkInstallReference(path)) {
-                log.info(String.format("Found install reference at %s", path));
-                return path;
-            }
-        }
-        throw new RuntimeException(String.format("Unable to find install reference for %s", nameOrPath));
-    }
-
-    private boolean checkInstallReference(String path) {
-        URL resource = this.getClass().getClassLoader().getResource(path);
-        if (resource == null) {
-            return false;
-        }
-        File file = new File(resource.getFile());
-        if (file.isDirectory()) {
-            return false;
-        }
-        Assertions.assertThat(new String[]{".ccz", ".ccpr"})
-                .as("check file extension: %s", path)
-                .anyMatch(path::endsWith);
-        return true;
     }
 
     // Ensure that 'selected_cases' instance is populated correctly
