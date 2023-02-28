@@ -296,15 +296,17 @@ public class BaseTestClass {
         when(virtualDataInstanceService.write(any(String.class), any(ExternalDataInstance.class)))
                 .thenAnswer(getVirtualInstanceMockWrite());
 
-        when(virtualDataInstanceService.read(any(String.class), any(String.class))).thenAnswer(invocation -> {
-            String key = (String)invocation.getArguments()[0];
-            String instanceId = (String)invocation.getArguments()[1];
-            if (serializableDataInstanceMap.containsKey(key)) {
-                SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
-                return savedInstance.toInstance(instanceId, key);
-            }
-            throw new InstanceNotFoundException(key, "test-namespace");
-        });
+        when(virtualDataInstanceService.read(any(String.class), any(String.class), any(String.class))).thenAnswer(
+                invocation -> {
+                    String key = (String)invocation.getArguments()[0];
+                    String instanceId = (String)invocation.getArguments()[1];
+                    String refId = (String)invocation.getArguments()[2];
+                    if (serializableDataInstanceMap.containsKey(key)) {
+                        SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
+                        return savedInstance.toInstance(instanceId, key, refId);
+                    }
+                    throw new InstanceNotFoundException(key, "test-namespace");
+                });
 
         when(virtualDataInstanceService.contains(any(String.class))).thenAnswer(invocation -> {
             String key = (String)invocation.getArguments()[0];
@@ -375,11 +377,11 @@ public class BaseTestClass {
 
     private void setupSubmitServiceMock() {
         Mockito.doReturn(
-                "<OpenRosaResponse>" +
-                        "<message nature='status'>" +
-                        "OK" +
-                        "</message>" +
-                        "</OpenRosaResponse>")
+                        "<OpenRosaResponse>" +
+                                "<message nature='status'>" +
+                                "OK" +
+                                "</message>" +
+                                "</OpenRosaResponse>")
                 .when(submitServiceMock).submitForm(anyString(), anyString());
     }
 
