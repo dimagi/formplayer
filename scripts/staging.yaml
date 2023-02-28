@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-    - java-17-update # Ahmad Dec 13
     - saveMediaAttachment # Robert Feb 8
     - sk/session-id-validation  # Simon Feb 9
     - rc/set-upload-request-size-limit # Robert Feb 14
@@ -59,5 +58,4 @@ submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-        - java-17-update # Ahmad Dec 13
         - instanceLoadingFix # Shubham Feb 15
