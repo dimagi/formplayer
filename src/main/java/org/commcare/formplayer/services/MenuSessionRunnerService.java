@@ -508,7 +508,7 @@ public class MenuSessionRunnerService {
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
                         screen.getBaseUrl(),
-                        screen.getRequestData(isDefaultSearch),
+                        screen.getQueryParams(isDefaultSearch),
                         skipCache);
                 screen.updateSession(searchDataInstance);
                 return true;
