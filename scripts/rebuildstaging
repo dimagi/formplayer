@@ -55,7 +55,7 @@ function rebuildstaging() {
         git --git-dir "$REPO_ROOT/.git" pull origin main
     fi
 
-    git --git-dir "$REPO_ROOT/.git" show
+    git --git-dir "$REPO_ROOT/.git" show -n 1 -- formplayer-staging.yml
     echo "rebuilding staging branch..."
     git-build-branch "$REPO_ROOT/formplayer-staging.yml" "$@"
 }
