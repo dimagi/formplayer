@@ -48,7 +48,7 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    sentryVersion = '6.15.0'
+    sentryVersion = '6.16.0'
     shedlockVersion = '5.2.0'
 }
 
