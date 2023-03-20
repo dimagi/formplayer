@@ -47,7 +47,20 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     //an object for the same cache at once and let us manage the lifecycle
 
     public FormplayerCaseIndexTable(ConnectionHandler connectionHandler) {
+        this(connectionHandler, true);
+    }
+
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, boolean createTable) {
         this.connectionHandler = connectionHandler;
+        if (createTable) {
+            createTable();
+        }
+    }
+
+    /**
+     * Creates necessary db tables to hold the indexes
+     */
+    public void createTable() {
         execSql(connectionHandler.getConnection(), getTableDefinition());
         createIndexes(connectionHandler.getConnection());
     }
