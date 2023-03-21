@@ -20,6 +20,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -61,11 +62,7 @@ public class SqlStorage<T extends Persistable>
         this.prototype = prototype;
         this.connectionHandler = connectionHandler;
         if (initialize) {
-            try {
-                buildTableFromInstance(prototype.newInstance());
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            initStorage();
         }
     }
 
@@ -584,6 +581,24 @@ public class SqlStorage<T extends Persistable>
     @Override
     public Class<?> getPrototype() {
         return prototype;
+    }
+
+    @Override
+    public boolean isStorageExists() {
+        try (ResultSet tables = getConnection().getMetaData().getTables(null, null, tableName, null)) {
+            return tables.next();
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
+    @Override
+    public void initStorage() {
+        try {
+            buildTableFromInstance(prototype.newInstance());
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
