@@ -90,7 +90,7 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
     private fun validateFile() {
         if (isUnSupportedFileExtension(file.originalFilename) && isUnsupportedMimeType(
                 file.inputStream,
-                file.name
+                file.originalFilename
             )
         ) {
             val unsupportedFileExtError = Localization.get("form.attachment.invalid")
