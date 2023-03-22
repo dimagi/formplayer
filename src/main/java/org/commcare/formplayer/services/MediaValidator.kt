@@ -12,7 +12,7 @@ object MediaValidator {
     // 3 MB size limit
     private const val MAX_BYTES_PER_ATTACHMENT = (3 * 1048576 - 1024).toLong()
     private val SUPPORTED_FILE_EXTS = ImmutableList.of(
-        ".jpg",
+        "jpg",
         "jpeg",
         "png",
         "pdf",
