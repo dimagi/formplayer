@@ -1,58 +1,6 @@
-########################
-#   STAGING WORKFLOW   #
-########################
-
-# GENERAL PROCESS
-# From your formplayer directory with the virtualenv turned on and master
-# checked out to safely push your changes to scripts/staging.yaml
-#     $ scripts/commit-staging --push
-# setup or activate virtualenv with rebuildstaging requirements
-#     $ workon formplayer
-#  OR
-#     $ mkvirtualenv formplayer
-#     $ pip install -r scripts/rebuildstaging-requirements.txt
-# to check if your branch causes any conflicts before rebuilding
-#     $ scripts/rebuildstaging --no-push
-# to rebuild from your new spec and deploy
-#     $ scripts/rebuildstaging --deploy
-# Above commands commands can be run without the flag as well.
-
-# CONFLICT RESOLUTION
-# First, determine where the conflict lies.
-# a). branch `foo` conflicts with `master`
-#       $ git checkout -b foo origin/foo
-#       $ git pull origin master
-#     try to resolve conflict
-#       $ git push origin foo
-# b). branch `foo` conflicts with branch `bar`
-#     you can't just merge foo into bar or vice versa, otherwise the PR
-#     for foo will contain commits from bar.  Instead make a third,
-#     conflict-resolution branch:
-#       $ git checkout -b foo+bar --no-track origin/foo
-#       $ git pull origin bar
-#     try to resolve conflict
-#       $ git push origin foo+bar
-#     add the branch `foo+bar` to staging.yaml and move branches foo and
-#     bar to right below it
+##### THE FORMPLAYER STAGING WORKFLOW HAS BEEN UPDATED #####
+# The staging.yml file that used to live in this repository has been moved to
+# https://github.com/dimagi/staging-branches/blob/main/formplayer-staging.yml
 #
-#     Later on branch B gets merged into master and removed from staging.yaml.
-#     Perhaps the person who removes it also notices the A+B and does the
-#     following. Otherwise anyone who comes along and sees A+B but not both
-#     branches can feel free to assume the following need to be done.
-#       * Merge A+B into A. Since B is now gone, you want to merge the
-#         resolution into A, otherwise A will conflict with master.
-#       * Remove A+B from staging.yaml. It's no longer necessary since it's
-#         now a subset of A.
-#
-# If you are unsure of how to resolve a conflict, notify the branch owner.
-
-
-trunk: master
-name: autostaging
-# branches:
-#   - java-17-update # Ahmad Dec 13
-submodules:
-  libs/commcare:
-    trunk: formplayer
-#     branches:
-#       - java-17-update # Ahmad Dec 13
+# All edits should be made to the formplayer-staging.yml file directly in the
+# staging-branches repository.

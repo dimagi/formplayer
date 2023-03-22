@@ -6,9 +6,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
+import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.utils.TreeUtilities;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -41,8 +43,10 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source, boolean skipCache)
-            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
+    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
+            boolean skipCache)
+            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
+            IOException {
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
@@ -66,7 +70,7 @@ public class CaseSearchHelper {
         String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {
-            TreeElement root = ExternalDataInstance.parseExternalTree(
+            TreeElement root = TreeUtilities.xmlStreamToTreeElement(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
             if (root != null) {
                 cache.put(cacheKey, root);
@@ -79,12 +83,13 @@ public class CaseSearchHelper {
 
     public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url,
             Multimap<String, String> requestData, boolean skipCache)
-            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
+            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
+            IOException {
 
         ExternalDataInstanceSource source = ExternalDataInstanceSource.buildRemote(
                 instanceId, null, useCaseTemplate, url.toString(), requestData);
 
-        TreeElement root = getExternalRoot(instanceId, source, skipCache);
+        AbstractTreeElement root = getExternalRoot(instanceId, source, skipCache);
         source.init(root);
 
         return source.toInstance();

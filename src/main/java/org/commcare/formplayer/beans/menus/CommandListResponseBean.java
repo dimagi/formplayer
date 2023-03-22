@@ -26,8 +26,7 @@ public class CommandListResponseBean extends MenuBean {
         this.commands = commands;
     }
 
-    public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session,
-            String menuSessionId) {
+    public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session) {
         processTitle(session);
         String[] badges = menuScreen.getBadges();
         MenuDisplayable[] options = menuScreen.getMenuDisplayables();

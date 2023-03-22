@@ -11,7 +11,7 @@ Formplayer is built via [Gradle](https://spring.io/guides/gs/gradle/) (wrapper f
 See also the [dev guide](DEV_GUIDE.md) for more resources to get started.
 
 ### Dependencies
-+ Java (OpenJDK 8)
++ Java (OpenJDK 17)
 + Formplayer caches session instances via Redis
 + Formplayer stores session instances via Postgres
 + Formplayer builds SQLite database for each restored user
@@ -82,9 +82,9 @@ Run `git submodule update --init`
 
 e.g. `no suitable constructor found for OutputFormat(Document)`
 
-You're likely running the wrong version of Java. Check with `java -version` which should show `1.8`
+You're likely running the wrong version of Java. Check with `java -version` which should show `17`
 
-- Install OpenJDK 8
+- Install OpenJDK 17
 - Configure gradle to use the new Java
   - Update `~/.gradle/gradle.properties` with `org.gradle.java.home=/JDK_PATH`
   - OR run append this to gradle commands: `-Dorg.gradle.java.home=/JDK_PATH`

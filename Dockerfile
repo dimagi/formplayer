@@ -1,10 +1,10 @@
-FROM adoptopenjdk:8-jre-hotspot as builder
+FROM eclipse-temurin:17-jre as builder
 WORKDIR application
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} formplayer.jar
 RUN java -Djarmode=layertools -jar formplayer.jar extract
 
-FROM adoptopenjdk:8-jre-hotspot
+FROM eclipse-temurin:17-jre
 LABEL maintainer="Dimagi <devops@dimagi.com>"
 WORKDIR application
 

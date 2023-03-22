@@ -12,13 +12,9 @@ Install the python dependencies:
 pip install -r scripts/rebuildstaging-requirements.txt
 ```
 
-Edit this file to include the branch you want to be on staging and commit and push the change
-```bash
-vim ./scripts/staging.yaml
-./scripts/commit-staging
-```
+Edit the [formplayer-staging.yml](https://github.com/dimagi/staging-branches/blob/main/formplayer-staging.yml) file directly in staging-branches to include the branch you want on staging.
 
-Rebuild the autostaging branch to align with the spec in `./scripts/staging.yaml`:
+Rebuild the autostaging branch to be up-to-date:
 
 ```bash
 ./scripts/rebuildstaging --deploy

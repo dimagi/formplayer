@@ -231,6 +231,16 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         QuestionBean nameNewInstanceRef = formResponse.getTree()[1];
         assertEquals("bob", nameLegacyInstanceRef.getAnswer());
         assertEquals("bob", nameNewInstanceRef.getAnswer());
+
+        // redo the same query to test for instance loading correctly from storage
+        NewFormResponse newFormResponse = sessionNavigateWithQuery(selections,
+                "caseclaimquery",
+                queryData,
+                NewFormResponse.class);
+        nameLegacyInstanceRef = newFormResponse.getTree()[0];
+        nameNewInstanceRef = newFormResponse.getTree()[1];
+        assertEquals("bob", nameLegacyInstanceRef.getAnswer());
+        assertEquals("bob", nameNewInstanceRef.getAnswer());
     }
 
     @Override

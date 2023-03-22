@@ -7,9 +7,9 @@ buildscript {
 plugins {
     id 'org.springframework.boot' version '2.7.3'
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
-    id "io.freefair.lombok" version "6.6"
-    id 'org.jetbrains.kotlin.jvm' version '1.7.22'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.7.22'
+    id "io.freefair.lombok" version "8.0.1"
+    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.8.10'
 }
 
 springBoot {
@@ -48,12 +48,12 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    sentryVersion = '6.10.0'
-    shedlockVersion = '4.43.0'
+    sentryVersion = '6.16.0'
+    shedlockVersion = '5.2.0'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 idea {
     module {
@@ -109,12 +109,12 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.3.0'
-    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.1.0'
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.10.1'
+    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.2.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
     implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
-    implementation group: 'org.json', name: 'json', version: '20220924'
+    implementation group: 'org.json', name: 'json', version: '20230227'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: "${shedlockVersion}"
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: "${shedlockVersion}"
@@ -190,5 +190,11 @@ jacocoTestReport {
     reports {
         xml.enabled true
         html.enabled true
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
