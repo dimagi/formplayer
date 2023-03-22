@@ -96,6 +96,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
      * Creates all indexes for this case.
      * TODO: this doesn't ensure any sort of uniquenes, you should wipe constraints first
      */
+    @Override
     public void indexCase(Case c) {
         for (CaseIndex ci : c.getIndices()) {
             HashMap<String, Object> contentValues = new HashMap<>();
@@ -120,6 +121,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 recordIdString);
     }
 
+    @Override
     public void clearCaseIndices(Collection<Integer> idsToClear) {
         if (idsToClear.size() == 0) {
             return;
