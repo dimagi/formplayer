@@ -28,6 +28,7 @@ import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
@@ -44,8 +45,10 @@ import java.nio.charset.StandardCharsets;
 @CacheConfig(cacheNames = "case_search")
 @Component
 public class CaseSearchHelper {
+
+    @Value("${formplayer.case_search.min_size_to_store_in_db}")
+    private Integer minSizeToStoreInDb;
     private static final Integer BYTES_IN_A_MB = 1024 * 1024;
-    private static final Integer MIN_SIZE_TO_PARSE_INTO_STORAGE = 2  * BYTES_IN_A_MB;
     @Autowired
     CacheManager cacheManager;
 
@@ -103,7 +106,7 @@ public class CaseSearchHelper {
 
         throw new IOException("No response from server for case search query");
     }
-    private String evalCaseSearchTableName(String cacheKey) {
+    private static String evalCaseSearchTableName(String cacheKey) {
         return MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
     }
     private void parseIntoCaseSearchStorage(SQLiteDB caseSearchDb, UserSqlSandbox caseSearchSandbox,
@@ -126,7 +129,7 @@ public class CaseSearchHelper {
         }
     }
     private boolean shouldParseIntoCaseSearchStorage(boolean useCaseTemplate, int responseSize) {
-        return useCaseTemplate && responseSize >= MIN_SIZE_TO_PARSE_INTO_STORAGE;
+        return useCaseTemplate && responseSize >= minSizeToStoreInDb * BYTES_IN_A_MB;
     }
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
         if (skipCache) {
