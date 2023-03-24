@@ -60,7 +60,7 @@ public class CaseSearchHelper {
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
     private CaseSearchDB caseSearchDb;
 
-    public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
+    public synchronized AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
             boolean skipCache)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
             IOException {
