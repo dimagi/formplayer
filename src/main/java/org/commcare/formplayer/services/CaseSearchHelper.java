@@ -58,6 +58,7 @@ public class CaseSearchHelper {
     private WebClient webClient;
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
+    private CaseSearchDB caseSearchDb;
 
     public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
             boolean skipCache)
@@ -74,8 +75,7 @@ public class CaseSearchHelper {
             return cachedRoot;
         }
 
-        SQLiteDB caseSearchDb = new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
-                restoreFactory.getAsUsername());
+        caseSearchDb = getOrInitCaseSearchDB();
         String caseSearchTableName = evalCaseSearchTableName(cacheKey);
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
@@ -106,6 +106,15 @@ public class CaseSearchHelper {
 
         throw new IOException("No response from server for case search query");
     }
+
+    private CaseSearchDB getOrInitCaseSearchDB() {
+        if (caseSearchDb == null) {
+            caseSearchDb = new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
+                    restoreFactory.getAsUsername())
+        }
+        return caseSearchDb;
+    }
+
     private static String evalCaseSearchTableName(String cacheKey) {
         return MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
     }
