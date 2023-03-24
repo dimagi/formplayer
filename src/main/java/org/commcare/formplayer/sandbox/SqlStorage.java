@@ -585,11 +585,7 @@ public class SqlStorage<T extends Persistable>
 
     @Override
     public boolean isStorageExists() {
-        try (ResultSet tables = getConnection().getMetaData().getTables(null, null, tableName, null)) {
-            return tables.next();
-        } catch (SQLException e) {
-            throw new SQLiteRuntimeException(e);
-        }
+        return SqlHelper.isTableExist(getConnection(), tableName);
     }
 
     @Override
