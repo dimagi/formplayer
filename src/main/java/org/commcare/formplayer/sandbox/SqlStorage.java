@@ -597,6 +597,11 @@ public class SqlStorage<T extends Persistable>
         }
     }
 
+    @Override
+    public void deleteStorage() {
+        SqlHelper.dropTable(getConnection(), tableName);
+    }
+
 
     /**
      * Retrieves a set of the models in storage based on a list of values matching one if the
