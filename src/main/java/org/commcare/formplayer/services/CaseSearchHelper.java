@@ -11,6 +11,7 @@ import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.database.models.FormplayerCaseSearchIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
+import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
@@ -110,7 +111,7 @@ public class CaseSearchHelper {
     private CaseSearchDB getOrInitCaseSearchDB() {
         if (caseSearchDb == null) {
             caseSearchDb = new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
-                    restoreFactory.getAsUsername())
+                    restoreFactory.getAsUsername());
         }
         return caseSearchDb;
     }
@@ -177,6 +178,15 @@ public class CaseSearchHelper {
         String cacheKey = getCacheKey(source.getSourceUri(), source.getRequestData());
         Cache cache = cacheManager.getCache("case_search");
         cache.evict(cacheKey);
+
+        caseSearchDb = getOrInitCaseSearchDB();
+        String caseSearchTableName = evalCaseSearchTableName(cacheKey);
+        UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
+        IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
+        caseSearchStorage.deleteStorage();
+        FormplayerCaseSearchIndexTable caseSearchIndexTable = new FormplayerCaseSearchIndexTable(
+                caseSearchSandbox, caseSearchTableName);
+        caseSearchIndexTable.delete();
     }
 
     private String getCacheKey(String url, Multimap<String, String> queryParams) throws InvalidStructureException {
