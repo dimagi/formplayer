@@ -24,6 +24,7 @@ import org.commcare.formplayer.junit.StorageFactoryExtension;
 import org.commcare.formplayer.junit.request.Response;
 import org.commcare.formplayer.junit.request.SessionNavigationRequest;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
+import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
@@ -45,8 +46,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.FileSystemUtils;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 @WebMvcTest
 @Import({MenuController.class})
@@ -83,6 +87,7 @@ public class CaseSearchResultsInStorageTests {
     public void setUp() throws Exception {
         cacheManager.getCache("case_search").clear();
         mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
+        FileSystemUtils.deleteRecursively(new File("tmp_dbs"));
     }
 
     @Test
@@ -133,6 +138,31 @@ public class CaseSearchResultsInStorageTests {
         // verify the case storage has been cleared
         assertFalse(caseSearchStorage.isStorageExists(), "Case search storage has not been cleared after case claim");
         assertFalse(caseSearchIndexTable.isStorageExists(), "Case Indexes have not been cleared after case claim");
+    }
+
+    @Test
+    public void testPurgeForTemporaryDB() throws Exception {
+        // populate case search DB
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_claim_response.xml")) {
+            Response<EntityListResponse> response = navigate(new String[]{"1", "action 1"},
+                    EntityListResponse.class);
+        }
+
+        SqlSandboxUtils.purgeTempDb(Instant.now());
+
+        // verify the case storage has been cleared
+        String cacheKey =  "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
+                + "/_case_type=case1=case2=case3_include_closed=False";
+        SQLiteDB caseSearchDb = new CaseSearchDB("caseclaimdomain", "caseclaimuser", null);
+        String caseSearchTableName = MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));;
+        UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
+        IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
+        assertFalse(caseSearchStorage.isStorageExists(), "Case search storage has not been cleared after purge");
+        FormplayerCaseSearchIndexTable caseSearchIndexTable = new FormplayerCaseSearchIndexTable(
+                caseSearchSandbox, caseSearchTableName);
+        assertFalse(caseSearchIndexTable.isStorageExists(), "Case Indexes have not been cleared after purge");
+
     }
 
     private <T extends BaseResponseBean> Response<T> navigate(
