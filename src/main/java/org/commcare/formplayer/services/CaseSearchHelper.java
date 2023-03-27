@@ -11,7 +11,6 @@ import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.database.models.FormplayerCaseSearchIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
-import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
@@ -59,7 +58,6 @@ public class CaseSearchHelper {
     private WebClient webClient;
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
-    private CaseSearchDB caseSearchDb;
 
     public synchronized AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
             boolean skipCache)
@@ -76,7 +74,7 @@ public class CaseSearchHelper {
             return cachedRoot;
         }
 
-        caseSearchDb = getOrInitCaseSearchDB();
+        CaseSearchDB caseSearchDb = initCaseSearchDB();
         String caseSearchTableName = evalCaseSearchTableName(cacheKey);
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
@@ -108,12 +106,9 @@ public class CaseSearchHelper {
         throw new IOException("No response from server for case search query");
     }
 
-    private CaseSearchDB getOrInitCaseSearchDB() {
-        if (caseSearchDb == null) {
-            caseSearchDb = new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
+    private CaseSearchDB initCaseSearchDB() {
+            return new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
                     restoreFactory.getAsUsername());
-        }
-        return caseSearchDb;
     }
 
     private static String evalCaseSearchTableName(String cacheKey) {
@@ -179,7 +174,7 @@ public class CaseSearchHelper {
         Cache cache = cacheManager.getCache("case_search");
         cache.evict(cacheKey);
 
-        caseSearchDb = getOrInitCaseSearchDB();
+        CaseSearchDB caseSearchDb = initCaseSearchDB();
         String caseSearchTableName = evalCaseSearchTableName(cacheKey);
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
