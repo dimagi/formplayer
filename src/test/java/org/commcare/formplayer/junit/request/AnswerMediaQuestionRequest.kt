@@ -53,6 +53,6 @@ class AnswerMediaQuestionRequest(
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user("user"))
         ).andExpect(MockMvcResultMatchers.status().isOk)
-        return Response(mapper, response, FormEntryResponseBean::class)
+        return Response(mapper, response, FormEntryResponseBean::class.java)
     }
 }
