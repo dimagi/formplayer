@@ -15,7 +15,7 @@ import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.configuration.CacheConfiguration;
-import org.commcare.formplayer.database.models.FormplayerCaseSearchIndexTable;
+import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.junit.InitializeStaticsExtension;
 import org.commcare.formplayer.junit.Installer;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
@@ -116,8 +116,7 @@ public class CaseSearchResultsInStorageTests {
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         assertTrue(caseSearchStorage.isStorageExists(), "No case storage found for the given case search query");
-        FormplayerCaseSearchIndexTable caseSearchIndexTable = new FormplayerCaseSearchIndexTable(
-                caseSearchSandbox, caseSearchTableName);
+        FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         assertTrue(caseSearchIndexTable.isStorageExists(), "No case storage found for the given case search query");
 
 
@@ -159,10 +158,16 @@ public class CaseSearchResultsInStorageTests {
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         assertFalse(caseSearchStorage.isStorageExists(), "Case search storage has not been cleared after purge");
-        FormplayerCaseSearchIndexTable caseSearchIndexTable = new FormplayerCaseSearchIndexTable(
-                caseSearchSandbox, caseSearchTableName);
+        FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         assertFalse(caseSearchIndexTable.isStorageExists(), "Case Indexes have not been cleared after purge");
 
+    }
+
+    private FormplayerCaseIndexTable getCaseIndexTable(UserSqlSandbox caseSearchSandbox,
+            String caseSearchTableName) {
+        String caseIndexTableName = "case_search_index_storage_" + caseSearchTableName;
+        return new FormplayerCaseIndexTable(
+                caseSearchSandbox, caseIndexTableName, false);
     }
 
     private <T extends BaseResponseBean> Response<T> navigate(

@@ -9,7 +9,7 @@ import org.commcare.cases.model.Case;
 import org.commcare.core.parse.CaseInstanceXmlTransactionParserFactory;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
-import org.commcare.formplayer.database.models.FormplayerCaseSearchIndexTable;
+import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class CaseSearchHelper {
 
+    private static final String CASE_SEARCH_INDEX_TABLE_PREFIX = "case_search_index_storage_";
     @Value("${formplayer.case_search.min_size_to_store_in_db}")
     private Integer minSizeToStoreInDb;
     private static final Integer BYTES_IN_A_MB = 1024 * 1024;
@@ -78,8 +79,7 @@ public class CaseSearchHelper {
         String caseSearchTableName = evalCaseSearchTableName(cacheKey);
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
-        FormplayerCaseSearchIndexTable caseSearchIndexTable = new FormplayerCaseSearchIndexTable(
-                caseSearchSandbox, caseSearchTableName);
+        FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         if(!caseSearchStorage.isStorageExists() || skipCache){
             String responseString = webClient.postFormData(url, requestData);
             if (responseString != null) {
@@ -106,6 +106,12 @@ public class CaseSearchHelper {
         throw new IOException("No response from server for case search query");
     }
 
+    private FormplayerCaseIndexTable getCaseIndexTable(ConnectionHandler caseSearchSandbox,
+            String caseSearchTableName) {
+        String caseSearchIndexTableName = CASE_SEARCH_INDEX_TABLE_PREFIX + caseSearchTableName;
+        return new FormplayerCaseIndexTable(
+                caseSearchSandbox, caseSearchIndexTableName, false);
+    }
     private CaseSearchDB initCaseSearchDB() {
             return new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
                     restoreFactory.getAsUsername());
@@ -116,7 +122,7 @@ public class CaseSearchHelper {
     }
     private void parseIntoCaseSearchStorage(SQLiteDB caseSearchDb, UserSqlSandbox caseSearchSandbox,
             IStorageUtilityIndexed<Case> caseSearchStorage, ByteArrayInputStream responeStream,
-            FormplayerCaseSearchIndexTable caseSearchIndexTable)
+            FormplayerCaseIndexTable caseSearchIndexTable)
             throws UnfullfilledRequirementsException, InvalidStructureException,
             XmlPullParserException, IOException {
         try {
@@ -179,8 +185,7 @@ public class CaseSearchHelper {
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         caseSearchStorage.deleteStorage();
-        FormplayerCaseSearchIndexTable caseSearchIndexTable = new FormplayerCaseSearchIndexTable(
-                caseSearchSandbox, caseSearchTableName);
+        FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         caseSearchIndexTable.delete();
     }
 

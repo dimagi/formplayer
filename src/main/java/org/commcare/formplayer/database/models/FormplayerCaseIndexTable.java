@@ -37,7 +37,8 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     private static final String COL_INDEX_TYPE = "type";
     private static final String COL_INDEX_TARGET = "target";
     private static final String COL_INDEX_RELATIONSHIP = "relationship";
-    private static final String CASE_INDEX_STORAGE_TABLE_NAME = "case_index_storage";
+
+    private final String tableName;
 
     ConnectionHandler connectionHandler;
 
@@ -46,12 +47,13 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     //TODO: We should do some synchronization to make it the case that nothing can hold
     //an object for the same cache at once and let us manage the lifecycle
 
-    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler) {
-        this(connectionHandler, true);
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, String  tableName) {
+        this(connectionHandler, tableName,true);
     }
 
-    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, boolean createTable) {
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, String tableName, boolean createTable) {
         this.connectionHandler = connectionHandler;
+        this.tableName = tableName;
         if (createTable) {
             createTable();
         }
@@ -75,11 +77,9 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 COL_INDEX_TARGET +
                 ")";
     }
-
-    protected String getTableName() {
-        return CASE_INDEX_STORAGE_TABLE_NAME;
+    private String getTableName() {
+        return tableName;
     }
-
     private void createIndexes(Connection connection) {
         String recordFirstIndexId = "RECORD_NAME_ID_TARGET";
         String recordFirstIndex = COL_CASE_RECORD_ID + ", " + COL_INDEX_NAME + ", " + COL_INDEX_TARGET;
