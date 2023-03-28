@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import static java.util.Optional.ofNullable;
 
 import org.commcare.formplayer.configuration.CacheConfiguration;
-import org.commcare.formplayer.exceptions.MediaMetaDataNotFoundException;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.junit.jupiter.api.AfterEach;
@@ -130,43 +129,40 @@ public class MediaMetaDataServiceTest {
 
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
 
-        assertEquals(mediaMetaData, getCachedMetadata(mediaMetaData.getId()).get());
+        assertEquals(mediaMetaData, getCachedMetadata(mediaMetaData.getFileId()).get());
 
-        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.getMetadataById(mediaMetaData.getId());
+        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.findByFileId(mediaMetaData.getFileId());
         assertEquals(mediaMetaData, fetchedMediaMetaData);
     }
 
     @Test
     public void testDelete() {
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
-        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.getMetadataById(mediaMetaData.getId());
+        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.findByFileId(mediaMetaData.getFileId());
         Assertions.assertNotNull(fetchedMediaMetaData);
-
         String metadataId = mediaMetaData.getId();
         mediaMetaDataService.deleteMetaDataById(metadataId);
-
-        Assertions.assertThrows(MediaMetaDataNotFoundException.class, () -> {
-            mediaMetaDataService.getMetadataById(metadataId);
-        });
+        Optional<MediaMetadataRecord> newlyFetchedMediaMetaData = mediaMetaDataRepo.findById(metadataId);
+        Assertions.assertFalse(newlyFetchedMediaMetaData.isPresent());
     }
 
     @Test
     public void testPurge() {
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
-        assertEquals(mediaMetaData, getCachedMetadata(mediaMetaData.getId()).get());
-        String metadataId = mediaMetaData.getId();
+        assertEquals(mediaMetaData, getCachedMetadata(mediaMetaData.getFileId()).get());
+        String fileId = mediaMetaData.getFileId();
 
         Assertions.assertTrue(testFile.exists());
         Integer purgeCount = mediaMetaDataService.purge(Instant.now());
         Assertions.assertEquals(1, purgeCount);
         Assertions.assertFalse(testFile.exists());
 
-        Assertions.assertEquals(Optional.empty(), getCachedMetadata(metadataId));
+        Assertions.assertEquals(Optional.empty(), getCachedMetadata(fileId));
     }
 
-    private Optional<MediaMetadataRecord> getCachedMetadata(String metadataId) {
+    private Optional<MediaMetadataRecord> getCachedMetadata(String fileId) {
         return ofNullable(cacheManager.getCache(MEDIA_METADATA_CACHE)).map(
-                c -> c.get(metadataId, MediaMetadataRecord.class)
+                c -> c.get(fileId, MediaMetadataRecord.class)
         );
     }
 
