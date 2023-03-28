@@ -172,6 +172,7 @@ public class Constants {
 
     // Cache Names
     public static final String VIRTUAL_DATA_INSTANCES_CACHE = "virtual_data_instances";
+    public static final String MEDIA_METADATA_CACHE = "media_metadata";
 
     // End Datadog metrics
 

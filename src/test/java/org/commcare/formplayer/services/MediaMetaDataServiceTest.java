@@ -1,9 +1,16 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.formplayer.util.Constants.MEDIA_METADATA_CACHE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import static java.util.Optional.ofNullable;
+
+import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.junit.jupiter.api.AfterEach;
@@ -14,12 +21,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -37,11 +50,15 @@ import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
+@EnableConfigurationProperties(value = CacheConfiguration.class)
+@TestPropertySource("classpath:application.properties")
 public class MediaMetaDataServiceTest {
 
     @Autowired
     MediaMetaDataService mediaMetaDataService;
     MediaMetadataRecord mediaMetaData;
+    @Autowired
+    CacheManager cacheManager;
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
     private String fileId;
@@ -102,14 +119,27 @@ public class MediaMetaDataServiceTest {
 
     @AfterEach
     public void tearDown() {
+        cacheManager.getCache(MEDIA_METADATA_CACHE).clear();
         testFile.delete();
     }
 
     @Test
-    public void testSaveMetaData() {
+    public void testMediaMetadataCacheExists() {
+        Cache cache = cacheManager.getCache(MEDIA_METADATA_CACHE);
+        assertNotNull(cache);
+        assertTrue(cache instanceof CaffeineCache);
+    }
+
+    @Test
+    public void testSaveMetaData_cached() {
+        cacheManager.getCache(MEDIA_METADATA_CACHE).clear();
+
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
+
+        assertEquals(mediaMetaData, getCachedMetadata(mediaMetaData.getId()).get());
+
         Optional<MediaMetadataRecord> fetchedMediaMetaData = mediaMetaDataRepo.findById(mediaMetaData.getId());
-        Assertions.assertTrue(fetchedMediaMetaData.isPresent());
+        assertEquals(mediaMetaData, fetchedMediaMetaData.get());
     }
 
     @Test
@@ -125,16 +155,29 @@ public class MediaMetaDataServiceTest {
 
     @Test
     public void testPurge() {
+        mediaMetaDataService.saveMediaMetaData(mediaMetaData);
+        assertEquals(mediaMetaData, getCachedMetadata(mediaMetaData.getId()).get());
+        String metadataId = mediaMetaData.getId();
+
         Assertions.assertTrue(testFile.exists());
         Integer purgeCount = mediaMetaDataService.purge(Instant.now());
         Assertions.assertEquals(1, purgeCount);
         Assertions.assertFalse(testFile.exists());
+
+        Assertions.assertEquals(Optional.empty(), getCachedMetadata(metadataId));
+    }
+
+    private Optional<MediaMetadataRecord> getCachedMetadata(String metadataId) {
+        return ofNullable(cacheManager.getCache(MEDIA_METADATA_CACHE)).map(
+                c -> c.get(metadataId, MediaMetadataRecord.class)
+        );
     }
 
     @ComponentScan(basePackageClasses = {
             MediaMetaDataService.class}, useDefaultFilters = false, includeFilters = @ComponentScan.Filter(type
             = FilterType.ASSIGNABLE_TYPE, classes = {
             MediaMetaDataService.class}))
+    @EnableCaching
     @Configuration
     public static class Config {
 
