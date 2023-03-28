@@ -80,7 +80,7 @@ public class CaseSearchHelper {
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
-        if(!caseSearchStorage.isStorageExists() || skipCache){
+        if (skipCache || !caseSearchStorage.isStorageExists()) {
             String responseString = webClient.postFormData(url, requestData);
             if (responseString != null) {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
