@@ -311,7 +311,7 @@ public class FormSubmissionController extends AbstractBaseController {
     }
 
     private void validateFile(File file) throws FileNotFoundException {
-        if (isUnSupportedFileExtension(file.getName()) && isUnsupportedMimeType(new FileInputStream(file),
+        if (isUnSupportedFileExtension(file.getName()) || isUnsupportedMimeType(new FileInputStream(file),
                 file.getName())) {
             failWithError("form.upload.attachment.invalid", file.getName());
         } else if (isFileTooLarge(file.length())) {
