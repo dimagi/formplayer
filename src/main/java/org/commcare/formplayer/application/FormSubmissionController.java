@@ -105,7 +105,7 @@ public class FormSubmissionController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(FormSubmissionController.class);
 
-    @Value("${form.submit.max_attachments}")
+    @Value("${formplayer.form.submit.max_attachments}")
     private Integer maxAttachmentsPerForm;
 
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
