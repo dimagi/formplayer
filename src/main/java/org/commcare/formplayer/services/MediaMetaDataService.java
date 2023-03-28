@@ -39,11 +39,21 @@ public class MediaMetaDataService {
         return record.get();
     }
 
+    @Cacheable
+    public MediaMetadataRecord getMetadataById(String id) {
+        Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findById(id);
+        if (!record.isPresent()) {
+            throw new MediaMetaDataNotFoundException(id);
+        }
+        return record.get();
+    }
+
     @CachePut(key = "#mediaMetadataRecord.id")
     public MediaMetadataRecord saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
         return mediaMetaDataRepo.save(mediaMetadataRecord);
     }
 
+    @CacheEvict(key = "#id")
     public void deleteMetaDataById(String id) {
         mediaMetaDataRepo.deleteById(id);
     }

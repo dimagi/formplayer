@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static java.util.Optional.ofNullable;
 
 import org.commcare.formplayer.configuration.CacheConfiguration;
+import org.commcare.formplayer.exceptions.MediaMetaDataNotFoundException;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.junit.jupiter.api.AfterEach;
@@ -82,7 +83,7 @@ public class MediaMetaDataServiceTest {
                 "domain",
                 "appid"
         );
-        
+
         when(mediaMetaDataRepo.save(any())).thenAnswer(new Answer<MediaMetadataRecord>() {
             @Override
             public MediaMetadataRecord answer(InvocationOnMock invocation) throws Throwable {
@@ -92,13 +93,6 @@ public class MediaMetaDataServiceTest {
                     ReflectionTestUtils.setField(mediaMetaData, "id", UUID.randomUUID().toString());
                 }
                 return mediaMetaData;
-            }
-        });
-
-        when(mediaMetaDataRepo.findById(any())).thenAnswer(new Answer<Optional<MediaMetadataRecord>>() {
-            @Override
-            public Optional<MediaMetadataRecord> answer(InvocationOnMock invocation) throws Throwable {
-                return Optional.ofNullable(mediaMetaData);
             }
         });
 
@@ -138,19 +132,22 @@ public class MediaMetaDataServiceTest {
 
         assertEquals(mediaMetaData, getCachedMetadata(mediaMetaData.getId()).get());
 
-        Optional<MediaMetadataRecord> fetchedMediaMetaData = mediaMetaDataRepo.findById(mediaMetaData.getId());
-        assertEquals(mediaMetaData, fetchedMediaMetaData.get());
+        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.getMetadataById(mediaMetaData.getId());
+        assertEquals(mediaMetaData, fetchedMediaMetaData);
     }
 
     @Test
     public void testDelete() {
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
-        Optional<MediaMetadataRecord> fetchedMediaMetaData = mediaMetaDataRepo.findById(mediaMetaData.getId());
-        Assertions.assertTrue(fetchedMediaMetaData.isPresent());
+        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.getMetadataById(mediaMetaData.getId());
+        Assertions.assertNotNull(fetchedMediaMetaData);
+
         String metadataId = mediaMetaData.getId();
         mediaMetaDataService.deleteMetaDataById(metadataId);
-        Optional<MediaMetadataRecord> newlyFetchedMediaMetaData = mediaMetaDataRepo.findById(metadataId);
-        Assertions.assertFalse(newlyFetchedMediaMetaData.isPresent());
+
+        Assertions.assertThrows(MediaMetaDataNotFoundException.class, () -> {
+            mediaMetaDataService.getMetadataById(metadataId);
+        });
     }
 
     @Test
