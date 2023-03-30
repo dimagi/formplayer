@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static java.util.Optional.ofNullable;
 
 import org.commcare.formplayer.configuration.CacheConfiguration;
+import org.commcare.formplayer.exceptions.MediaMetaDataNotFoundException;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.junit.jupiter.api.AfterEach;
@@ -138,13 +139,13 @@ public class MediaMetaDataServiceTest {
     @Test
     public void testDelete() {
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
-        String metadataId = mediaMetaData.getId();
         String fileId = mediaMetaData.getFileId();
         MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.findByFileId(fileId);
         Assertions.assertNotNull(fetchedMediaMetaData);
         mediaMetaDataService.deleteByFileId(fileId);
-        Optional<MediaMetadataRecord> newlyFetchedMediaMetaData = mediaMetaDataRepo.findById(metadataId);
-        Assertions.assertFalse(newlyFetchedMediaMetaData.isPresent());
+        Assertions.assertThrows(MediaMetaDataNotFoundException.class, () -> {
+            mediaMetaDataService.findByFileId(fileId);
+        });
     }
 
     @Test
