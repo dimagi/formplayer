@@ -138,10 +138,11 @@ public class MediaMetaDataServiceTest {
     @Test
     public void testDelete() {
         mediaMetaDataService.saveMediaMetaData(mediaMetaData);
-        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.findByFileId(mediaMetaData.getFileId());
-        Assertions.assertNotNull(fetchedMediaMetaData);
         String metadataId = mediaMetaData.getId();
-        mediaMetaDataService.deleteMetaDataById(metadataId);
+        String fileId = mediaMetaData.getFileId();
+        MediaMetadataRecord fetchedMediaMetaData = mediaMetaDataService.findByFileId(fileId);
+        Assertions.assertNotNull(fetchedMediaMetaData);
+        mediaMetaDataService.deleteByFileId(fileId);
         Optional<MediaMetadataRecord> newlyFetchedMediaMetaData = mediaMetaDataRepo.findById(metadataId);
         Assertions.assertFalse(newlyFetchedMediaMetaData.isPresent());
     }

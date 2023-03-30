@@ -44,8 +44,8 @@ public class MediaMetaDataService {
         return mediaMetaDataRepo.save(mediaMetadataRecord);
     }
 
-    public void deleteMetaDataById(String id) {
-        mediaMetaDataRepo.deleteById(id);
+    public void deleteByFileId(String fileId) {
+        mediaMetaDataRepo.deleteByFileId(fileId);
     }
 
     public List<MediaMetadataRecord> findAllWithNullFormSession() {
