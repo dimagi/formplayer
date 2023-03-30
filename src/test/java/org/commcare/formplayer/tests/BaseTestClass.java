@@ -883,7 +883,7 @@ public class BaseTestClass {
     }
 
     public enum RequestType {
-        POST, GET
+        POST, GET, MULTIPART
     }
 
     public enum ControllerType {

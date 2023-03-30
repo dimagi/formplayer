@@ -46,7 +46,7 @@ class MediaMetaDataServiceExtension : BeforeAllCallback, BeforeEachCallback {
                 }
             )
 
-        Mockito.`when`(mediaMetaDataService.deleteMetaDataById(ArgumentMatchers.anyString()))
+        Mockito.`when`(mediaMetaDataService.deleteByFileId(ArgumentMatchers.anyString()))
             .thenAnswer(
                 Answer { invocation ->
                     val key = invocation.arguments[0] as String

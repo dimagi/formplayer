@@ -17,4 +17,6 @@ public interface MediaMetaDataRepo extends JpaRepository<MediaMetadataRecord, St
     List<MediaMetadataRecord> findByFormSessionIsNull();
 
     Optional<MediaMetadataRecord> findByFileId(String id);
+
+    void deleteByFileId(String fileId);
 }

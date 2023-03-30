@@ -30,13 +30,13 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         fun cleanMedia(parentDirPath: Path, fileIdWithExt: String, mediaMetaDataService: MediaMetaDataService): Boolean {
             val currentMedia = getMediaFilePath(parentDirPath, fileIdWithExt).toFile()
             val deleted = currentMedia.delete()
-            val metadataId = fileIdWithExt.substring(0, fileIdWithExt.indexOf("."))
+            val fileId = fileIdWithExt.substring(0, fileIdWithExt.indexOf("."))
             if (deleted) {
                 try {
-                    mediaMetaDataService.deleteMetaDataById(metadataId)
+                    mediaMetaDataService.deleteByFileId(fileId)
                 } catch (e: Exception) {
                     // just log, we don't want to crash even if delete fails
-                    log.info("Could not delete media data record for media id $metadataId")
+                    log.info("Could not delete media data record for file id $fileId")
                 }
             } else {
                 log.info("Could not delete media from filesystem at path $currentMedia")

@@ -1,11 +1,16 @@
 package org.commcare.formplayer.services;
 
 import static org.commcare.formplayer.services.MediaHandler.cleanMedia;
+import static org.commcare.formplayer.util.Constants.MEDIA_METADATA_CACHE;
 
 import org.commcare.formplayer.exceptions.MediaMetaDataNotFoundException;
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.commcare.formplayer.repo.MediaMetaDataRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -19,11 +24,13 @@ import java.util.Optional;
  * Service for managing media metadata
  */
 @Service
+@CacheConfig(cacheNames = {MEDIA_METADATA_CACHE})
 public class MediaMetaDataService {
 
     @Autowired
     private MediaMetaDataRepo mediaMetaDataRepo;
 
+    @Cacheable
     public MediaMetadataRecord findByFileId(String id) {
         Optional<MediaMetadataRecord> record = mediaMetaDataRepo.findByFileId(id);
         if (!record.isPresent()) {
@@ -32,12 +39,13 @@ public class MediaMetaDataService {
         return record.get();
     }
 
+    @CachePut(key = "#mediaMetadataRecord.fileId")
     public MediaMetadataRecord saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
         return mediaMetaDataRepo.save(mediaMetadataRecord);
     }
-
-    public void deleteMetaDataById(String id) {
-        mediaMetaDataRepo.deleteById(id);
+    @CacheEvict(key  = "#fileId")
+    public void deleteByFileId(String fileId) {
+        mediaMetaDataRepo.deleteByFileId(fileId);
     }
 
     public List<MediaMetadataRecord> findAllWithNullFormSession() {
@@ -47,6 +55,7 @@ public class MediaMetaDataService {
     /**
      * Deletes obsolete media files and metadata
      */
+    @CacheEvict(allEntries = true)
     public Integer purge(Instant instant) {
         List<MediaMetadataRecord> metadataToDelete = findAllWithNullFormSession();
         Integer deletedCount = 0;
