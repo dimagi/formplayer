@@ -6,6 +6,8 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.model.Case;
+import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.CheckedFunction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,8 @@ public class ScheduledTasks {
 
     @Autowired
     private VirtualDataInstanceService virtualDataInstanceService;
+    @Autowired
+    private MediaMetaDataService mediaMetaDataService;
 
     // the default "0 0 0 * * *" schedule means midnight each night
     @Scheduled(cron = "${commcare.formplayer.scheduledTasks.purge.cron:0 0 0 * * *}")
@@ -39,15 +43,18 @@ public class ScheduledTasks {
             lockAtLeastFor = "${commcare.formplayer.scheduledTasks.purge.lockAtLeastFor:1h}")
     public void purge() {
         log.info("Starting purge scheduled task.");
-        doTimedPurge("formSession", formSessionService::purge);
-        doTimedPurge("virtualDataInstance", virtualDataInstanceService::purge);
+        doTimedPurge("formSession", Instant.now().minus(7, ChronoUnit.DAYS), formSessionService::purge);
+        doTimedPurge("virtualDataInstance", Instant.now().minus(7, ChronoUnit.DAYS),
+                virtualDataInstanceService::purge);
+        doTimedPurge("tempDb", Instant.now().minus(5, ChronoUnit.MINUTES), SqlSandboxUtils::purgeTempDb);
+        doTimedPurge("media", Instant.now().minus(7, ChronoUnit.DAYS), mediaMetaDataService::purge);
         datadogStatsDClient.increment(
                 String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "timesRun")
         );
     }
 
-    private void doTimedPurge(String tag, CheckedFunction<Instant, Integer, RuntimeException> purgeable) {
-        Instant cutoff = Instant.now().minus(7, ChronoUnit.DAYS);
+    private void doTimedPurge(String tag, Instant cutoff,
+            CheckedFunction<Instant, Integer, RuntimeException> purgeable) {
         log.info("Beginning purge for " + tag);
         long start = System.currentTimeMillis();
         int deletedRows = purgeable.apply(cutoff);

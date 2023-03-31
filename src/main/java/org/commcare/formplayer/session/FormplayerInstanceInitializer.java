@@ -1,5 +1,7 @@
 package org.commcare.formplayer.session;
 
+import static org.commcare.formplayer.parsers.FormplayerCaseXmlParser.CASE_INDEX_STORAGE_TABLE_NAME;
+
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -39,7 +41,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         if (casebase == null) {
             SqlStorage<Case> storage = (SqlStorage<Case>)mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
-            formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox)mSandbox);
+            formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox)mSandbox, CASE_INDEX_STORAGE_TABLE_NAME);
             casebase = new CaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.

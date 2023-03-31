@@ -2,7 +2,7 @@ package org.commcare.formplayer.sqlitedb;
 
 import java.io.File;
 
-abstract class DBPath {
+public abstract class DBPath {
     abstract String getDatabasePath();
     abstract String getDatabaseName();
 

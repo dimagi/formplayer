@@ -19,9 +19,10 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.MediaHandler;
+import org.commcare.formplayer.services.MediaMetaDataService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
@@ -31,6 +32,7 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
@@ -40,14 +42,19 @@ import org.javarosa.engine.FunctionExtensions;
 import org.javarosa.form.api.FormController;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.form.api.FormEntryPrompt;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Map;
 
@@ -68,13 +75,12 @@ import datadog.trace.api.Trace;
 public class FormSession {
 
     private final SerializableFormSession session;
+    private final FormDef formDef;
+    private final UserSqlSandbox sandbox;
     Log log = LogFactory.getLog(FormSession.class);
-
-    private FormDef formDef;
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
     private FormController formController;
-    private UserSqlSandbox sandbox;
     private String[] langs;
     private boolean isAtLastIndex = false;
     private boolean isAtFirstIndex;
@@ -83,15 +89,6 @@ public class FormSession {
     private boolean shouldAutoSubmit;
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
-
-    @Trace
-    private void setupJavaRosaObjects() {
-        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
-        formEntryController = new FormEntryController(formEntryModel);
-        formController = new FormController(formEntryController, false);
-        langs = formEntryModel.getLanguages();
-        initLocale();
-    }
 
     public FormSession(SerializableFormSession session,
             RestoreFactory restoreFactory,
@@ -179,6 +176,15 @@ public class FormSession {
             stepToNextIndex();
             session.setCurrentIndex(formController.getFormIndex().toString());
         }
+    }
+
+    @Trace
+    private void setupJavaRosaObjects() {
+        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
+        formEntryController = new FormEntryController(formEntryModel);
+        formController = new FormController(formEntryController, false);
+        langs = formEntryModel.getLanguages();
+        initLocale();
     }
 
     private SessionFrame createSessionFrame(Map<String, String> sessionData) {
@@ -300,11 +306,7 @@ public class FormSession {
      */
     private void setAutoSubmitFlag() {
         String shouldSubmit = getPragma("Pragma-Submit-Automatically");
-        if (shouldSubmit != null) {
-            this.shouldAutoSubmit = true;
-        } else {
-            this.shouldAutoSubmit = false;
-        }
+        this.shouldAutoSubmit = shouldSubmit != null;
     }
 
     /**
@@ -315,11 +317,7 @@ public class FormSession {
      */
     private void setSuppressAutosyncFlag() {
         String shouldSubmit = getPragma("Pragma-Suppress-Autosync");
-        if (shouldSubmit != null) {
-            this.suppressAutosync = true;
-        } else {
-            this.suppressAutosync = false;
-        }
+        this.suppressAutosync = shouldSubmit != null;
     }
 
     /**
@@ -331,11 +329,7 @@ public class FormSession {
      */
     private void setSkipValidation() {
         String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
-        if (shouldSkipValidation != null) {
-            this.shouldSkipFullFormValidation = true;
-        } else {
-            this.shouldSkipFullFormValidation = false;
-        }
+        this.shouldSkipFullFormValidation = shouldSkipValidation != null;
     }
 
     public boolean getAutoSubmitFlag() {
@@ -381,7 +375,7 @@ public class FormSession {
     public String getInstanceXml(boolean serializeAllData) throws IOException {
         byte[] bytes = new XFormSerializingVisitor(!serializeAllData).serializeInstance(
                 formDef.getInstance());
-        return new String(bytes, "US-ASCII");
+        return new String(bytes, StandardCharsets.US_ASCII);
     }
 
     public FormEntryModel getFormEntryModel() {
@@ -617,7 +611,7 @@ public class FormSession {
         responseBean.setInstanceXml(null);
         responseBean.setTree(null);
         responseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        if (nextEvent == formEntryController.EVENT_END_OF_FORM) {
+        if (nextEvent == FormEntryController.EVENT_END_OF_FORM) {
             String output = submitGetXml();
             responseBean.getEvent().setOutput(output);
         }
@@ -639,5 +633,46 @@ public class FormSession {
 
     public FormDef getFormDef() {
         return formDef;
+    }
+
+    public String saveMediaAnswer(MultipartFile file, String answerIndex, Path mediaDirectoryPath,
+            MediaMetaDataService mediaMetaDataService) {
+        if (answerIndex == null) {
+            answerIndex = session.getCurrentIndex();
+        }
+        MediaHandler mediaHandler = new MediaHandler(file, mediaMetaDataService);
+        String fileId = mediaHandler.saveFile(mediaDirectoryPath, session, session.getUsername(),
+                session.getAsUser(), session.getDomain(), session.getAppId());
+        cleanCurrentMedia(mediaDirectoryPath, answerIndex, mediaMetaDataService);
+        return fileId;
+    }
+
+    private void cleanCurrentMedia(Path mediaDirectoryPath,
+            String answerIndex, MediaMetaDataService mediaMetaDataService) {
+        Object currentAnswer = getCurrentAnswer(answerIndex);
+        if (currentAnswer != null) {
+            String currentFileId = (String)currentAnswer;
+            MediaHandler.cleanMedia(mediaDirectoryPath, currentFileId, mediaMetaDataService);
+        }
+    }
+
+    // returns the current answer for the corresponding answerIndex in the form
+    private Object getCurrentAnswer(String answerIndex) {
+        FormIndex formIndex = JsonActionUtils.indexFromString(answerIndex, formEntryModel.getForm());
+        FormEntryPrompt prompt = formEntryModel.getQuestionPrompt(formIndex);
+        IAnswerData answer = prompt.getAnswerValue();
+        if (answer != null) {
+            return prompt.getAnswerValue().getValue();
+        }
+        return null;
+    }
+
+    // forms/<domain>/<username>/<asUsername>/<app_id>/<form_id>/media/
+    public Path getMediaDirectoryPath(String domain, String user, String asUser, String appId) {
+        Path basePath = Paths.get("forms", domain, user);
+        if (asUser != null) {
+            basePath = Paths.get(basePath.toString(), asUser);
+        }
+        return Paths.get(basePath.toString(), appId, getSessionId(), "media");
     }
 }
