@@ -30,7 +30,7 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
                                     UserSqlSandbox sandbox) {
         super(parser);
         mEntityCache = new EntityStorageCache("entitycase", sandbox);
-        mCaseIndexTable = new FormplayerCaseIndexTable(sandbox, CASE_INDEX_STORAGE_TABLE_NAME);
+        mCaseIndexTable = new FormplayerCaseIndexTable(sandbox);
         this.storage = sandbox.getCaseStorage();
     }
 

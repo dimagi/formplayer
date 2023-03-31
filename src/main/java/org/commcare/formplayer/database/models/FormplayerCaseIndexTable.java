@@ -1,5 +1,6 @@
 package org.commcare.formplayer.database.models;
 
+import static org.commcare.formplayer.parsers.FormplayerCaseXmlParser.CASE_INDEX_STORAGE_TABLE_NAME;
 import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
 
 import org.apache.commons.logging.Log;
@@ -47,8 +48,8 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     //TODO: We should do some synchronization to make it the case that nothing can hold
     //an object for the same cache at once and let us manage the lifecycle
 
-    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, String  tableName) {
-        this(connectionHandler, tableName,true);
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler) {
+        this(connectionHandler, CASE_INDEX_STORAGE_TABLE_NAME,true);
     }
 
     public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, String tableName, boolean createTable) {
