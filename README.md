@@ -107,7 +107,8 @@ In order to set breakpoints, step through code, and link the runtime with source
    2. Click the + in the upper left corner and then "JAR Application"
    3. Pick any name (e.g. "Formplayer")
    4. Set to jar path to <path to repo>/formplayer/build/libs/formplayer.jar
-   5. Hit the + in the "before launch" section and add project: formplayer, task: assemble
+   5. Hit the + in the "before launch" section and add project: formplayer, task: bootJar 
+      (faster than assemble since it does not run tests)
    6. save
 
 After following these steps IntelliJ may need further configuration to work smoothly with Gradle. You might also want to install 
