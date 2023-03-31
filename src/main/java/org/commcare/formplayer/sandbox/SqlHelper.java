@@ -558,7 +558,14 @@ public class SqlHelper {
         }
     }
 
-    private static boolean isTableExist(Connection connection, String tableName) {
+    /**
+     * Check if the table with a given name exists in the database
+     *
+     * @param connection Database Connection
+     * @param tableName name of table
+     * @return
+     */
+    public static boolean isTableExist(Connection connection, String tableName) {
         ResultSet resultSet = null;
         try {
             DatabaseMetaData md = connection.getMetaData();

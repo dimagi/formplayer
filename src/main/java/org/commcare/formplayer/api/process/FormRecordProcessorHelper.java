@@ -1,5 +1,7 @@
 package org.commcare.formplayer.api.process;
 
+import static org.commcare.formplayer.parsers.FormplayerCaseXmlParser.CASE_INDEX_STORAGE_TABLE_NAME;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.ledger.Ledger;
@@ -93,7 +95,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
 
         SqlStorage<Case> storage = sandbox.getCaseStorage();
         DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage,
-                new FormplayerCaseIndexTable(sandbox), owners);
+                new FormplayerCaseIndexTable(sandbox, CASE_INDEX_STORAGE_TABLE_NAME), owners);
 
         CasePurgeFilter filter = new CasePurgeFilter(fullCaseGraph);
         if (filter.invalidEdgesWereRemoved()) {
@@ -110,7 +112,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         Vector<Integer> casesRemoved = storage.removeAll(filter.getCasesToRemove());
         removedCaseCount = casesRemoved.size();
 
-        FormplayerCaseIndexTable indexTable = new FormplayerCaseIndexTable(sandbox);
+        FormplayerCaseIndexTable indexTable = new FormplayerCaseIndexTable(sandbox, CASE_INDEX_STORAGE_TABLE_NAME);
         indexTable.clearCaseIndices(casesRemoved);
 
 

@@ -1,9 +1,6 @@
 package org.commcare.formplayer.sqlitedb;
 
-import org.commcare.formplayer.application.SQLiteProperties;
-import org.commcare.modern.database.TableBuilder;
-
-import java.io.File;
+import static org.commcare.formplayer.DbUtils.getDbPathForUser;
 
 import org.commcare.formplayer.util.Constants;
 
@@ -20,20 +17,9 @@ class UserDBPath extends DBPath {
         this.asUsername = asUsername;
     }
 
-    static String getUserDBPath(String domain, String username, String asUsername) {
-        return SQLiteProperties.getDataDir() + domain + File.separator + TableBuilder.scrubName(getUsernameDetail(username, asUsername));
-    }
-
-    private static String getUsernameDetail(String username, String asUsername) {
-        if (asUsername != null) {
-            return username + "_" + asUsername;
-        }
-        return username;
-    }
-
     @Override
     public String getDatabasePath() {
-        return getUserDBPath(domain, username, asUsername);
+        return getDbPathForUser(domain, username, asUsername);
     }
 
     @Override
