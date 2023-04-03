@@ -2,12 +2,14 @@ package org.commcare.formplayer.objects;
 
 import org.commcare.formplayer.util.Constants;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -25,7 +27,12 @@ import lombok.Setter;
 public class MediaMetadataRecord {
 
     @Id
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
+
+    @Column(name = "fileid", updatable = false)
+    private String fileId;
 
     @Column(name = "filepath", updatable = false)
     private String filePath;
@@ -61,7 +68,7 @@ public class MediaMetadataRecord {
     }
 
     public MediaMetadataRecord(
-            String id,
+            String fileId,
             String filePath,
             SerializableFormSession formSession,
             String contentType,
@@ -70,7 +77,7 @@ public class MediaMetadataRecord {
             String asUser,
             String domain,
             String appId) {
-        this.id = id;
+        this.fileId = fileId;
         this.filePath = filePath;
         this.formSession = formSession;
         this.contentType = contentType;
@@ -83,8 +90,12 @@ public class MediaMetadataRecord {
 
     @Override
     public String toString() {
-        return "MediaMetaData [id=" + id + ", formSessionId=" + formSession.getId() + ", username=" + username
-                + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
+        return "MediaMetaData [fileId=" + fileId + ", username="
+                + username + ", asUser=" + asUser + " domain=" + domain + ", filePath=" + filePath
                 + ", contentType=" + contentType + "]";
+    }
+
+    public String getId() {
+        return id;
     }
 }
