@@ -1,5 +1,6 @@
 build/
 testdbs/*
+tmp_dbs/*
 .gradle
 config/application.properties
 gradle/

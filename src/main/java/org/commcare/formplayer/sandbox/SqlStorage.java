@@ -20,6 +20,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -61,11 +62,7 @@ public class SqlStorage<T extends Persistable>
         this.prototype = prototype;
         this.connectionHandler = connectionHandler;
         if (initialize) {
-            try {
-                buildTableFromInstance(prototype.newInstance());
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            initStorage();
         }
     }
 
@@ -586,13 +583,33 @@ public class SqlStorage<T extends Persistable>
         return prototype;
     }
 
+    @Override
+    public boolean isStorageExists() {
+        return SqlHelper.isTableExist(getConnection(), tableName);
+    }
+
+    @Override
+    public void initStorage() {
+        try {
+            buildTableFromInstance(prototype.newInstance());
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteStorage() {
+        SqlHelper.dropTable(getConnection(), tableName);
+    }
+
 
     /**
      * Retrieves a set of the models in storage based on a list of values matching one if the
      * indexes of this storage
      */
-    public List<T> getBulkRecordsForIndex(String indexName, Collection<String> matchingValues) {
-        List<T> returnSet = new ArrayList<>();
+    @Override
+    public Vector<T> getBulkRecordsForIndex(String indexName, Collection<String> matchingValues) {
+        Vector<T> returnSet = new Vector<>();
         String fieldName = TableBuilder.scrubName(indexName);
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(matchingValues, "?");
         try {
