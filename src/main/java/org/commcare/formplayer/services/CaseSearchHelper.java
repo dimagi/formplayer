@@ -118,7 +118,7 @@ public class CaseSearchHelper {
     }
 
     private static String evalCaseSearchTableName(String cacheKey) {
-        return MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
+        return UserSqlSandbox.FORMPLAYER_CASE + "_" + MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
     }
     private void parseIntoCaseSearchStorage(SQLiteDB caseSearchDb, UserSqlSandbox caseSearchSandbox,
             IStorageUtilityIndexed<Case> caseSearchStorage, ByteArrayInputStream responeStream,
