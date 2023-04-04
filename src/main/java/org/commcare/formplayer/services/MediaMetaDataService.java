@@ -43,7 +43,8 @@ public class MediaMetaDataService {
     public MediaMetadataRecord saveMediaMetaData(MediaMetadataRecord mediaMetadataRecord) {
         return mediaMetaDataRepo.save(mediaMetadataRecord);
     }
-    @CacheEvict(key  = "#fileId")
+
+    @CacheEvict(key = "#fileId")
     public void deleteByFileId(String fileId) {
         mediaMetaDataRepo.deleteByFileId(fileId);
     }
