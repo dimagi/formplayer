@@ -1,5 +1,6 @@
 package org.commcare.formplayer.database.models;
 
+import static org.commcare.formplayer.parsers.FormplayerCaseXmlParser.CASE_INDEX_STORAGE_TABLE_NAME;
 import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
 
 import org.apache.commons.logging.Log;
@@ -39,6 +40,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     private static final String COL_INDEX_RELATIONSHIP = "relationship";
 
     private final String tableName;
+    private final String caseTableName;
 
     ConnectionHandler connectionHandler;
 
@@ -47,13 +49,15 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     //TODO: We should do some synchronization to make it the case that nothing can hold
     //an object for the same cache at once and let us manage the lifecycle
 
-    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, String  tableName) {
-        this(connectionHandler, tableName,true);
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler) {
+        this(connectionHandler, CASE_INDEX_STORAGE_TABLE_NAME, UserSqlSandbox.FORMPLAYER_CASE, true);
     }
 
-    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, String tableName, boolean createTable) {
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler, String tableName, String caseTableName,
+            boolean createTable) {
         this.connectionHandler = connectionHandler;
         this.tableName = tableName;
+        this.caseTableName = caseTableName;
         if (createTable) {
             createTable();
         }
@@ -280,7 +284,6 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             Collection<Integer> cuedCases) {
         DualTableSingleMatchModelQuerySet set = new DualTableSingleMatchModelQuerySet();
         String caseIdIndex = TableBuilder.scrubName(Case.INDEX_CASE_ID);
-
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases, "?");
         try {
             for (Pair<String, String[]> querySet : whereParamList) {
@@ -294,9 +297,9 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                                 "AND " +
                                 "%s IN %s",
 
-                        COL_CASE_RECORD_ID, UserSqlSandbox.FORMPLAYER_CASE + "." + DatabaseHelper.ID_COL,
+                        COL_CASE_RECORD_ID, caseTableName + "." + DatabaseHelper.ID_COL,
                         getTableName(),
-                        UserSqlSandbox.FORMPLAYER_CASE,
+                        caseTableName,
                         COL_INDEX_TARGET, caseIdIndex,
                         COL_INDEX_NAME, indexName,
                         COL_CASE_RECORD_ID, querySet.first);
@@ -327,7 +330,6 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             throw new RuntimeException(e);
         }
     }
-
 
     public static String getArgumentBasedVariableSet(int number) {
         StringBuffer sb = new StringBuffer();

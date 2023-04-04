@@ -103,6 +103,7 @@ public class CaseSearchResultsInStorageTests {
             assertEquals(entity.getId(),"0156fa3e-093e-4136-b95c-01b13dae66c6");
             assertEquals(entity.getData()[0], "Burt Maclin");
             assertEquals(entity.getData()[1], "Burt Maclin");
+            assertEquals(entity.getData()[2], "Kurt Maclin");
         }
 
         // Verify the results are stored in storage and not cache
@@ -112,7 +113,7 @@ public class CaseSearchResultsInStorageTests {
 
         // Verify case search storage exists for our query
         SQLiteDB caseSearchDb = new CaseSearchDB("caseclaimdomain", "caseclaimuser", null);
-        String caseSearchTableName = MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));;
+        String caseSearchTableName = getCaseSearchTableName(cacheKey);
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         assertTrue(caseSearchStorage.isStorageExists(), "No case storage found for the given case search query");
@@ -139,6 +140,11 @@ public class CaseSearchResultsInStorageTests {
         assertFalse(caseSearchIndexTable.isStorageExists(), "Case Indexes have not been cleared after case claim");
     }
 
+    private String getCaseSearchTableName(String cacheKey) {
+        return UserSqlSandbox.FORMPLAYER_CASE + "_" + MD5.toHex(
+                MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
+    }
+
     @Test
     public void testPurgeForTemporaryDB() throws Exception {
         // populate case search DB
@@ -154,7 +160,7 @@ public class CaseSearchResultsInStorageTests {
         String cacheKey =  "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
                 + "/_case_type=case1=case2=case3_include_closed=False";
         SQLiteDB caseSearchDb = new CaseSearchDB("caseclaimdomain", "caseclaimuser", null);
-        String caseSearchTableName = MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));;
+        String caseSearchTableName = getCaseSearchTableName(cacheKey);
         UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         assertFalse(caseSearchStorage.isStorageExists(), "Case search storage has not been cleared after purge");
@@ -167,7 +173,7 @@ public class CaseSearchResultsInStorageTests {
             String caseSearchTableName) {
         String caseIndexTableName = "case_search_index_storage_" + caseSearchTableName;
         return new FormplayerCaseIndexTable(
-                caseSearchSandbox, caseIndexTableName, false);
+                caseSearchSandbox, caseIndexTableName, caseSearchTableName, false);
     }
 
     private <T extends BaseResponseBean> Response<T> navigate(

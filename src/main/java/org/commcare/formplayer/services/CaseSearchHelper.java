@@ -110,7 +110,7 @@ public class CaseSearchHelper {
             String caseSearchTableName) {
         String caseSearchIndexTableName = CASE_SEARCH_INDEX_TABLE_PREFIX + caseSearchTableName;
         return new FormplayerCaseIndexTable(
-                caseSearchSandbox, caseSearchIndexTableName, false);
+                caseSearchSandbox, caseSearchIndexTableName, caseSearchTableName,  false);
     }
     private CaseSearchDB initCaseSearchDB() {
             return new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
@@ -118,7 +118,7 @@ public class CaseSearchHelper {
     }
 
     private static String evalCaseSearchTableName(String cacheKey) {
-        return MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
+        return UserSqlSandbox.FORMPLAYER_CASE + "_" + MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
     }
     private void parseIntoCaseSearchStorage(SQLiteDB caseSearchDb, UserSqlSandbox caseSearchSandbox,
             IStorageUtilityIndexed<Case> caseSearchStorage, ByteArrayInputStream responeStream,
@@ -126,9 +126,9 @@ public class CaseSearchHelper {
             throws UnfullfilledRequirementsException, InvalidStructureException,
             XmlPullParserException, IOException {
         try {
+            DbUtils.setAutoCommit(caseSearchDb, false);
             caseSearchIndexTable.createTable();
             CaseInstanceXmlTransactionParserFactory factory = new CaseInstanceXmlTransactionParserFactory(caseSearchSandbox, caseSearchIndexTable);
-            DbUtils.setAutoCommit(caseSearchDb, false);
             caseSearchStorage.initStorage();
             ParseUtils.parseIntoSandbox(responeStream, factory, true, true);
             DbUtils.commit(caseSearchDb);

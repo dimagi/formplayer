@@ -159,6 +159,18 @@
         </text>
       </template>
     </field>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="instance('results')/results/case[@case_id = current()/index/parent]/case_name"/>
+        </text>
+      </template>
+    </field>
     <action redo_last="true">
       <display>
         <text>

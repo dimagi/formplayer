@@ -95,7 +95,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
 
         SqlStorage<Case> storage = sandbox.getCaseStorage();
         DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage,
-                new FormplayerCaseIndexTable(sandbox, CASE_INDEX_STORAGE_TABLE_NAME), owners);
+                new FormplayerCaseIndexTable(sandbox), owners);
 
         CasePurgeFilter filter = new CasePurgeFilter(fullCaseGraph);
         if (filter.invalidEdgesWereRemoved()) {
@@ -112,7 +112,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         Vector<Integer> casesRemoved = storage.removeAll(filter.getCasesToRemove());
         removedCaseCount = casesRemoved.size();
 
-        FormplayerCaseIndexTable indexTable = new FormplayerCaseIndexTable(sandbox, CASE_INDEX_STORAGE_TABLE_NAME);
+        FormplayerCaseIndexTable indexTable = new FormplayerCaseIndexTable(sandbox);
         indexTable.clearCaseIndices(casesRemoved);
 
 

@@ -22,7 +22,7 @@ public class FormplayerCaseXmlParser extends CaseXmlParser {
                                    UserSqlSandbox sandbox) {
         super(parser, acceptCreateOverwrites, sandbox.getCaseStorage());
         mEntityCache = new EntityStorageCache("entitycase", sandbox);
-        mCaseIndexTable = new FormplayerCaseIndexTable(sandbox, CASE_INDEX_STORAGE_TABLE_NAME);
+        mCaseIndexTable = new FormplayerCaseIndexTable(sandbox);
     }
 
 
