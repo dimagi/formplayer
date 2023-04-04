@@ -126,9 +126,9 @@ public class CaseSearchHelper {
             throws UnfullfilledRequirementsException, InvalidStructureException,
             XmlPullParserException, IOException {
         try {
+            DbUtils.setAutoCommit(caseSearchDb, false);
             caseSearchIndexTable.createTable();
             CaseInstanceXmlTransactionParserFactory factory = new CaseInstanceXmlTransactionParserFactory(caseSearchSandbox, caseSearchIndexTable);
-            DbUtils.setAutoCommit(caseSearchDb, false);
             caseSearchStorage.initStorage();
             ParseUtils.parseIntoSandbox(responeStream, factory, true, true);
             DbUtils.commit(caseSearchDb);
