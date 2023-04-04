@@ -110,7 +110,7 @@ public class CaseSearchHelper {
             String caseSearchTableName) {
         String caseSearchIndexTableName = CASE_SEARCH_INDEX_TABLE_PREFIX + caseSearchTableName;
         return new FormplayerCaseIndexTable(
-                caseSearchSandbox, caseSearchIndexTableName, false);
+                caseSearchSandbox, caseSearchIndexTableName, caseSearchTableName,  false);
     }
     private CaseSearchDB initCaseSearchDB() {
             return new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
