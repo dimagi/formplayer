@@ -103,6 +103,7 @@ public class CaseSearchResultsInStorageTests {
             assertEquals(entity.getId(),"0156fa3e-093e-4136-b95c-01b13dae66c6");
             assertEquals(entity.getData()[0], "Burt Maclin");
             assertEquals(entity.getData()[1], "Burt Maclin");
+            assertEquals(entity.getData()[2], "Kurt Maclin");
         }
 
         // Verify the results are stored in storage and not cache
