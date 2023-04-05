@@ -32,7 +32,7 @@ public class AuthTestUtils {
     }
 
     /**
-     * Use the 'answer_media' endpoint for 'full auth' with multipart
+     * Builds a mock multipart request to test `full_auth' for multipart endpoints
      */
     public static MockHttpServletRequestBuilder getMultipartRequestBuilder(Class c, String body)
             throws IOException {
