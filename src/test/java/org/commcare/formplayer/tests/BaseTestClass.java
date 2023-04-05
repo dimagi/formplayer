@@ -955,16 +955,6 @@ public class BaseTestClass {
                 break;
         }
         switch (requestType) {
-            case MULTIPART:
-                MockPart answer = new MockPart(PART_ANSWER, ((String)bean).getBytes());
-                answer.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-                result = controller.perform(
-                        multipart(urlPrepend(urlPath))
-                                .file(file)
-                                .part(answer)
-                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp")));
-                break;
-
             case POST:
                 result = controller.perform(
                         post(urlPrepend(urlPath))
