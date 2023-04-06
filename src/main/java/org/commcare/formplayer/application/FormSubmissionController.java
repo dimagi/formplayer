@@ -27,6 +27,7 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.MediaValidator;
 import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
@@ -287,10 +288,10 @@ public class FormSubmissionController extends AbstractBaseController {
         if (mediaFile.exists()) {
             File[] files = Objects.requireNonNull(mediaDirPath.toFile().listFiles());
             if (files.length > maxAttachmentsPerForm) {
-                failWithError("form.upload.attachments.limit.exceeded", maxAttachmentsPerForm.toString());
+                MediaValidator.throwAttachmentError("form.upload.attachments.limit.exceeded", maxAttachmentsPerForm.toString());
             }
             for (File file : files) {
-                validateFile(file);
+                MediaValidator.validateFile(new FileInputStream(file), file.getName(), file.length());
 
                 String contentType = FileUtils.getContentType(file);
                 if (!StringUtils.hasText(contentType)) {
@@ -308,20 +309,6 @@ public class FormSubmissionController extends AbstractBaseController {
                 formSession.getInstanceXml(false), "text/xml");
         body.add("xml_submission_file", xmlPart);
         return body;
-    }
-
-    private void validateFile(File file) throws FileNotFoundException {
-        if (isUnSupportedFileExtension(file.getName()) || isUnsupportedMimeType(new FileInputStream(file),
-                file.getName())) {
-            failWithError("form.upload.attachment.invalid", file.getName());
-        } else if (isFileTooLarge(file.length())) {
-            failWithError("form.upload.attachment.oversize", file.getName());
-        }
-    }
-
-    private void failWithError(String localeKey, String... args) {
-        String attachmentsThresholdError = Localization.get(localeKey, args);
-        throw new FormAttachmentException(attachmentsThresholdError);
     }
 
     private static HttpEntity<Object> createFilePart(String partName, String fileName, Object content,

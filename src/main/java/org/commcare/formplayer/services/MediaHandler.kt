@@ -3,11 +3,8 @@ package org.commcare.formplayer.services
 import org.apache.juli.logging.LogFactory
 import org.commcare.formplayer.objects.MediaMetadataRecord
 import org.commcare.formplayer.objects.SerializableFormSession
-import org.commcare.formplayer.services.MediaValidator.isFileTooLarge
-import org.commcare.formplayer.services.MediaValidator.isUnSupportedFileExtension
-import org.commcare.formplayer.services.MediaValidator.isUnsupportedMimeType
+import org.commcare.formplayer.services.MediaValidator.validateFile
 import org.commcare.util.FileUtils
-import org.javarosa.core.services.locale.Localization
 import org.javarosa.core.util.PropertyUtils
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
@@ -56,7 +53,7 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         domain: String,
         appId: String
     ): String {
-        validateFile()
+        validateFile(file.inputStream, file.originalFilename, file.size)
         val fileId = PropertyUtils.genUUID()
         val parent = parentDirPath.toFile()
         parent.mkdirs()
@@ -85,19 +82,5 @@ class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaD
         mediaMetaDataService.saveMediaMetaData(mediaMetaData)
 
         return fileIdWithExt
-    }
-
-    private fun validateFile() {
-        if (isUnSupportedFileExtension(file.originalFilename) && isUnsupportedMimeType(
-                file.inputStream,
-                file.originalFilename
-            )
-        ) {
-            val unsupportedFileExtError = Localization.get("form.attachment.invalid")
-            throw RuntimeException(unsupportedFileExtError)
-        } else if (isFileTooLarge(file.size)) {
-            val fileOversizeError = Localization.get("file.oversize.error.message")
-            throw RuntimeException(fileOversizeError)
-        }
     }
 }

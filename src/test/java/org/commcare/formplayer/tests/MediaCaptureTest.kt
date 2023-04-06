@@ -185,7 +185,7 @@ class MediaCaptureTest {
         val exception = assertThrows<java.lang.Exception> {
             saveImage(formResponse, "media/oversize_image.jpeg", "oversize_image.jpeg")
         }
-        val expectedErr = Localization.get("file.oversize.error.message")
+        val expectedErr = Localization.get("form.attachment.oversize.error", "oversize_image.jpeg")
         assertEquals(
             expectedErr,
             exception.cause!!.message,
@@ -199,7 +199,7 @@ class MediaCaptureTest {
         val exception = assertThrows<java.lang.Exception> {
             saveImage(formResponse, "media/invalid_extension.txt", "invalid_extension.txt")
         }
-        val expectedErr = Localization.get("form.attachment.invalid")
+        val expectedErr = Localization.get("form.attachment.invalid.error", "invalid_extension.txt")
         assertEquals(
             expectedErr,
             exception.cause!!.message,

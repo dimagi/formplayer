@@ -1,6 +1,8 @@
 package org.commcare.formplayer.services
 
 import com.google.common.collect.ImmutableList
+import org.commcare.formplayer.exceptions.FormAttachmentException
+import org.javarosa.core.services.locale.Localization
 import java.io.InputStream
 import java.net.URLConnection
 
@@ -34,6 +36,22 @@ object MediaValidator {
         "ogg"
     )
     private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application/pdf", "audio", "video")
+
+
+    @JvmStatic
+    fun validateFile(fis: InputStream, fileName: String, fileSize: Long) {
+        if (isUnSupportedFileExtension(fileName) && isUnsupportedMimeType(fis, fileName)) {
+            throwAttachmentError("form.attachment.invalid.error", fileName)
+        } else if (isFileTooLarge(fileSize)) {
+            throwAttachmentError("form.attachment.oversize.error", fileName)
+        }
+    }
+
+    @JvmStatic
+    fun throwAttachmentError(errorKey: String, fileName: String) {
+        val errorMsg = Localization.get(errorKey, fileName)
+        throw FormAttachmentException(errorMsg)
+    }
 
     @JvmStatic
     fun isFileTooLarge(size: Long): Boolean {
