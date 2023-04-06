@@ -459,7 +459,7 @@ public class MenuSessionRunnerService {
     private void answerQueryPrompts(FormplayerQueryScreen screen, QueryData queryData, String queryKey) {
         Hashtable<String, String> queryDictionary = queryData == null ? null : queryData.getInputs(queryKey);
         if (queryDictionary != null) {
-            screen.answerPrompts(queryDictionary);
+            screen.answerPrompts(queryDictionary, queryData.isSelectValuesByKeys(queryKey));
         }
     }
 
