@@ -10,6 +10,7 @@ import org.javarosa.xpath.expr.XPathExpression;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 
 /**
@@ -35,6 +36,9 @@ public class DisplayElement {
 
     @Nullable
     String[] itemsetChoices;
+
+    @Nullable
+    String[] itemsetChoiceskey;
 
     @Nullable
     private String hint;
@@ -66,7 +70,7 @@ public class DisplayElement {
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id,
             @Nullable String input,
             @Nullable String receive, @Nullable String hidden, @Nullable String value,
-            @Nullable String[] itemsetChoices, boolean allowBlankValue, boolean required,
+            @Nullable String[] itemsetChoicesKeys, @Nullable String[] itemsetChoicesLabels, boolean allowBlankValue, boolean required,
             String requiredMsg, String error) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
@@ -80,7 +84,8 @@ public class DisplayElement {
         this.receive = receive;
         this.hidden = hidden;
         this.value = value;
-        this.itemsetChoices = itemsetChoices;
+        this.itemsetChoiceskey = itemsetChoicesKeys;
+        this.itemsetChoices = itemsetChoicesLabels;
 
         if (displayUnit.getHintText() != null) {
             this.hint = displayUnit.getHintText().evaluate(ec);
