@@ -93,20 +93,20 @@ public class SqlHelper {
             preparedStatement.execute();
             preparedStatement.close();
 
-            if (storageKey.equals(UserSqlSandbox.FORMPLAYER_CASE)) {
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_id_index", UserSqlSandbox.FORMPLAYER_CASE, "case_id"));
+            if (storageKey.startsWith(UserSqlSandbox.FORMPLAYER_CASE)) {
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_id_index", storageKey, "case_id"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_type_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type"));
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_type_index", storageKey, "case_type"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_index", UserSqlSandbox.FORMPLAYER_CASE, "case_status"));
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_index", storageKey, "case_status"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type,case_status"));
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index", storageKey, "case_type,case_status"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
@@ -558,7 +558,14 @@ public class SqlHelper {
         }
     }
 
-    private static boolean isTableExist(Connection connection, String tableName) {
+    /**
+     * Check if the table with a given name exists in the database
+     *
+     * @param connection Database Connection
+     * @param tableName name of table
+     * @return
+     */
+    public static boolean isTableExist(Connection connection, String tableName) {
         ResultSet resultSet = null;
         try {
             DatabaseMetaData md = connection.getMetaData();

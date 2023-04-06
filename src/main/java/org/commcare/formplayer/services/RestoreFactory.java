@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.core.parse.ParseUtils;
+import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
@@ -321,11 +322,7 @@ public class RestoreFactory {
     }
 
     public void setAutoCommit(boolean autoCommit) {
-        try {
-            sqLiteDB.getConnection().setAutoCommit(autoCommit);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        DbUtils.setAutoCommit(sqLiteDB, autoCommit);
     }
 
     public boolean getAutoCommit() {
@@ -339,19 +336,11 @@ public class RestoreFactory {
     public void commit() {
         String cacheKey = getSessionCacheKey();
         redisSessionCache.getOperations().delete(cacheKey);
-        try {
-            sqLiteDB.getConnection().commit();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        DbUtils.commit(sqLiteDB);
     }
 
     public void rollback() {
-        try {
-            sqLiteDB.getConnection().rollback();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        DbUtils.rollback(sqLiteDB);
     }
 
     public SQLiteDB getSQLiteDB() {

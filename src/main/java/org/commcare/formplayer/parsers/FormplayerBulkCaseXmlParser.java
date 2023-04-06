@@ -1,5 +1,7 @@
 package org.commcare.formplayer.parsers;
 
+import static org.commcare.formplayer.parsers.FormplayerCaseXmlParser.CASE_INDEX_STORAGE_TABLE_NAME;
+
 import org.commcare.formplayer.database.models.EntityStorageCache;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.cases.model.Case;
