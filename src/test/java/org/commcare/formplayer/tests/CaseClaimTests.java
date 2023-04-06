@@ -85,7 +85,7 @@ public class CaseClaimTests extends BaseTestClass {
         // When no queryData, Formplayer should return the default values
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
-        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("ka");
         assert queryResponseBean.getDisplays()[2].getValue() == null;
 
 
@@ -130,8 +130,8 @@ public class CaseClaimTests extends BaseTestClass {
         queryData.setExecute("search_command.m1", false);
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
-        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#1");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("ka");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#hampi");
 
         queryData.setExecute("search_command.m1", true);
         sessionNavigateWithQuery(new String[]{"1", "action 1"},
@@ -188,7 +188,7 @@ public class CaseClaimTests extends BaseTestClass {
         assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
                 new String[]{"karnataka", "Raj as than"});
-        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("ka");
         assert queryResponseBean.getDisplays()[1].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Bangalore", "Hampi"});
@@ -215,12 +215,12 @@ public class CaseClaimTests extends BaseTestClass {
         inputs.put("state", "0");
         inputs.put("district", "0#,#1"); // select 2 districts
         queryResponseBean = runQuery(queryData);
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("bang#,#hampi");
 
         // Select an invalid choice in multi-select and verify it's removed from formplayer response
         inputs.put("district", "0#,#2#,#1");
         queryResponseBean = runQuery(queryData);
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("bang#,#hampi");
 
         // Execute Search to get results
         queryData.setExecute("search_command.m1", true);
@@ -328,12 +328,13 @@ public class CaseClaimTests extends BaseTestClass {
         assertTrue(queryResponseBean.getDisplays()[4].getRequiredMsg().contentEquals(expectedMessage));
     }
 
+    @Test
     public void testDependentItemsets_DependentChoicesChangeWithSelection() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "1");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
-        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("rj");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
                 new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
@@ -341,7 +342,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         inputs.put("state", "0");
         queryResponseBean = runQuery(queryData);
-        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("ka");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
                 new String[]{"karnataka", "Raj as than"});
         // check if we have districts corresponding to karnataka state
@@ -356,15 +357,15 @@ public class CaseClaimTests extends BaseTestClass {
         inputs.put("district", "0");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
-        assertEquals("0", queryResponseBean.getDisplays()[1].getValue());
-        assertEquals("0", queryResponseBean.getDisplays()[2].getValue());
+        assertEquals("ka", queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("bang", queryResponseBean.getDisplays()[2].getValue());
 
         // Change selection
         inputs.put("state", "1");
         inputs.put("district", "1");
         queryResponseBean = runQuery(queryData);
-        assertEquals("1", queryResponseBean.getDisplays()[1].getValue());
-        assertEquals("1", queryResponseBean.getDisplays()[2].getValue());
+        assertEquals("rj", queryResponseBean.getDisplays()[1].getValue());
+        assertEquals("kota", queryResponseBean.getDisplays()[2].getValue());
     }
 
     @Test
