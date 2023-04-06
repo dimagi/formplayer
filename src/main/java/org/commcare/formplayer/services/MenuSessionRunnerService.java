@@ -186,9 +186,7 @@ public class MenuSessionRunnerService {
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (queryData != null) {
-                answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
-            }
+            answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey);
             menuResponseBean = new QueryResponseBean(
                     (QueryScreen)nextScreen,
                     menuSession.getSessionWrapper()
@@ -442,16 +440,13 @@ public class MenuSessionRunnerService {
         boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
 
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
+        answerQueryPrompts(queryScreen, queryData, queryKey);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
             return doQuery(
                     queryScreen,
-                    queryData == null ? null : queryData.getInputs(queryKey),
                     queryScreen.doDefaultSearch() && !forceManualSearch,
                     skipCache
             );
-        } else if (queryData != null) {
-            answerQueryPrompts(queryScreen, queryData.getInputs(queryKey));
-            return false;
         }
         return false;
     }
@@ -461,8 +456,8 @@ public class MenuSessionRunnerService {
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
-    private void answerQueryPrompts(FormplayerQueryScreen screen,
-            Hashtable<String, String> queryDictionary) {
+    private void answerQueryPrompts(FormplayerQueryScreen screen, QueryData queryData, String queryKey) {
+        Hashtable<String, String> queryDictionary = queryData == null ? null : queryData.getInputs(queryKey);
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
@@ -496,11 +491,7 @@ public class MenuSessionRunnerService {
      */
     @Trace
     private boolean doQuery(FormplayerQueryScreen screen,
-            Hashtable<String, String> queryDictionary,
             boolean isDefaultSearch, boolean skipCache) throws CommCareSessionException {
-        log.info("Formplayer doing query with dictionary " + queryDictionary);
-        answerQueryPrompts(screen, queryDictionary);
-
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
