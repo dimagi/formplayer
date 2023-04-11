@@ -16,6 +16,8 @@ public class FormplayerCaseXmlParser extends CaseXmlParser {
     private final EntityStorageCache mEntityCache;
     private final FormplayerCaseIndexTable mCaseIndexTable;
 
+    public static final String CASE_INDEX_STORAGE_TABLE_NAME = "case_index_storage";
+
     public FormplayerCaseXmlParser(KXmlParser parser, boolean acceptCreateOverwrites,
                                    UserSqlSandbox sandbox) {
         super(parser, acceptCreateOverwrites, sandbox.getCaseStorage());
