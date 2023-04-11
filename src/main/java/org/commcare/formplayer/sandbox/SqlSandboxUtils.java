@@ -1,12 +1,20 @@
 package org.commcare.formplayer.sandbox;
 
+import org.commcare.formplayer.application.SQLiteProperties;
+import org.commcare.util.FileUtils;
 import org.javarosa.core.services.Logger;
 import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Instant;
 
 /**
  * Methods that mostly are used around the mocks that replicate stuff from
@@ -73,6 +81,22 @@ public class SqlSandboxUtils {
                     Logger.exception("Exception closing connection ", e);
                 }
             }
+        }
+    }
+
+    /**
+     * Purges all files inside the temporary DB that are accessed before the given cutOff time
+     *
+     * @param cutOff cutOff time before which files should be deleted
+     * @return
+     */
+    public static int purgeTempDb(Instant cutOff) {
+        File dbDir = new File(SQLiteProperties.getTempDataDir());
+        try {
+            return FileUtils.deleteFiles(dbDir, cutOff);
+        } catch (IOException e) {
+            Logger.exception(String.format("Exception while deleting tmp db at path %s", dbDir.toPath()), e);
+            return -1;
         }
     }
 }

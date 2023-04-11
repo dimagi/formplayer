@@ -273,7 +273,6 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
     }
-
     private void testDetailResponse(String[] detailSelections, QueryData queryData) throws Exception {
         EntityDetailListResponse responseBean = getDetails(detailSelections,
                 "caseclaim",

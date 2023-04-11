@@ -33,22 +33,30 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     // Need a different key than the default "Case" which is reserved by SQL
     public final static String FORMPLAYER_CASE = "CCCase";
 
-    private final SqlStorage<Case> caseStorage;
-    private final SqlStorage<Ledger> ledgerStorage;
-    private final SqlStorage<User> userStorage;
-    private final SqlStorage<FormInstance> userFixtureStorage;
-    private final SqlStorage<FormInstance> appFixtureStorage;
-    private final SqlStorage<StorageIndexedTreeElementModel> sqlUtil;
+    private SqlStorage<Case> caseStorage;
+    private SqlStorage<Ledger> ledgerStorage;
+    private SqlStorage<User> userStorage;
+    private SqlStorage<FormInstance> userFixtureStorage;
+    private SqlStorage<FormInstance> appFixtureStorage;
+    private SqlStorage<StorageIndexedTreeElementModel> sqlUtil;
     private User user = null;
     public static final String DEFAULT_DATBASE_PATH = "dbs";
     private ConnectionHandler handler;
 
+
     /**
-     * Create a sandbox of the necessary storage objects with the shared
-     * factory.
+     * Creates a sandbox of the necessary storage objects with the shared factory
+     * @param handler connection handler
+     * @param initStorage whether to initialise storage objects by default
      */
-    public UserSqlSandbox(ConnectionHandler handler) {
+    public UserSqlSandbox(ConnectionHandler handler, boolean initStorage) {
         this.handler = handler;
+        if (initStorage) {
+            initStorage();
+        }
+    }
+
+    private void initStorage() {
         //we can't name this table "Case" becase that's reserved by sqlite
         caseStorage = new SqlStorage<>(handler, Case.class, FORMPLAYER_CASE);
         ledgerStorage = new SqlStorage<>(handler, Ledger.class, Ledger.STORAGE_KEY);
@@ -56,6 +64,10 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
         userFixtureStorage = new SqlStorage<>(handler, FormInstance.class, "UserFixture");
         appFixtureStorage = new SqlStorage<>(handler, FormInstance.class, "AppFixture");
         sqlUtil = createFixturePathsTable(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE);
+    }
+
+    public UserSqlSandbox(ConnectionHandler handler) {
+        this(handler, true);
     }
 
     @Override

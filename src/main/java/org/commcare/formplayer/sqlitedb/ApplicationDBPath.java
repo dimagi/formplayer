@@ -1,8 +1,9 @@
 package org.commcare.formplayer.sqlitedb;
 
-import java.io.File;
-
+import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.util.Constants;
+
+import java.io.File;
 
 class ApplicationDBPath extends DBPath {
 
@@ -20,7 +21,7 @@ class ApplicationDBPath extends DBPath {
 
     @Override
     public String getDatabasePath() {
-        return UserDBPath.getUserDBPath(domain, username, asUsername) + File.separator + appId;
+        return DbUtils.getDbPathForUser(domain, username, asUsername) + File.separator + appId;
     }
 
     @Override
