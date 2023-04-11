@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -369,6 +370,50 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testDependentItemsets_WithKeysInResponse() throws Exception {
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("state", "rj");
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false, true);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assertEquals(queryResponseBean.getDisplays()[1].getValue(), "rj");
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
+                new String[]{"karnataka", "Raj as than"});
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoiceskey(),
+                new String[]{"ka", "rj"});
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
+                new String[]{"Baran", "Kota"});
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoiceskey(),
+                new String[]{"baran", "kota"});
+
+        inputs.put("state", "ka");
+        inputs.put("district", "hampi");
+        queryResponseBean = runQuery(queryData);
+        assertEquals(queryResponseBean.getDisplays()[1].getValue(), "ka");
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
+                new String[]{"karnataka", "Raj as than"});
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoiceskey(),
+                new String[]{"ka", "rj"});
+        assertEquals(queryResponseBean.getDisplays()[2].getValue(), "hampi");
+        // check if we have districts corresponding to karnataka state
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
+                new String[]{"Bangalore", "Hampi"});
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoiceskey(),
+                new String[]{"bang", "hampi"});
+
+    }
+
+    @Test
+    public void testDependentItemsets_WrongSelectionCausesValueToClear() throws Exception {
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("state", "ka");
+        inputs.put("district", "baran");
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false, true);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assertEquals(queryResponseBean.getDisplays()[1].getValue(),"ka");
+        assertNull(queryResponseBean.getDisplays()[2].getValue());
+    }
+
+    @Test
     public void testQueryPromptValidation_NullInputCausesNoError() throws Exception {
         runRequestAndValidateAgeError(null, null, true, false);
     }
@@ -448,6 +493,11 @@ public class CaseClaimTests extends BaseTestClass {
 
     private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
             boolean execute) {
+        return setUpQueryDataWithInput(inputs, forceManual, execute, false);
+    }
+
+    private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
+            boolean execute, boolean selectValuesByKeys) {
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
         if (forceManual) {
@@ -456,6 +506,7 @@ public class CaseClaimTests extends BaseTestClass {
         if (execute) {
             queryData.setExecute("search_command.m1", true);
         }
+        queryData.setSelectValuesByKeys("search_command.m1", selectValuesByKeys);
         return queryData;
     }
 

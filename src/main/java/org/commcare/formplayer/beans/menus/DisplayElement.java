@@ -159,6 +159,11 @@ public class DisplayElement {
         return itemsetChoices;
     }
 
+    @Nullable
+    public String[] getItemsetChoiceskey() {
+        return itemsetChoiceskey;
+    }
+
     @JsonGetter(value = "allow_blank_value")
     public boolean isAllowBlankValue() {
         return allowBlankValue;
