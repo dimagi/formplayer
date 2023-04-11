@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.when;
 
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.application.MenuController;
@@ -23,15 +24,20 @@ import org.commcare.formplayer.junit.RestoreFactoryExtension;
 import org.commcare.formplayer.junit.StorageFactoryExtension;
 import org.commcare.formplayer.junit.request.Response;
 import org.commcare.formplayer.junit.request.SessionNavigationRequest;
+import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
+import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
+import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.MD5;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +62,6 @@ import java.time.Instant;
 @Import({MenuController.class})
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
 @ExtendWith(InitializeStaticsExtension.class)
-@TestPropertySource(properties = {"formplayer.case_search.min_size_to_store_in_db=0"})
 public class CaseSearchResultsInStorageTests {
 
     @Autowired
@@ -73,6 +78,10 @@ public class CaseSearchResultsInStorageTests {
 
     private MockRequestUtils mockRequest;
 
+
+    @Autowired
+    FormplayerStorageFactory storageFactoryMock;
+
     @RegisterExtension
     static RestoreFactoryExtension restoreFactoryExt = new RestoreFactoryExtension.builder()
             .withUser("caseclaimuser").withDomain("caseclaimdomain")
@@ -88,6 +97,15 @@ public class CaseSearchResultsInStorageTests {
         cacheManager.getCache("case_search").clear();
         mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
         FileSystemUtils.deleteRecursively(new File("tmp_dbs"));
+        enableIndexCaseSearchResults();
+    }
+
+    private void enableIndexCaseSearchResults() {
+        SQLiteDB db = storageFactoryMock.getSQLiteDB();
+        FormPlayerPropertyManagerMock propertyManagerMock = new FormPlayerPropertyManagerMock(
+                new SqlStorage(db, Property.class, PropertyManager.STORAGE_KEY));
+        propertyManagerMock.enableIndexCaseSearchResults(true);
+        when(storageFactoryMock.getPropertyManager()).thenReturn(propertyManagerMock);
     }
 
     @Test

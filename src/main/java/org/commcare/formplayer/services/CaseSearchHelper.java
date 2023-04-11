@@ -28,7 +28,6 @@ import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
@@ -47,9 +46,6 @@ import java.nio.charset.StandardCharsets;
 public class CaseSearchHelper {
 
     private static final String CASE_SEARCH_INDEX_TABLE_PREFIX = "case_search_index_storage_";
-    @Value("${formplayer.case_search.min_size_to_store_in_db}")
-    private Integer minSizeToStoreInDb;
-    private static final Integer BYTES_IN_A_MB = 1024 * 1024;
     @Autowired
     CacheManager cacheManager;
 
@@ -58,6 +54,8 @@ public class CaseSearchHelper {
     @Autowired
     private WebClient webClient;
 
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
     public synchronized AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
@@ -85,7 +83,7 @@ public class CaseSearchHelper {
             if (responseString != null) {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
                 ByteArrayInputStream responeStream = new ByteArrayInputStream(responseBytes);
-                if (shouldParseIntoCaseSearchStorage(source.useCaseTemplate(), responseBytes.length)) {
+                if (shouldParseIntoCaseSearchStorage(source.useCaseTemplate())) {
                     parseIntoCaseSearchStorage(caseSearchDb, caseSearchSandbox, caseSearchStorage, responeStream, caseSearchIndexTable);
                 } else {
                     TreeElement root = TreeUtilities.xmlStreamToTreeElement(responeStream, instanceId);
@@ -139,8 +137,8 @@ public class CaseSearchHelper {
             DbUtils.setAutoCommit(caseSearchDb, true);
         }
     }
-    private boolean shouldParseIntoCaseSearchStorage(boolean useCaseTemplate, int responseSize) {
-        return useCaseTemplate && responseSize >= minSizeToStoreInDb * BYTES_IN_A_MB;
+    private boolean shouldParseIntoCaseSearchStorage(boolean useCaseTemplate) {
+        return useCaseTemplate && storageFactory.getPropertyManager().isIndexCaseSearchResults();
     }
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
         if (skipCache) {
