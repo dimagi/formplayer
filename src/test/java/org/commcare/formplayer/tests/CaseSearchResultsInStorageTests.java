@@ -57,6 +57,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
+/**
+ * Tests for case search workflows with cc-index-case-search-results on
+ */
 @WebMvcTest
 @Import({MenuController.class})
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
@@ -166,7 +169,7 @@ public class CaseSearchResultsInStorageTests {
     }
 
     @Test
-    public void testPurgeForTemporaryDB() throws Exception {
+    public void testPurgeForTemporaryDb() throws Exception {
         // populate case search DB
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
                 "query_responses/case_claim_response.xml")) {

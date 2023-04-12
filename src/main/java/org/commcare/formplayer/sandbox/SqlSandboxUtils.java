@@ -84,7 +84,7 @@ public class SqlSandboxUtils {
      * Purges all files inside the temporary DB that are accessed before the given cutOff time
      *
      * @param cutOff cutOff time before which files should be deleted
-     * @return
+     * @return number of filed deleted as part of purge operation
      */
     public static int purgeTempDb(Instant cutOff) {
         File dbDir = new File(SQLiteProperties.getTempDataDir());
