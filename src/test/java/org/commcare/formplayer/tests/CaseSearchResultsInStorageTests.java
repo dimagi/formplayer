@@ -50,7 +50,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.FileSystemUtils;
 
@@ -112,20 +111,21 @@ public class CaseSearchResultsInStorageTests {
     public void testCaseClaimWithResultsInStorage() throws Exception {
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
                 "query_responses/case_claim_response.xml")) {
-            Response<EntityListResponse> response  = navigate(new String[]{"1", "action 1"}, EntityListResponse.class);
+            Response<EntityListResponse> response = navigate(new String[]{"1", "action 1"},
+                    EntityListResponse.class);
             EntityListResponse entityResponse = response.bean();
-            assertEquals(entityResponse.getEntities().length,1);
+            assertEquals(entityResponse.getEntities().length, 1);
 
             // Verify the entity and the calculated fields
             EntityBean entity = entityResponse.getEntities()[0];
-            assertEquals(entity.getId(),"0156fa3e-093e-4136-b95c-01b13dae66c6");
+            assertEquals(entity.getId(), "0156fa3e-093e-4136-b95c-01b13dae66c6");
             assertEquals(entity.getData()[0], "Burt Maclin");
             assertEquals(entity.getData()[1], "Burt Maclin");
             assertEquals(entity.getData()[2], "Kurt Maclin");
         }
 
         // Verify the results are stored in storage and not cache
-        String cacheKey =  "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
+        String cacheKey = "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
                 + "/_case_type=case1=case2=case3_include_closed=False";
         assertNull(cacheManager.getCache("case_search").get(cacheKey));
 
@@ -136,7 +136,8 @@ public class CaseSearchResultsInStorageTests {
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         assertTrue(caseSearchStorage.isStorageExists(), "No case storage found for the given case search query");
         FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
-        assertTrue(caseSearchIndexTable.isStorageExists(), "No case storage found for the given case search query");
+        assertTrue(caseSearchIndexTable.isStorageExists(),
+                "No case storage found for the given case search query");
 
 
         // verify the case claim works correctly without mocking the query request again
@@ -154,7 +155,8 @@ public class CaseSearchResultsInStorageTests {
         }
 
         // verify the case storage has been cleared
-        assertFalse(caseSearchStorage.isStorageExists(), "Case search storage has not been cleared after case claim");
+        assertFalse(caseSearchStorage.isStorageExists(),
+                "Case search storage has not been cleared after case claim");
         assertFalse(caseSearchIndexTable.isStorageExists(), "Case Indexes have not been cleared after case claim");
     }
 
@@ -175,7 +177,7 @@ public class CaseSearchResultsInStorageTests {
         SqlSandboxUtils.purgeTempDb(Instant.now());
 
         // verify the case storage has been cleared
-        String cacheKey =  "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
+        String cacheKey = "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
                 + "/_case_type=case1=case2=case3_include_closed=False";
         SQLiteDB caseSearchDb = new CaseSearchDB("caseclaimdomain", "caseclaimuser", null);
         String caseSearchTableName = getCaseSearchTableName(cacheKey);

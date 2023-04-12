@@ -4,8 +4,6 @@ import org.commcare.formplayer.application.SQLiteProperties
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException
 import org.commcare.formplayer.sqlitedb.SQLiteDB
 import org.commcare.modern.database.TableBuilder
-import java.io.File
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.sql.SQLException
 
@@ -24,10 +22,12 @@ object DbUtils {
      * This should be combined with SQLiteProperties.getDataDir() to form the absolute path for a db
      */
     @JvmStatic
-    fun getDbPathSuffix(domain: String, username: String, asUserName: String?) : String {
-        return Paths.get(domain, TableBuilder.scrubName(
-            getUsernameDetail(username, asUserName)
-        )).toString()
+    fun getDbPathSuffix(domain: String, username: String, asUserName: String?): String {
+        return Paths.get(
+            domain, TableBuilder.scrubName(
+                getUsernameDetail(username, asUserName)
+            )
+        ).toString()
     }
 
     private fun getUsernameDetail(username: String, asUsername: String?): String {

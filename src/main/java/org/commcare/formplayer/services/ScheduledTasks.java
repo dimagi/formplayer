@@ -6,7 +6,6 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.cases.model.Case;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.CheckedFunction;

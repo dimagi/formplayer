@@ -84,7 +84,8 @@ public class CaseSearchHelper {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
                 ByteArrayInputStream responeStream = new ByteArrayInputStream(responseBytes);
                 if (shouldParseIntoCaseSearchStorage(source.useCaseTemplate())) {
-                    parseIntoCaseSearchStorage(caseSearchDb, caseSearchSandbox, caseSearchStorage, responeStream, caseSearchIndexTable);
+                    parseIntoCaseSearchStorage(caseSearchDb, caseSearchSandbox, caseSearchStorage, responeStream,
+                            caseSearchIndexTable);
                 } else {
                     TreeElement root = TreeUtilities.xmlStreamToTreeElement(responeStream, instanceId);
                     if (root != null) {
@@ -95,10 +96,10 @@ public class CaseSearchHelper {
             }
         }
 
-        if(caseSearchStorage.isStorageExists()){
+        if (caseSearchStorage.isStorageExists()) {
             // return root as CaseInstanceTreeElement
             InstanceBase instanceBase = new InstanceBase(instanceId);
-            return new CaseInstanceTreeElement(instanceBase,caseSearchStorage, caseSearchIndexTable);
+            return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable);
         }
 
         throw new IOException("No response from server for case search query");
@@ -108,16 +109,19 @@ public class CaseSearchHelper {
             String caseSearchTableName) {
         String caseSearchIndexTableName = CASE_SEARCH_INDEX_TABLE_PREFIX + caseSearchTableName;
         return new FormplayerCaseIndexTable(
-                caseSearchSandbox, caseSearchIndexTableName, caseSearchTableName,  false);
+                caseSearchSandbox, caseSearchIndexTableName, caseSearchTableName, false);
     }
+
     private CaseSearchDB initCaseSearchDB() {
-            return new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
-                    restoreFactory.getAsUsername());
+        return new CaseSearchDB(restoreFactory.getDomain(), restoreFactory.getUsername(),
+                restoreFactory.getAsUsername());
     }
 
     private static String evalCaseSearchTableName(String cacheKey) {
-        return UserSqlSandbox.FORMPLAYER_CASE + "_" + MD5.toHex(MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
+        return UserSqlSandbox.FORMPLAYER_CASE + "_" + MD5.toHex(
+                MD5.hash(cacheKey.getBytes(StandardCharsets.UTF_8)));
     }
+
     private void parseIntoCaseSearchStorage(SQLiteDB caseSearchDb, UserSqlSandbox caseSearchSandbox,
             IStorageUtilityIndexed<Case> caseSearchStorage, ByteArrayInputStream responeStream,
             FormplayerCaseIndexTable caseSearchIndexTable)
@@ -126,7 +130,8 @@ public class CaseSearchHelper {
         try {
             DbUtils.setAutoCommit(caseSearchDb, false);
             caseSearchIndexTable.createTable();
-            CaseInstanceXmlTransactionParserFactory factory = new CaseInstanceXmlTransactionParserFactory(caseSearchSandbox, caseSearchIndexTable);
+            CaseInstanceXmlTransactionParserFactory factory = new CaseInstanceXmlTransactionParserFactory(
+                    caseSearchSandbox, caseSearchIndexTable);
             caseSearchStorage.initStorage();
             ParseUtils.parseIntoSandbox(responeStream, factory, true, true);
             DbUtils.commit(caseSearchDb);
@@ -137,9 +142,11 @@ public class CaseSearchHelper {
             DbUtils.setAutoCommit(caseSearchDb, true);
         }
     }
+
     private boolean shouldParseIntoCaseSearchStorage(boolean useCaseTemplate) {
         return useCaseTemplate && storageFactory.getPropertyManager().isIndexCaseSearchResults();
     }
+
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
         if (skipCache) {
             log.info("Skipping cache check for case search results");

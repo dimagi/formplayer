@@ -2,10 +2,9 @@ package org.commcare.formplayer.services;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
 
-import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
-import io.sentry.SentryLevel;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +24,11 @@ import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.util.*;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerSentry;
+import org.commcare.formplayer.util.RequestUtils;
+import org.commcare.formplayer.util.SimpleTimer;
+import org.commcare.formplayer.util.UserUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
@@ -53,11 +56,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,6 +68,15 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import datadog.trace.api.Trace;
+import io.sentry.SentryLevel;
 
 
 /**

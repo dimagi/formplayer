@@ -81,9 +81,11 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 COL_INDEX_TARGET +
                 ")";
     }
+
     private String getTableName() {
         return tableName;
     }
+
     private void createIndexes(Connection connection) {
         String recordFirstIndexId = "RECORD_NAME_ID_TARGET";
         String recordFirstIndex = COL_CASE_RECORD_ID + ", " + COL_INDEX_NAME + ", " + COL_INDEX_TARGET;
@@ -141,13 +143,14 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
     @Override
     public void delete() {
-        SqlHelper.dropTable(connectionHandler.getConnection(),getTableName());
+        SqlHelper.dropTable(connectionHandler.getConnection(), getTableName());
     }
 
     @Override
     public boolean isStorageExists() {
         return SqlHelper.isTableExist(connectionHandler.getConnection(), getTableName());
     }
+
     public HashMap<Integer, Vector<Pair<String, String>>> getCaseIndexMap() {
         String[] projection = new String[]{COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
         HashMap<Integer, Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();

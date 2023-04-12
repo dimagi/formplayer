@@ -1,7 +1,5 @@
 package org.commcare.formplayer.api.process;
 
-import static org.commcare.formplayer.parsers.FormplayerCaseXmlParser.CASE_INDEX_STORAGE_TABLE_NAME;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.ledger.Ledger;
