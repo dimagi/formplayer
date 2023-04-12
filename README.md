@@ -102,8 +102,17 @@ In order to set breakpoints, step through code, and link the runtime with source
 3. Navigate to the cloned `formplayer` repository and select `build.gradle` at the root
 4. De-select "Use auto-import" and "Create directories for empty content roots automatically" and *select* "Use gradle wrapper"
 5. Click "OK"
+6. Create a run configuration:
+   1. Open the run configurations (by clicking on the drop down menu next to the play button in the top).
+   2. Click the + in the upper left corner and then "JAR Application"
+   3. Pick any name (e.g. "Formplayer")
+   4. Set to jar path to <path to repo>/formplayer/build/libs/formplayer.jar
+   5. Hit the + in the "before launch" section and add project: formplayer, task: bootJar 
+      (faster than assemble since it does not run tests)
+   6. save
 
-After following these steps IntelliJ may need further configuration to work smoothly with Gradle. You might also want to install the [Lombok plugin](https://plugins.jetbrains.com/plugin/6317-lombok) for your IDE to resolve Lombok references. 
+After following these steps IntelliJ may need further configuration to work smoothly with Gradle. You might also want to install 
+the [Lombok plugin](https://plugins.jetbrains.com/plugin/6317-lombok) for your IDE to resolve Lombok references.
 
 Note: You can also use Android Studio as your IDE and follow the same steps as above.
 

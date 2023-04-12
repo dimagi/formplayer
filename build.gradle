@@ -7,9 +7,9 @@ buildscript {
 plugins {
     id 'org.springframework.boot' version '2.7.3'
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
-    id "io.freefair.lombok" version "6.6.3"
-    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.8.10'
+    id "io.freefair.lombok" version "8.0.1"
+    id 'org.jetbrains.kotlin.jvm' version '1.8.20'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.8.20'
 }
 
 springBoot {
@@ -48,7 +48,7 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    sentryVersion = '6.16.0'
+    sentryVersion = '6.17.0'
     shedlockVersion = '5.2.0'
 }
 
@@ -109,7 +109,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.10.0'
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.11.2'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.2.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
@@ -139,6 +139,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testImplementation group: 'org.mockito', name: 'mockito-core'
     testImplementation group: 'org.mockito', name: 'mockito-inline'
+    testImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
     testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert'
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
 }

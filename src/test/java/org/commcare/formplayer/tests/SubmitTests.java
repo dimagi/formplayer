@@ -52,7 +52,7 @@ public class SubmitTests extends BaseTestClass {
 
         HttpClientErrorException exception = HttpClientErrorException.create(
                 HttpStatus.BAD_REQUEST, "", new HttpHeaders(), new byte[0], null);
-        when(submitServiceMock.submitForm(anyString(), anyString())).thenThrow(exception);
+        when(submitServiceMock.submitForm(any(), anyString())).thenThrow(exception);
 
         SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
 
@@ -71,7 +71,7 @@ public class SubmitTests extends BaseTestClass {
 
         HttpClientErrorException exception = HttpClientErrorException.create(
                 HttpStatus.BAD_REQUEST, "", new HttpHeaders(), new byte[0], null);
-        when(submitServiceMock.submitForm(anyString(), anyString()))
+        when(submitServiceMock.submitForm(any(), anyString()))
                 .thenThrow(exception)
                 .thenReturn("<OpenRosaResponse>" +
                         "<message nature='status'>" +

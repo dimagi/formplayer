@@ -2,10 +2,9 @@ package org.commcare.formplayer.repo;
 
 import org.commcare.formplayer.objects.MediaMetadataRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -13,11 +12,11 @@ import java.util.Optional;
  */
 public interface MediaMetaDataRepo extends JpaRepository<MediaMetadataRecord, String> {
 
-    Optional<MediaMetadataRecord> findByFormSessionId(String formSessionId);
+    List<MediaMetadataRecord> findByFormSession(String formSessionId);
+    
+    List<MediaMetadataRecord> findByFormSessionIsNull();
 
+    Optional<MediaMetadataRecord> findByFileId(String id);
 
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM MediaMetadataRecord WHERE formSession IS NULL")
-    int deleteMetaDataWithoutFormSessionId();
+    void deleteByFileId(String fileId);
 }

@@ -19,3 +19,4 @@ scripts/*.pyc
 out/
 lombok.config
 /artifacts/
+forms
