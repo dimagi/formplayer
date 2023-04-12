@@ -1,6 +1,5 @@
 package org.commcare.formplayer.database.models;
 
-import static org.commcare.formplayer.parsers.FormplayerCaseXmlParser.CASE_INDEX_STORAGE_TABLE_NAME;
 import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
 
 import org.apache.commons.logging.Log;
@@ -38,6 +37,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     private static final String COL_INDEX_TYPE = "type";
     private static final String COL_INDEX_TARGET = "target";
     private static final String COL_INDEX_RELATIONSHIP = "relationship";
+    public static final String CASE_INDEX_STORAGE_TABLE_NAME = "case_index_storage";
 
     private final String tableName;
     private final String caseTableName;
