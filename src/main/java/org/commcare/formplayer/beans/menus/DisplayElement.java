@@ -6,11 +6,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.DisplayUnit;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.xpath.expr.XPathExpression;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 
 /**
@@ -38,7 +36,7 @@ public class DisplayElement {
     String[] itemsetChoices;
 
     @Nullable
-    String[] itemsetChoiceskey;
+    String[] itemsetChoicesKey;
 
     @Nullable
     private String hint;
@@ -84,7 +82,7 @@ public class DisplayElement {
         this.receive = receive;
         this.hidden = hidden;
         this.value = value;
-        this.itemsetChoiceskey = itemsetChoicesKeys;
+        this.itemsetChoicesKey = itemsetChoicesKeys;
         this.itemsetChoices = itemsetChoicesLabels;
 
         if (displayUnit.getHintText() != null) {
@@ -160,8 +158,8 @@ public class DisplayElement {
     }
 
     @Nullable
-    public String[] getItemsetChoiceskey() {
-        return itemsetChoiceskey;
+    public String[] getItemsetChoicesKey() {
+        return itemsetChoicesKey;
     }
 
     @JsonGetter(value = "allow_blank_value")

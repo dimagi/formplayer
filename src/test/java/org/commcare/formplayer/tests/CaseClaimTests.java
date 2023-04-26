@@ -378,11 +378,11 @@ public class CaseClaimTests extends BaseTestClass {
         assertEquals(queryResponseBean.getDisplays()[1].getValue(), "rj");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
                 new String[]{"karnataka", "Raj as than"});
-        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoiceskey(),
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoicesKey(),
                 new String[]{"ka", "rj"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Baran", "Kota"});
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoiceskey(),
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoicesKey(),
                 new String[]{"baran", "kota"});
 
         inputs.put("state", "ka");
@@ -391,13 +391,13 @@ public class CaseClaimTests extends BaseTestClass {
         assertEquals(queryResponseBean.getDisplays()[1].getValue(), "ka");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
                 new String[]{"karnataka", "Raj as than"});
-        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoiceskey(),
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoicesKey(),
                 new String[]{"ka", "rj"});
         assertEquals(queryResponseBean.getDisplays()[2].getValue(), "hampi");
         // check if we have districts corresponding to karnataka state
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Bangalore", "Hampi"});
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoiceskey(),
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoicesKey(),
                 new String[]{"bang", "hampi"});
 
     }
