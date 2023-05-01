@@ -399,6 +399,9 @@ public class MenuSessionRunnerService {
                                 menuSession.getSessionWrapper());
                     }
                 }
+                if(previousScreen!= null && previousScreen instanceof QueryScreen){
+                    ((EntityScreen)nextScreen).setQueryScreen(((QueryScreen)previousScreen));
+                }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 boolean skipCache = !(replay || isDetailScreen);

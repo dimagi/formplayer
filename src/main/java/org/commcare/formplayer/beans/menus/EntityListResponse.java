@@ -62,6 +62,7 @@ public class EntityListResponse extends MenuBean {
     private int maxSelectValue = -1;
 
     private boolean hasDetails = true;
+    private QueryResponseBean queryResponseBean;
 
     public EntityListResponse() {
     }
@@ -129,6 +130,10 @@ public class EntityListResponse extends MenuBean {
             maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
         }
         setQueryKey(session.getCommand());
+        queryResponseBean = new QueryResponseBean(
+                nextScreen.getQueryScreen(),
+                nextScreen.getSession()
+        );
     }
 
 
@@ -536,5 +541,9 @@ public class EntityListResponse extends MenuBean {
             return null;
         }
         return noItemsTextString;
+    }
+
+    public QueryResponseBean getQueryResponseBean() {
+        return queryResponseBean;
     }
 }
