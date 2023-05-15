@@ -13,6 +13,7 @@ import java.io.File;
 public class SQLiteProperties {
 
     private static String dataDir;
+    private static String tempDataDir;
 
     public static String getDataDir() {
         if (dataDir == null) {
@@ -21,11 +22,22 @@ public class SQLiteProperties {
         return dataDir;
     }
 
+    public static String getTempDataDir() {
+        if (tempDataDir == null) {
+            return String.format("tmp_dbs%s", File.separator);
+        }
+        return tempDataDir;
+    }
+
     @Value("${sqlite.dataDir}")
     public void setDataDir(String dataDir) {
         this.dataDir = normalizeUnixStylePathReferences(dataDir);
     }
 
+    @Value("${sqlite.tmpDataDir}")
+    public void setTempDataDir(String tempDataDir) {
+        this.tempDataDir = normalizeUnixStylePathReferences(tempDataDir);
+    }
     private String normalizeUnixStylePathReferences(String input) {
         return input.replaceAll("\\/",String.format("\\%s", File.separator));
     }

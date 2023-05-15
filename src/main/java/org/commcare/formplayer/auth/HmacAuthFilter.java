@@ -60,21 +60,28 @@ public class HmacAuthFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        if (this.requiresAuthenticationRequestMatcher.matches((HttpServletRequest)request)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(LogMessage
+        // bypass hmac auth for multipart requests
+        if (!RequestUtils.isMultipart((HttpServletRequest)request)) {
+            if (this.requiresAuthenticationRequestMatcher.matches((HttpServletRequest)request)) {
+                logMessage(LogMessage
                         .of(() -> "Authenticating "
                                 + ((HttpServletRequest)request).getRequestURI()));
+                doAuthenticate((HttpServletRequest)request, (HttpServletResponse)response);
+            } else {
+                logMessage(LogMessage.format("Did not authenticate since request did not match [%s]",
+                        this.requiresAuthenticationRequestMatcher));
             }
-            doAuthenticate((HttpServletRequest)request, (HttpServletResponse)response);
         } else {
-            if (logger.isTraceEnabled()) {
-                logger.trace(
-                        LogMessage.format("Did not authenticate since request did not match [%s]",
-                                this.requiresAuthenticationRequestMatcher));
-            }
+            logMessage(LogMessage.format("Did not authenticate since request is a multipart request to [%s]",
+                    ((HttpServletRequest)request).getRequestURI()));
         }
         chain.doFilter(request, response);
+    }
+
+    private void logMessage(LogMessage message) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(message);
+        }
     }
 
     private void doAuthenticate(HttpServletRequest request, HttpServletResponse response)
@@ -115,7 +122,7 @@ public class HmacAuthFilter extends GenericFilterBean {
 
     private void doAuthenticateInternal(HttpServletRequest request) throws Exception {
         String header = request.getHeader(Constants.HMAC_HEADER);
-        String hash = RequestUtils.getHmac(hmacKey, RequestUtils.getBody(request));
+        String hash = RequestUtils.getHmac(hmacKey, RequestUtils.getBody(request.getInputStream()));
         if (!header.equals(hash)) {
             logger.error(LogMessage.format(
                     "Request Authorization Failed - Hash mismatch: got (%s) != expected (%s)",

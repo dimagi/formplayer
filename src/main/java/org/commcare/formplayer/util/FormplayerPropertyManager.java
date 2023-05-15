@@ -21,6 +21,8 @@ public class FormplayerPropertyManager extends PropertyManager {
     public static final String SKIP_FIXTURES_AFTER_SUBMIT = "cc-skip-fixtures-after-submit";
     public static final String AUTO_ADVANCE_MENU = "cc-auto-advance-menu";
 
+    public static final String INDEX_CASE_SEARCH_RESULTS = "cc-index-case-search-results";
+
     /**
      * Constructor for this PropertyManager
      *
@@ -61,5 +63,9 @@ public class FormplayerPropertyManager extends PropertyManager {
 
     public boolean isAutoAdvanceMenu() {
         return doesPropertyMatch(AUTO_ADVANCE_MENU, NO, YES);
+    }
+
+    public boolean isIndexCaseSearchResults() {
+        return doesPropertyMatch(INDEX_CASE_SEARCH_RESULTS, NO, YES);
     }
 }

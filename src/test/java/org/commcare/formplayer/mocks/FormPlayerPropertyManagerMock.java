@@ -18,6 +18,8 @@ public class FormPlayerPropertyManagerMock extends FormplayerPropertyManager {
     private boolean fuzzySearch;
     private boolean autoAdvanceMenu;
 
+    private boolean indexCaseSearchResults;
+
     public FormPlayerPropertyManagerMock(IStorageUtilityIndexed properties) {
         super(properties);
     }
@@ -30,6 +32,10 @@ public class FormPlayerPropertyManagerMock extends FormplayerPropertyManager {
         autoAdvanceMenu = enable;
     }
 
+    public void enableIndexCaseSearchResults(boolean enable) {
+        indexCaseSearchResults = enable;
+    }
+
     @Override
     public boolean isFuzzySearchEnabled() {
         return fuzzySearch;
@@ -38,6 +44,11 @@ public class FormPlayerPropertyManagerMock extends FormplayerPropertyManager {
     @Override
     public boolean isAutoAdvanceMenu() {
         return autoAdvanceMenu;
+    }
+
+    @Override
+    public boolean isIndexCaseSearchResults() {
+        return indexCaseSearchResults;
     }
 
     // convenience method to set auto advance menu as true

@@ -8,8 +8,8 @@ plugins {
     id 'org.springframework.boot' version '2.7.3'
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
     id "io.freefair.lombok" version "8.0.1"
-    id 'org.jetbrains.kotlin.jvm' version '1.8.20'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.8.20'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.21'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.8.21'
 }
 
 springBoot {
@@ -30,7 +30,7 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'jacoco'
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.10"
 }
 
 jar {
@@ -48,8 +48,8 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    sentryVersion = '6.17.0'
-    shedlockVersion = '5.2.0'
+    sentryVersion = '6.18.1'
+    shedlockVersion = '5.3.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -109,7 +109,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.11.2'
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.14.0'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.2.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
@@ -139,6 +139,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testImplementation group: 'org.mockito', name: 'mockito-core'
     testImplementation group: 'org.mockito', name: 'mockito-inline'
+    testImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
     testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert'
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
 }
@@ -187,8 +188,8 @@ assemble.dependsOn copyScripts
 jacocoTestReport {
     dependsOn test
     reports {
-        xml.enabled true
-        html.enabled true
+        xml.required = true
+        html.required = true
     }
 }
 

@@ -1,5 +1,6 @@
 build/
 testdbs/*
+tmp_dbs/*
 .gradle
 config/application.properties
 gradle/
@@ -18,3 +19,4 @@ scripts/*.pyc
 out/
 lombok.config
 /artifacts/
+forms

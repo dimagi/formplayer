@@ -54,9 +54,17 @@ public class WebClient {
     }
 
     public <T> String post(String url, T body) {
+        return post(url, body, false);
+    }
+
+    public <T> String post(String url, T body, boolean isMultipart) {
         checkHmac();
         URI uri = URI.create(url);
-        return postRaw(uri, restoreFactory.getRequestHeaders(uri), body, String.class).getBody();
+        HttpHeaders headers = restoreFactory.getRequestHeaders(uri);
+        if (isMultipart) {
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        }
+        return postRaw(uri, headers, body, String.class).getBody();
     }
 
     public <T> String postFormData(String url, Multimap<String, String> data) {

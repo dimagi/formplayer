@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.PART_ANSWER;
 import static org.commcare.formplayer.junit.HasXpath.hasXpath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,6 +10,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -113,6 +115,8 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.lang.Nullable;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -273,10 +277,8 @@ public class BaseTestClass {
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
-
         mockMenuSessionService();
         mockVirtualDataInstanceService();
-
         // this shouldn't be needed here (see TestContext) but tests fail without it
         new SQLiteProperties().setDataDir("testdbs/");
     }
@@ -377,12 +379,12 @@ public class BaseTestClass {
 
     private void setupSubmitServiceMock() {
         Mockito.doReturn(
-                        "<OpenRosaResponse>" +
-                                "<message nature='status'>" +
-                                "OK" +
-                                "</message>" +
-                                "</OpenRosaResponse>")
-                .when(submitServiceMock).submitForm(anyString(), anyString());
+                "<OpenRosaResponse>" +
+                        "<message nature='status'>" +
+                        "OK" +
+                        "</message>" +
+                        "</OpenRosaResponse>")
+                .when(submitServiceMock).submitForm(any(), anyString());
     }
 
     @AfterEach
@@ -562,11 +564,9 @@ public class BaseTestClass {
                 sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(prevalidated);
-        return generateMockQuery(ControllerType.FORM_SUBMISSION,
-                RequestType.POST,
-                Constants.URL_SUBMIT_FORM,
-                submitRequestBean,
-                SubmitResponseBean.class);
+        restoreFactoryMock.configure(submitRequestBean, new DjangoAuth("123"));
+        return new SubmitFormRequest(mockFormSubmissionController)
+                .requestWithBean(submitRequestBean).bean();
     }
 
     protected SyncDbResponseBean syncDb() {
@@ -883,7 +883,7 @@ public class BaseTestClass {
     }
 
     public enum RequestType {
-        POST, GET
+        POST, GET, MULTIPART
     }
 
     public enum ControllerType {
@@ -906,6 +906,15 @@ public class BaseTestClass {
             RequestType requestType,
             String urlPath,
             Object bean,
+            Class<T> clazz) throws Exception {
+        return generateMockQuery(controllerType, requestType, urlPath, bean, null, clazz);
+    }
+
+    private <T> T generateMockQuery(ControllerType controllerType,
+            RequestType requestType,
+            String urlPath,
+            Object bean,
+            MockMultipartFile file,
             Class<T> clazz) throws Exception {
         MockMvc controller = null;
         ResultActions result = null;

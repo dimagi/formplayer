@@ -1,13 +1,18 @@
 package org.commcare.formplayer.auth;
 
+import static org.commcare.formplayer.auth.AuthTestUtils.getFullAuthRequestBuilder;
+import static org.commcare.formplayer.auth.AuthTestUtils.getMultipartRequestBuilder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.commcare.formplayer.application.UtilController;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
@@ -24,6 +29,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +44,7 @@ import java.nio.charset.Charset;
 @WebMvcTest
 @ContextConfiguration(classes = {
         UtilController.class,
+        MockMultipartController.class,
         TestContext.class,
         WebSecurityConfig.class,
         MultipleReadRequestWrappingFilter.class,
@@ -115,6 +123,15 @@ public class HmacAuthTests {
         this.testEndpoint(builder, status().isOk());
     }
 
+    @Test
+    public void testFullAuthMultipartEndpointWithHmac_WithoutSessionAuth_AlwaysFails() throws Exception {
+        MockHttpServletRequestBuilder builder = getMultipartRequestBuilder(getClass(), FULL_AUTH_BODY);
+        MockHttpServletRequest request = builder.buildRequest(new MockServletContext());
+        String hmac = RequestUtils.getHmac(formplayerAuthKey, RequestUtils.getBody(request.getInputStream()));
+        builder.header(Constants.HMAC_HEADER, hmac);
+        this.testEndpoint(builder, status().isForbidden());
+    }
+
     private void testEndpoint(MockHttpServletRequestBuilder requestBuilder,
             ResultMatcher... matchers) throws Exception {
         ResultActions actions = mvc.perform(requestBuilder)
@@ -138,15 +155,5 @@ public class HmacAuthTests {
         return post(String.format("/%s", Constants.URL_VALIDATE_FORM))
                 .content(formXML)
                 .contentType(contentType);
-    }
-
-    /**
-     * Use the 'clear_user_data' endpoint for 'full auth' which required user details.
-     */
-    private MockHttpServletRequestBuilder getFullAuthRequestBuilder(String body) {
-        return post(String.format("/%s", Constants.URL_CLEAR_USER_DATA))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(SecurityMockMvcRequestPostProcessors.csrf());
     }
 }

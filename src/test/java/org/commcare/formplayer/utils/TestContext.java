@@ -15,6 +15,7 @@ import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.services.InstallService;
+import org.commcare.formplayer.services.MediaMetaDataService;
 import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.MenuSessionRunnerService;
 import org.commcare.formplayer.services.MenuSessionService;
@@ -77,6 +78,9 @@ public class TestContext {
         internalResourceViewResolver.setSuffix(".jsp");
         return internalResourceViewResolver;
     }
+
+    @MockBean
+    public MediaMetaDataService mediaMetaDataService;
 
     @MockBean
     public FormSessionService formSessionService;
