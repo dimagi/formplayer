@@ -130,10 +130,7 @@ public class EntityListResponse extends MenuBean {
             maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
         }
         setQueryKey(session.getCommand());
-        queryResponseBean = new QueryResponseBean(
-                nextScreen.getQueryScreen(),
-                nextScreen.getSession()
-        );
+        queryResponseBean = new QueryResponseBean(nextScreen.getQueryScreen());
     }
 
 

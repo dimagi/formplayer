@@ -189,10 +189,7 @@ public class MenuSessionRunnerService {
             if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
             }
-            menuResponseBean = new QueryResponseBean(
-                    (QueryScreen)nextScreen,
-                    menuSession.getSessionWrapper()
-            );
+            menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
             Sentry.setTag(Constants.MODULE_TAG, "case_search");
         } else {
