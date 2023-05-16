@@ -7,22 +7,7 @@ import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.TestInstallService;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.services.CaseSearchHelper;
-import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.FormDefinitionService;
-import org.commcare.formplayer.services.FormSessionService;
-import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.HqUserDetailsService;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.MediaMetaDataService;
-import org.commcare.formplayer.services.MenuSessionFactory;
-import org.commcare.formplayer.services.MenuSessionRunnerService;
-import org.commcare.formplayer.services.MenuSessionService;
-import org.commcare.formplayer.services.NewFormResponseFactory;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.services.SubmitService;
-import org.commcare.formplayer.services.VirtualDataInstanceService;
+import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
@@ -103,6 +88,9 @@ public class TestContext {
     @MockBean
     public NotificationLogger notificationLogger;
 
+    @MockBean
+    public FormplayerLockRegistry userLockRegistry;
+
     @Bean
     public ValueOperations<String, Long> redisTemplateLong() {
         return Mockito.mock(ValueOperations.class);
@@ -151,11 +139,6 @@ public class TestContext {
     @Bean
     public FormplayerDatadog datadog() {
         return Mockito.spy(new FormplayerDatadog(datadogStatsDClient(), new ArrayList<String>()));
-    }
-
-    @Bean
-    public LockRegistry userLockRegistry() {
-        return Mockito.spy(MockLockRegistry.class);
     }
 
     @Bean
