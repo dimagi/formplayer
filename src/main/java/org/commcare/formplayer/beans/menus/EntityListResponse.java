@@ -19,6 +19,7 @@ import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
+import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.NoLocalizedTextException;
@@ -130,7 +131,10 @@ public class EntityListResponse extends MenuBean {
             maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
         }
         setQueryKey(session.getCommand());
-        queryResponse = new QueryResponseBean(nextScreen.getQueryScreen());
+        QueryScreen queryScreen = nextScreen.getQueryScreen();
+        if (queryScreen != null) {
+            queryResponse = new QueryResponseBean(nextScreen.getQueryScreen());
+        }
     }
 
 
