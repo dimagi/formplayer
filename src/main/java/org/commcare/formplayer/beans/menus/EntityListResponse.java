@@ -61,6 +61,8 @@ public class EntityListResponse extends MenuBean {
     private boolean isMultiSelect = false;
     private int maxSelectValue = -1;
 
+    private boolean hasDetails = true;
+
     public EntityListResponse() {
     }
 
@@ -112,6 +114,7 @@ public class EntityListResponse extends MenuBean {
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
             setNoItemsText(getNoItemsTextLocaleString(detail));
+            hasDetails = nextScreen.getLongDetail() != null;
         }
 
         processTitle(session);
@@ -265,6 +268,10 @@ public class EntityListResponse extends MenuBean {
 
     public void setSortIndices(int[] sortIndices) {
         this.sortIndices = sortIndices;
+    }
+
+    public boolean isHasDetails() {
+        return hasDetails;
     }
 
     static class LogNotifier implements EntitySortNotificationInterface {
