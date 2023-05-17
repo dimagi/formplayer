@@ -133,7 +133,7 @@ public class EntityListResponse extends MenuBean {
         setQueryKey(session.getCommand());
         QueryScreen queryScreen = nextScreen.getQueryScreen();
         if (queryScreen != null) {
-            queryResponse = new QueryResponseBean(nextScreen.getQueryScreen());
+            queryResponse = new QueryResponseBean(queryScreen);
         }
     }
 
