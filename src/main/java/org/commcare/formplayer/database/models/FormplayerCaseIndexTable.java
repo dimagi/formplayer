@@ -1,11 +1,12 @@
 package org.commcare.formplayer.database.models;
 
-import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
-
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
+import org.commcare.cases.query.queryset.DualTableMultiMatchModelQuerySet;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
 import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.formplayer.sandbox.SqlStorage;
@@ -21,11 +22,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
+
+import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
 
 /**
  * @author ctsims
@@ -323,6 +322,63 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                         while (resultSet.next()) {
                             int caseId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
                             int targetCase = resultSet.getInt(resultSet.findColumn(DatabaseHelper.ID_COL));
+                            set.loadResult(caseId, targetCase);
+                        }
+                    }
+                }
+            }
+            return set;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Performs a reverse index match on for the provided index name and target (parent) cases.
+     *
+     * @param indexName The name of the index e.g. 'parent'
+     * @param cuedCases Row IDs for the parent cases.
+     * @return ModelQuerySet with the results
+     */
+    public DualTableMultiMatchModelQuerySet bulkReadIndexToCaseIdMatchReverse(String indexName,
+                                                                        Collection<Integer> cuedCases) {
+        DualTableMultiMatchModelQuerySet set = new DualTableMultiMatchModelQuerySet();
+        String caseIdIndex = TableBuilder.scrubName(Case.INDEX_CASE_ID);
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases, "?");
+        try {
+            for (Pair<String, String[]> querySet : whereParamList) {
+
+                StrSubstitutor substitutor = new StrSubstitutor(ImmutableMap.of(
+                        "caseId", caseTableName + "." + DatabaseHelper.ID_COL,
+                        "childId", COL_CASE_RECORD_ID,
+                        "caseTable", caseTableName,
+                        "indexTable", getTableName(),
+                        "targetCol", COL_INDEX_TARGET,
+                        "caseIdCol", caseIdIndex,
+                        "indexNameCol", COL_INDEX_NAME,
+                        "indexName", indexName,
+                        "parentCases", querySet.first
+                ));
+                String query = substitutor.replace("SELECT ${caseId}, ${childId} " +
+                        "FROM ${caseTable} JOIN ${indexTable} ON ${targetCol} = ${caseIdCol} " +
+                        "WHERE ${indexNameCol} = '${indexName}' AND ${caseId} IN ${parentCases};");
+
+                try (PreparedStatement preparedStatement =
+                             connectionHandler.getConnection().prepareStatement(query)) {
+                    int argIndex = 1;
+                    for (String arg : querySet.second) {
+                        preparedStatement.setString(argIndex, arg);
+                        argIndex++;
+                    }
+
+                    if (log.isTraceEnabled()) {
+                        SqlHelper.explainSql(connectionHandler.getConnection(), query, querySet.second);
+                    }
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            int caseId = resultSet.getInt(resultSet.findColumn(DatabaseHelper.ID_COL));
+                            int targetCase = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
                             set.loadResult(caseId, targetCase);
                         }
                     }
