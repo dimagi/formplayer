@@ -59,13 +59,12 @@ public class CaseDbModelQueryTests {
     @RegisterExtension
     static StorageFactoryExtension storageExt = new StorageFactoryExtension.builder()
             .withUser("back_nav").withDomain("back_nav").build();
-    private UserSqlSandbox sandbox;
     private EvaluationContext evaluationContext;
 
     @BeforeEach
     public void setUp() {
         new SyncDbRequest(mockMvc, restoreFactory).request();
-        sandbox = restoreFactory.getSqlSandbox();
+        UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
         evaluationContext = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         evaluationContext.setDebugModeOn();
     }
