@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +27,8 @@ import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.HqUserDetails;
+import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
 import org.commcare.suite.model.QueryPrompt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -473,6 +476,26 @@ public class CaseClaimTests extends BaseTestClass {
                 queryData,
                 CommandListResponseBean.class);
         assert response.getSelections().length == 2;
+    }
+
+    @Test
+    public void testSplitScreenResponse() throws Exception {
+        configureQueryMock();
+        EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                null,
+                EntityListResponse.class);
+        assertNull(responseBean.getQueryResponse(),
+                "Query response attached to entity response when split screen is disabled");
+        WithHqUserSecurityContextFactory.setSecurityContext(
+                HqUserDetails.builder().enabledToggles(new String[]{"SPLIT_SCREEN_CASE_SEARCH"}).build()
+        );
+        responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                null,
+                EntityListResponse.class);
+        assertNotNull(responseBean.getQueryResponse(),
+                "No query response attached to entity response when split screen is enabled");
     }
 
     private void configureSyncMock() {

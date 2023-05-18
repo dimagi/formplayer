@@ -19,6 +19,7 @@ import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
+import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.NoLocalizedTextException;
@@ -62,6 +63,7 @@ public class EntityListResponse extends MenuBean {
     private int maxSelectValue = -1;
 
     private boolean hasDetails = true;
+    private QueryResponseBean queryResponse;
 
     public EntityListResponse() {
     }
@@ -129,6 +131,10 @@ public class EntityListResponse extends MenuBean {
             maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
         }
         setQueryKey(session.getCommand());
+        QueryScreen queryScreen = nextScreen.getQueryScreen();
+        if (queryScreen != null) {
+            queryResponse = new QueryResponseBean(queryScreen);
+        }
     }
 
 
@@ -536,5 +542,9 @@ public class EntityListResponse extends MenuBean {
             return null;
         }
         return noItemsTextString;
+    }
+
+    public QueryResponseBean getQueryResponse() {
+        return queryResponse;
     }
 }

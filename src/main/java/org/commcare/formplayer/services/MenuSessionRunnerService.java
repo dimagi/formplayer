@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
+import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -189,10 +190,7 @@ public class MenuSessionRunnerService {
             if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
             }
-            menuResponseBean = new QueryResponseBean(
-                    (QueryScreen)nextScreen,
-                    menuSession.getSessionWrapper()
-            );
+            menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
             Sentry.setTag(Constants.MODULE_TAG, "case_search");
         } else {
@@ -398,6 +396,10 @@ public class MenuSessionRunnerService {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());
                     }
+                }
+                if (previousScreen != null && previousScreen instanceof QueryScreen
+                        && FeatureFlagChecker.isToggleEnabled(TOGGLE_SPLIT_SCREEN_CASE_SEARCH)) {
+                    ((EntityScreen)nextScreen).setQueryScreen(((QueryScreen)previousScreen));
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
