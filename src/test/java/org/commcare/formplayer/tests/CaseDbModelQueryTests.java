@@ -169,8 +169,8 @@ public class CaseDbModelQueryTests {
 
         }
         Predicate<String> predicate = line -> line.contains("Load Query Set Transform[current]=>[current|index|parent]: Loaded: 2");
-        int matchedReverseIndexLoad = InstrumentationUtils.countMatchedTraces(reporter, predicate);
-        Assertions.assertEquals(1, matchedReverseIndexLoad);
+        int matchedIndexLoad = InstrumentationUtils.countMatchedTraces(reporter, predicate);
+        Assertions.assertEquals(1, matchedIndexLoad);
 
         int matchedLookups = InstrumentationUtils.countMatchedTraces(reporter, line -> line.contains("QuerySetLookup|current|index|parent: Results: 1"));
         Assertions.assertEquals(4, matchedLookups);

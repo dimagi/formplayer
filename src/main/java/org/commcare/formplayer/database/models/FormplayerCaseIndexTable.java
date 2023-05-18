@@ -30,7 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Vector;
 import java.util.function.Consumer;
-import java.util.stream.Collector;
 
 /**
  * @author ctsims
@@ -332,8 +331,8 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
      * @param cuedCases Row IDs for the parent cases.
      * @return ModelQuerySet with the results
      */
-    public DualTableMultiMatchModelQuerySet bulkReadIndexToCaseIdMatchReverse(String indexName,
-                                                                              Collection<Integer> cuedCases) {
+    public DualTableMultiMatchModelQuerySet bulkReadCaseIdToIndexMatch(String indexName,
+                                                                       Collection<Integer> cuedCases) {
         DualTableMultiMatchModelQuerySet set = new DualTableMultiMatchModelQuerySet();
         String caseIdIndex = TableBuilder.scrubName(Case.INDEX_CASE_ID);
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases, "?");
