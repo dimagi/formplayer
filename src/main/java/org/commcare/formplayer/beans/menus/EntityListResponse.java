@@ -1,12 +1,8 @@
 package org.commcare.formplayer.beans.menus;
 
 import org.commcare.cases.entity.Entity;
-import org.commcare.cases.entity.EntitySortNotificationInterface;
-import org.commcare.cases.entity.EntitySorter;
-import org.commcare.cases.entity.NodeEntityFactory;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.formplayer.util.EntityStringFilterer;
 import org.commcare.formplayer.util.FormplayerGraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -74,7 +70,8 @@ public class EntityListResponse extends MenuBean {
             int sortIndex,
             boolean isFuzzySearchEnabled,
             int casesPerPage) {
-        // Subscreen should be of type EntityListSubscreen in order to init this response class
+        // This constructor can be called for both entity list and detail screens but
+        // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
             SessionWrapper session = nextScreen.getSession();
@@ -87,9 +84,7 @@ public class EntityListResponse extends MenuBean {
             this.actions = processActions(nextScreen.getSession(), entityListActions);
             this.redoLast = processRedoLast(entityListActions);
 
-            Vector<TreeReference> references = nextScreen.getReferences();
-            List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
-                    sortIndex, isFuzzySearchEnabled);
+            List<Entity<TreeReference>> entityList = entityListScreen.getEntities();
 
             if (casesPerPage == 0) {
                 casesPerPage = DEFAULT_CASES_PER_PAGE;
@@ -167,18 +162,6 @@ public class EntityListResponse extends MenuBean {
         return entities;
     }
 
-    @Trace
-    private static List<Entity<TreeReference>> filterEntities(String searchText,
-            NodeEntityFactory nodeEntityFactory,
-            List<Entity<TreeReference>> full, boolean isFuzzySearchEnabled) {
-        if (searchText != null && !"".equals(searchText)) {
-            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "),
-                    nodeEntityFactory, full, isFuzzySearchEnabled);
-            full = filterer.buildMatchList();
-        }
-        return full;
-    }
-
     private List<Entity<TreeReference>> paginateEntities(
             List<Entity<TreeReference>> entityList, Detail detail, int casesPerPage, int offset) {
         if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
@@ -209,52 +192,6 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
-    @Trace
-    public static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
-            EvaluationContext context,
-            Vector<TreeReference> references,
-            String searchText,
-            int sortIndex,
-            boolean isFuzzySearchEnabled) {
-        NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
-        List<Entity<TreeReference>> full = new ArrayList<>();
-        for (TreeReference reference : references) {
-            full.add(nodeEntityFactory.getEntity(reference));
-        }
-        nodeEntityFactory.prepareEntities(full);
-        List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full,
-                isFuzzySearchEnabled);
-        sort(matched, shortDetail, sortIndex);
-        return matched;
-    }
-
-    @Trace
-    private static void sort(List<Entity<TreeReference>> entityList,
-            Detail shortDetail,
-            int sortIndex) {
-        int[] order;
-        boolean reverse = false;
-        if (sortIndex != 0) {
-            if (sortIndex < 0) {
-                reverse = true;
-                sortIndex = Math.abs(sortIndex);
-            }
-            // sort index is one indexed so adjust for that
-            int sortFieldIndex = sortIndex - 1;
-            order = new int[]{sortFieldIndex};
-        } else {
-            order = shortDetail.getOrderedFieldIndicesForSorting();
-            for (int i = 0; i < shortDetail.getFields().length; ++i) {
-                String header = shortDetail.getFields()[i].getHeader().evaluate();
-                if (order.length == 0 && !"".equals(header)) {
-                    order = new int[]{i};
-                }
-            }
-        }
-        java.util.Collections.sort(entityList,
-                new EntitySorter(shortDetail.getFields(), reverse, order, new LogNotifier()));
-    }
-
     public int[] getSortIndices() {
         return sortIndices;
     }
@@ -265,13 +202,6 @@ public class EntityListResponse extends MenuBean {
 
     public boolean isHasDetails() {
         return hasDetails;
-    }
-
-    static class LogNotifier implements EntitySortNotificationInterface {
-        @Override
-        public void notifyBadFilter(String[] args) {
-
-        }
     }
 
     // Converts the Given Entity to EntityBean
