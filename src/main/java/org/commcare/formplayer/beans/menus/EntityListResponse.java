@@ -6,7 +6,6 @@ import org.commcare.cases.entity.EntitySorter;
 import org.commcare.cases.entity.NodeEntityFactory;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.util.EntityStringFilterer;
 import org.commcare.formplayer.util.FormplayerGraphUtil;
 import org.commcare.modern.session.SessionWrapper;
@@ -20,6 +19,7 @@ import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.NoLocalizedTextException;
@@ -77,14 +77,17 @@ public class EntityListResponse extends MenuBean {
             int casesPerPage) {
         // When detailSelection is not null it means we're processing a case detail, not a case
         // list. So there is no need to calculate this response in real
+        Subscreen subScreen = nextScreen.getCurrentScreen();
         if (detailSelection == null) {
             SessionWrapper session = nextScreen.getSession();
             Detail detail = nextScreen.getShortDetail();
             EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
             EvaluationContext ec = nextScreen.getEvalContext();
 
-            this.actions = processActions(nextScreen.getSession());
-            this.redoLast = processRedoLast(nextScreen.getSession());
+            EntityListSubscreen entityListScreen = ((EntityListSubscreen)nextScreen.getCurrentScreen());
+            Vector<Action> entityListActions = entityListScreen.getActions();
+            this.actions = processActions(nextScreen.getSession(), entityListActions);
+            this.redoLast = processRedoLast(entityListActions);
 
             Vector<TreeReference> references = nextScreen.getReferences();
             List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
@@ -337,8 +340,7 @@ public class EntityListResponse extends MenuBean {
         return styles;
     }
 
-    private static DisplayElement[] processActions(SessionWrapper session) {
-        Vector<Action> actions = getActionDefinitions(session);
+    private static DisplayElement[] processActions(SessionWrapper session, Vector<Action> actions) {
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action : actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
@@ -348,29 +350,21 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private static String processRedoLast(SessionWrapper session) {
-        return formatActionsWithFilter(session, Action::isRedoLast);
+    private static String processRedoLast(Vector<Action> entityListActions) {
+        return formatActionsWithFilter(entityListActions, Action::isRedoLast);
     }
 
-    private static String formatActionsWithFilter(SessionWrapper session,
+    private static String formatActionsWithFilter(Vector<Action> entityListActions,
             Predicate<Action> actionFilter) {
-        Vector<Action> actions = getActionDefinitions(session);
         String ret = null;
         int index = 0;
-        for (Action action : actions) {
+        for (Action action : entityListActions) {
             if (actionFilter.test(action)) {
                 ret = "action " + index;
             }
             index = index + 1;
         }
         return ret;
-    }
-
-
-    private static Vector<Action> getActionDefinitions(SessionWrapper session) {
-        EntityDatum datum = (EntityDatum)session.getNeededDatum();
-        return session.getDetail((datum).getShortDetail()).getCustomActions(
-                session.getEvaluationContext());
     }
 
     public EntityBean[] getEntities() {
