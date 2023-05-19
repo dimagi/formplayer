@@ -75,32 +75,17 @@ public class EntityListResponse extends MenuBean {
             int sortIndex,
             boolean isFuzzySearchEnabled,
             int casesPerPage) {
-        SessionWrapper session = nextScreen.getSession();
-        Detail detail = nextScreen.getShortDetail();
-        EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
-        EvaluationContext ec = nextScreen.getEvalContext();
-
-        this.actions = processActions(nextScreen.getSession());
-        this.redoLast = processRedoLast(nextScreen.getSession());
-
         // When detailSelection is not null it means we're processing a case detail, not a case
-        // list.
-        // We will shortcircuit the computation to just get the relevant detailSelection.
-        if (detailSelection != null) {
-            TreeReference reference = neededDatum.getEntityFromID(ec, detailSelection);
-            if (reference == null) {
-                throw new ApplicationConfigException(
-                        String.format("Could not create detail %s for case with ID %s " +
-                                        " either because the case filter matched zero or multiple"
-                                        + " cases.",
-                                detailSelection, detail));
-            }
-            Detail[] longDetails = nextScreen.getLongDetailList(reference);
-            if (longDetails != null) {
-                detail = longDetails[0];
-            }
-            entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
-        } else {
+        // list. So there is no need to calculate this response in real
+        if (detailSelection == null) {
+            SessionWrapper session = nextScreen.getSession();
+            Detail detail = nextScreen.getShortDetail();
+            EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
+            EvaluationContext ec = nextScreen.getEvalContext();
+
+            this.actions = processActions(nextScreen.getSession());
+            this.redoLast = processRedoLast(nextScreen.getSession());
+
             Vector<TreeReference> references = nextScreen.getReferences();
             List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
                     sortIndex, isFuzzySearchEnabled);
@@ -117,23 +102,24 @@ public class EntityListResponse extends MenuBean {
             entityBeans.toArray(entities);
             setNoItemsText(getNoItemsTextLocaleString(detail));
             hasDetails = nextScreen.getLongDetail() != null;
-        }
 
-        processTitle(session);
-        processCaseTiles(detail);
-        this.styles = processStyles(detail);
-        Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
-        this.headers = pair.first;
-        this.widthHints = pair.second;
-        this.sortIndices = detail.getOrderedFieldIndicesForSorting();
-        isMultiSelect = nextScreen instanceof MultiSelectEntityScreen;
-        if (isMultiSelect) {
-            maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
-        }
-        setQueryKey(session.getCommand());
-        QueryScreen queryScreen = nextScreen.getQueryScreen();
-        if (queryScreen != null) {
-            queryResponse = new QueryResponseBean(queryScreen);
+
+            processTitle(session);
+            processCaseTiles(detail);
+            this.styles = processStyles(detail);
+            Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
+            this.headers = pair.first;
+            this.widthHints = pair.second;
+            this.sortIndices = detail.getOrderedFieldIndicesForSorting();
+            isMultiSelect = nextScreen instanceof MultiSelectEntityScreen;
+            if (isMultiSelect) {
+                maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
+            }
+            setQueryKey(session.getCommand());
+            QueryScreen queryScreen = nextScreen.getQueryScreen();
+            if (queryScreen != null) {
+                queryResponse = new QueryResponseBean(queryScreen);
+            }
         }
     }
 
