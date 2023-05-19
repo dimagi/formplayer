@@ -69,16 +69,14 @@ public class EntityListResponse extends MenuBean {
     }
 
     public EntityListResponse(EntityScreen nextScreen,
-            String detailSelection,
             int offset,
             String searchText,
             int sortIndex,
             boolean isFuzzySearchEnabled,
             int casesPerPage) {
-        // When detailSelection is not null it means we're processing a case detail, not a case
-        // list. So there is no need to calculate this response in real
+        // Subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
-        if (detailSelection == null) {
+        if (subScreen instanceof EntityListSubscreen) {
             SessionWrapper session = nextScreen.getSession();
             Detail detail = nextScreen.getShortDetail();
             EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();

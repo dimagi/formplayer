@@ -172,7 +172,6 @@ public class MenuSessionRunnerService {
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
                     (EntityScreen)nextScreen,
-                    detailSelection,
                     offset,
                     searchText,
                     sortIndex,
