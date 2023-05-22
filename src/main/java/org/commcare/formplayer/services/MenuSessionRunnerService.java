@@ -134,7 +134,7 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             EntityScreenContext entityScreenContext) throws Exception {
         boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
-        Screen nextScreen = menuSession.getNextScreen(isDetailScreen);
+        Screen nextScreen = menuSession.getNextScreen();
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -252,7 +252,7 @@ public class MenuSessionRunnerService {
                 // and we do not need the case detail
                 boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
                 boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
-                        true, entityScreenContext.getSelectedValues(), isDetailScreen);
+                        true, entityScreenContext.getSelectedValues());
                 if (!gotNextScreen) {
                     notificationMessage = new NotificationMessage(
                             "Overflowed selections with selection " + selection + " at index " + i,
@@ -262,7 +262,7 @@ public class MenuSessionRunnerService {
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
                 Screen nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
-                        needsFullEntityScreen, isDetailScreen, entityScreenContext);
+                        needsFullEntityScreen, entityScreenContext);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                     // we've reached the end of this navigation path and no form in sight
@@ -328,7 +328,6 @@ public class MenuSessionRunnerService {
      * @param nextInput             The next input being processed or NO_SELECTION constant
      * @param queryData             Query data from the request
      * @param needsFullEntityScreen Whether the full entity screen is required
-     * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      * @return
      * @throws CommCareSessionException
      */
@@ -337,7 +336,6 @@ public class MenuSessionRunnerService {
             String nextInput,
             QueryData queryData,
             boolean needsFullEntityScreen,
-            boolean isDetailScreen,
             EntityScreenContext entityScreenContext) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
@@ -349,7 +347,7 @@ public class MenuSessionRunnerService {
             previousScreen = nextScreen;
             iterationCount += 1;
 
-            nextScreen = menuSession.getNextScreen(needsFullEntityScreen, isDetailScreen, entityScreenContext);
+            nextScreen = menuSession.getNextScreen(needsFullEntityScreen, entityScreenContext);
             if (previousScreen != null) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
                 log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
@@ -375,7 +373,7 @@ public class MenuSessionRunnerService {
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
-                boolean skipCache = !(replay || isDetailScreen);
+                boolean skipCache = !(replay || entityScreenContext.getDetailSelection()!=null);
                 sessionAdvanced = handleQueryScreen(
                         (FormplayerQueryScreen)nextScreen, menuSession, queryData,
                         replay, skipCache
@@ -506,7 +504,7 @@ public class MenuSessionRunnerService {
             }
 
             autoAdvanceSession(menuSession, "", new QueryData(),
-                    false, false, entityScreenContext
+                    false, entityScreenContext
             );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());

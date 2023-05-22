@@ -71,12 +71,12 @@ public class MenuSessionFactory {
     public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
-        Screen screen = menuSession.getNextScreen(false, false);
+        Screen screen = menuSession.getNextScreen(false);
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
                 if (menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu())) {
-                    screen = menuSession.getNextScreen(false, false);
+                    screen = menuSession.getNextScreen(false);
                     continue;
                 }
 
@@ -101,8 +101,8 @@ public class MenuSessionFactory {
                     }
                 }
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(currentStep, false, true, false, null, false);
-                    screen = menuSession.getNextScreen(false, false);
+                    menuSession.handleInput(currentStep, false, true, false, null);
+                    screen = menuSession.getNextScreen(false);
                     continue;
                 }
             } else if (screen instanceof QueryScreen) {
@@ -128,7 +128,7 @@ public class MenuSessionFactory {
                                 false
                             );
                             queryScreen.updateSession(searchDataInstance);
-                            screen = menuSession.getNextScreen(false, false);
+                            screen = menuSession.getNextScreen(false);
                             currentStep = NEXT_SCREEN;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
@@ -141,9 +141,9 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, false, true, false, null, false);
+                menuSession.handleInput(currentStep, false, true, false, null);
                 menuSession.addSelection(currentStep);
-                screen = menuSession.getNextScreen(false, false);
+                screen = menuSession.getNextScreen(false);
             }
         }
     }
