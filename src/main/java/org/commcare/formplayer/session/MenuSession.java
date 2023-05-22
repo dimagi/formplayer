@@ -34,6 +34,7 @@ import org.commcare.suite.model.MultiSelectEntityDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
@@ -218,7 +219,20 @@ public class MenuSession implements HereFunctionHandlerListener {
      * with no performance optimization and autolaunching of actions not allowed.
      */
     public Screen getNextScreen(boolean isDetailScreen) throws CommCareSessionException {
-        return getNextScreen(true, isDetailScreen);
+        return getNextScreen(true, isDetailScreen, new EntityScreenContext());
+    }
+
+    /**
+     * Get next screen for current request, based on current state of session
+     * and default entityScreen context with autolaunching of actions not allowed.
+     *
+     * @param needsFullEntityScreen Whether a full entity screen is required for this request
+     *                              or if a list of references is sufficient
+     * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
+     */
+    public Screen getNextScreen(boolean needsFullEntityScreen, boolean isDetailScreen)
+            throws CommCareSessionException {
+        return getNextScreen(needsFullEntityScreen, isDetailScreen, new EntityScreenContext());
     }
 
     /**
@@ -228,9 +242,10 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param needsFullEntityScreen Whether a full entity screen is required for this request
      *                              or if a list of references is sufficient
      * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
+     * @param entityScreenContext   Entity Screen context
      */
     @Trace
-    public Screen getNextScreen(boolean needsFullEntityScreen, boolean isDetailScreen)
+    public Screen getNextScreen(boolean needsFullEntityScreen, boolean isDetailScreen, EntityScreenContext entityScreenContext)
             throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
@@ -245,7 +260,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
-            EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, isDetailScreen);
+            EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, isDetailScreen, entityScreenContext);
             return entityScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
@@ -270,7 +285,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen getEntityScreenForSession(boolean needsFullEntityScreen, boolean isDetailScreen)
+    private EntityScreen getEntityScreenForSession(boolean needsFullEntityScreen, boolean isDetailScreen,
+            EntityScreenContext entityScreenContext)
             throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
@@ -280,7 +296,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
         String datumKey = datum.getDataId() + ", " + nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
-            EntityScreen entityScreen = createFreshEntityScreen(needsFullEntityScreen, datum, isDetailScreen);
+            EntityScreen entityScreen = createFreshEntityScreen(needsFullEntityScreen, datum, isDetailScreen, entityScreenContext);
             entityScreenCache.put(datumKey, entityScreen);
             return entityScreen;
         } else {
@@ -290,13 +306,13 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     @Trace
     private EntityScreen createFreshEntityScreen(boolean needsFullEntityScreen,
-            EntityDatum datum, boolean isDetailScreen)
+            EntityDatum datum, boolean isDetailScreen, EntityScreenContext entityScreenContext)
             throws CommCareSessionException {
         if (datum instanceof MultiSelectEntityDatum) {
             return new MultiSelectEntityScreen(false, needsFullEntityScreen,
-                    sessionWrapper, instanceFetcher.getVirtualDataInstanceStorage(), isDetailScreen);
+                    sessionWrapper, instanceFetcher.getVirtualDataInstanceStorage(), isDetailScreen, entityScreenContext);
         } else {
-            return new EntityScreen(false, needsFullEntityScreen, sessionWrapper, isDetailScreen);
+            return new EntityScreen(false, needsFullEntityScreen, sessionWrapper, isDetailScreen, entityScreenContext);
         }
     }
 

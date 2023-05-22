@@ -13,6 +13,7 @@ import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Subscreen;
@@ -48,7 +49,6 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    private static int DEFAULT_CASES_PER_PAGE = 10;
     private static int MAX_CASES_PER_PAGE = 100;
 
     private boolean usesCaseTiles;
@@ -64,12 +64,7 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse() {
     }
 
-    public EntityListResponse(EntityScreen nextScreen,
-            int offset,
-            String searchText,
-            int sortIndex,
-            boolean isFuzzySearchEnabled,
-            int casesPerPage) {
+    public EntityListResponse(EntityScreen nextScreen) {
         // This constructor can be called for both entity list and detail screens but
         // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
@@ -85,12 +80,10 @@ public class EntityListResponse extends MenuBean {
             this.redoLast = processRedoLast(entityListActions);
 
             List<Entity<TreeReference>> entityList = entityListScreen.getEntities();
-
-            if (casesPerPage == 0) {
-                casesPerPage = DEFAULT_CASES_PER_PAGE;
-            }
+            EntityScreenContext entityScreenContext = nextScreen.getEntityScreenContext();
+            int casesPerPage = entityScreenContext.getCasesPerPage();
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
-
+            int offset = entityScreenContext.getOffSet();
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
@@ -103,6 +96,7 @@ public class EntityListResponse extends MenuBean {
             processTitle(session);
             processCaseTiles(detail);
             this.styles = processStyles(detail);
+            int sortIndex = entityScreenContext.getSortIndex();
             Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
             this.headers = pair.first;
             this.widthHints = pair.second;

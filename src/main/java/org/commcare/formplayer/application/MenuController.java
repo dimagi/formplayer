@@ -11,9 +11,11 @@ import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ public class MenuController extends AbstractBaseController {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
+    @Autowired
+    protected FormplayerStorageFactory storageFactory;
+
     private final Log log = LogFactory.getLog(MenuController.class);
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
@@ -47,16 +52,19 @@ public class MenuController extends AbstractBaseController {
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                HttpServletRequest request) throws Exception {
         MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        boolean isFuzzySearch = storageFactory.getPropertyManager().isFuzzySearchEnabled();
         if (sessionNavigationBean.getIsPersistent()) {
-            BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(menuSession,
-                    sessionNavigationBean.getSelections(),
-                    null,
-                    sessionNavigationBean.getQueryData(),
-                    sessionNavigationBean.getOffset(),
+            EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex(),
                     sessionNavigationBean.getCasesPerPage(),
                     sessionNavigationBean.getSelectedValues(),
+                    null,
+                    isFuzzySearch);
+            BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(menuSession,
+                    sessionNavigationBean.getSelections(),
+                    sessionNavigationBean.getQueryData(),
+                    entityScreenContext,
                     null
             );
             logNotification(baseResponseBean.getNotification(),request);
@@ -73,16 +81,18 @@ public class MenuController extends AbstractBaseController {
         String detailSelection = selections[selections.length - 1];
         System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
 
-        BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(
-                menuSession,
-                commitSelections,
-                detailSelection,
-                sessionNavigationBean.getQueryData(),
-                sessionNavigationBean.getOffset(),
+        EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
                 sessionNavigationBean.getSelectedValues(),
+                detailSelection,
+                isFuzzySearch);
+        BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(
+                menuSession,
+                commitSelections,
+                sessionNavigationBean.getQueryData(),
+                entityScreenContext,
                 null
         );
         logNotification(baseResponseBean.getNotification(),request);
@@ -131,16 +141,18 @@ public class MenuController extends AbstractBaseController {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         menuSession = getMenuSessionFromBean(sessionNavigationBean);
-        BaseResponseBean response = runnerService.advanceSessionWithSelections(
-                menuSession,
-                selections,
-                null,
-                sessionNavigationBean.getQueryData(),
-                sessionNavigationBean.getOffset(),
+        EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
                 sessionNavigationBean.getSelectedValues(),
+                null,
+                storageFactory.getPropertyManager().isFuzzySearchEnabled());
+        BaseResponseBean response = runnerService.advanceSessionWithSelections(
+                menuSession,
+                selections,
+                sessionNavigationBean.getQueryData(),
+                entityScreenContext,
                 sessionNavigationBean.getFormSessionId()
         );
         logNotification(response.getNotification(), request);

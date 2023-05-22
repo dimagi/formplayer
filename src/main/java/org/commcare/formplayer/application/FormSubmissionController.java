@@ -2,9 +2,6 @@ package org.commcare.formplayer.application;
 
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
-import static org.commcare.formplayer.services.MediaValidator.isFileTooLarge;
-import static org.commcare.formplayer.services.MediaValidator.isUnSupportedFileExtension;
-import static org.commcare.formplayer.services.MediaValidator.isUnsupportedMimeType;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,7 +17,6 @@ import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
-import org.commcare.formplayer.exceptions.FormAttachmentException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -38,7 +34,7 @@ import org.commcare.formplayer.util.ProcessingStep;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.commcare.util.FileUtils;
-import org.javarosa.core.services.locale.Localization;
+import org.commcare.util.screen.EntityScreenContext;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +58,6 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -366,7 +361,7 @@ public class FormSubmissionController extends AbstractBaseController {
             CommCareSession commCareSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = menuSessionFactory.buildSession(serializedSession, engine, commCareSession);
-        return runnerService.resolveFormGetNext(menuSession);
+        return runnerService.resolveFormGetNext(menuSession, new EntityScreenContext());
     }
 
     private SubmitResponseBean performSync(FormSubmissionContext context) throws SyncRestoreException {
