@@ -41,6 +41,8 @@ public class MediaMetaDataRepoTest {
 
     @BeforeEach
     void setUp() {
+        formSessionRepo.deleteAll();
+        mediaMetadataRepo.deleteAll();
         session = formSessionRepo.saveAndFlush(new SerializableFormSession());
         mediaId = UUID.randomUUID().toString();
     }
