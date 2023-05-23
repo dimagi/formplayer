@@ -17,14 +17,12 @@ import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Map;
@@ -95,7 +93,7 @@ public class SubmitTests extends BaseTestClass {
 
         doThrow(new Exception("mock stack fail"))
                 .doCallRealMethod()
-                .when(menuSessionRunnerService).resolveFormGetNext(any());
+                .when(menuSessionRunnerService).resolveFormGetNext(any(), any());
 
         SubmitResponseBean errorResponse = submitForm(answers, sessionId);
         assertEquals("error", errorResponse.getStatus());
