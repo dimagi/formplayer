@@ -72,11 +72,13 @@ public class MenuSessionFactory {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
         Screen screen = menuSession.getNextScreen(false);
+        int processedStepsCount = 0;
+        boolean needsFullInit = false;
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
                 if (menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu())) {
-                    screen = menuSession.getNextScreen(false);
+                    screen = menuSession.getNextScreen(needsFullInit);
                     continue;
                 }
 
@@ -85,6 +87,8 @@ public class MenuSessionFactory {
                     for (StackFrameStep step : steps) {
                         if (step.getId().equals(options[i].getCommandID())) {
                             currentStep = String.valueOf(i);
+                            // final step, needs to init fully to show to screen
+                            needsFullInit = ++processedStepsCount == steps.size();
                         }
                     }
                 }
@@ -96,13 +100,14 @@ public class MenuSessionFactory {
                     if (step.getId().equals(neededDatum.getDataId())) {
                         if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();
+                            needsFullInit = ++processedStepsCount == steps.size();
                         }
                         break;
                     }
                 }
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(currentStep, false, true, false, null);
-                    screen = menuSession.getNextScreen(false);
+                    menuSession.handleInput(currentStep, needsFullInit, true, false, null);
+                    screen = menuSession.getNextScreen(needsFullInit);
                     continue;
                 }
             } else if (screen instanceof QueryScreen) {
@@ -128,7 +133,7 @@ public class MenuSessionFactory {
                                 false
                             );
                             queryScreen.updateSession(searchDataInstance);
-                            screen = menuSession.getNextScreen(false);
+                            screen = menuSession.getNextScreen(needsFullInit);
                             currentStep = NEXT_SCREEN;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
@@ -141,9 +146,9 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, false, true, false, null);
+                menuSession.handleInput(currentStep, needsFullInit, true, false, null);
                 menuSession.addSelection(currentStep);
-                screen = menuSession.getNextScreen(false);
+                screen = menuSession.getNextScreen(needsFullInit);
             }
         }
     }

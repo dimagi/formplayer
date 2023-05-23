@@ -248,9 +248,8 @@ public class MenuSessionRunnerService {
                 boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
                 boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
 
-                // minimal entity screens are only safe if there will be no further selection
-                // and we do not need the case detail
-                boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
+                // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full entity screen
+                boolean needsFullEntityScreen = i == selections.length;
                 boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
                         true, entityScreenContext.getSelectedValues());
                 if (!gotNextScreen) {
