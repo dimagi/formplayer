@@ -39,6 +39,7 @@ import org.commcare.suite.model.StackOperation;
 import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
@@ -125,18 +126,15 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null, 0);
+        return getNextMenu(menuSession, null, new EntityScreenContext());
     }
 
     @Trace
     private BaseResponseBean getNextMenu(MenuSession menuSession,
-            String detailSelection,
-            int offset,
-            String searchText,
-            int sortIndex,
             QueryData queryData,
-            int casesPerPage) throws Exception {
-        Screen nextScreen = menuSession.getNextScreen(detailSelection != null);
+            EntityScreenContext entityScreenContext) throws Exception {
+        boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
+        Screen nextScreen = menuSession.getNextScreen();
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -165,20 +163,11 @@ public class MenuSessionRunnerService {
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
-                    return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData,
-                            casesPerPage);
+                    return getNextMenu(menuSession, queryData, entityScreenContext);
                 }
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
-            menuResponseBean = new EntityListResponse(
-                    (EntityScreen)nextScreen,
-                    detailSelection,
-                    offset,
-                    searchText,
-                    sortIndex,
-                    storageFactory.getPropertyManager().isFuzzySearchEnabled(),
-                    casesPerPage
-            );
+            menuResponseBean = new EntityListResponse((EntityScreen)nextScreen);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
             // using getBestTitle to eliminate risk of showing private information
@@ -215,8 +204,7 @@ public class MenuSessionRunnerService {
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections, QueryData queryData) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, null, queryData,
-                0, null, 0, 0, null, null);
+        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null);
     }
 
     /**
@@ -229,21 +217,12 @@ public class MenuSessionRunnerService {
      *                        <p>
      *                        This would mean select the 0th menu, then the 2nd menu, then the case with the id
      *                        6c5d91e9-61a2-4264-97f3-5d68636ff316.
-     * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
-     *                        it is used to short circuit the normal TreeReference calculation by inserting a
-     *                        predicate that
-     *                        is [@case_id = <detailSelection>].
      */
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections,
-            String detailSelection,
             QueryData queryData,
-            int offset,
-            String searchText,
-            int sortIndex,
-            int casesPerPage,
-            String[] selectedValues,
+            EntityScreenContext entityScreenContext,
             String formSessionId) throws Exception {
         NotificationMessage notificationMessage = null;
         boolean nonAppNav = formSessionId != null;
@@ -252,12 +231,8 @@ public class MenuSessionRunnerService {
             if (selections == null) {
                 return getNextMenu(
                         menuSession,
-                        null,
-                        offset,
-                        searchText,
-                        sortIndex,
                         queryData,
-                        casesPerPage
+                        entityScreenContext
                 );
             }
             if (nonAppNav) {
@@ -271,13 +246,12 @@ public class MenuSessionRunnerService {
                 String selection = selections[i - 1];
 
                 boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
-                boolean isDetailScreen = detailSelection != null;
+                boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
 
-                // minimal entity screens are only safe if there will be no further selection
-                // and we do not need the case detail
-                boolean needsFullEntityScreen = isDetailScreen || i != selections.length;
+                // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full entity screen
+                boolean needsFullEntityScreen = i == selections.length;
                 boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
-                        true, selectedValues, isDetailScreen);
+                        true, entityScreenContext.getSelectedValues());
                 if (!gotNextScreen) {
                     notificationMessage = new NotificationMessage(
                             "Overflowed selections with selection " + selection + " at index " + i,
@@ -287,7 +261,7 @@ public class MenuSessionRunnerService {
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
                 Screen nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
-                        needsFullEntityScreen, isDetailScreen);
+                        needsFullEntityScreen, entityScreenContext);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                     // we've reached the end of this navigation path and no form in sight
@@ -297,7 +271,7 @@ public class MenuSessionRunnerService {
                         executeAndRebuildSession(menuSession);
                     } else {
                         // no more nav, we're done
-                        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+                        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession, entityScreenContext);
                         if (postSyncResponse == null) {
                             // Return use to the app root
                             postSyncResponse = new BaseResponseBean(null,
@@ -323,12 +297,8 @@ public class MenuSessionRunnerService {
 
         BaseResponseBean nextResponse = getNextMenu(
                 menuSession,
-                detailSelection,
-                offset,
-                searchText,
-                sortIndex,
                 queryData,
-                casesPerPage
+                entityScreenContext
         );
         restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
@@ -357,7 +327,6 @@ public class MenuSessionRunnerService {
      * @param nextInput             The next input being processed or NO_SELECTION constant
      * @param queryData             Query data from the request
      * @param needsFullEntityScreen Whether the full entity screen is required
-     * @param isDetailScreen        Whether the current request is for an Entity Detail Screen
      * @return
      * @throws CommCareSessionException
      */
@@ -366,7 +335,7 @@ public class MenuSessionRunnerService {
             String nextInput,
             QueryData queryData,
             boolean needsFullEntityScreen,
-            boolean isDetailScreen) throws CommCareSessionException {
+            EntityScreenContext entityScreenContext) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
         Screen previousScreen;
@@ -377,7 +346,7 @@ public class MenuSessionRunnerService {
             previousScreen = nextScreen;
             iterationCount += 1;
 
-            nextScreen = menuSession.getNextScreen(needsFullEntityScreen, isDetailScreen);
+            nextScreen = menuSession.getNextScreen(needsFullEntityScreen, entityScreenContext);
             if (previousScreen != null) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
                 log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
@@ -403,7 +372,7 @@ public class MenuSessionRunnerService {
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
-                boolean skipCache = !(replay || isDetailScreen);
+                boolean skipCache = !(replay || entityScreenContext.getDetailSelection()!=null);
                 sessionAdvanced = handleQueryScreen(
                         (FormplayerQueryScreen)nextScreen, menuSession, queryData,
                         replay, skipCache
@@ -523,7 +492,7 @@ public class MenuSessionRunnerService {
     }
 
     @Trace
-    public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
+    public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             if (menuSession.getSmartLinkRedirect() != null) {
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
@@ -534,7 +503,7 @@ public class MenuSessionRunnerService {
             }
 
             autoAdvanceSession(menuSession, "", new QueryData(),
-                    false, false
+                    false, entityScreenContext
             );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());

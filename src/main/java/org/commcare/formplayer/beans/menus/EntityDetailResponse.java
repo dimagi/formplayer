@@ -3,6 +3,7 @@ package org.commcare.formplayer.beans.menus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.commcare.cases.entity.Entity;
+import org.commcare.cases.entity.NodeEntityFactory;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
 import org.commcare.formplayer.util.FormplayerGraphUtil;
@@ -11,12 +12,17 @@ import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityDetailSubscreen;
+import org.commcare.util.screen.EntityScreenContext;
+import org.commcare.util.screen.EntityScreenHelper;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+
+import datadog.trace.api.Trace;
 
 /**
  * Represents one detail tab in a case details page.
@@ -78,8 +84,10 @@ public class EntityDetailResponse {
             EvaluationContext ec,
             String title,
             boolean isFuzzySearchEnabled) {
-        List<Entity<TreeReference>> entityRefs = EntityListResponse.buildEntityList(detail, ec, references, null,
-                0, isFuzzySearchEnabled);
+        EntityScreenContext entityScreenContext = new EntityScreenContext(0, null, 0, Integer.MAX_VALUE, null,
+                null, isFuzzySearchEnabled);
+        TreeReference[] refs = references.toArray(new TreeReference[references.size()]);
+        List<Entity<TreeReference>> entityRefs = EntityScreenHelper.initEntities(ec, detail, entityScreenContext, refs);
         List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(entityRefs, ec, null);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
