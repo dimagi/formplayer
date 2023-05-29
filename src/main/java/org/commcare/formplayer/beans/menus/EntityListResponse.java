@@ -69,8 +69,6 @@ public class EntityListResponse extends MenuBean {
         // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
-            SessionWrapper session = nextScreen.getSession();
-            EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
             EntityListSubscreen entityListScreen = ((EntityListSubscreen)nextScreen.getCurrentScreen());
             Vector<Action> entityListActions = entityListScreen.getActions();
             this.actions = processActions(nextScreen.getSession(), entityListActions);
@@ -85,6 +83,8 @@ public class EntityListResponse extends MenuBean {
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
             EvaluationContext ec = nextScreen.getEvalContext();
+            SessionWrapper session = nextScreen.getSession();
+            EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
