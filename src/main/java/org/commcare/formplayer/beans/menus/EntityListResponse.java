@@ -70,10 +70,7 @@ public class EntityListResponse extends MenuBean {
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
             SessionWrapper session = nextScreen.getSession();
-            Detail detail = nextScreen.getShortDetail();
             EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
-            EvaluationContext ec = nextScreen.getEvalContext();
-
             EntityListSubscreen entityListScreen = ((EntityListSubscreen)nextScreen.getCurrentScreen());
             Vector<Action> entityListActions = entityListScreen.getActions();
             this.actions = processActions(nextScreen.getSession(), entityListActions);
@@ -84,8 +81,10 @@ public class EntityListResponse extends MenuBean {
             int casesPerPage = entityScreenContext.getCasesPerPage();
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
             int offset = entityScreenContext.getOffSet();
+            Detail detail = nextScreen.getShortDetail();
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
+            EvaluationContext ec = nextScreen.getEvalContext();
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);

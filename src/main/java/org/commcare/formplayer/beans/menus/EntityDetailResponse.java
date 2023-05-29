@@ -87,7 +87,8 @@ public class EntityDetailResponse {
         EntityScreenContext entityScreenContext = new EntityScreenContext(0, null, 0, Integer.MAX_VALUE, null,
                 null, isFuzzySearchEnabled);
         TreeReference[] refs = references.toArray(new TreeReference[references.size()]);
-        List<Entity<TreeReference>> entityRefs = EntityScreenHelper.initEntities(ec, detail, entityScreenContext, refs);
+        List<Entity<TreeReference>> entityRefs = EntityScreenHelper.initEntities(ec, detail, entityScreenContext,
+                refs);
         List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(entityRefs, ec, null);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);

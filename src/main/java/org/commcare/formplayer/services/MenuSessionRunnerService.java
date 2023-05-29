@@ -210,13 +210,13 @@ public class MenuSessionRunnerService {
     /**
      * Advances the session based on the selections.
      *
-     * @param selections      - Selections are either an integer index into a list of modules
-     *                        or a case id indicating the case selected for a case detail.
-     *                        <p>
-     *                        An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
-     *                        <p>
-     *                        This would mean select the 0th menu, then the 2nd menu, then the case with the id
-     *                        6c5d91e9-61a2-4264-97f3-5d68636ff316.
+     * @param selections - Selections are either an integer index into a list of modules
+     *                   or a case id indicating the case selected for a case detail.
+     *                   <p>
+     *                   An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+     *                   <p>
+     *                   This would mean select the 0th menu, then the 2nd menu, then the case with the id
+     *                   6c5d91e9-61a2-4264-97f3-5d68636ff316.
      */
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
@@ -248,7 +248,8 @@ public class MenuSessionRunnerService {
                 boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
                 boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
 
-                // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full entity screen
+                // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full
+                // entity screen
                 boolean needsFullEntityScreen = i == selections.length;
                 boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
                         true, entityScreenContext.getSelectedValues());
@@ -372,7 +373,7 @@ public class MenuSessionRunnerService {
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
-                boolean skipCache = !(replay || entityScreenContext.getDetailSelection()!=null);
+                boolean skipCache = !(replay || entityScreenContext.getDetailSelection() != null);
                 sessionAdvanced = handleQueryScreen(
                         (FormplayerQueryScreen)nextScreen, menuSession, queryData,
                         replay, skipCache
@@ -396,12 +397,12 @@ public class MenuSessionRunnerService {
      * This method handles Query Screens during app navigation. This method does nothing
      * if the 'nextScreen' is not a query screen.
      *
-     * @param queryScreen       The query screen to handle
-     * @param menuSession       The current menu session
-     * @param queryData         Query data passed in from the response
-     * @param replay            Boolean that is True if there are still more selections to process in the
-     *                          navigation loop.
-     *                          i.e. if we are handling the query as part of navigation replay
+     * @param queryScreen The query screen to handle
+     * @param menuSession The current menu session
+     * @param queryData   Query data passed in from the response
+     * @param replay      Boolean that is True if there are still more selections to process in the
+     *                    navigation loop.
+     *                    i.e. if we are handling the query as part of navigation replay
      * @return true if the query was executed and the session should move to the next screen
      * @throws CommCareSessionException if the was an error performing a query
      */
@@ -484,7 +485,7 @@ public class MenuSessionRunnerService {
                 screen.updateSession(searchDataInstance);
                 return true;
             } catch (InvalidStructureException | IOException
-                    | XmlPullParserException | UnfullfilledRequirementsException e) {
+                     | XmlPullParserException | UnfullfilledRequirementsException e) {
                 throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
             }
         }
@@ -492,7 +493,8 @@ public class MenuSessionRunnerService {
     }
 
     @Trace
-    public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext) throws Exception {
+    public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext)
+            throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             if (menuSession.getSmartLinkRedirect() != null) {
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
