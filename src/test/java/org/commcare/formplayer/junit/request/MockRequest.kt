@@ -1,6 +1,7 @@
 package org.commcare.formplayer.junit.request
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean
 import org.commcare.formplayer.util.Constants
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
@@ -37,7 +38,7 @@ open class MockRequest<B, out T : Any>(
             .contentType(MediaType.APPLICATION_JSON)
             .cookie(Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
             .with(SecurityMockMvcRequestPostProcessors.csrf())
-            .with(SecurityMockMvcRequestPostProcessors.user("user"))
+            .with(SecurityMockMvcRequestPostProcessors.user(HqUserDetailsBean("domain", "user")))
             .content(mapper.writeValueAsString(requestBean))
     }
 }

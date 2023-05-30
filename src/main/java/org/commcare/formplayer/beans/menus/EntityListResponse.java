@@ -1,13 +1,8 @@
 package org.commcare.formplayer.beans.menus;
 
 import org.commcare.cases.entity.Entity;
-import org.commcare.cases.entity.EntitySortNotificationInterface;
-import org.commcare.cases.entity.EntitySorter;
-import org.commcare.cases.entity.NodeEntityFactory;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.formplayer.exceptions.ApplicationConfigException;
-import org.commcare.formplayer.util.EntityStringFilterer;
 import org.commcare.formplayer.util.FormplayerGraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -18,7 +13,10 @@ import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.MultiSelectEntityScreen;
+import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.NoLocalizedTextException;
@@ -51,7 +49,6 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    private static int DEFAULT_CASES_PER_PAGE = 10;
     private static int MAX_CASES_PER_PAGE = 100;
 
     private boolean usesCaseTiles;
@@ -61,71 +58,58 @@ public class EntityListResponse extends MenuBean {
     private boolean isMultiSelect = false;
     private int maxSelectValue = -1;
 
+    private boolean hasDetails = true;
+    private QueryResponseBean queryResponse;
+
     public EntityListResponse() {
     }
 
-    public EntityListResponse(EntityScreen nextScreen,
-            String detailSelection,
-            int offset,
-            String searchText,
-            int sortIndex,
-            boolean isFuzzySearchEnabled,
-            int casesPerPage) {
-        SessionWrapper session = nextScreen.getSession();
-        Detail detail = nextScreen.getShortDetail();
-        EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
-        EvaluationContext ec = nextScreen.getEvalContext();
+    public EntityListResponse(EntityScreen nextScreen) {
+        // This constructor can be called for both entity list and detail screens but
+        // subscreen should be of type EntityListSubscreen in order to init this response class
+        Subscreen subScreen = nextScreen.getCurrentScreen();
+        if (subScreen instanceof EntityListSubscreen) {
+            EntityListSubscreen entityListScreen = ((EntityListSubscreen)nextScreen.getCurrentScreen());
+            Vector<Action> entityListActions = entityListScreen.getActions();
+            this.actions = processActions(nextScreen.getSession(), entityListActions);
+            this.redoLast = processRedoLast(entityListActions);
 
-        this.actions = processActions(nextScreen.getSession());
-        this.redoLast = processRedoLast(nextScreen.getSession());
-
-        // When detailSelection is not null it means we're processing a case detail, not a case
-        // list.
-        // We will shortcircuit the computation to just get the relevant detailSelection.
-        if (detailSelection != null) {
-            TreeReference reference = neededDatum.getEntityFromID(ec, detailSelection);
-            if (reference == null) {
-                throw new ApplicationConfigException(
-                        String.format("Could not create detail %s for case with ID %s " +
-                                        " either because the case filter matched zero or multiple"
-                                        + " cases.",
-                                detailSelection, detail));
-            }
-            Detail[] longDetails = nextScreen.getLongDetailList(reference);
-            if (longDetails != null) {
-                detail = longDetails[0];
-            }
-            entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
-        } else {
-            Vector<TreeReference> references = nextScreen.getReferences();
-            List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText,
-                    sortIndex, isFuzzySearchEnabled);
-
-            if (casesPerPage == 0) {
-                casesPerPage = DEFAULT_CASES_PER_PAGE;
-            }
+            List<Entity<TreeReference>> entityList = entityListScreen.getEntities();
+            EntityScreenContext entityScreenContext = nextScreen.getEntityScreenContext();
+            int casesPerPage = entityScreenContext.getCasesPerPage();
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
-
+            int offset = entityScreenContext.getOffSet();
+            Detail detail = nextScreen.getShortDetail();
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
+            EvaluationContext ec = nextScreen.getEvalContext();
+            SessionWrapper session = nextScreen.getSession();
+            EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
             setNoItemsText(getNoItemsTextLocaleString(detail));
-        }
+            hasDetails = nextScreen.getLongDetail() != null;
 
-        processTitle(session);
-        processCaseTiles(detail);
-        this.styles = processStyles(detail);
-        Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
-        this.headers = pair.first;
-        this.widthHints = pair.second;
-        this.sortIndices = detail.getOrderedFieldIndicesForSorting();
-        isMultiSelect = nextScreen instanceof MultiSelectEntityScreen;
-        if (isMultiSelect) {
-            maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
+
+            processTitle(session);
+            processCaseTiles(detail);
+            this.styles = processStyles(detail);
+            int sortIndex = entityScreenContext.getSortIndex();
+            Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
+            this.headers = pair.first;
+            this.widthHints = pair.second;
+            this.sortIndices = detail.getOrderedFieldIndicesForSorting();
+            isMultiSelect = nextScreen instanceof MultiSelectEntityScreen;
+            if (isMultiSelect) {
+                maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
+            }
+            setQueryKey(session.getCommand());
+            QueryScreen queryScreen = nextScreen.getQueryScreen();
+            if (queryScreen != null) {
+                queryResponse = new QueryResponseBean(queryScreen);
+            }
         }
-        setQueryKey(session.getCommand());
     }
 
 
@@ -171,18 +155,6 @@ public class EntityListResponse extends MenuBean {
         return entities;
     }
 
-    @Trace
-    private static List<Entity<TreeReference>> filterEntities(String searchText,
-            NodeEntityFactory nodeEntityFactory,
-            List<Entity<TreeReference>> full, boolean isFuzzySearchEnabled) {
-        if (searchText != null && !"".equals(searchText)) {
-            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "),
-                    nodeEntityFactory, full, isFuzzySearchEnabled);
-            full = filterer.buildMatchList();
-        }
-        return full;
-    }
-
     private List<Entity<TreeReference>> paginateEntities(
             List<Entity<TreeReference>> entityList, Detail detail, int casesPerPage, int offset) {
         if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
@@ -213,52 +185,6 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
-    @Trace
-    public static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
-            EvaluationContext context,
-            Vector<TreeReference> references,
-            String searchText,
-            int sortIndex,
-            boolean isFuzzySearchEnabled) {
-        NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
-        List<Entity<TreeReference>> full = new ArrayList<>();
-        for (TreeReference reference : references) {
-            full.add(nodeEntityFactory.getEntity(reference));
-        }
-        nodeEntityFactory.prepareEntities(full);
-        List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full,
-                isFuzzySearchEnabled);
-        sort(matched, shortDetail, sortIndex);
-        return matched;
-    }
-
-    @Trace
-    private static void sort(List<Entity<TreeReference>> entityList,
-            Detail shortDetail,
-            int sortIndex) {
-        int[] order;
-        boolean reverse = false;
-        if (sortIndex != 0) {
-            if (sortIndex < 0) {
-                reverse = true;
-                sortIndex = Math.abs(sortIndex);
-            }
-            // sort index is one indexed so adjust for that
-            int sortFieldIndex = sortIndex - 1;
-            order = new int[]{sortFieldIndex};
-        } else {
-            order = shortDetail.getOrderedFieldIndicesForSorting();
-            for (int i = 0; i < shortDetail.getFields().length; ++i) {
-                String header = shortDetail.getFields()[i].getHeader().evaluate();
-                if (order.length == 0 && !"".equals(header)) {
-                    order = new int[]{i};
-                }
-            }
-        }
-        java.util.Collections.sort(entityList,
-                new EntitySorter(shortDetail.getFields(), reverse, order, new LogNotifier()));
-    }
-
     public int[] getSortIndices() {
         return sortIndices;
     }
@@ -267,11 +193,8 @@ public class EntityListResponse extends MenuBean {
         this.sortIndices = sortIndices;
     }
 
-    static class LogNotifier implements EntitySortNotificationInterface {
-        @Override
-        public void notifyBadFilter(String[] args) {
-
-        }
+    public boolean isHasDetails() {
+        return hasDetails;
     }
 
     // Converts the Given Entity to EntityBean
@@ -338,8 +261,7 @@ public class EntityListResponse extends MenuBean {
         return styles;
     }
 
-    private static DisplayElement[] processActions(SessionWrapper session) {
-        Vector<Action> actions = getActionDefinitions(session);
+    private static DisplayElement[] processActions(SessionWrapper session, Vector<Action> actions) {
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action : actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
@@ -349,29 +271,21 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private static String processRedoLast(SessionWrapper session) {
-        return formatActionsWithFilter(session, Action::isRedoLast);
+    private static String processRedoLast(Vector<Action> entityListActions) {
+        return formatActionsWithFilter(entityListActions, Action::isRedoLast);
     }
 
-    private static String formatActionsWithFilter(SessionWrapper session,
+    private static String formatActionsWithFilter(Vector<Action> entityListActions,
             Predicate<Action> actionFilter) {
-        Vector<Action> actions = getActionDefinitions(session);
         String ret = null;
         int index = 0;
-        for (Action action : actions) {
+        for (Action action : entityListActions) {
             if (actionFilter.test(action)) {
                 ret = "action " + index;
             }
             index = index + 1;
         }
         return ret;
-    }
-
-
-    private static Vector<Action> getActionDefinitions(SessionWrapper session) {
-        EntityDatum datum = (EntityDatum)session.getNeededDatum();
-        return session.getDetail((datum).getShortDetail()).getCustomActions(
-                session.getEvaluationContext());
     }
 
     public EntityBean[] getEntities() {
@@ -529,5 +443,9 @@ public class EntityListResponse extends MenuBean {
             return null;
         }
         return noItemsTextString;
+    }
+
+    public QueryResponseBean getQueryResponse() {
+        return queryResponse;
     }
 }
