@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.DisplayUnit;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.xpath.expr.XPathExpression;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
@@ -35,6 +34,9 @@ public class DisplayElement {
 
     @Nullable
     String[] itemsetChoices;
+
+    @Nullable
+    String[] itemsetChoicesKey;
 
     @Nullable
     private String hint;
@@ -66,7 +68,7 @@ public class DisplayElement {
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id,
             @Nullable String input,
             @Nullable String receive, @Nullable String hidden, @Nullable String value,
-            @Nullable String[] itemsetChoices, boolean allowBlankValue, boolean required,
+            @Nullable String[] itemsetChoicesKeys, @Nullable String[] itemsetChoicesLabels, boolean allowBlankValue, boolean required,
             String requiredMsg, String error) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
@@ -80,7 +82,8 @@ public class DisplayElement {
         this.receive = receive;
         this.hidden = hidden;
         this.value = value;
-        this.itemsetChoices = itemsetChoices;
+        this.itemsetChoicesKey = itemsetChoicesKeys;
+        this.itemsetChoices = itemsetChoicesLabels;
 
         if (displayUnit.getHintText() != null) {
             this.hint = displayUnit.getHintText().evaluate(ec);
@@ -152,6 +155,11 @@ public class DisplayElement {
 
     public String[] getItemsetChoices() {
         return itemsetChoices;
+    }
+
+    @Nullable
+    public String[] getItemsetChoicesKey() {
+        return itemsetChoicesKey;
     }
 
     @JsonGetter(value = "allow_blank_value")

@@ -1,9 +1,9 @@
 package org.commcare.formplayer.beans.menus;
 
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
-import org.commcare.suite.model.QueryPromptCondition;
 import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.utils.ItemSetUtils;
@@ -12,6 +12,7 @@ import org.javarosa.core.util.OrderedHashtable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 /**
@@ -57,27 +58,11 @@ public class QueryResponseBean extends MenuBean {
 
             // Map the current Answer to the itemset index of the answer
             String[] choiceLabels = null;
+            String[] choiceKeys = null;
             if (queryPromptItem.isSelect()) {
-                String[] selectedChoices = RemoteQuerySessionManager.extractMultipleChoices(
-                        currentAnswer);
-                ArrayList<String> indicesForSelectedChoices = new ArrayList<>(
-                        selectedChoices.length);
-                for (int i = 0; i < selectedChoices.length; i++) {
-                    if (selectedChoices[i].isEmpty()) {
-                        indicesForSelectedChoices.add("");
-                    } else {
-                        int choiceIndex = ItemSetUtils.getIndexOf(
-                                queryPromptItem.getItemsetBinding(), selectedChoices[i]);
-                        if (choiceIndex != -1) {
-                            indicesForSelectedChoices.add(String.valueOf(choiceIndex));
-                        }
-                    }
-                }
-                if (indicesForSelectedChoices.size() > 0) {
-                    currentAnswer = String.join(RemoteQuerySessionManager.ANSWER_DELIMITER,
-                            indicesForSelectedChoices);
-                }
-                choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
+                Pair<String[], String[]> choices = ItemSetUtils.getChoices(queryPromptItem.getItemsetBinding());
+                choiceKeys = choices.first;
+                choiceLabels = choices.second;
             }
 
             String requiredMessage = queryPromptItem.getRequiredMessage(ec);
@@ -89,6 +74,7 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.getReceive(),
                     queryPromptItem.getHidden(),
                     currentAnswer,
+                    choiceKeys,
                     choiceLabels,
                     queryPromptItem.isAllowBlankValue(),
                     isRequired,

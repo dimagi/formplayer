@@ -23,6 +23,11 @@ public class QueryData extends Hashtable<String, Object> {
     public static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
     private static final String KEY_INPUTS = "inputs";
 
+    // whether the select prompt selection is passed as itemset keys
+    // only here to maintain backward compatibility and can be removed
+    // once web apps fully transition using keys to convey select prompt selection.
+    private static final String KEY_SELECT_VALUES_BY_KEY = "select_values_by_key";
+
     public Boolean getExecute(String key) {
         return getProperty(key, KEY_EXECUTE);
     }
@@ -84,5 +89,13 @@ public class QueryData extends Hashtable<String, Object> {
     private void setProperty(String key, Boolean value, String property) {
         this.initKey(key);
         ((Map<String, Object>) this.get(key)).put(property, value);
+    }
+
+    public boolean isSelectValuesByKeys(String key) {
+        return getProperty(key, KEY_SELECT_VALUES_BY_KEY);
+    }
+
+    public void setSelectValuesByKeys(String key, Boolean value) {
+        setProperty(key, value, KEY_SELECT_VALUES_BY_KEY);
     }
 }
