@@ -48,6 +48,8 @@ public class PromptToJson {
         parseQuestionAnswer(questionJson, prompt);
         questionJson.put("ix", jsonNullIfNull(prompt.getIndex()));
 
+        questionJson.put("help_image", jsonNullIfNull(prompt.getHelpMultimedia(FormEntryCaption.TEXT_FORM_IMAGE)));
+
         if (prompt.getDataType() == Constants.DATATYPE_CHOICE
                 || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
