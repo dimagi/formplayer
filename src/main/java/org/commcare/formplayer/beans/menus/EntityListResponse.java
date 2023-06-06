@@ -204,12 +204,12 @@ public class EntityListResponse extends MenuBean {
         Object[] entityData = entity.getData();
         Object[] data = new Object[entityData.length];
         String id = getEntityId(entity.getElement(), neededDatum, ec);
-        EntityBean ret = new EntityBean(id);
+        EntityBean entityBean = new EntityBean(id);
         for (int i = 0; i < entityData.length; i++) {
             data[i] = processData(entityData[i]);
         }
-        ret.setData(data);
-        return ret;
+        entityBean.setData(data);
+        return entityBean;
     }
 
     private static Object processData(Object data) {
