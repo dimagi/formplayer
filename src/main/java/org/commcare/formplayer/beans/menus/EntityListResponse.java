@@ -209,6 +209,7 @@ public class EntityListResponse extends MenuBean {
             data[i] = processData(entityData[i]);
         }
         entityBean.setData(data);
+        entityBean.setGroupKey(entity.getGroupKey());
         return entityBean;
     }
 
