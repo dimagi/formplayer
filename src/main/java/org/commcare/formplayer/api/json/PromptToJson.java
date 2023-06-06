@@ -49,6 +49,8 @@ public class PromptToJson {
         questionJson.put("ix", jsonNullIfNull(prompt.getIndex()));
 
         questionJson.put("help_image", jsonNullIfNull(prompt.getHelpMultimedia(FormEntryCaption.TEXT_FORM_IMAGE)));
+        questionJson.put("help_audio", jsonNullIfNull(prompt.getHelpMultimedia(FormEntryCaption.TEXT_FORM_AUDIO)));
+        questionJson.put("help_video", jsonNullIfNull(prompt.getHelpMultimedia(FormEntryCaption.TEXT_FORM_VIDEO)));
 
         if (prompt.getDataType() == Constants.DATATYPE_CHOICE
                 || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
