@@ -61,6 +61,8 @@ public class EntityListResponse extends MenuBean {
     private boolean hasDetails = true;
     private QueryResponseBean queryResponse;
 
+    private int groupHeaderRows = -1;
+
     public EntityListResponse() {
     }
 
@@ -91,7 +93,6 @@ public class EntityListResponse extends MenuBean {
             setNoItemsText(getNoItemsTextLocaleString(detail));
             hasDetails = nextScreen.getLongDetail() != null;
 
-
             processTitle(session);
             processCaseTiles(detail);
             this.styles = processStyles(detail);
@@ -104,6 +105,10 @@ public class EntityListResponse extends MenuBean {
             if (isMultiSelect) {
                 maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
             }
+            if (detail.getGroup() != null) {
+                groupHeaderRows = detail.getGroup().getHeaderRows();
+            }
+
             setQueryKey(session.getCommand());
             QueryScreen queryScreen = nextScreen.getQueryScreen();
             if (queryScreen != null) {
@@ -448,5 +453,9 @@ public class EntityListResponse extends MenuBean {
 
     public QueryResponseBean getQueryResponse() {
         return queryResponse;
+    }
+
+    public int getGroupHeaderRows() {
+        return groupHeaderRows;
     }
 }
