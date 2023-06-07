@@ -48,6 +48,10 @@ public class PromptToJson {
         parseQuestionAnswer(questionJson, prompt);
         questionJson.put("ix", jsonNullIfNull(prompt.getIndex()));
 
+        questionJson.put("help_image", jsonNullIfNull(prompt.getHelpMultimedia(FormEntryCaption.TEXT_FORM_IMAGE)));
+        questionJson.put("help_audio", jsonNullIfNull(prompt.getHelpMultimedia(FormEntryCaption.TEXT_FORM_AUDIO)));
+        questionJson.put("help_video", jsonNullIfNull(prompt.getHelpMultimedia(FormEntryCaption.TEXT_FORM_VIDEO)));
+
         if (prompt.getDataType() == Constants.DATATYPE_CHOICE
                 || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
@@ -213,8 +217,6 @@ public class PromptToJson {
         return obj;
     }
 
-    //TODO WSP: What the fuck is drew doing XFormPlayer parse_style_info
-    // https://github.com/dimagi/touchforms/blob/master/touchforms/backend/xformplayer.py#L400
     private static JSONObject parseStyle(FormEntryCaption caption) {
         String hint = caption.getAppearanceHint();
         if (hint == null) {

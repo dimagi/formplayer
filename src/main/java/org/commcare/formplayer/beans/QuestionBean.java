@@ -42,6 +42,9 @@ public class QuestionBean {
     // .com/display/commcarepublic/Advanced+CommCare+Android+Formatting
     // #AdvancedCommCareAndroidFormatting-HintandHelpText
     private String help;
+    private String help_image;
+    private String help_audio;
+    private String help_video;
     private String hint;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -103,6 +106,30 @@ public class QuestionBean {
 
     public void setHelp(String help) {
         this.help = help;
+    }
+
+    public String getHelp_image() {
+        return help_image;
+    }
+
+    public void setHelp_image(String help_image) {
+        this.help_image = help_image;
+    }
+
+    public String getHelp_audio() {
+        return help_audio;
+    }
+
+    public void setHelp_audio(String help_audio) {
+        this.help_audio = help_audio;
+    }
+
+    public String getHelp_video() {
+        return help_video;
+    }
+
+    public void setHelp_video(String help_video) {
+        this.help_video = help_video;
     }
 
     public Object getAnswer() {
