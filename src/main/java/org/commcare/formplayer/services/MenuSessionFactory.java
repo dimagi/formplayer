@@ -15,6 +15,7 @@ import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
@@ -71,14 +72,15 @@ public class MenuSessionFactory {
     public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
-        Screen screen = menuSession.getNextScreen(false);
+        EntityScreenContext entityScreenContext = new EntityScreenContext();
+        Screen screen = menuSession.getNextScreen(false, entityScreenContext);
         int processedStepsCount = 0;
         boolean needsFullInit = false;
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
                 if (menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu())) {
-                    screen = menuSession.getNextScreen(needsFullInit);
+                    screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
 
@@ -106,8 +108,8 @@ public class MenuSessionFactory {
                     }
                 }
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(currentStep, needsFullInit, true, false, null);
-                    screen = menuSession.getNextScreen(needsFullInit);
+                    menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext);
+                    screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
             } else if (screen instanceof QueryScreen) {
@@ -133,7 +135,7 @@ public class MenuSessionFactory {
                                 false
                             );
                             queryScreen.updateSession(searchDataInstance);
-                            screen = menuSession.getNextScreen(needsFullInit);
+                            screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                             currentStep = NEXT_SCREEN;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
@@ -146,9 +148,9 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, needsFullInit, true, false, null);
+                menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext);
                 menuSession.addSelection(currentStep);
-                screen = menuSession.getNextScreen(needsFullInit);
+                screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
             }
         }
     }
