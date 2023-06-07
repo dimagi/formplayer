@@ -108,6 +108,22 @@ public class CasePaginationTests extends BaseTestClass {
         assert entityListResponse.getPageCount() == 0;
     }
 
+
+    /**
+     * This test uses an alternative path for session navigation in code to
+     * get to the entity screen. Mainly added to cover a regression when an
+     * auto-computed datum is present before the nodeset datum for a entry
+     */
+    @Test
+    public void testFuzzySearchInAlternativeApp() throws Exception {
+        EntityListResponse entityListResponse =
+                sessionNavigate("requests/navigators/search_navigator_2.json",
+                        EntityListResponse.class);
+        assert entityListResponse.getEntities().length == 1;
+        assert entityListResponse.getCurrentPage() == 0;
+        assert entityListResponse.getPageCount() == 0;
+    }
+
     @Test
     public void testNormalSearch() throws Exception {
         SQLiteDB db = storageFactoryMock.getSQLiteDB();

@@ -3,6 +3,8 @@ package org.commcare.formplayer.services;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -125,6 +127,7 @@ public class MenuSessionRunnerService {
 
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
+    @VisibleForTesting
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, null, new EntityScreenContext());
     }
@@ -134,7 +137,7 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             EntityScreenContext entityScreenContext) throws Exception {
         boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
-        Screen nextScreen = menuSession.getNextScreen();
+        Screen nextScreen = menuSession.getNextScreen(true, entityScreenContext);
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -248,7 +251,7 @@ public class MenuSessionRunnerService {
                 // entity screen
                 boolean needsFullEntityScreen = i == selections.length;
                 boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
-                        true, entityScreenContext.getSelectedValues());
+                        true, entityScreenContext);
                 if (!gotNextScreen) {
                     notificationMessage = new NotificationMessage(
                             "Overflowed selections with selection " + selection + " at index " + i,
@@ -496,7 +499,7 @@ public class MenuSessionRunnerService {
             autoAdvanceSession(menuSession, "", new QueryData(),
                     false, entityScreenContext
             );
-            BaseResponseBean response = getNextMenu(menuSession);
+            BaseResponseBean response = getNextMenu(menuSession, null, entityScreenContext);
             response.setSelections(menuSession.getSelections());
             return response;
         }
@@ -719,7 +722,7 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            Screen screen = menuSession.getNextScreen(false);
+            Screen screen = menuSession.getNextScreen(false, new EntityScreenContext());
             if (screen instanceof FormplayerSyncScreen) {
                 try {
                     screen.init(sessionWrapper);

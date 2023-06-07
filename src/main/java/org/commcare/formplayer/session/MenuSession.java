@@ -152,15 +152,16 @@ public class MenuSession implements HereFunctionHandlerListener {
      *                              assuming it has an autolaunch action specified.
      */
     public boolean handleInput(String input, boolean needsFullEntityScreen, boolean inputValidated,
-            boolean allowAutoLaunch, String[] selectedValues)
+            boolean allowAutoLaunch, EntityScreenContext entityScreenContext)
             throws CommCareSessionException {
-        Screen screen = getNextScreen(needsFullEntityScreen);
+        Screen screen = getNextScreen(needsFullEntityScreen, entityScreenContext);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
             return false;
         }
         try {
             boolean addBreadcrumb = true;
+            String[] selectedValues = entityScreenContext.getSelectedValues();
             if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 boolean autoLaunch = entityScreen.getAutoLaunchAction() != null && allowAutoLaunch;
@@ -170,7 +171,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                     // auto-launch takes preference over auto-select
                     if (screen.shouldBeSkipped() && !autoLaunch &&
                             entityScreen.autoSelectEntities(sessionWrapper)) {
-                        return handleInput(input, true, inputValidated, allowAutoLaunch, selectedValues);
+                        return handleInput(input, true, inputValidated, allowAutoLaunch, entityScreenContext);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
                 } else {
@@ -214,26 +215,6 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     /**
      * Get next screen for current request, based on current state of session,
-     * with no performance optimization and autolaunching of actions not allowed.
-     */
-    public Screen getNextScreen() throws CommCareSessionException {
-        return getNextScreen(true, new EntityScreenContext());
-    }
-
-    /**
-     * Get next screen for current request, based on current state of session
-     * and default entityScreen context with autolaunching of actions not allowed.
-     *
-     * @param needsFullEntityScreen Whether a full entity screen is required for this request
-     *                              or if a list of references is sufficient
-     */
-    public Screen getNextScreen(boolean needsFullEntityScreen)
-            throws CommCareSessionException {
-        return getNextScreen(needsFullEntityScreen, new EntityScreenContext());
-    }
-
-    /**
-     * Get next screen for current request, based on current state of session,
      * with autolaunching of actions not allowed.
      *
      * @param needsFullEntityScreen Whether a full entity screen is required for this request
@@ -247,7 +228,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
                 sessionWrapper.stepBack();
-                return getNextScreen();
+                return getNextScreen(needsFullEntityScreen, entityScreenContext);
             }
             //XFORM TIME!
             return null;
@@ -260,7 +241,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             return entityScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
-            return getNextScreen();
+            return getNextScreen(needsFullEntityScreen, entityScreenContext);
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
             QueryScreen queryScreen = new FormplayerQueryScreen(
                     this.instanceFetcher.getVirtualDataInstanceStorage());

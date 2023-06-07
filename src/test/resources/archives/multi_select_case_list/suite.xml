@@ -102,6 +102,8 @@
     <instance id="casedb" src="jr://instance/casedb"/>
     <instance id="commcaresession" src="jr://instance/session"/>
     <session>
+<!--      Add a computed datum before nodeset datum to alter session navigation pathway for increased test coverage-->
+      <datum id="case_id_new_case_0" function="uuid()"/>
       <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m0_case_short" detail-confirm="m0_case_long" max-select-value="10"/>
     </session>
     <stack>

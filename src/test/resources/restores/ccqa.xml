@@ -5964,6 +5964,42 @@ This XML file does not appear to have any style information associated with it. 
             <referrals>[]</referrals>
         </update>
     </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="5e421eb8bf414e03b4871195b869d894" date_modified="2016-07-18T19:55:11.240000Z" user_id="7afceb0259b2866be17b3632392f8a4b">
+        <create>
+            <case_type>case</case_type>
+            <case_name>123</case_name>
+            <owner_id>fb65b50c05aa5676ba68b5d5b8d581d2</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-07-18</date_opened>
+            <sample_choice_question/>
+            <sample_number_question/>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="3512eb7c-7a58-4a95-beda-205eb0d7f163" date_modified="2017-04-21T14:38:49.323000Z" user_id="7afceb0259b2866be17b3632392f8a4b">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Rudolph</case_name>
+            <owner_id>fb65b50c05aa5676ba68b5d5b8d581d2</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+            <sample_choice_question>choice1</sample_choice_question>
+            <sample_number_question>123</sample_number_question>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18" date_modified="2016-07-12T22:45:34.770000Z" user_id="7afceb0259b2866be17b3632392f8a4b">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Batman Begins</case_name>
+            <owner_id>fb65b50c05aa5676ba68b5d5b8d581d2</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-07-12</date_opened>
+            <sample_choice_question>choice2</sample_choice_question>
+            <sample_number_question>123</sample_number_question>
+        </update>
+    </case>
     <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="f8cba529-7e56-4f4e-9434-3b1e9f7d6377" date_modified="2016-04-21T14:55:13.474000Z" user_id="40a873063e6bf9a60d28ba7826b5efd6">
         <create>
             <case_type>coverage_basic</case_type>
