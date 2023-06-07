@@ -217,8 +217,6 @@ public class PromptToJson {
         return obj;
     }
 
-    //TODO WSP: What the fuck is drew doing XFormPlayer parse_style_info
-    // https://github.com/dimagi/touchforms/blob/master/touchforms/backend/xformplayer.py#L400
     private static JSONObject parseStyle(FormEntryCaption caption) {
         String hint = caption.getAppearanceHint();
         if (hint == null) {
