@@ -722,7 +722,8 @@ public class BaseTestClass {
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
         Pair<String, SessionNavigationBean> refAndBean = Installer.getInstallReferenceAndBean(requestPath,
                 SessionNavigationBean.class);
-        return generateMockQueryWithInstallReference(refAndBean.first,
+        String installReference = Installer.getInstallReference(refAndBean.first);
+        return generateMockQueryWithInstallReference(installReference,
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
