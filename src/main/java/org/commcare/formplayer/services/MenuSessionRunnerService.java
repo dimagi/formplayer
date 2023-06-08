@@ -132,7 +132,6 @@ public class MenuSessionRunnerService {
     public BaseResponseBean getNextMenu(MenuSession menuSession,
             QueryData queryData,
             EntityScreenContext entityScreenContext) throws Exception {
-        boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
         Screen nextScreen = menuSession.getNextScreen(true, entityScreenContext);
 
         // No next menu screen? Start form entry!
