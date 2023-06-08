@@ -1,10 +1,14 @@
 package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.google.common.collect.ImmutableList;
 
 import org.commcare.formplayer.application.MenuController;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
+import org.commcare.formplayer.beans.menus.EntityBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.junit.InitializeStaticsExtension;
@@ -27,6 +31,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+
+import javax.annotation.concurrent.Immutable;
 
 @WebMvcTest
 @Import({MenuController.class})
@@ -53,7 +61,7 @@ public class CaseGroupingTests {
     @RegisterExtension
     static RestoreFactoryExtension restoreFactoryExt = new RestoreFactoryExtension.builder()
             .withUser("caseclaimuser").withDomain("caseclaimdomain")
-            .withRestorePath("restores/caseclaim.xml")
+            .withRestorePath("restores/casegroup.xml")
             .build();
 
     @RegisterExtension
@@ -67,9 +75,21 @@ public class CaseGroupingTests {
 
     @Test
     public void testCaseListWithGrouping() throws Exception {
-//        Response<EntityListResponse> response = navigate(new String[]{"1"},
-//                EntityListResponse.class);
-//        assertEquals(response.getResponse())
+        Response<EntityListResponse> response = navigate(new String[]{"1"},
+                EntityListResponse.class);
+        EntityListResponse entityListResponse = response.bean();
+        assertEquals(entityListResponse.getGroupHeaderRows(), 2);
+        EntityBean[] entities = entityListResponse.getEntities();
+        assertTrue(entities.length == 8);
+        // confirm the order of entities by group
+        ImmutableList<String> expectedIds = ImmutableList.of("case1", "case3", "case6", "case2", "case5", "case8",
+                "case4", "case7");
+        ImmutableList<String> expectedGroupKeys = ImmutableList.of("parentB", "parentB", "parentB", "parentA",
+                "parentA", "parentA", "parentC", "parentC");
+        for (int i = 0; i < entities.length; i++) {
+            assertEquals(expectedIds.get(i), entities[i].getId());
+            assertEquals(expectedGroupKeys.get(i), entities[i].getGroupKey());
+        }
     }
 
     private <T extends BaseResponseBean> Response<T> navigate(
