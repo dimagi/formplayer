@@ -127,13 +127,9 @@ public class MenuSessionRunnerService {
 
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
-    @VisibleForTesting
-    public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, new EntityScreenContext());
-    }
-
     @Trace
-    private BaseResponseBean getNextMenu(MenuSession menuSession,
+    @VisibleForTesting
+    public BaseResponseBean getNextMenu(MenuSession menuSession,
             QueryData queryData,
             EntityScreenContext entityScreenContext) throws Exception {
         boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
