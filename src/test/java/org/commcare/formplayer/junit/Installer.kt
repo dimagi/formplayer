@@ -17,6 +17,7 @@ import org.commcare.formplayer.util.SessionUtils
 import org.commcare.formplayer.utils.CheckedSupplier
 import org.commcare.formplayer.utils.FileUtils
 import org.commcare.modern.util.Pair
+import org.commcare.util.screen.EntityScreenContext
 import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
@@ -63,7 +64,7 @@ class Installer(
                 bean.restoreAs,
                 bean.preview
             )
-            menuSessionRunnerService.getNextMenu(menuSession) as CommandListResponseBean
+            menuSessionRunnerService.getNextMenu(menuSession, null, EntityScreenContext()) as CommandListResponseBean
         }
         return mockInstallReference(install, refAndBean.first)
     }
