@@ -32,10 +32,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-
-import javax.annotation.concurrent.Immutable;
-
 @WebMvcTest
 @Import({MenuController.class})
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
@@ -74,10 +70,8 @@ public class CaseGroupingTests {
     }
 
     @Test
-    public void testCaseListWithGrouping() throws Exception {
-        Response<EntityListResponse> response = navigate(new String[]{"1"},
-                EntityListResponse.class);
-        EntityListResponse entityListResponse = response.bean();
+    public void testCaseListWithGrouping() {
+        EntityListResponse entityListResponse= loadCaseList( 0, 100);
         assertEquals(entityListResponse.getGroupHeaderRows(), 2);
         EntityBean[] entities = entityListResponse.getEntities();
         assertTrue(entities.length == 8);
@@ -92,12 +86,51 @@ public class CaseGroupingTests {
         }
     }
 
-    private <T extends BaseResponseBean> Response<T> navigate(
-            String[] selections, Class<T> responseClass) {
+    @Test
+    public void testCaseListPaginationWithGrouping() {
+        EntityListResponse entityListResponse= loadCaseList( 0, 2);
+        assertTrue(entityListResponse.getCurrentPage() == 0);
+        assertTrue(entityListResponse.getPageCount() == 2);
+        assertTrue(entityListResponse.getEntities().length == 6);
+        ImmutableList<String> expectedIds = ImmutableList.of("case1", "case3", "case6", "case2", "case5", "case8");
+        matchEntityIds(expectedIds, entityListResponse.getEntities());
+
+        entityListResponse= loadCaseList( 1, 2);
+        assertTrue(entityListResponse.getCurrentPage() == 0);
+        assertTrue(entityListResponse.getPageCount() == 2);
+        assertTrue(entityListResponse.getEntities().length == 5);
+        expectedIds = ImmutableList.of( "case2", "case5", "case8", "case4", "case7");
+        matchEntityIds(expectedIds, entityListResponse.getEntities());
+
+        entityListResponse= loadCaseList( 2, 2);
+        assertTrue(entityListResponse.getCurrentPage() == 1);
+        assertTrue(entityListResponse.getPageCount() == 2);
+        assertTrue(entityListResponse.getEntities().length == 2);
+        expectedIds = ImmutableList.of("case4", "case7");
+        matchEntityIds(expectedIds, entityListResponse.getEntities());
+
+        entityListResponse= loadCaseList( 1, 1);
+        assertTrue(entityListResponse.getCurrentPage() == 1);
+        assertTrue(entityListResponse.getPageCount() == 3);
+        assertTrue(entityListResponse.getEntities().length == 3);
+        expectedIds = ImmutableList.of("case2", "case5", "case8");
+        matchEntityIds(expectedIds, entityListResponse.getEntities());
+    }
+
+    private void matchEntityIds(ImmutableList<String> expectedIds, EntityBean[] entities) {
+        for (int i = 0; i < entities.length; i++) {
+            assertEquals(expectedIds.get(i), entities[i].getId());
+        }
+    }
+
+    private EntityListResponse loadCaseList(int offset, int groupsPerPage) {
+        String[] selections = new String[]{"1"};
         String installReference = Installer.getInstallReference(TEST_APP_NAME);
-        SessionNavigationRequest<T> request = new SessionNavigationRequest<>(
-                mockMvc, responseClass, installReference);
+        SessionNavigationRequest<EntityListResponse> request = new SessionNavigationRequest<>(
+                mockMvc, EntityListResponse.class, installReference);
         SessionNavigationBean bean = request.getNavigationBean(selections);
-        return request.requestWithBean(bean);
+        bean.setCasesPerPage(groupsPerPage);
+        bean.setOffset(offset);
+        return request.requestWithBean(bean).bean();
     }
 }
