@@ -24,6 +24,7 @@ import org.javarosa.core.util.NoLocalizedTextException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.function.Predicate;
 
@@ -164,7 +165,7 @@ public class EntityListResponse extends MenuBean {
             List<Entity<TreeReference>> entityList, Detail detail, int casesPerPage, int offset) {
         if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
             // we're doing pagination
-            return getEntitiesForCurrentPage(entityList, casesPerPage, offset);
+            return getEntitiesForCurrentPage(entityList, casesPerPage, offset, detail);
         }
         return entityList;
     }
@@ -172,22 +173,37 @@ public class EntityListResponse extends MenuBean {
     @Trace
     private List<Entity<TreeReference>> getEntitiesForCurrentPage(List<Entity<TreeReference>> matched,
             int casesPerPage,
-            int offset) {
+            int offset, Detail detail) {
         setPageCount((int)Math.ceil((double)matched.size() / casesPerPage));
         if (offset > matched.size()) {
             // Set the offset to last page
             offset = casesPerPage * (getPageCount() - 1);
         }
         setCurrentPage(offset / casesPerPage);
-
         int end = offset + casesPerPage;
-        int length = casesPerPage;
-        if (end > matched.size()) {
-            end = matched.size();
-            length = end - offset;
+        List<Entity<TreeReference>> entitiesForPage = new ArrayList<>();
+        if (detail.getGroup() != null) {
+            // we want to paginate the groups insted of entities
+            int groupCount = -1;
+            for (int i = 0; i < matched.size(); i++) {
+                Entity<TreeReference> currEntity = matched.get(i);
+                if (i == 0 || !Objects.equals(currEntity.getGroupKey(), matched.get(i - 1).getGroupKey())) {
+                    groupCount++;
+                }
+                if (groupCount >= offset && groupCount < end) {
+                    entitiesForPage.add(currEntity);
+                }
+            }
+            setPageCount((int)Math.ceil((double)(groupCount + 1) / casesPerPage));
+        } else {
+            int length = casesPerPage;
+            if (end > matched.size()) {
+                end = matched.size();
+                length = end - offset;
+            }
+            entitiesForPage = matched.subList(offset, offset + length);
         }
-        matched = matched.subList(offset, offset + length);
-        return matched;
+        return entitiesForPage;
     }
 
     public int[] getSortIndices() {
