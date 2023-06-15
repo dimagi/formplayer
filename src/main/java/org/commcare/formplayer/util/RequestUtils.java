@@ -131,10 +131,10 @@ public class RequestUtils {
             return null;
         }
         String ipAddress = request.getHeader("X-FORWARDED-FOR");
-        if (ipAddress == null) {
-            request.getRemoteAddr();
+        if (ipAddress != null) {
+            return ipAddress;
         }
-        return ipAddress;
+        return request.getRemoteAddr();
     }
 
     // If a multipart request returns the part having content type as 'application/json',
