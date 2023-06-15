@@ -64,7 +64,10 @@ public class WebClient {
         if (isMultipart) {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         }
-        headers.add("X-CommCareHQ-Origin-IP", RequestUtils.getIpAddress());
+        String ipAddress = RequestUtils.getIpAddress();
+        if (ipAddress != null) {
+            headers.add("X-CommCareHQ-Origin-IP", ipAddress);
+        }
         return postRaw(uri, headers, body, String.class).getBody();
     }
 
