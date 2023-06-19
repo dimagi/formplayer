@@ -67,6 +67,31 @@
       </template>
     </field>
   </detail>
+  <detail id="m1_case_short">
+    <title>
+      <text>
+        <locale id="cchq.case"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m0.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <group function="string(./index/parent)" header-rows="2" />
+  </detail>
   <entry>
     <form>http://openrosa.org/formdesigner/697840B2-14B1-4466-B60B-121C6A85F0D3</form>
     <command id="m0-f0">
@@ -102,6 +127,18 @@
       <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m0_case_short" autoselect="true"/>
     </session>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/99F89DA7-E568-4952-9BAF-717263F2C5DD</form>
+    <command id="m0-f3">
+      <text>
+        <locale id="forms.m0f1"/>
+      </text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <session>
+      <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short"/>
+    </session>
+  </entry>
   <menu id="m0">
     <text>
       <locale id="modules.m0"/>
@@ -109,5 +146,11 @@
     <command id="m0-f0"/>
     <command id="m0-f1"/>
     <command id="m0-f2"/>
+  </menu>
+  <menu id="m1">
+    <text>
+      <locale id="modules.m0"/>
+    </text>
+    <command id="m0-f3"/>
   </menu>
 </suite>
