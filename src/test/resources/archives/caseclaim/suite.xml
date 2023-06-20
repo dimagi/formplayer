@@ -124,6 +124,43 @@
       </stack>
     </action>
   </detail>
+  <detail id="m2_case_short">
+    <title>
+      <text>
+        <locale id="m1.case_short.title"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <action auto_launch="$next_input = '' or count(instance('casedb')/casedb/case[@case_id=$next_input]) = 0" redo_last="false">
+      <display>
+        <text>
+          <locale id="case_search.m1"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m1'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
   <detail id="m0_search_short">
     <title>
       <text>
@@ -260,6 +297,23 @@
       <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <command id="m2-f0">
+      <text>
+        <locale id="forms.m1f1"/>
+      </text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <session>
+      <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m2_case_short" detail-confirm="m1_case_long"/>
+    </session>
+    <stack>
+      <create>
+        <command value="'m2'"/>
+      </create>
+    </stack>
+  </entry>
   <menu id="root">
     <text>
       <locale id="modules.m0"/>
@@ -272,6 +326,12 @@
     </text>
     <command id="m1-f0"/>
     <command id="m1-f1"/>
+  </menu>
+  <menu id="m2">
+    <text>
+      <locale id="modules.m1"/>
+    </text>
+    <command id="m2-f0"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
