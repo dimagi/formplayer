@@ -147,6 +147,22 @@
         </text>
       </sort>
     </field>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.title"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="$calculated_property">
+            <variable name="calculated_property">
+              <xpath function="count(instance('results')/results/cases) > 0"/>
+            </variable>
+          </xpath>
+        </text>
+      </template>
+    </field>
     <action auto_launch="$next_input = '' or count(instance('casedb')/casedb/case[@case_id=$next_input]) = 0" redo_last="false">
       <display>
         <text>

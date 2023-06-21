@@ -96,7 +96,7 @@ public class MenuSessionFactory {
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
-                entityScreen.init(menuSession.getSessionWrapper());
+                entityScreen.initReferences(menuSession.getSessionWrapper());
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
@@ -107,6 +107,14 @@ public class MenuSessionFactory {
                         break;
                     }
                 }
+
+                // Only init subscreen if we are not going to auto-launch a different screen
+                String nextInput = currentStep == null ? "" : currentStep;
+                entityScreen.evaluateAutoLaunch(nextInput);
+                if (entityScreen.getAutoLaunchAction() == null) {
+                    entityScreen.initListSubScreen();
+                }
+
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
                     menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext);
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
