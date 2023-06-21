@@ -9,6 +9,8 @@ public class EntityBean {
     private String id;
     private Object[] data;
 
+    private String groupKey;
+
     public EntityBean() {
     }
 
@@ -30,6 +32,14 @@ public class EntityBean {
 
     public void setData(Object[] data) {
         this.data = data;
+    }
+
+    public String getGroupKey() {
+        return groupKey;
+    }
+
+    public void setGroupKey(String groupKey) {
+        this.groupKey = groupKey;
     }
 
     @Override
