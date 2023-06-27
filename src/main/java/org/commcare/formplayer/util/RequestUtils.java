@@ -121,6 +121,22 @@ public class RequestUtils {
         return attribute != null && (Boolean)attribute;
     }
 
+    /**
+     * Gets the IP address by using "X-FORWARDED-FOR" request header falling back to request.getRemoteAddr()
+     * @return IP address from the request
+     */
+    public static String getIpAddress() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return null;
+        }
+        String ipAddress = request.getHeader("X-FORWARDED-FOR");
+        if (ipAddress != null) {
+            return ipAddress;
+        }
+        return request.getRemoteAddr();
+    }
+
     // If a multipart request returns the part having content type as 'application/json',
     // otherwise the whole request content
     private static String getJsonBody(HttpServletRequest request) throws IOException, ServletException {

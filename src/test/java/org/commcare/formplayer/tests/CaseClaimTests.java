@@ -17,6 +17,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Multimap;
 
 import org.commcare.cases.model.Case;
+import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
@@ -41,6 +43,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCache;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import javax.annotation.Nullable;
@@ -276,6 +279,7 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
     }
+
     private void testDetailResponse(String[] detailSelections, QueryData queryData) throws Exception {
         EntityDetailListResponse responseBean = getDetails(detailSelections,
                 "caseclaim",
@@ -350,6 +354,46 @@ public class CaseClaimTests extends BaseTestClass {
         // check if we have districts corresponding to karnataka state
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Bangalore", "Hampi"});
+    }
+
+    // Tests Eof Navigation to a Case list which has both auto launch and default search on
+    @Test
+    public void testEofNavigationToCaseListWithDefaultSearch() throws Exception {
+
+        configureQueryMock();
+        configureSyncMock();
+
+        EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"2"},
+                "caseclaim",
+                null,
+                EntityListResponse.class);
+
+        assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+
+        // When we sync afterwards, include new case and case-claim
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+
+        NewFormResponse formResponse = sessionNavigateWithQuery(
+                new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6", "0"},
+                "caseclaim",
+                null,
+                NewFormResponse.class);
+
+        SubmitResponseBean submitResponse = submitForm(
+                new HashMap<>(),
+                formResponse.getSessionId()
+        );
+
+        EntityListResponse entityResponse = getNextScreenForEofNavigation(submitResponse,
+                EntityListResponse.class);
+        assert entityResponse.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+    }
+
+    private HashMap<String, Object> getAnswers(String index, String answer) {
+        HashMap<String, Object> ret = new HashMap<>();
+        ret.put(index, answer);
+        return ret;
     }
 
     @Test

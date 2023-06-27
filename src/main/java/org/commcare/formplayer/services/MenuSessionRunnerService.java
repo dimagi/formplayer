@@ -492,7 +492,7 @@ public class MenuSessionRunnerService {
             }
 
             autoAdvanceSession(menuSession, "", new QueryData(),
-                    false, entityScreenContext
+                    true, entityScreenContext
             );
             BaseResponseBean response = getNextMenu(menuSession, null, entityScreenContext);
             response.setSelections(menuSession.getSelections());
