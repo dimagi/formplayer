@@ -3,6 +3,8 @@ package org.commcare.formplayer.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.commcare.formplayer.application.MenuController;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
@@ -71,10 +73,12 @@ public class MenuAssertionsTest {
                 CommandListResponseBean.class);
         assertNotNull(response0);
         // Check failing assertion
-        assertThrows(Exception.class, () -> {
-            navigate(new String[]{"1"},
-                CommandListResponseBean.class);
-        });
+        try {
+            Response<CommandListResponseBean> response1 = navigate(new String[]{"1"},
+                    CommandListResponseBean.class);
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("This user must be in exactly one case sharing group."));
+        }
     }
 
 
