@@ -87,8 +87,7 @@ public class MenuAssertionsTest {
         String installReference = Installer.getInstallReference(ASSERTIONS_APP);
         SessionNavigationRequest<T> request = new SessionNavigationRequest<>(
                 mockMvc, responseClass, installReference);
-        SessionNavigationBean bean = request.getNavigationBean(selections);
-        return request.requestWithBean(bean);
+        return request.request(selections);
     }
 }
 
