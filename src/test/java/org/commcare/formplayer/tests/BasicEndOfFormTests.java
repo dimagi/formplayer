@@ -56,7 +56,7 @@ public class BasicEndOfFormTests extends BaseTestClass {
         );
         CommandListResponseBean commandResponse = getNextScreenForEofNavigation(submitResponse,
                 CommandListResponseBean.class);
-        assert commandResponse.getCommands().length == 18;
+        assert commandResponse.getCommands().length == 19;
         assert commandResponse.getTitle().equals("Basic Tests");
     }
 
