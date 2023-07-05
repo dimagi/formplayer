@@ -67,12 +67,17 @@ public class MenuAssertionsTest {
 
 
     @Test
-    public void testMenuAssertions() {
-        // Check passing assertion
-        Response<CommandListResponseBean> response0 = navigate(new String[]{"0"},
-                CommandListResponseBean.class);
-        assertNotNull(response0);
-        // Check failing assertion
+    public void testMenuAssertionsFailures() {
+        // Check assertion failing for project_role user property
+        try {
+            assertThrows(Exception.class, ()->{
+                navigate(new String[]{"0"},
+                        CommandListResponseBean.class);
+            });
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("User must have a project role configured."));
+        }
+        // Check assertion failing for fixture
         try {
             Response<CommandListResponseBean> response1 = navigate(new String[]{"1"},
                     CommandListResponseBean.class);
