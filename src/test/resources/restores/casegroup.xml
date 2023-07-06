@@ -124,4 +124,14 @@
             <parent case_type="parent">parentA</parent>
         </index>
     </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case9" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 9</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+    </case>
 </OpenRosaResponse>

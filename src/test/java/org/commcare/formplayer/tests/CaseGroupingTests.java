@@ -74,12 +74,12 @@ public class CaseGroupingTests {
         EntityListResponse entityListResponse= loadCaseList( 0, 100);
         assertEquals(entityListResponse.getGroupHeaderRows(), 2);
         EntityBean[] entities = entityListResponse.getEntities();
-        assertTrue(entities.length == 8);
+        assertTrue(entities.length == 9);
         // confirm the order of entities by group
         ImmutableList<String> expectedIds = ImmutableList.of("case1", "case3", "case6", "case2", "case5", "case8",
-                "case4", "case7");
+                "case4", "case7", "case9");
         ImmutableList<String> expectedGroupKeys = ImmutableList.of("parentB", "parentB", "parentB", "parentA",
-                "parentA", "parentA", "parentC", "parentC");
+                "parentA", "parentA", "parentC", "parentC", "");
         for (int i = 0; i < entities.length; i++) {
             assertEquals(expectedIds.get(i), entities[i].getId());
             assertEquals(expectedGroupKeys.get(i), entities[i].getGroupKey());
@@ -105,13 +105,13 @@ public class CaseGroupingTests {
         entityListResponse= loadCaseList( 2, 2);
         assertTrue(entityListResponse.getCurrentPage() == 1);
         assertTrue(entityListResponse.getPageCount() == 2);
-        assertTrue(entityListResponse.getEntities().length == 2);
-        expectedIds = ImmutableList.of("case4", "case7");
+        assertTrue(entityListResponse.getEntities().length == 3);
+        expectedIds = ImmutableList.of("case4", "case7", "case9");
         matchEntityIds(expectedIds, entityListResponse.getEntities());
 
         entityListResponse= loadCaseList( 1, 1);
         assertTrue(entityListResponse.getCurrentPage() == 1);
-        assertTrue(entityListResponse.getPageCount() == 3);
+        assertTrue(entityListResponse.getPageCount() == 4);
         assertTrue(entityListResponse.getEntities().length == 3);
         expectedIds = ImmutableList.of("case2", "case5", "case8");
         matchEntityIds(expectedIds, entityListResponse.getEntities());

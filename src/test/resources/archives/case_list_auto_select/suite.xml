@@ -137,6 +137,7 @@
     <instance id="casedb" src="jr://instance/casedb"/>
     <session>
       <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short"/>
+      <datum id="case_id_parent_ids" function="coalesce(join(' ', distinct-values(instance('casedb')/casedb/case[@case_id = instance('commcaresession')/session/data/case_id]/index/parent)),'')"/>
     </session>
   </entry>
   <menu id="m0">
