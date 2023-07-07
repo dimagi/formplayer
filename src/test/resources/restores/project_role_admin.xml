@@ -1,0 +1,26 @@
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+<message nature="ota_restore_success">Successfully restored account vl1!</message>
+<Sync xmlns="http://commcarehq.org/sync">
+    <restore_id>9f7c4e0a3a8ca4e2ecf54444fb7e70cf</restore_id>
+</Sync>
+<Registration xmlns="http://openrosa.org/user/registration">
+    <username>vl1</username>
+    <password>sha1$KOXD0OGyqKTP$139e6226da49dd500336dcd189b519da06aeb087</password>
+    <uuid>7afceb0259b2866be17b3632392f8a4b</uuid>
+    <date>2014-12-30</date>
+    <user_data>
+        <data key="commcare_project">ccqa</data>
+        <data key="commcare_last_name" />
+        <data key="commcare_phone_number" />
+        <data key="commcare_first_name" />
+        <data key="project_role">basic_user</data>
+    </user_data>b
+</Registration>
+<fixture id="user-groups" user_id="7afceb0259b2866be17b3632392f8a4b">
+    <groups>
+        <group id="06545890ff6536cf29136510f265cc7e">
+            <name>Test Case Sharing 2</name>
+        </group>
+    </groups>
+</fixture>
+</OpenRosaResponse>
