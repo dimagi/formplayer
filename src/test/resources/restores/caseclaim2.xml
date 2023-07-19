@@ -294,6 +294,26 @@
             <host case_type="case" relationship="extension">56306779-26a2-4aa5-a952-70c9d8b21e39</host>
         </index>
     </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="0156fa3e-093e-4136-b95c-01b13dae66c7" date_modified="2017-04-25T08:24:18.559344Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+        <create>
+            <case_type>case</case_type>
+            <case_name>The Dark Knight</case_name>
+            <owner_id>84c246edf58bfa69e03bdecc39692e1f</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="0156fa3e-093e-4136-b95c-01b13dae66c8" date_modified="2017-04-25T08:24:18.559344Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+        <create>
+            <case_type>case</case_type>
+            <case_name>The Dark Knight Rises</case_name>
+            <owner_id>84c246edf58bfa69e03bdecc39692e1f</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+        </update>
+    </case>
     <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="eb6d408324904dfa8bb7e1a108d1c775" date_modified="2017-04-21T12:44:32.696769Z" user_id="callcenter-system">
         <create>
             <case_type>commcare-user</case_type>
