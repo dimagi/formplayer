@@ -1,8 +1,10 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -11,10 +13,12 @@ import static org.mockito.Mockito.doAnswer;
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
+import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -169,5 +173,37 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         // we can still select any actions present on the case list
         selections = new String[]{"0", "2","action 0"};
         sessionNavigate(selections, APP, NewFormResponse.class);
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testMultiSelectEndpoint_ValidSelection() throws Exception {
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        String selectedValuesArg = String.join(",", selectedValues);
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("selected_cases", selectedValuesArg);
+        NewFormResponse newFormResponse = sessionNavigateWithEndpoint(APP,
+                "case_list",
+                endpointArgs,
+                NewFormResponse.class);
+        checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testMultiSelectEndpoint_InvalidSelection() {
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "non_existent_case_id"};
+        String selectedValuesArg = String.join(",", selectedValues);
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("selected_cases", selectedValuesArg);
+        Exception thrown = assertThrows(Exception.class, () ->
+                sessionNavigateWithEndpoint(APP,
+                        "case_list",
+                        endpointArgs,
+                        NewFormResponse.class)
+        );
+        assertTrue(thrown.getMessage().contains("Could not select case non_existent_case_id"));
     }
 }

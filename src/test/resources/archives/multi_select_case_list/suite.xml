@@ -155,4 +155,14 @@
     </text>
     <command id="m0-f1"/>
   </menu>
+  <endpoint id="case_list">
+    <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
+    <stack>
+      <push>
+        <command value="'m0'"/>
+        <datum id="selected_cases" value="$selected_cases"/>
+        <command value="'m0-f1'"/>
+      </push>
+    </stack>
+  </endpoint>
 </suite>
