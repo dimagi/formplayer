@@ -1,17 +1,22 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.MockRequestUtils;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +30,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -241,6 +247,51 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
             // selections should now be {"1", "guid"} without the auto-advanced menu index
             assertEquals(formResponse.getSelections().length, 2);
+        }
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testMultiSelectEndpoint_ValidSelection() throws Exception {
+        String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
+                "0156fa3e-093e-4136-b95c-01b13dae66c7",
+                "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        String selectedValuesArg = String.join(",", selectedValues);
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("selected_cases", selectedValuesArg);
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml", 2)) {
+            CommandListResponseBean commandResponse = sessionNavigateWithEndpoint(APP_NAME,
+                    "case_list",
+                    endpointArgs,
+                    CommandListResponseBean.class);
+            String[] formSelectionWithInstanceId = ArrayUtils.addAll(commandResponse.getSelections(), "0");
+            NewFormResponse formResponse = sessionNavigateWithQuery(formSelectionWithInstanceId,
+                    APP_NAME,
+                    null,
+                    NewFormResponse.class);
+            checkForSelectedEntitiesInstance(formResponse.getSessionId(), selectedValues);
+        }
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testMultiSelectEndpoint_InvalidSelection() throws Exception {
+        String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
+                "invalid_case_id",
+                "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        String selectedValuesArg = String.join(",", selectedValues);
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("selected_cases", selectedValuesArg);
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            Exception thrown = assertThrows(Exception.class, () ->
+                    sessionNavigateWithEndpoint(APP_NAME,
+                    "case_list",
+                    endpointArgs,
+                    CommandListResponseBean.class)
+            );
+            assertTrue(thrown.getMessage().contains("Could not select case invalid_case_id"));
         }
     }
 }
