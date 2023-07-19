@@ -6,14 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.WithHqUser;
@@ -23,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
@@ -80,14 +85,23 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
                 new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0156fa3e-093e-4136-b95c-01b13dae66c7",
                         "0156fa3e-093e-4136-b95c-01b13dae66c8"};
         String[] selections = new String[]{"0", "action 0", MultiSelectEntityScreen.USE_SELECTED_VALUES};
-        CommandListResponseBean commandResponse = sessionNavigateWithQuery(selections,
-                APP_NAME,
-                null,
-                selectedValues,
-                CommandListResponseBean.class);
+
+        CommandListResponseBean commandResponse;
+
+        try (
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim2.xml");
+        ) {
+            commandResponse = sessionNavigateWithQuery(selections,
+                    APP_NAME,
+                    null,
+                    selectedValues,
+                    CommandListResponseBean.class);
+        }
 
         // `use_selected_values' should be replaced in returned selections
         Assertions.assertNotEquals(selections, commandResponse.getSelections());
+
 
         // Verify case claim request
         verify(webClientMock, times(1)).caseClaimPost(urlCaptor.capture(), requestDataCaptor.capture());
