@@ -252,7 +252,7 @@ public class CaseClaimTests extends BaseTestClass {
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getSelections().length == 2;
         assert commandResponse.getSelections()[1].equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
-        assert caseStorage.getNumRecords() == 23;
+        assert caseStorage.getNumRecords() == 25;
 
         verify(webClientMock, times(2)).postFormData(urlCaptor.capture(),
                 requestDataCaptor.capture());
