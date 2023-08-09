@@ -62,7 +62,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         Hashtable<String, String> userProperties = u.getProperties();
 
         TreeElement root =
-                SessionInstanceBuilder.getSessionInstance(session.getFrame(), getDeviceId(),
+                SessionInstanceBuilder.getSessionInstance(sessionWrapper.getFrame(), getDeviceId(),
                         getVersionString(), getCurrentDrift(), u.getUsername(), u.getUniqueId(),
                         userProperties);
         root.setParent(instance.getBase());
