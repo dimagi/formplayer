@@ -34,6 +34,7 @@ import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
 import org.commcare.session.StackObserver;
 import org.commcare.suite.model.Detail;
@@ -760,9 +761,10 @@ public class MenuSessionRunnerService {
     }
 
     private String storeInSelectedEntitiesInstance(EndpointArgument argument, String[] selectedEntites) {
-        ExternalDataInstance selectedEntitesInstance = buildSelectedValuesInstance(argument.getInstanceId(),
-                selectedEntites);
-        return virtualDataInstanceService.write(selectedEntitesInstance);
+        Pair<String, ExternalDataInstance> guidAndInstance =
+                VirtualInstances.storeSelectedValuesInInstance(virtualDataInstanceService, selectedEntites,
+                        argument.getInstanceId());
+        return guidAndInstance.first;
     }
 
     public CaseSearchHelper getCaseSearchHelper() {
