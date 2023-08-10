@@ -308,4 +308,28 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
             assertTrue(thrown.getMessage().contains("Could not select case invalid_case_id"));
         }
     }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testMultiSelectEndpointWithClaim_ValidSelection() throws Exception {
+        String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
+                "0156fa3e-093e-4136-b95c-01b13dae66c7",
+                "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        String selectedValuesArg = String.join(",", selectedValues);
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("selected_cases", selectedValuesArg);
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml", 2)) {
+            CommandListResponseBean commandResponse = sessionNavigateWithEndpoint(APP_NAME,
+                    "case_list_with_claim",
+                    endpointArgs,
+                    CommandListResponseBean.class);
+            String[] formSelectionWithInstanceId = ArrayUtils.addAll(commandResponse.getSelections(), "0");
+            NewFormResponse formResponse = sessionNavigateWithQuery(formSelectionWithInstanceId,
+                    APP_NAME,
+                    null,
+                    NewFormResponse.class);
+            checkForSelectedEntitiesInstance(formResponse.getSessionId(), selectedValues);
+        }
+    }
 }
