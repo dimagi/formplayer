@@ -23,7 +23,6 @@ public class QueryResponseBean extends MenuBean {
     private DisplayElement[] displays;
     private final String type = "query";
     private String description;
-    private String resultsTitle;
 
     QueryResponseBean() {
     }
@@ -36,16 +35,8 @@ public class QueryResponseBean extends MenuBean {
         this.description = description;
     }
 
-    public void setResultsTitle(String resultsTitle) {
-        this.resultsTitle = resultsTitle;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public String getResultsTitle() {
-        return resultsTitle;
     }
 
     private void setDisplays(DisplayElement[] displays) {
@@ -94,7 +85,6 @@ public class QueryResponseBean extends MenuBean {
         }
         setTitle(queryScreen.getScreenTitle());
         setDescription(queryScreen.getDescriptionText());
-        setResultsTitle(queryScreen.getResultsTitle());
         setQueryKey(querySession.getCommand());
     }
 
