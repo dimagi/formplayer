@@ -23,16 +23,16 @@ class FormplayerSessionWrapper extends SessionWrapper {
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame,
                                     RemoteInstanceFetcher remoteInstanceFetcher)
             throws RemoteInstanceFetcher.RemoteInstanceException {
-        super(platform, sandbox);
+        super(platform, sandbox, remoteInstanceFetcher);
         this.frame = sessionFrame;
-        prepareExternalSources(remoteInstanceFetcher);
+        prepareExternalSources();
     }
 
     public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox,
                                     RemoteInstanceFetcher remoteInstanceFetcher)
             throws RemoteInstanceFetcher.RemoteInstanceException {
-        super(session, platform, sandbox);
-        prepareExternalSources(remoteInstanceFetcher);
+        super(session, platform, sandbox, remoteInstanceFetcher);
+        prepareExternalSources();
     }
 
 

@@ -1,6 +1,5 @@
 package org.commcare.formplayer.tests;
 
-import static org.commcare.formplayer.util.Constants.PART_ANSWER;
 import static org.commcare.formplayer.junit.HasXpath.hasXpath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,8 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.assertj.core.api.Assertions;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.application.DebuggerController;
 import org.commcare.formplayer.application.FormController;
 import org.commcare.formplayer.application.FormSubmissionController;
@@ -49,7 +48,6 @@ import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
-import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.junit.FormSessionTest;
@@ -116,16 +114,13 @@ import org.springframework.http.MediaType;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.lang.Nullable;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -307,7 +302,7 @@ public class BaseTestClass {
                         SerializableDataInstance savedInstance = serializableDataInstanceMap.get(key);
                         return savedInstance.toInstance(instanceId, key, refId);
                     }
-                    throw new InstanceNotFoundException(key, "test-namespace");
+                    throw new VirtualInstances.InstanceNotFoundException(key, "test-namespace");
                 });
 
         when(virtualDataInstanceService.contains(any(String.class))).thenAnswer(invocation -> {

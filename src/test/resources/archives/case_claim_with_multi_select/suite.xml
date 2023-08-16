@@ -283,6 +283,45 @@
     </text>
     <command id="m0-f0"/>
   </menu>
+  <endpoint id="case_list">
+    <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
+    <stack>
+      <push>
+        <command value="'m1-auto-launch'"/>
+        <instance-datum id="selected_cases" value="$selected_cases"/>
+      </push>
+    </stack>
+  </endpoint>
+  <endpoint id="case_list_with_claim">
+    <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
+    <stack>
+      <push>
+        <instance-datum id="selected_cases" value="$selected_cases"/>
+        <command value="'claim_command.case_list.selected_cases'"/>
+      </push>
+      <push>
+        <command value="'m1-auto-launch'"/>
+        <instance-datum id="selected_cases" value="$selected_cases"/>
+      </push>
+    </stack>
+  </endpoint>
+  <remote-request>
+    <post url="http://localhost:8000/a/shubham/phone/claim-case/" relevant="$case_id != ''">
+      <data key="case_id" ref="." nodeset="instance('selected_cases')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id=current()/.]) = 1"/>
+    </post>
+    <command id="claim_command.case_list.selected_cases">
+      <display>
+        <text/>
+      </display>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <instance id="selected_cases" src="jr://instance/selected-entities/selected_cases"/>
+    <session>
+      <datum id="selected_cases" function="instance('commcaresession')/session/data/selected_cases"/>
+    </session>
+    <stack/>
+  </remote-request>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="$case_id != ''">
       <data key="case_id" nodeset="instance('search_cases_instance_id')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id = current()/.]) = 1" ref="."/>

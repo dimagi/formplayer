@@ -12,8 +12,8 @@ import static org.mockito.Mockito.when;
 
 import static java.util.Optional.ofNullable;
 
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.configuration.CacheConfiguration;
-import org.commcare.formplayer.exceptions.InstanceNotFoundException;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -185,7 +185,7 @@ public class VirtualDataInstanceServiceTest {
         // instance with the same key
         adjustSessionDetail.run();
 
-        assertThrows(InstanceNotFoundException.class, () -> {
+        assertThrows(VirtualInstances.InstanceNotFoundException.class, () -> {
             virtualDataInstanceService.read(recordId, "selected_cases", "selected_cases");
         });
     }

@@ -1,13 +1,16 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.data.xml.VirtualInstances.buildSelectedValuesInstance;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
+import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
@@ -31,10 +34,12 @@ import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
 import org.commcare.session.StackObserver;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.Endpoint;
+import org.commcare.suite.model.EndpointArgument;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.suite.model.StackOperation;
@@ -121,6 +126,9 @@ public class MenuSessionRunnerService {
 
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
+
+    @Autowired
+    private VirtualDataInstanceService virtualDataInstanceService;
 
     @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
@@ -697,6 +705,7 @@ public class MenuSessionRunnerService {
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
         try {
             if (endpointArgs != null) {
+                processEndpointArgumentsForVirualInstance(endpoint, endpointArgs);
                 Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
             }
         } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
@@ -734,6 +743,32 @@ public class MenuSessionRunnerService {
         // reset session and play it back with derived selections
         menuSession.resetSession();
         return advanceSessionWithSelections(menuSession, selections, null);
+    }
+
+    private void processEndpointArgumentsForVirualInstance(Endpoint endpoint,
+            HashMap<String, String> argumentValues) {
+        for (EndpointArgument argument : endpoint.getArguments()) {
+            if(argument.isInstanceArgument()){
+                String argumentValue = argumentValues.get(argument.getId());
+                String instanceSrc = argument.getInstanceSrc();
+                if (instanceSrc.contentEquals(JR_SELECTED_ENTITIES_REFERENCE)) {
+                    String[] selectedEntites = argumentValue.split(",");
+                    String uuid = storeInSelectedEntitiesInstance(argument, selectedEntites);
+                    argumentValues.put(argument.getId(), uuid);
+                } else {
+                    throw new RuntimeException(
+                            "Invalid instance-src defined for argument " + argument.getId() + " for endpoint "
+                                    + endpoint.getId());
+                }
+            }
+        }
+    }
+
+    private String storeInSelectedEntitiesInstance(EndpointArgument argument, String[] selectedEntites) {
+        Pair<String, ExternalDataInstance> guidAndInstance =
+                VirtualInstances.storeSelectedValuesInInstance(virtualDataInstanceService, selectedEntites,
+                        argument.getInstanceId());
+        return guidAndInstance.first;
     }
 
     public CaseSearchHelper getCaseSearchHelper() {

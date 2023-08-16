@@ -3,7 +3,7 @@ package org.commcare.formplayer.services;
 import static org.commcare.formplayer.util.Constants.VIRTUAL_DATA_INSTANCES_CACHE;
 
 import org.commcare.core.interfaces.VirtualDataInstanceStorage;
-import org.commcare.formplayer.exceptions.InstanceNotFoundException;
+import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.objects.SerializableDataInstance;
 import org.commcare.formplayer.repo.VirtualDataInstanceRepo;
 import org.commcare.modern.database.TableBuilder;
@@ -60,7 +60,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
         if (validateInstance(savedInstance, key)) {
             return savedInstance.toInstance(instanceId, key, refId);
         }
-        throw new InstanceNotFoundException(key, getNamespace());
+        throw new VirtualInstances.InstanceNotFoundException(key, getNamespace());
     }
 
     @Override
@@ -95,7 +95,7 @@ public class VirtualDataInstanceService implements VirtualDataInstanceStorage {
                 && savedInstance.getAppId().equals(storageFactory.getAppId())) {
             return true;
         }
-        throw new InstanceNotFoundException(key, getNamespace());
+        throw new VirtualInstances.InstanceNotFoundException(key, getNamespace());
     }
 
     private boolean ifUsernameMatches(String username1, String username2) {
