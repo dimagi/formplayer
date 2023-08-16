@@ -755,6 +755,10 @@ public class MenuSessionRunnerService {
                     String[] selectedEntites = argumentValue.split(",");
                     String uuid = storeInSelectedEntitiesInstance(argument, selectedEntites);
                     argumentValues.put(argument.getId(), uuid);
+                } else {
+                    throw new RuntimeException(
+                            "Invalid instance-src defined for argument " + argument.getId() + " for endpoint "
+                                    + endpoint.getId());
                 }
             }
         }
