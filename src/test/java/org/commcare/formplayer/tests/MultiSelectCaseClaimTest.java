@@ -2,22 +2,20 @@ package org.commcare.formplayer.tests;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import com.google.common.collect.Multimap;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.WithHqUser;
@@ -27,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
@@ -53,6 +50,10 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
     @Captor
     ArgumentCaptor<MultiValueMap<String, String>> requestDataCaptor;
+
+    @Captor
+    ArgumentCaptor<Multimap<String, String>> queryRequestDataCaptor;
+
     private MockRequestUtils mockRequest;
 
     @Override
@@ -328,6 +329,64 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
             NewFormResponse formResponse = sessionNavigateWithQuery(formSelectionWithInstanceId,
                     APP_NAME,
                     null,
+                    NewFormResponse.class);
+            checkForSelectedEntitiesInstance(formResponse.getSessionId(), selectedValues);
+        }
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testCaseListEndpointWithInlineCaseSearch() throws Exception {
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml")) {
+            EntityListResponse response = sessionNavigateWithEndpoint(APP_NAME,
+                    "inline_case_search_list_without_selection",
+                    null,
+                    EntityListResponse.class);
+            assertNotNull(response.getEntities());
+        }
+    }
+
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testCaseListSelectionEndpointWithInlineCaseSearch() throws Exception {
+        String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
+                "0156fa3e-093e-4136-b95c-01b13dae66c7",
+                "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        String selectedValuesArg = String.join(",", selectedValues);
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("selected_cases", selectedValuesArg);
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml", 2)) {
+            CommandListResponseBean response = sessionNavigateWithEndpoint(APP_NAME,
+                    "inline_case_search_list",
+                    endpointArgs,
+                    CommandListResponseBean.class);
+            assertEquals(response.getCommands().length, 1);
+        }
+        verify(webClientMock, times(2)).postFormData(urlCaptor.capture(),
+                queryRequestDataCaptor.capture());
+
+        assertEquals("http://localhost:8000/a/shubham/phone/case_fixture/d54c955d883b4dd99f57571649271af1/", urlCaptor.getAllValues().get(0));
+        Multimap<String, String> requestData = queryRequestDataCaptor.getAllValues().get(0);
+        assertEquals(String.join(",",requestData.get("case_id")), String.join(",",selectedValues));
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testFormEndpointWithInlineCaseSearch() throws Exception {
+        String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
+                "0156fa3e-093e-4136-b95c-01b13dae66c7",
+                "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        String selectedValuesArg = String.join(",", selectedValues);
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("selected_cases", selectedValuesArg);
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml", 2)) {
+            NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                    "inline_case_search_form",
+                    endpointArgs,
                     NewFormResponse.class);
             checkForSelectedEntitiesInstance(formResponse.getSessionId(), selectedValues);
         }
