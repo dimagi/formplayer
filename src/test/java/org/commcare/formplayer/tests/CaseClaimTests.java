@@ -131,8 +131,8 @@ public class CaseClaimTests extends BaseTestClass {
 
         // select empty with a valid choice
         inputs.put("name", "#,#chris");
-        inputs.put("state", "0");
-        inputs.put("district", "#,#1");
+        inputs.put("state", "ka");
+        inputs.put("district", "#,#hampi");
         queryData.setExecute("search_command.m1", false);
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
@@ -218,13 +218,13 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
 
         // multi-select test
-        inputs.put("state", "0");
-        inputs.put("district", "0#,#1"); // select 2 districts
+        inputs.put("state", "ka");
+        inputs.put("district", "bang#,#hampi"); // select 2 districts
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("bang#,#hampi");
 
         // Select an invalid choice in multi-select and verify it's removed from formplayer response
-        inputs.put("district", "0#,#2#,#1");
+        inputs.put("district", "bang#,#WhyAmIHere#,#hampi");
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("bang#,#hampi");
 
@@ -337,7 +337,7 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testDependentItemsets_DependentChoicesChangeWithSelection() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("state", "1");
+        inputs.put("state", "rj");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("rj");
@@ -346,7 +346,7 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Baran", "Kota"});
 
-        inputs.put("state", "0");
+        inputs.put("state", "ka");
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("ka");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
@@ -399,16 +399,16 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testDependentItemsets_SelectionPeristsInResponse() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("state", "0");
-        inputs.put("district", "0");
+        inputs.put("state", "ka");
+        inputs.put("district", "bang");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assertEquals("ka", queryResponseBean.getDisplays()[1].getValue());
         assertEquals("bang", queryResponseBean.getDisplays()[2].getValue());
 
         // Change selection
-        inputs.put("state", "1");
-        inputs.put("district", "1");
+        inputs.put("state", "rj");
+        inputs.put("district", "kota");
         queryResponseBean = runQuery(queryData);
         assertEquals("rj", queryResponseBean.getDisplays()[1].getValue());
         assertEquals("kota", queryResponseBean.getDisplays()[2].getValue());
@@ -418,7 +418,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testDependentItemsets_WithKeysInResponse() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "rj");
-        QueryData queryData = setUpQueryDataWithInput(inputs, true, false, true);
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assertEquals(queryResponseBean.getDisplays()[1].getValue(), "rj");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
@@ -452,7 +452,7 @@ public class CaseClaimTests extends BaseTestClass {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "ka");
         inputs.put("district", "baran");
-        QueryData queryData = setUpQueryDataWithInput(inputs, true, false, true);
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assertEquals(queryResponseBean.getDisplays()[1].getValue(),"ka");
         assertNull(queryResponseBean.getDisplays()[2].getValue());
@@ -538,11 +538,6 @@ public class CaseClaimTests extends BaseTestClass {
 
     private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
             boolean execute) {
-        return setUpQueryDataWithInput(inputs, forceManual, execute, false);
-    }
-
-    private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
-            boolean execute, boolean selectValuesByKeys) {
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
         if (forceManual) {
@@ -551,7 +546,6 @@ public class CaseClaimTests extends BaseTestClass {
         if (execute) {
             queryData.setExecute("search_command.m1", true);
         }
-        queryData.setSelectValuesByKeys("search_command.m1", selectValuesByKeys);
         return queryData;
     }
 
