@@ -114,6 +114,10 @@ public class CaseClaimTests extends BaseTestClass {
 
         // Empty params should be carried over to url as well
         queryData.setExecute("search_command.m1", true);
+        inputs.put("age", "22");
+        inputs.put("state", "ka");
+        inputs.put("name", "Burt");
+        inputs.put("dob", "");
         sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
@@ -122,17 +126,16 @@ public class CaseClaimTests extends BaseTestClass {
                 requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
-        assertEquals(4, requestData.keySet().size());
+        assertEquals(6, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
-        assertArrayEquals(new String[]{""}, requestData.get("name").toArray());
-        assertArrayEquals(new String[]{""}, requestData.get("state").toArray());
+        assertArrayEquals(new String[]{""}, requestData.get("dob").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
 
         // select empty with a valid choice
         inputs.put("name", "#,#chris");
-        inputs.put("state", "0");
-        inputs.put("district", "#,#1");
+        inputs.put("state", "ka");
+        inputs.put("district", "#,#hampi");
         queryData.setExecute("search_command.m1", false);
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
@@ -148,7 +151,7 @@ public class CaseClaimTests extends BaseTestClass {
                 requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(2));
         requestData = requestDataCaptor.getAllValues().get(2);
-        assertEquals(5, requestData.keySet().size());
+        assertEquals(7, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"", "chris"}, requestData.get("name").toArray());
@@ -218,17 +221,18 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
 
         // multi-select test
-        inputs.put("state", "0");
-        inputs.put("district", "0#,#1"); // select 2 districts
+        inputs.put("state", "ka");
+        inputs.put("district", "bang#,#hampi"); // select 2 districts
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("bang#,#hampi");
 
         // Select an invalid choice in multi-select and verify it's removed from formplayer response
-        inputs.put("district", "0#,#2#,#1");
+        inputs.put("district", "bang#,#WhyAmIHere#,#hampi");
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("bang#,#hampi");
 
         // Execute Search to get results
+        inputs.put("age", "22"); // satisfy required condition to execute search
         queryData.setExecute("search_command.m1", true);
         responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
@@ -271,10 +275,11 @@ public class CaseClaimTests extends BaseTestClass {
         // Therefore there are only 2 http calls here instead of 3
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(1));
         requestData = requestDataCaptor.getAllValues().get(1);
-        assertEquals(5, requestData.keySet().size());
+        assertEquals(6, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"Burt"}, requestData.get("name").toArray());
+        assertArrayEquals(new String[]{"22"}, requestData.get("age").toArray());
         assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
@@ -337,7 +342,7 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testDependentItemsets_DependentChoicesChangeWithSelection() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("state", "1");
+        inputs.put("state", "rj");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("rj");
@@ -346,7 +351,7 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
                 new String[]{"Baran", "Kota"});
 
-        inputs.put("state", "0");
+        inputs.put("state", "ka");
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("ka");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
@@ -399,16 +404,16 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testDependentItemsets_SelectionPeristsInResponse() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
-        inputs.put("state", "0");
-        inputs.put("district", "0");
+        inputs.put("state", "ka");
+        inputs.put("district", "bang");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assertEquals("ka", queryResponseBean.getDisplays()[1].getValue());
         assertEquals("bang", queryResponseBean.getDisplays()[2].getValue());
 
         // Change selection
-        inputs.put("state", "1");
-        inputs.put("district", "1");
+        inputs.put("state", "rj");
+        inputs.put("district", "kota");
         queryResponseBean = runQuery(queryData);
         assertEquals("rj", queryResponseBean.getDisplays()[1].getValue());
         assertEquals("kota", queryResponseBean.getDisplays()[2].getValue());
@@ -418,7 +423,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testDependentItemsets_WithKeysInResponse() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "rj");
-        QueryData queryData = setUpQueryDataWithInput(inputs, true, false, true);
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assertEquals(queryResponseBean.getDisplays()[1].getValue(), "rj");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
@@ -452,20 +457,20 @@ public class CaseClaimTests extends BaseTestClass {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "ka");
         inputs.put("district", "baran");
-        QueryData queryData = setUpQueryDataWithInput(inputs, true, false, true);
+        QueryData queryData = setUpQueryDataWithInput(inputs, true, false);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assertEquals(queryResponseBean.getDisplays()[1].getValue(),"ka");
         assertNull(queryResponseBean.getDisplays()[2].getValue());
     }
 
     @Test
-    public void testQueryPromptValidation_NullInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError(null, null, true, false);
+    public void testQueryPromptValidation_NullInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError(null, "One of age or DOB is required", true, false);
     }
 
     @Test
-    public void testQueryPromptValidation_EmptyInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError("", null, true, false);
+    public void testQueryPromptValidation_EmptyInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError("", "One of age or DOB is required", true, false);
     }
 
     @Test
@@ -479,13 +484,13 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidationWithExecute_NullInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError(null, null, true, true);
+    public void testQueryPromptValidationWithExecute_NullInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError(null, "One of age or DOB is required", true, true);
     }
 
     @Test
-    public void testQueryPromptValidationWithExecute_EmptyInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError("", null, true, true);
+    public void testQueryPromptValidationWithExecute_EmptyInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError("", "One of age or DOB is required", true, true);
     }
 
     @Test
@@ -538,11 +543,6 @@ public class CaseClaimTests extends BaseTestClass {
 
     private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
             boolean execute) {
-        return setUpQueryDataWithInput(inputs, forceManual, execute, false);
-    }
-
-    private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
-            boolean execute, boolean selectValuesByKeys) {
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
         if (forceManual) {
@@ -551,7 +551,6 @@ public class CaseClaimTests extends BaseTestClass {
         if (execute) {
             queryData.setExecute("search_command.m1", true);
         }
-        queryData.setSelectValuesByKeys("search_command.m1", selectValuesByKeys);
         return queryData;
     }
 
@@ -564,6 +563,8 @@ public class CaseClaimTests extends BaseTestClass {
 
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("name", "Burt");
+        inputs.put("age", "33");
+        inputs.put("state", "ka");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, true);
         CommandListResponseBean response = sessionNavigateWithQuery(
                 new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
