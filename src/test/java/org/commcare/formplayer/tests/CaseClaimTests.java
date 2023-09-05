@@ -114,6 +114,10 @@ public class CaseClaimTests extends BaseTestClass {
 
         // Empty params should be carried over to url as well
         queryData.setExecute("search_command.m1", true);
+        inputs.put("age", "22");
+        inputs.put("state", "ka");
+        inputs.put("name", "Burt");
+        inputs.put("dob", "");
         sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
@@ -122,11 +126,10 @@ public class CaseClaimTests extends BaseTestClass {
                 requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
-        assertEquals(4, requestData.keySet().size());
+        assertEquals(6, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
-        assertArrayEquals(new String[]{""}, requestData.get("name").toArray());
-        assertArrayEquals(new String[]{""}, requestData.get("state").toArray());
+        assertArrayEquals(new String[]{""}, requestData.get("dob").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
 
         // select empty with a valid choice
@@ -148,7 +151,7 @@ public class CaseClaimTests extends BaseTestClass {
                 requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(2));
         requestData = requestDataCaptor.getAllValues().get(2);
-        assertEquals(5, requestData.keySet().size());
+        assertEquals(7, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"", "chris"}, requestData.get("name").toArray());
@@ -229,6 +232,7 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("bang#,#hampi");
 
         // Execute Search to get results
+        inputs.put("age", "22"); // satisfy required condition to execute search
         queryData.setExecute("search_command.m1", true);
         responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
@@ -271,10 +275,11 @@ public class CaseClaimTests extends BaseTestClass {
         // Therefore there are only 2 http calls here instead of 3
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(1));
         requestData = requestDataCaptor.getAllValues().get(1);
-        assertEquals(5, requestData.keySet().size());
+        assertEquals(6, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"Burt"}, requestData.get("name").toArray());
+        assertArrayEquals(new String[]{"22"}, requestData.get("age").toArray());
         assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
@@ -459,13 +464,13 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidation_NullInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError(null, null, true, false);
+    public void testQueryPromptValidation_NullInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError(null, "One of age or DOB is required", true, false);
     }
 
     @Test
-    public void testQueryPromptValidation_EmptyInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError("", null, true, false);
+    public void testQueryPromptValidation_EmptyInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError("", "One of age or DOB is required", true, false);
     }
 
     @Test
@@ -479,13 +484,13 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testQueryPromptValidationWithExecute_NullInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError(null, null, true, true);
+    public void testQueryPromptValidationWithExecute_NullInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError(null, "One of age or DOB is required", true, true);
     }
 
     @Test
-    public void testQueryPromptValidationWithExecute_EmptyInputCausesNoError() throws Exception {
-        runRequestAndValidateAgeError("", null, true, true);
+    public void testQueryPromptValidationWithExecute_EmptyInputCausesRequiredError() throws Exception {
+        runRequestAndValidateAgeError("", "One of age or DOB is required", true, true);
     }
 
     @Test
@@ -558,6 +563,8 @@ public class CaseClaimTests extends BaseTestClass {
 
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("name", "Burt");
+        inputs.put("age", "33");
+        inputs.put("state", "ka");
         QueryData queryData = setUpQueryDataWithInput(inputs, true, true);
         CommandListResponseBean response = sessionNavigateWithQuery(
                 new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
