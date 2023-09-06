@@ -9,6 +9,7 @@ public class Constants {
     public static final String URL_INCOMPLETE_SESSION = "incomplete-form";
     public static final String URL_DELETE_INCOMPLETE_SESSION = "delete-incomplete-form";
     public static final String URL_ANSWER_QUESTION = "answer";
+    public static final String URL_CLEAR_ANSWER = "clear_answer";
     public static final String URL_ANSWER_MEDIA_QUESTION = "answer_media";
     public static final String URL_CURRENT = "current";
     public static final String URL_SUBMIT_FORM = "submit-all";
