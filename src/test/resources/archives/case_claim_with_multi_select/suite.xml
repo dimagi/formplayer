@@ -288,7 +288,7 @@
     <stack>
       <push>
         <command value="'m1-auto-launch'"/>
-        <instance-datum id="selected_cases" value="$selected_cases"/>
+        <instance-datum id="selected_cases" value="$instance_id_selected_cases"/>
       </push>
     </stack>
   </endpoint>
@@ -296,12 +296,12 @@
     <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
     <stack>
       <push>
-        <instance-datum id="selected_cases" value="$selected_cases"/>
+        <instance-datum id="selected_cases" value="$instance_id_selected_cases"/>
         <command value="'claim_command.case_list.selected_cases'"/>
       </push>
       <push>
         <command value="'m1-auto-launch'"/>
-        <instance-datum id="selected_cases" value="$selected_cases"/>
+        <instance-datum id="selected_cases" value="$instance_id_selected_cases"/>
       </push>
     </stack>
   </endpoint>
