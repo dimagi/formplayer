@@ -185,7 +185,7 @@ public class FormController extends AbstractBaseController {
     }
 
     private FormEntryResponseBean saveAnswer(AnswerQuestionRequestBean answerQuestionBean,
-            @Nullable MultipartFile file, @Nullable Boolean clear) throws Exception {
+            @Nullable MultipartFile file, Boolean clear) throws Exception {
 
         SerializableFormSession serializableFormSession = categoryTimingHelper.timed(
                 Constants.TimingCategories.GET_SESSION,
@@ -204,7 +204,7 @@ public class FormController extends AbstractBaseController {
         String fileId = null;
         Path mediaDirPath = formEntrySession.getMediaDirectoryPath(restoreFactory.getDomain(),
                 restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
-        if (Boolean.TRUE.equals(clear)) {
+        if (clear) {
             formEntrySession.cleanCurrentMedia(mediaDirPath, answerQuestionBean.getFormIndex(),
                     mediaMetaDataService);
         }
