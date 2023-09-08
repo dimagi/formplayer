@@ -204,8 +204,7 @@ public class FormController extends AbstractBaseController {
         String fileId = null;
         Path mediaDirPath = formEntrySession.getMediaDirectoryPath(restoreFactory.getDomain(),
                 restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
-
-        if (clear) {
+        if (Boolean.TRUE.equals(clear)) {
             formEntrySession.cleanCurrentMedia(mediaDirPath, answerQuestionBean.getFormIndex(),
                     mediaMetaDataService);
         }
