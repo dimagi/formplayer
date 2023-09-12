@@ -1,6 +1,5 @@
 package org.commcare.formplayer.services;
 
-import static org.commcare.data.xml.VirtualInstances.buildSelectedValuesInstance;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
@@ -73,6 +72,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.annotation.Resource;
@@ -705,7 +705,9 @@ public class MenuSessionRunnerService {
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
         try {
             if (endpointArgs != null) {
-                processEndpointArgumentsForVirualInstance(endpoint, endpointArgs);
+                Map<String, ExternalDataInstance> instances = processEndpointArgumentsForVirualInstance(endpoint,
+                        endpointArgs);
+                evalContext = evalContext.spawnWithCleanLifecycle(instances);
                 Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
             }
         } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
@@ -722,7 +724,6 @@ public class MenuSessionRunnerService {
             throw new RuntimeException(
                     String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
         }
-
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
@@ -745,16 +746,20 @@ public class MenuSessionRunnerService {
         return advanceSessionWithSelections(menuSession, selections, null);
     }
 
-    private void processEndpointArgumentsForVirualInstance(Endpoint endpoint,
+    private Map<String, ExternalDataInstance> processEndpointArgumentsForVirualInstance(Endpoint endpoint,
             HashMap<String, String> argumentValues) {
+        Map<String, ExternalDataInstance> instances = new HashMap<>();
         for (EndpointArgument argument : endpoint.getArguments()) {
             if(argument.isInstanceArgument()){
                 String argumentValue = argumentValues.get(argument.getId());
                 String instanceSrc = argument.getInstanceSrc();
                 if (instanceSrc.contentEquals(JR_SELECTED_ENTITIES_REFERENCE)) {
                     String[] selectedEntites = argumentValue.split(",");
-                    String uuid = storeInSelectedEntitiesInstance(argument, selectedEntites);
-                    argumentValues.put(argument.getId(), uuid);
+                    Pair<String, ExternalDataInstance> guidAndInstance = storeInSelectedEntitiesInstance(argument,
+                            selectedEntites);
+                    argumentValues.put(argument.getId(), guidAndInstance.first);
+                    ExternalDataInstance instance = guidAndInstance.second;
+                    instances.put(instance.getInstanceId(), instance);
                 } else {
                     throw new RuntimeException(
                             "Invalid instance-src defined for argument " + argument.getId() + " for endpoint "
@@ -762,13 +767,12 @@ public class MenuSessionRunnerService {
                 }
             }
         }
+        return instances;
     }
 
-    private String storeInSelectedEntitiesInstance(EndpointArgument argument, String[] selectedEntites) {
-        Pair<String, ExternalDataInstance> guidAndInstance =
-                VirtualInstances.storeSelectedValuesInInstance(virtualDataInstanceService, selectedEntites,
+    private Pair<String, ExternalDataInstance> storeInSelectedEntitiesInstance(EndpointArgument argument, String[] selectedEntites) {
+        return VirtualInstances.storeSelectedValuesInInstance(virtualDataInstanceService, selectedEntites,
                         argument.getInstanceId());
-        return guidAndInstance.first;
     }
 
     public CaseSearchHelper getCaseSearchHelper() {

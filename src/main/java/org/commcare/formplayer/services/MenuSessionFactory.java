@@ -30,6 +30,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Vector;
 
 import datadog.trace.api.Trace;
@@ -133,7 +134,7 @@ public class MenuSessionFactory {
                             throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
                         }
                         ImmutableMultimap.Builder<String, String> dataBuilder = ImmutableMultimap.builder();
-                        step.getExtras().forEach((key, value) -> dataBuilder.put(key, value.toString()));
+                        step.getExtras().forEach((key, value) -> dataBuilder.putAll(key, ((Collection)value)));
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),

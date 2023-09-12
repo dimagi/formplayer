@@ -259,6 +259,33 @@
       <instance-datum id="selected_cases" autoselect="true" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short_autolaunch_autoselect" detail-confirm="m1_case_long"/>
     </session>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <post url="http://localhost:8000/a/shubham/phone/claim-case/" relevant="$case_id != ''">
+      <data key="case_id" ref="." nodeset="instance('selected_cases')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id=current()/.]) = 1"/>
+    </post>
+    <command id="m2-f0">
+      <text>
+        <locale id="forms.m1f1"/>
+      </text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="results:inline" src="jr://instance/remote/results:inline"/>
+    <instance id="selected_cases" src="jr://instance/selected-entities/selected_cases"/>
+    <session>
+      <query url="http://localhost:8000/a/shubham/phone/search/87189ba3c8bb401490d63e7157f566c1/" storage-instance="results:inline" template="case" default_search="true">
+        <data key="case_type" ref="'case'"/>
+        <prompt key="name">
+          <display>
+            <text>
+              <locale id="search_property.m1.name"/>
+            </text>
+          </display>
+        </prompt>
+      </query>
+      <instance-datum id="selected_cases" nodeset="instance('results:inline')/results/case[@case_type='case'][@status='open'][not(commcare_is_related_case=true())]" value="./@case_id" detail-select="m1_case_short" detail-confirm="m1_case_long"/>
+    </session>
+  </entry>
   <menu id="m1">
     <text>
       <locale id="modules.m1"/>
@@ -283,6 +310,47 @@
     </text>
     <command id="m0-f0"/>
   </menu>
+  <menu id="m2-inline-search">
+    <text>
+      <locale id="modules.m1"/>
+    </text>
+    <command id="m2-f0"/>
+  </menu>
+  <endpoint id="inline_case_search_list_without_selection">
+    <stack>
+      <push>
+        <command value="'m2-inline-search'"/>
+      </push>
+    </stack>
+  </endpoint>
+  <endpoint id="inline_case_search_list">
+    <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
+    <stack>
+      <push>
+        <command value="'m2-inline-search'"/>
+        <query id="results:inline" value="http://localhost:8000/a/shubham/phone/case_fixture/d54c955d883b4dd99f57571649271af1/">
+          <data key="case_type" ref="'case'"/>
+          <data key="case_id" nodeset="instance('selected_cases')/results/value" ref="."/>
+        </query>
+        <instance-datum id="selected_cases" value="$selected_cases"/>
+      </push>
+    </stack>
+  </endpoint>
+  <endpoint id="inline_case_search_form">
+    <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
+    <stack>
+      <push>
+        <command value="'m2-inline-search'"/>
+        <query id="results:inline" value="http://localhost:8000/a/shubham/phone/case_fixture/d54c955d883b4dd99f57571649271af1/">
+          <data key="case_type" ref="'case'"/>
+          <data key="case_id" nodeset="instance('selected_cases')/results/value" ref="."/>
+        </query>
+        <instance-datum id="selected_cases" value="$selected_cases"/>
+        <command value="'m2-f0'"/>
+      </push>
+    </stack>
+  </endpoint>
+
   <endpoint id="case_list">
     <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
     <stack>
