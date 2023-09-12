@@ -185,7 +185,7 @@ public class FormController extends AbstractBaseController {
     }
 
     private FormEntryResponseBean saveAnswer(AnswerQuestionRequestBean answerQuestionBean,
-            @Nullable MultipartFile file, Boolean clear) throws Exception {
+            @Nullable MultipartFile file, boolean clear) throws Exception {
 
         SerializableFormSession serializableFormSession = categoryTimingHelper.timed(
                 Constants.TimingCategories.GET_SESSION,
