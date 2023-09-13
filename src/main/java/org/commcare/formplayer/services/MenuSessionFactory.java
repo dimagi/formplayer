@@ -134,7 +134,7 @@ public class MenuSessionFactory {
                             throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
                         }
                         ImmutableMultimap.Builder<String, String> dataBuilder = ImmutableMultimap.builder();
-                        step.getExtras().forEach((key, value) -> dataBuilder.putAll(key, ((Collection)value)));
+                        step.getExtras().forEach((key, value) -> dataBuilder.put(key, (String) value));
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
@@ -143,7 +143,7 @@ public class MenuSessionFactory {
                                 dataBuilder.build(),
                                 false
                             );
-                            queryScreen.updateSession(searchDataInstance);
+                            queryScreen.updateSession(searchDataInstance, dataBuilder.build());
                             screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                             currentStep = NEXT_SCREEN;
                             break;

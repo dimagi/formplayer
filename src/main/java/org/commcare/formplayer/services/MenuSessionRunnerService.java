@@ -6,6 +6,7 @@ import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_
 
 import com.google.common.annotations.VisibleForTesting;
 
+import com.google.common.collect.Multimap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -471,13 +472,14 @@ public class MenuSessionRunnerService {
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
+                Multimap<String, String> queryParams = screen.getQueryParams(isDefaultSearch);
                 ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
                         screen.getBaseUrl(),
-                        screen.getQueryParams(isDefaultSearch),
+                        queryParams,
                         skipCache);
-                screen.updateSession(searchDataInstance);
+                screen.updateSession(searchDataInstance, queryParams);
                 return true;
             } catch (InvalidStructureException | IOException
                      | XmlPullParserException | UnfullfilledRequirementsException e) {
