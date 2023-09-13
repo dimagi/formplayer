@@ -245,7 +245,7 @@ class MediaCaptureTest {
         val originalSavedFile = expectedFilePath.toFile()
         assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
 
-        val clearImageResponse = clearImage(formResponse)
+        clearImage(formResponse)
         assertFalse("Could not remove file from the filesystem", originalSavedFile.exists())
     }
 
