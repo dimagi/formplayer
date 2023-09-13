@@ -1,7 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
-
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -9,16 +9,9 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.session.CommCareSession;
-import org.commcare.suite.model.MenuDisplayable;
-import org.commcare.suite.model.RemoteQueryDatum;
-import org.commcare.suite.model.SessionDatum;
-import org.commcare.suite.model.StackFrameStep;
-import org.commcare.util.screen.CommCareSessionException;
-import org.commcare.util.screen.EntityScreen;
-import org.commcare.util.screen.EntityScreenContext;
-import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.QueryScreen;
-import org.commcare.util.screen.Screen;
+import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.*;
+import org.commcare.util.screen.*;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -30,10 +23,9 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
-
-import datadog.trace.api.Trace;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -99,13 +91,35 @@ public class MenuSessionFactory {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 entityScreen.initReferences(menuSession.getSessionWrapper());
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
+                Vector<Action> actions = entityScreen.getShortDetail().getCustomActions(entityScreen.getEvalContext());
+                outer:
                 for (StackFrameStep step : steps) {
-                    if (step.getId().equals(neededDatum.getDataId())) {
+                    if (step.getType().equals(SessionFrame.STATE_DATUM_VAL) && step.getId().equals(neededDatum.getDataId())) {
                         if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();
                             needsFullInit = ++processedStepsCount == steps.size();
                         }
                         break;
+                    } else if (step.getType().equals(SessionFrame.STATE_COMMAND_ID) && !actions.isEmpty()) {
+                        for (int i = 0; i < actions.size(); i++) {
+                            Action action = actions.get(i);
+                            if (action.getStackOperations() != null) {
+                                for (StackOperation operation : action.getStackOperations()) {
+                                    // TODO: does this need to 'consume' session steps for all the steps in the operation?
+                                    Optional<StackFrameStep> commandStep = operation.getStackFrameSteps().stream()
+                                            .filter(s -> s.getType().equals(SessionFrame.STATE_COMMAND_ID)).findFirst();
+                                    if (commandStep.isEmpty()) {
+                                        continue;
+                                    }
+                                    String value = commandStep.get().evaluateValue(entityScreen.getEvalContext());
+                                    if (value.equals(step.getId())) {
+                                        currentStep = "action " + i;
+                                        needsFullInit = ++processedStepsCount == steps.size();
+                                        break outer;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
