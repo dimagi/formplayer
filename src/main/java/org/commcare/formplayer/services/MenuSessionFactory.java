@@ -158,6 +158,7 @@ public class MenuSessionFactory {
                                 false
                             );
                             queryScreen.updateSession(searchDataInstance, dataBuilder.build());
+                            needsFullInit = ++processedStepsCount == steps.size();
                             screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                             currentStep = NEXT_SCREEN;
                             break;
