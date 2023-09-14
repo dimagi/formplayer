@@ -245,8 +245,11 @@ class MediaCaptureTest {
         val originalSavedFile = expectedFilePath.toFile()
         assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
 
-        clearImage(formResponse)
+        val clearImageResponse = clearImage(formResponse)
         assertFalse("Could not remove file from the filesystem", originalSavedFile.exists())
+
+        val currentAnswer = clearImageResponse.tree[IMAGE_CAPTURE_INDEX].answer
+        assertEquals(null, currentAnswer)
     }
 
     private fun checkContentType(expectedContentType: String, filePart: HttpEntity<*>) {
