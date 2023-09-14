@@ -177,7 +177,7 @@ public class FormController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
-    public FormEntryResponseBean removeAnswer(
+    public FormEntryResponseBean clearAnswer(
             @RequestBody AnswerQuestionRequestBean answerQuestionBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
             throws Exception{
