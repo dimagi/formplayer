@@ -154,7 +154,7 @@ public class FormController extends AbstractBaseController {
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
             throws Exception {
-        return saveAnswer(answerQuestionBean, null);
+        return saveAnswer(answerQuestionBean, null, false);
     }
 
     @RequestMapping(
@@ -170,11 +170,22 @@ public class FormController extends AbstractBaseController {
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
             @RequestPart(PART_FILE) MultipartFile file)
             throws Exception {
-        return saveAnswer(answerQuestionBean, file);
+        return saveAnswer(answerQuestionBean, file, false);
+    }
+
+    @RequestMapping(value = Constants.URL_CLEAR_ANSWER, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @ConfigureStorageFromSession
+    public FormEntryResponseBean clearAnswer(
+            @RequestBody AnswerQuestionRequestBean answerQuestionBean,
+            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
+            throws Exception{
+        return saveAnswer(answerQuestionBean, null, true);
     }
 
     private FormEntryResponseBean saveAnswer(AnswerQuestionRequestBean answerQuestionBean,
-            @Nullable MultipartFile file) throws Exception {
+            @Nullable MultipartFile file, boolean clear) throws Exception {
 
         SerializableFormSession serializableFormSession = categoryTimingHelper.timed(
                 Constants.TimingCategories.GET_SESSION,
@@ -193,6 +204,10 @@ public class FormController extends AbstractBaseController {
         String fileId = null;
         Path mediaDirPath = formEntrySession.getMediaDirectoryPath(restoreFactory.getDomain(),
                 restoreFactory.getUsername(), restoreFactory.getAsUsername(), storageFactory.getAppId());
+        if (clear) {
+            formEntrySession.cleanCurrentMedia(mediaDirPath, answerQuestionBean.getFormIndex(),
+                    mediaMetaDataService);
+        }
         if (file != null) {
             fileId = categoryTimingHelper.timed(
                     Constants.TimingCategories.PROCESS_MEDIA,

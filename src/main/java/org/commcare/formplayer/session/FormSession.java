@@ -647,7 +647,7 @@ public class FormSession {
         return fileId;
     }
 
-    private void cleanCurrentMedia(Path mediaDirectoryPath,
+    public void cleanCurrentMedia(Path mediaDirectoryPath,
             String answerIndex, MediaMetaDataService mediaMetaDataService) {
         Object currentAnswer = getCurrentAnswer(answerIndex);
         if (currentAnswer != null) {

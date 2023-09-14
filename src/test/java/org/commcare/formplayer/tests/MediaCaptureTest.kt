@@ -11,6 +11,7 @@ import org.commcare.formplayer.junit.MediaMetaDataServiceExtension
 import org.commcare.formplayer.junit.RestoreFactoryExtension
 import org.commcare.formplayer.junit.StorageFactoryExtension
 import org.commcare.formplayer.junit.request.AnswerMediaQuestionRequest
+import org.commcare.formplayer.junit.request.ClearMediaQuestionRequest
 import org.commcare.formplayer.junit.request.NewFormRequest
 import org.commcare.formplayer.junit.request.SubmitFormRequest
 import org.commcare.formplayer.objects.MediaMetadataRecord
@@ -235,6 +236,22 @@ class MediaCaptureTest {
         }
     }
 
+    @Test
+    fun testClearMedia() {
+        val formResponse = startImageCaptureForm()
+        val imageResponse = saveImage(formResponse, "media/valid_image.jpg", "valid_image.jpg")
+
+        var expectedFilePath = getExpectedMediaPath(formResponse.session_id, imageResponse)
+        val originalSavedFile = expectedFilePath.toFile()
+        assertTrue("Could not find saved file on the filesystem", originalSavedFile.exists())
+
+        val clearImageResponse = clearImage(formResponse)
+        assertFalse("Could not remove file from the filesystem", originalSavedFile.exists())
+
+        val currentAnswer = clearImageResponse.tree[IMAGE_CAPTURE_INDEX].answer
+        assertEquals(null, currentAnswer)
+    }
+
     private fun checkContentType(expectedContentType: String, filePart: HttpEntity<*>) {
         val contentType = filePart.headers["Content-Type"]
         assertEquals(expectedContentType, contentType!![0])
@@ -257,5 +274,15 @@ class MediaCaptureTest {
 
         val questionRequest = AnswerMediaQuestionRequest(mockMvc, formSessionService)
         return questionRequest.request("" + IMAGE_CAPTURE_INDEX, file, formResponse.sessionId).bean()
+    }
+
+    private fun clearImage(
+        formResponse: NewFormResponse
+    ): FormEntryResponseBean {
+        val questions = formResponse.tree
+        assertEquals("q_image_acquire", questions[IMAGE_CAPTURE_INDEX].question_id)
+
+        val questionRequest = ClearMediaQuestionRequest(mockMvc, formSessionService)
+        return questionRequest.request("" + IMAGE_CAPTURE_INDEX, formResponse.sessionId).bean()
     }
 }
