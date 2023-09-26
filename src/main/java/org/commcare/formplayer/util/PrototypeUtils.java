@@ -17,6 +17,7 @@ import org.commcare.resources.model.installers.MediaInstaller;
 import org.commcare.resources.model.installers.ProfileInstaller;
 import org.commcare.resources.model.installers.SuiteInstaller;
 import org.commcare.resources.model.installers.XFormInstaller;
+import org.commcare.suite.model.Action;
 import org.commcare.suite.model.ComputedDatum;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormEntry;
@@ -144,6 +145,7 @@ public class PrototypeUtils {
                 MultiSelectEntityDatum.class.getName(),
                 ValueQueryData.class.getName(),
                 ListQueryData.class.getName(),
+                Action.class.getName(),
         };
 
         for (Class clazz : FunctionUtils.getXPathFuncListMap().values()) {
