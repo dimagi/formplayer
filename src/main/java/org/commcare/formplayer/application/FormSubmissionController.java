@@ -142,6 +142,12 @@ public class FormSubmissionController extends AbstractBaseController {
 
     public FormSubmissionContext getFormProcessingContext(HttpServletRequest request,
             SubmitRequestBean submitRequestBean) throws Exception {
+        return getFormProcessingContext(request, submitRequestBean.getDomain(), submitRequestBean.isPrevalidated(),
+                submitRequestBean.getAnswers());
+    }
+
+    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, String domain,
+            boolean isPrevalidated, Map<String, Object> answers) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 submitRequestBean.getSessionId());
 
@@ -166,13 +172,13 @@ public class FormSubmissionController extends AbstractBaseController {
 
         // package additional args to pass to category timing helper
         Map<String, String> extras = new HashMap();
-        extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
+        extras.put(Constants.DOMAIN_TAG, domain);
 
         FormSession formEntrySession = getFormSession(serializableFormSession, commCareSession);
         return new FormSubmissionContext(
                 request,
-                submitRequestBean.isPrevalidated(),
-                submitRequestBean.getAnswers(),
+                isPrevalidated,
+                answers,
                 formEntrySession,
                 serializableMenuSession,
                 engine,
