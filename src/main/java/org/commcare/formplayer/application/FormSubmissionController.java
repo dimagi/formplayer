@@ -171,7 +171,8 @@ public class FormSubmissionController extends AbstractBaseController {
         FormSession formEntrySession = getFormSession(serializableFormSession, commCareSession);
         return new FormSubmissionContext(
                 request,
-                submitRequestBean,
+                submitRequestBean.isPrevalidated(),
+                submitRequestBean.getAnswers(),
                 formEntrySession,
                 serializableMenuSession,
                 engine,
@@ -212,7 +213,7 @@ public class FormSubmissionController extends AbstractBaseController {
                 () -> validateSubmitAnswers(context),
                 context.getMetricsTags()
         );
-        if (errors.size() > 0 || !context.getRequest().isPrevalidated()) {
+        if (errors.size() > 0 || !context.isPrevalidated()) {
             return context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, errors);
         }
         return context.success();
@@ -414,7 +415,7 @@ public class FormSubmissionController extends AbstractBaseController {
         return FormController.validateAnswers(
                 context.getFormEntrySession().getFormEntryController(),
                 context.getFormEntrySession().getFormEntryModel(),
-                context.getRequest().getAnswers(),
+                context.getAnswers(),
                 context.getFormEntrySession().getSkipValidation());
     }
 }

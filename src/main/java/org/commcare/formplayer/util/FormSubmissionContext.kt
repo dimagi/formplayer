@@ -10,7 +10,8 @@ import org.commcare.session.CommCareSession
 import javax.servlet.http.HttpServletRequest
 
 class FormSubmissionContext(val httpRequest: HttpServletRequest,
-                            val request: SubmitRequestBean,
+                            val isPrevalidated: Boolean,
+                            val answers: Map<String, Object>,
                             val formEntrySession: FormSession,
                             val serializableMenuSession: SerializableMenuSession?,
                             val engine: FormplayerConfigEngine?,
