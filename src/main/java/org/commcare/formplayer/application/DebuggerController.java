@@ -1,5 +1,6 @@
 package org.commcare.formplayer.application;
 
+import org.checkerframework.checker.units.qual.A;
 import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
@@ -16,6 +17,7 @@ import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.FormattedQuestionsService;
+import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
@@ -54,6 +56,9 @@ public class DebuggerController extends AbstractBaseController {
 
     @Autowired
     private NotificationHelper notificationHelper;
+
+    @Autowired
+    private MenuSessionFactory menuSessionFactory;
 
     @Resource(name="redisTemplate")
     private ListOperations<String, XPathQueryItem> listOperations;
@@ -94,7 +99,7 @@ public class DebuggerController extends AbstractBaseController {
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
 
-        MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
+        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(debuggerMenuRequest);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, debuggerMenuRequest.getSelections(), debuggerMenuRequest.getQueryData());
         notificationHelper.logNotification(responseBean.getNotification(), request);
@@ -115,7 +120,7 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
                                                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                        HttpServletRequest request) throws Exception {
-        MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
+        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(evaluateXPathRequestBean);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, evaluateXPathRequestBean.getSelections(),
                 evaluateXPathRequestBean.getQueryData());

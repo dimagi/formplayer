@@ -60,27 +60,5 @@ public abstract class AbstractBaseController {
     @Autowired
     private VirtualDataInstanceService virtualDataInstanceService;
 
-    @Trace
-    protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
-        MenuSession menuSession = performInstall(sessionNavigationBean);
-        menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
-        return menuSession;
-    }
 
-    @Trace
-    protected MenuSession performInstall(InstallRequestBean bean) throws Exception {
-        if (bean.getAppId() == null || bean.getAppId().isEmpty()) {
-            throw new RuntimeException("App_id must not be null.");
-        }
-
-        return menuSessionFactory.buildSession(
-                bean.getUsername(),
-                bean.getDomain(),
-                bean.getAppId(),
-                bean.getLocale(),
-                bean.getOneQuestionPerScreen(),
-                bean.getRestoreAs(),
-                bean.getPreview()
-        );
-    }
 }
