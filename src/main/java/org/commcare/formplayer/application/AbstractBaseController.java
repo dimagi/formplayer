@@ -96,26 +96,4 @@ public abstract class AbstractBaseController {
                 serializableMenuSession.isPreview()).first;
         return SessionSerializer.deserialize(engine.getPlatform(), serializableMenuSession.getCommcareSession());
     }
-
-    protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        CommCareSession commCareSession = getCommCareSession(serializableFormSession.getMenuSessionId());
-        return getFormSession(serializableFormSession, commCareSession);
-    }
-
-    @NotNull
-    protected FormSession getFormSession(SerializableFormSession serializableFormSession,
-            @Nullable CommCareSession commCareSession) throws Exception {
-        FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
-                runnerService.getCaseSearchHelper(),
-                virtualDataInstanceService);
-        return new FormSession(serializableFormSession,
-                restoreFactory,
-                formSendCalloutHandler,
-                storageFactory,
-                commCareSession,
-                formplayerRemoteInstanceFetcher,
-                formDefinitionService
-        );
-    }
-
 }
