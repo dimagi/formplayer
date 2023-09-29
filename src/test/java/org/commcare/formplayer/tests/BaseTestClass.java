@@ -17,9 +17,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.data.xml.VirtualInstances;
+import org.commcare.formplayer.application.CommCareSessionFactory;
 import org.commcare.formplayer.application.DebuggerController;
 import org.commcare.formplayer.application.FormController;
+import org.commcare.formplayer.application.FormSessionFactory;
 import org.commcare.formplayer.application.FormSubmissionController;
+import org.commcare.formplayer.application.FormSubmissionHelper;
 import org.commcare.formplayer.application.MenuController;
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.application.UtilController;
@@ -200,6 +203,15 @@ public class BaseTestClass {
 
     @Autowired
     protected MenuSessionRunnerService menuSessionRunnerService;
+
+    @Autowired
+    protected FormSubmissionHelper formSubmissionHelper;
+
+    @Autowired
+    protected FormSessionFactory formSessionFactory;
+
+    @Autowired
+    protected CommCareSessionFactory ccSessionFactory;
 
     @Autowired
     private FormSendCalloutHandler formSendCalloutHandlerMock;
