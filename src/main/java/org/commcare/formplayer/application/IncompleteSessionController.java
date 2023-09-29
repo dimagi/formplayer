@@ -1,7 +1,5 @@
 package org.commcare.formplayer.application;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.FormsSessionsRequestBean;
@@ -32,8 +30,6 @@ import java.util.Set;
 @RestController
 @EnableAutoConfiguration
 public class IncompleteSessionController extends AbstractBaseController {
-
-    private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
     @Autowired
     private CommCareSessionFactory commCareSessionFactory;

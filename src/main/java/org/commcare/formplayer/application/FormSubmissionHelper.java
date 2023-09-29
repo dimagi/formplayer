@@ -42,7 +42,6 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpEntity;
@@ -102,9 +101,6 @@ public class FormSubmissionHelper {
 
     @Autowired
     private FormplayerStorageFactory storageFactory;
-
-    @Autowired
-    private RedisTemplate redisVolatilityDict;
 
     @Autowired
     private FormSessionFactory formSessionFactory;

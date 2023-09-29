@@ -24,7 +24,6 @@ import org.commcare.formplayer.util.NotificationLogger;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,9 +46,6 @@ public class DebuggerController extends AbstractBaseController {
 
     @Autowired
     private FormattedQuestionsService formattedQuestionsService;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate;
 
     @Autowired
     private FormSessionFactory formSessionFactory;

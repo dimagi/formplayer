@@ -10,7 +10,6 @@ import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
-import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.session.MenuSession;
@@ -37,9 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
-
-    @Autowired
-    private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
     protected FormplayerStorageFactory storageFactory;

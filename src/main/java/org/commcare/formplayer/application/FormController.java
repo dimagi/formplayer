@@ -28,7 +28,6 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MediaMetaDataService;
-import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
@@ -38,7 +37,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -71,8 +69,7 @@ public class FormController extends AbstractBaseController {
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
     private MediaMetaDataService mediaMetaDataService;
-    @Autowired
-    private SubmitService submitService;
+
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
     @Autowired
@@ -81,8 +78,6 @@ public class FormController extends AbstractBaseController {
     @Autowired
     private FormSessionFactory formSessionFactory;
 
-    @Autowired
-    private RedisTemplate redisVolatilityDict;
     @Autowired
     private FormplayerDatadog datadog;
     @Resource(name = "redisVolatilityDict")

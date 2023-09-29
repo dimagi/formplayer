@@ -1,18 +1,19 @@
 package org.commcare.formplayer.application;
 
-import io.sentry.Sentry;
-import io.sentry.SentryLevel;
-import lombok.extern.apachecommons.CommonsLog;
 import org.apache.catalina.connector.ClientAbortException;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.exceptions.ExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.HTMLExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.RetryExceptionResponseBean;
-import org.commcare.formplayer.exceptions.*;
+import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.exceptions.AsyncRetryException;
+import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.exceptions.FormattedApplicationConfigException;
+import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
+import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.util.screen.CommCareSessionException;
 import org.javarosa.core.util.NoLocalizedTextException;
@@ -29,6 +30,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
+
+import lombok.extern.apachecommons.CommonsLog;
 
 @ControllerAdvice
 @CommonsLog
