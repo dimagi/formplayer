@@ -115,7 +115,7 @@ public class FormSubmissionHelper {
 
     public SubmitResponseBean processAndsubmitForm(HttpServletRequest request, String sessionID,
             String domain, boolean isPrevalidated, Map<String, Object> answers) throws Exception {
-        FormSubmissionContext context = getFormProcessingContext(request, domain, isPrevalidated, answers);
+        FormSubmissionContext context = getFormProcessingContext(request, sessionID, domain, isPrevalidated, answers);
 
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
         Stream<ProcessingStep> processingSteps = Stream.of(
@@ -143,10 +143,9 @@ public class FormSubmissionHelper {
         return context.getResponse();
     }
 
-    private FormSubmissionContext getFormProcessingContext(HttpServletRequest request, String domain,
+    private FormSubmissionContext getFormProcessingContext(HttpServletRequest request, String sessionID, String domain,
             boolean isPrevalidated, Map<String, Object> answers) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionService.getSessionById(
-                submitRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(sessionID);
 
         String menuSessionId = serializableFormSession.getMenuSessionId();
         SerializableMenuSession serializableMenuSession = null;
