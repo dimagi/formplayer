@@ -16,7 +16,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FormSessionHelper {
+public class FormSessionFactory {
 
     @Autowired
     protected MenuSessionRunnerService runnerService;
@@ -36,8 +36,11 @@ public class FormSessionHelper {
     @Autowired
     private FormDefinitionService formDefinitionService;
 
+    @Autowired
+    private CommCareSessionFactory commCareSessionFactory;
+
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        CommCareSession commCareSession = getCommCareSession(serializableFormSession.getMenuSessionId());
+        CommCareSession commCareSession = commCareSessionFactory.getCommCareSession(serializableFormSession.getMenuSessionId());
         return getFormSession(serializableFormSession, commCareSession);
     }
 
