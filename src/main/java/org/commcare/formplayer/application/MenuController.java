@@ -42,6 +42,9 @@ public class MenuController extends AbstractBaseController {
     @Autowired
     protected FormplayerStorageFactory storageFactory;
 
+    @Autowired
+    private NotificationHelper notificationHelper;
+
     private final Log log = LogFactory.getLog(MenuController.class);
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
@@ -67,7 +70,7 @@ public class MenuController extends AbstractBaseController {
                     entityScreenContext,
                     null
             );
-            logNotification(baseResponseBean.getNotification(),request);
+            notificationHelper.logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
             EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled());
             if (detail == null) {
@@ -95,7 +98,7 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 null
         );
-        logNotification(baseResponseBean.getNotification(),request);
+        notificationHelper.logNotification(baseResponseBean.getNotification(),request);
 
         Screen currentScreen = menuSession.getNextScreen(true, entityScreenContext);
 
@@ -155,7 +158,7 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 sessionNavigationBean.getFormSessionId()
         );
-        logNotification(response.getNotification(), request);
+        notificationHelper.logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
 
@@ -180,7 +183,7 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
                 sessionNavigationBean.getEndpointId(),
                 sessionNavigationBean.getEndpointArgs());
-        logNotification(response.getNotification(), request);
+        notificationHelper.logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
 }

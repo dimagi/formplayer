@@ -18,7 +18,6 @@ import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
@@ -37,6 +36,7 @@ import org.commcare.formplayer.util.ProcessingStep;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.commcare.util.FileUtils;
+import org.commcare.util.screen.EntityScreenContext;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +80,9 @@ public class FormSubmissionHelper {
 
     @Autowired
     protected RestoreFactory restoreFactory;
+
+    @Autowired
+    private NotificationHelper notificationHelper;
 
     @Autowired
     protected MenuSessionFactory menuSessionFactory;
@@ -233,7 +236,7 @@ public class FormSubmissionHelper {
                 true,
                 NotificationMessage.Tag.submit);
         responseBean.setNotification(notification);
-        logNotification(notification, request);
+        notificationHelper.logNotification(notification, request);
         log.error(message, exception);
         return responseBean;
     }

@@ -49,6 +49,9 @@ public class DebuggerController extends AbstractBaseController {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private NotificationHelper notificationHelper;
+
     @Resource(name="redisTemplate")
     private ListOperations<String, XPathQueryItem> listOperations;
 
@@ -91,7 +94,7 @@ public class DebuggerController extends AbstractBaseController {
         MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, debuggerMenuRequest.getSelections(), debuggerMenuRequest.getQueryData());
-        logNotification(responseBean.getNotification(), request);
+        notificationHelper.logNotification(responseBean.getNotification(), request);
 
         return new MenuDebuggerContentResponseBean(
                 menuSession.getAppId(),
@@ -113,7 +116,7 @@ public class DebuggerController extends AbstractBaseController {
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, evaluateXPathRequestBean.getSelections(),
                 evaluateXPathRequestBean.getQueryData());
-        logNotification(responseBean.getNotification(), request);
+        notificationHelper.logNotification(responseBean.getNotification(), request);
 
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),

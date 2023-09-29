@@ -58,15 +58,7 @@ public abstract class AbstractBaseController {
     protected MenuSessionRunnerService runnerService;
 
     @Autowired
-    private NotificationLogger notificationLogger;
-
-    @Autowired
     private VirtualDataInstanceService virtualDataInstanceService;
-
-
-    void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
-        notificationLogger.logNotification(notification, req);
-    }
 
     @Trace
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
