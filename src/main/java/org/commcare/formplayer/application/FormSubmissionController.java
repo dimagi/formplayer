@@ -112,7 +112,13 @@ public class FormSubmissionController extends AbstractBaseController {
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
             HttpServletRequest request) throws Exception {
-        FormSubmissionContext context = getFormProcessingContext(request, submitRequestBean);
+        return processAndsubmitForm(request, submitRequestBean.getSessionId(), submitRequestBean.getDomain(),
+                submitRequestBean.isPrevalidated(), submitRequestBean.getAnswers());
+    }
+
+    private SubmitResponseBean processAndsubmitForm(HttpServletRequest request, String sessionID,
+            String domain, boolean isPrevalidated, Map<String, Object> answers) throws Exception {
+        FormSubmissionContext context = getFormProcessingContext(request, domain, isPrevalidated, answers);
 
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
         Stream<ProcessingStep> processingSteps = Stream.of(
@@ -135,15 +141,9 @@ public class FormSubmissionController extends AbstractBaseController {
         }
 
         // Only delete session immediately after successful submit
-        formSessionService.deleteSessionById(submitRequestBean.getSessionId());
+        formSessionService.deleteSessionById(sessionID);
 
         return context.getResponse();
-    }
-
-    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request,
-            SubmitRequestBean submitRequestBean) throws Exception {
-        return getFormProcessingContext(request, submitRequestBean.getDomain(), submitRequestBean.isPrevalidated(),
-                submitRequestBean.getAnswers());
     }
 
     public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, String domain,
