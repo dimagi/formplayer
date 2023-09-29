@@ -50,7 +50,7 @@ public class DebuggerController extends AbstractBaseController {
     private StringRedisTemplate redisTemplate;
 
     @Autowired
-    private FormSessionHelper formSessionHelper;
+    private FormSessionFactory formSessionFactory;
 
     @Autowired
     private NotificationHelper notificationHelper;
@@ -66,7 +66,7 @@ public class DebuggerController extends AbstractBaseController {
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(serializableFormSession.getMenuSessionId());
-        FormSession formSession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
         String instanceXml = formSession.getInstanceXml(false);
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
@@ -146,7 +146,7 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),

@@ -79,7 +79,7 @@ public class FormController extends AbstractBaseController {
     private FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private FormSessionHelper formSessionHelper;
+    private FormSessionFactory formSessionFactory;
 
     @Autowired
     private RedisTemplate redisVolatilityDict;
@@ -143,7 +143,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 changeLocaleBean.getSessionId());
-        FormSession formEntrySession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
         FormEntryResponseBean responseBean = formEntrySession.getCurrentJson();
         updateSession(formEntrySession);
@@ -202,7 +202,7 @@ public class FormController extends AbstractBaseController {
 
         FormSession formEntrySession = categoryTimingHelper.timed(
                 Constants.TimingCategories.INITIALIZE_SESSION,
-                () -> formSessionHelper.getFormSession(serializableFormSession)
+                () -> formSessionFactory.getFormSession(serializableFormSession)
         );
 
         String fileId = null;
@@ -262,7 +262,7 @@ public class FormController extends AbstractBaseController {
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 newRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
         JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getRepeatIndex());
@@ -283,7 +283,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 deleteRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
         JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
@@ -304,7 +304,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
         formSession.stepToNextIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession);
@@ -321,7 +321,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
         FormEntryNavigationResponseBean responseBean = formSession.getNextFormNavigation();
         updateSession(formSession);
         return responseBean;
@@ -337,7 +337,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
         formSession.stepToPreviousIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession);
@@ -358,7 +358,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
         return new GetInstanceResponseBean(formSession, false);
     }
 
@@ -373,7 +373,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         org.commcare.formplayer.objects.SerializableFormSession serializableFormSession =
                 formSessionService.getSessionById(requestBean.getSessionId());
-        FormSession formSession = formSessionHelper.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession);
         return responseBean;

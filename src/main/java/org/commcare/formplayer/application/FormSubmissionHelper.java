@@ -106,7 +106,7 @@ public class FormSubmissionHelper {
     private RedisTemplate redisVolatilityDict;
 
     @Autowired
-    private FormSessionHelper formSessionHelper;
+    private FormSessionFactory formSessionFactory;
 
     @Autowired
     private FormplayerDatadog datadog;
@@ -176,7 +176,7 @@ public class FormSubmissionHelper {
         Map<String, String> extras = new HashMap();
         extras.put(Constants.DOMAIN_TAG, domain);
 
-        FormSession formEntrySession = formSessionHelper.getFormSession(serializableFormSession, commCareSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, commCareSession);
         return new FormSubmissionContext(
                 request,
                 isPrevalidated,
