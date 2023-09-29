@@ -32,6 +32,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormSubmissionContext;
 import org.commcare.formplayer.util.FormplayerDatadog;
+import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.ProcessingStep;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
@@ -82,7 +83,7 @@ public class FormSubmissionHelper {
     protected RestoreFactory restoreFactory;
 
     @Autowired
-    private NotificationHelper notificationHelper;
+    private NotificationLogger notificationLogger;
 
     @Autowired
     protected MenuSessionFactory menuSessionFactory;
@@ -239,7 +240,7 @@ public class FormSubmissionHelper {
                 true,
                 NotificationMessage.Tag.submit);
         responseBean.setNotification(notification);
-        notificationHelper.logNotification(notification, request);
+        notificationLogger.logNotification(notification, request);
         log.error(message, exception);
         return responseBean;
     }

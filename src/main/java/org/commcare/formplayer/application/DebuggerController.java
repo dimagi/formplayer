@@ -1,6 +1,5 @@
 package org.commcare.formplayer.application;
 
-import org.checkerframework.checker.units.qual.A;
 import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
@@ -21,6 +20,7 @@ import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.NotificationLogger;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
@@ -55,7 +55,7 @@ public class DebuggerController extends AbstractBaseController {
     private FormSessionFactory formSessionFactory;
 
     @Autowired
-    private NotificationHelper notificationHelper;
+    private NotificationLogger notificationLogger;
 
     @Autowired
     private MenuSessionFactory menuSessionFactory;
@@ -102,7 +102,7 @@ public class DebuggerController extends AbstractBaseController {
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(debuggerMenuRequest);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, debuggerMenuRequest.getSelections(), debuggerMenuRequest.getQueryData());
-        notificationHelper.logNotification(responseBean.getNotification(), request);
+        notificationLogger.logNotification(responseBean.getNotification(), request);
 
         return new MenuDebuggerContentResponseBean(
                 menuSession.getAppId(),
@@ -124,7 +124,7 @@ public class DebuggerController extends AbstractBaseController {
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, evaluateXPathRequestBean.getSelections(),
                 evaluateXPathRequestBean.getQueryData());
-        notificationHelper.logNotification(responseBean.getNotification(), request);
+        notificationLogger.logNotification(responseBean.getNotification(), request);
 
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),

@@ -15,6 +15,7 @@ import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.Screen;
@@ -44,7 +45,7 @@ public class MenuController extends AbstractBaseController {
     protected FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private NotificationHelper notificationHelper;
+    private NotificationLogger notificationLogger;
 
     @Autowired
     private MenuSessionFactory menuSessionFactory;
@@ -74,7 +75,7 @@ public class MenuController extends AbstractBaseController {
                     entityScreenContext,
                     null
             );
-            notificationHelper.logNotification(baseResponseBean.getNotification(),request);
+            notificationLogger.logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
             EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled());
             if (detail == null) {
@@ -102,7 +103,7 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 null
         );
-        notificationHelper.logNotification(baseResponseBean.getNotification(),request);
+        notificationLogger.logNotification(baseResponseBean.getNotification(),request);
 
         Screen currentScreen = menuSession.getNextScreen(true, entityScreenContext);
 
@@ -162,7 +163,7 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 sessionNavigationBean.getFormSessionId()
         );
-        notificationHelper.logNotification(response.getNotification(), request);
+        notificationLogger.logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
 
@@ -187,7 +188,7 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
                 sessionNavigationBean.getEndpointId(),
                 sessionNavigationBean.getEndpointArgs());
-        notificationHelper.logNotification(response.getNotification(), request);
+        notificationLogger.logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
 }
