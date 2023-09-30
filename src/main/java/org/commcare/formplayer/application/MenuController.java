@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
+import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -45,6 +48,9 @@ public class MenuController extends AbstractBaseController {
 
     @Autowired
     private MenuSessionFactory menuSessionFactory;
+
+    @Autowired
+    private FormSubmissionHelper formSubmissionHelper;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -159,6 +165,14 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 sessionNavigationBean.getFormSessionId()
         );
+        if (response instanceof NewFormResponse) {
+            NewFormResponse formResponse = ((NewFormResponse)response);
+            if (formResponse.getShouldAutoSubmit()) {
+                return formSubmissionHelper.processAndsubmitForm(request, formResponse.getSessionId(),
+                        sessionNavigationBean.getDomain(),
+                        true, new HashMap<>());
+            }
+        }
         notificationLogger.logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
