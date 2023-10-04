@@ -9,6 +9,9 @@ import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
+import org.commcare.suite.model.Endpoint;
+import org.commcare.suite.model.EndpointAction;
+import org.commcare.suite.model.EndpointArgument;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityListSubscreen;
@@ -20,6 +23,8 @@ import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.NoLocalizedTextException;
+import org.springframework.web.util.UriBuilder;
+import org.springframework.web.util.UriTemplate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +43,8 @@ public class EntityListResponse extends MenuBean {
     private DisplayElement[] actions;
     private String redoLast;
     private Style[] styles;
+
+    private EndpointActionResponse[] endpointActions;
     private String[] headers;
     private Tile[] tiles;
     private int[] widthHints;
@@ -97,6 +104,7 @@ public class EntityListResponse extends MenuBean {
             processTitle(session);
             processCaseTiles(detail);
             this.styles = processStyles(detail);
+            this.endpointActions = processEndpointActions(detail, nextScreen);
             int sortIndex = entityScreenContext.getSortIndex();
             Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
             this.headers = pair.first;
@@ -117,7 +125,6 @@ public class EntityListResponse extends MenuBean {
             }
         }
     }
-
 
     private void processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
@@ -283,6 +290,40 @@ public class EntityListResponse extends MenuBean {
         return styles;
     }
 
+    private EndpointActionResponse[] processEndpointActions(Detail detail, EntityScreen nextScreen) {
+        DetailField[] fields = detail.getFields();
+        EndpointActionResponse[] endpointActions = new EndpointActionResponse[fields.length];
+        for (int i = 0; i < fields.length; i++) {
+            DetailField field = fields[i];
+            EndpointAction endpointAction = field.getEndpointAction();
+            if (endpointAction != null) {
+                String endpointId = endpointAction.getEndpointId();
+                Endpoint endpoint = nextScreen.getEndpoint(endpointId);
+                if (endpoint == null) {
+                    throw new RuntimeException(
+                            "Invalid endpoint_action id " + endpointId + " defined for case list screen");
+                }
+                String urlTemplate = getEndpointUrlTemplate(endpoint);
+                endpointActions[i] = new EndpointActionResponse(urlTemplate, endpointAction.isBackground());
+            }
+        }
+        return endpointActions;
+    }
+
+    private String getEndpointUrlTemplate(Endpoint endpoint) {
+        StringBuilder urlTemplateBuilder = new StringBuilder("/a/{domain}/app/v1/{appid}/");
+        urlTemplateBuilder.append(endpoint.getId());
+        urlTemplateBuilder.append("/?");
+        for (EndpointArgument argument : endpoint.getArguments()) {
+            String arg = argument.getId();
+            urlTemplateBuilder.append(arg);
+            urlTemplateBuilder.append("={");
+            urlTemplateBuilder.append(arg);
+            urlTemplateBuilder.append("}");
+        }
+        return urlTemplateBuilder.toString();
+    }
+
     private static DisplayElement[] processActions(SessionWrapper session, Vector<Action> actions) {
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action : actions) {
@@ -399,6 +440,10 @@ public class EntityListResponse extends MenuBean {
 
     public Tile[] getTiles() {
         return tiles;
+    }
+
+    public EndpointActionResponse[] getEndpointActions() {
+        return endpointActions;
     }
 
     public int getNumEntitiesPerRow() {
