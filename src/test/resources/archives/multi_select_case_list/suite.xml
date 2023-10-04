@@ -46,6 +46,24 @@
           <xpath function="case_name"/>
         </text>
       </sort>
+      <endpoint_action endpoint_id="case_list" background="true"/>
+    </field>
+    <field>
+      <header>
+        <text>
+          <locale id="m0.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
     </field>
     <action>
       <display>
