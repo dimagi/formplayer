@@ -16,13 +16,14 @@ import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.FormattedQuestionsService;
+import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.NotificationLogger;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,7 +48,13 @@ public class DebuggerController extends AbstractBaseController {
     private FormattedQuestionsService formattedQuestionsService;
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private FormSessionFactory formSessionFactory;
+
+    @Autowired
+    private NotificationLogger notificationLogger;
+
+    @Autowired
+    private MenuSessionFactory menuSessionFactory;
 
     @Resource(name="redisTemplate")
     private ListOperations<String, XPathQueryItem> listOperations;
@@ -60,7 +67,7 @@ public class DebuggerController extends AbstractBaseController {
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(serializableFormSession.getMenuSessionId());
-        FormSession formSession = getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
         String instanceXml = formSession.getInstanceXml(false);
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
@@ -88,10 +95,10 @@ public class DebuggerController extends AbstractBaseController {
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
 
-        MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
+        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(debuggerMenuRequest);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, debuggerMenuRequest.getSelections(), debuggerMenuRequest.getQueryData());
-        logNotification(responseBean.getNotification(), request);
+        notificationLogger.logNotification(responseBean.getNotification(), request);
 
         return new MenuDebuggerContentResponseBean(
                 menuSession.getAppId(),
@@ -109,11 +116,11 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
                                                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                        HttpServletRequest request) throws Exception {
-        MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
+        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(evaluateXPathRequestBean);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, evaluateXPathRequestBean.getSelections(),
                 evaluateXPathRequestBean.getQueryData());
-        logNotification(responseBean.getNotification(), request);
+        notificationLogger.logNotification(responseBean.getNotification(), request);
 
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),
@@ -140,7 +147,7 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),

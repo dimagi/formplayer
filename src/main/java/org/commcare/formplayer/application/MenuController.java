@@ -5,15 +5,17 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
+import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
-import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.Screen;
@@ -26,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -37,10 +41,16 @@ import javax.servlet.http.HttpServletRequest;
 public class MenuController extends AbstractBaseController {
 
     @Autowired
-    private CategoryTimingHelper categoryTimingHelper;
+    protected FormplayerStorageFactory storageFactory;
 
     @Autowired
-    protected FormplayerStorageFactory storageFactory;
+    private NotificationLogger notificationLogger;
+
+    @Autowired
+    private MenuSessionFactory menuSessionFactory;
+
+    @Autowired
+    private FormSubmissionHelper formSubmissionHelper;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -51,7 +61,7 @@ public class MenuController extends AbstractBaseController {
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                HttpServletRequest request) throws Exception {
-        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
         boolean isFuzzySearch = storageFactory.getPropertyManager().isFuzzySearchEnabled();
         if (sessionNavigationBean.getIsPersistent()) {
             EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
@@ -67,7 +77,7 @@ public class MenuController extends AbstractBaseController {
                     entityScreenContext,
                     null
             );
-            logNotification(baseResponseBean.getNotification(),request);
+            notificationLogger.logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
             EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled());
             if (detail == null) {
@@ -95,7 +105,7 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 null
         );
-        logNotification(baseResponseBean.getNotification(),request);
+        notificationLogger.logNotification(baseResponseBean.getNotification(),request);
 
         Screen currentScreen = menuSession.getNextScreen(true, entityScreenContext);
 
@@ -140,7 +150,7 @@ public class MenuController extends AbstractBaseController {
                                                     HttpServletRequest request) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
-        menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
         EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
@@ -155,7 +165,15 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 sessionNavigationBean.getFormSessionId()
         );
-        logNotification(response.getNotification(), request);
+        if (response instanceof NewFormResponse) {
+            NewFormResponse formResponse = ((NewFormResponse)response);
+            if (formResponse.getShouldAutoSubmit()) {
+                return formSubmissionHelper.processAndsubmitForm(request, formResponse.getSessionId(),
+                        sessionNavigationBean.getDomain(),
+                        true, new HashMap<>());
+            }
+        }
+        notificationLogger.logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
 
@@ -176,11 +194,11 @@ public class MenuController extends AbstractBaseController {
         // since they use it to jump between different sandboxes. Turn it off.
         restoreFactory.setPermitAggressiveSyncs(false);
 
-        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
         BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
                 sessionNavigationBean.getEndpointId(),
                 sessionNavigationBean.getEndpointArgs());
-        logNotification(response.getNotification(), request);
+        notificationLogger.logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
 }

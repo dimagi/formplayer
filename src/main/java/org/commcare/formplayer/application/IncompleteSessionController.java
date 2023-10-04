@@ -1,7 +1,5 @@
 package org.commcare.formplayer.application;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.FormsSessionsRequestBean;
@@ -13,6 +11,7 @@ import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.modern.database.TableBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,7 +31,8 @@ import java.util.Set;
 @EnableAutoConfiguration
 public class IncompleteSessionController extends AbstractBaseController {
 
-    private final Log log = LogFactory.getLog(IncompleteSessionController.class);
+    @Autowired
+    private CommCareSessionFactory commCareSessionFactory;
 
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION, method = RequestMethod.POST)
     @UserLock
@@ -41,7 +41,7 @@ public class IncompleteSessionController extends AbstractBaseController {
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionService.getSessionById(incompleteSessionRequestBean.getSessionId());
         storageFactory.configure(session);
-        return newFormResponseFactory.getResponse(session, getCommCareSession(session.getMenuSessionId()));
+        return newFormResponseFactory.getResponse(session, commCareSessionFactory.getCommCareSession(session.getMenuSessionId()));
     }
 
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
