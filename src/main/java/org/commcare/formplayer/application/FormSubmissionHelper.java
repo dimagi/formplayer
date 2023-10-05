@@ -116,7 +116,7 @@ public class FormSubmissionHelper {
     @Value("${formplayer.form.submit.max_attachments}")
     private Integer maxAttachmentsPerForm;
 
-    public SubmitResponseBean processAndsubmitForm(HttpServletRequest request, String sessionID,
+    public SubmitResponseBean processAndSubmitForm(HttpServletRequest request, String sessionID,
             String domain, boolean isPrevalidated, Map<String, Object> answers) throws Exception {
         FormSubmissionContext context = getFormProcessingContext(request, sessionID, domain, isPrevalidated, answers);
 

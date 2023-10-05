@@ -168,7 +168,7 @@ public class MenuController extends AbstractBaseController {
         if (response instanceof NewFormResponse) {
             NewFormResponse formResponse = ((NewFormResponse)response);
             if (formResponse.getShouldAutoSubmit()) {
-                return formSubmissionHelper.processAndsubmitForm(request, formResponse.getSessionId(),
+                return formSubmissionHelper.processAndSubmitForm(request, formResponse.getSessionId(),
                         sessionNavigationBean.getDomain(),
                         true, new HashMap<>());
             }
