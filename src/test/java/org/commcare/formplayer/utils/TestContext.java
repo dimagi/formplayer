@@ -2,6 +2,9 @@ package org.commcare.formplayer.utils;
 
 import com.timgroup.statsd.StatsDClient;
 
+import org.commcare.formplayer.application.CommCareSessionFactory;
+import org.commcare.formplayer.application.FormSessionFactory;
+import org.commcare.formplayer.application.FormSubmissionHelper;
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
@@ -207,7 +210,22 @@ public class TestContext {
     }
 
     @Bean
+    public FormSubmissionHelper formSubmissionHelper() {
+        return Mockito.spy(FormSubmissionHelper.class);
+    }
+
+    @Bean
     public MenuSessionFactory menuSessionFactory() {
         return Mockito.spy(MenuSessionFactory.class);
+    }
+
+    @Bean
+    public FormSessionFactory formSessionFactory() {
+        return Mockito.spy(FormSessionFactory.class);
+    }
+
+    @Bean
+    public CommCareSessionFactory commcareSessionFactory() {
+        return Mockito.spy(CommCareSessionFactory.class);
     }
 }

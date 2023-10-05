@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMultimap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.beans.InstallRequestBean;
+import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
@@ -190,5 +192,29 @@ public class MenuSessionFactory {
             CommCareSession commCareSession) throws Exception {
         return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
+    }
+
+    @Trace
+    public MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
+        MenuSession menuSession = performInstall(sessionNavigationBean);
+        menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
+        return menuSession;
+    }
+
+    @Trace
+    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
+        if (bean.getAppId() == null || bean.getAppId().isEmpty()) {
+            throw new RuntimeException("App_id must not be null.");
+        }
+
+        return buildSession(
+                bean.getUsername(),
+                bean.getDomain(),
+                bean.getAppId(),
+                bean.getLocale(),
+                bean.getOneQuestionPerScreen(),
+                bean.getRestoreAs(),
+                bean.getPreview()
+        );
     }
 }
