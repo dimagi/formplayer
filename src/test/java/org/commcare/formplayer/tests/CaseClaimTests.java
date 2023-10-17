@@ -296,6 +296,23 @@ public class CaseClaimTests extends BaseTestClass {
         Object[] detailFields = entityDetailResponseItem.getDetails();
         assertEquals(detailFields.length, 1);
         assertEquals(detailFields[0], "Burt Maclin");
+
+        // test short detail request
+        responseBean = getDetails(detailSelections,
+                "caseclaim",
+                null,
+                queryData,
+                EntityDetailListResponse.class,
+                false,
+                true);
+        entityDetailResponse = responseBean.getEntityDetailList();
+        assertEquals(entityDetailResponse.length, 1);
+        entityDetailResponseItem = entityDetailResponse[0];
+        detailFields = entityDetailResponseItem.getDetails();
+        assertEquals(detailFields.length, 3);
+        assertEquals(detailFields[0], "Burt Maclin");
+        assertEquals(detailFields[1], "Burt Maclin");
+        assertEquals(detailFields[2], "Kurt Maclin");
     }
 
     @Test

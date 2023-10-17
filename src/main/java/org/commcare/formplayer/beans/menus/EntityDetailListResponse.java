@@ -28,8 +28,8 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     }
 
     public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec,
-            TreeReference treeReference, boolean isFuzzySearchEnabled) {
-        entityDetailList = processDetails(screen, ec, treeReference, isFuzzySearchEnabled);
+            TreeReference treeReference, boolean isFuzzySearchEnabled, boolean isShortDetail) {
+        entityDetailList = processDetails(screen, ec, treeReference, isFuzzySearchEnabled, isShortDetail);
     }
 
     public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec,
@@ -38,8 +38,14 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     }
 
     private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec,
-            TreeReference ref, boolean isFuzzySearchEnabled) {
-        return processDetails(screen.getLongDetailList(ref), ec, ref, isFuzzySearchEnabled);
+            TreeReference ref, boolean isFuzzySearchEnabled, boolean isShortDetail) {
+        Detail[] detailList;
+        if (isShortDetail) {
+            detailList = new Detail[]{screen.getShortDetail()};
+        } else {
+            detailList = screen.getLongDetailList(ref);
+        }
+        return processDetails(detailList, ec, ref, isFuzzySearchEnabled);
     }
 
     private EntityDetailResponse[] processDetails(Detail[] detailList,

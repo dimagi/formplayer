@@ -129,7 +129,8 @@ public class MenuController extends AbstractBaseController {
                 new EntityDetailListResponse(entityScreen,
                         menuSession.getEvalContextWithHereFuncHandler(),
                         reference,
-                        storageFactory.getPropertyManager().isFuzzySearchEnabled()),
+                        storageFactory.getPropertyManager().isFuzzySearchEnabled(),
+                        sessionNavigationBean.getIsShortDetail()),
                 menuSession
         );
     }
