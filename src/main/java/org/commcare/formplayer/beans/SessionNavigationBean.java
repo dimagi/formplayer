@@ -25,6 +25,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private int sortIndex;
     private int casesPerPage;
     private String[] selectedValues;
+    private boolean isShortDetail;
 
     /**
      * Form session ID used to prevent attempts to navigate into a form session
@@ -112,6 +113,14 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setIsPersistent(boolean persistent) {
         isPersistent = persistent;
+    }
+
+    public boolean getIsShortDetail() {
+        return isShortDetail;
+    }
+
+    public void setIsShortDetail(boolean shortDetail) {
+        isShortDetail = shortDetail;
     }
 
     public int getSortIndex() {
