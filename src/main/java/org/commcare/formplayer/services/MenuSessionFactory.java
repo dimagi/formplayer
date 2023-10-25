@@ -66,13 +66,20 @@ public class MenuSessionFactory {
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
 
+    public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper)
+            throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
+        rebuildSessionFromFrame(menuSession, caseSearchHelper, true);
+    }
+
     /**
      * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
      */
     @Trace
-    public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
+    public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper,
+            boolean respectRelevancy)
+            throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
         EntityScreenContext entityScreenContext = new EntityScreenContext();
@@ -87,7 +94,8 @@ public class MenuSessionFactory {
                     continue;
                 }
 
-                MenuDisplayable[] options = ((MenuScreen)screen).getMenuDisplayables();
+                MenuDisplayable[] options = respectRelevancy ? ((MenuScreen)screen).getMenuDisplayables()
+                        : ((MenuScreen)screen).getAllChoices();
                 for (int i = 0; i < options.length; i++) {
                     for (StackFrameStep step : steps) {
                         if (step.getId().equals(options[i].getCommandID())) {
@@ -119,7 +127,7 @@ public class MenuSessionFactory {
                 }
 
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext);
+                    menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
@@ -167,7 +175,7 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext);
+                menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
             }

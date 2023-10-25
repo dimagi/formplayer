@@ -208,24 +208,25 @@ public class MenuSessionRunnerService {
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections, QueryData queryData) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null);
+        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null, true);
     }
 
     /**
      * Advances the session based on the selections.
      *
-     * @param selections - Selections are either an integer index into a list of modules
-     *                   or a case id indicating the case selected for a case detail.
-     *                   An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
-     *                   This would mean select the 0th menu, then the 2nd menu, then the case with the id
-     *                   6c5d91e9-61a2-4264-97f3-5d68636ff316.
+     * @param selections       - Selections are either an integer index into a list of modules
+     *                         or a case id indicating the case selected for a case detail.
+     *                         An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+     *                         This would mean select the 0th menu, then the 2nd menu, then the case with the id
+     *                         6c5d91e9-61a2-4264-97f3-5d68636ff316.
+     * @param respectRelevancy Whether to respect display conditions on a module or form while handling input
      */
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections,
             QueryData queryData,
             EntityScreenContext entityScreenContext,
-            String formSessionId) throws Exception {
+            String formSessionId, boolean respectRelevancy) throws Exception {
         NotificationMessage notificationMessage = null;
         boolean nonAppNav = formSessionId != null;
         try {
@@ -254,7 +255,7 @@ public class MenuSessionRunnerService {
                 // entity screen
                 boolean needsFullEntityScreen = i == selections.length;
                 boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
-                        true, entityScreenContext);
+                        true, entityScreenContext, respectRelevancy);
                 if (!gotNextScreen) {
                     notificationMessage = new NotificationMessage(
                             "Overflowed selections with selection " + selection + " at index " + i,
@@ -688,7 +689,7 @@ public class MenuSessionRunnerService {
         return null;
     }
 
-    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId,
+        public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId,
             @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
         if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
@@ -738,12 +739,13 @@ public class MenuSessionRunnerService {
                 }
             }
         }
-        menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
+        boolean respectRelevancy = endpoint.isRespectRelevancy();
+        menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper, respectRelevancy);
         String[] selections = menuSession.getSelections();
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections, null);
+        return advanceSessionWithSelections(menuSession, selections, null, new EntityScreenContext(), null, respectRelevancy);
     }
 
     private Map<String, ExternalDataInstance> processEndpointArgumentsForVirualInstance(Endpoint endpoint,
