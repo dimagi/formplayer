@@ -10,7 +10,8 @@ import java.util.Map;
  * Created by jschweers on 12/28/20.
  *
  * QueryData stores the case search & claim data for a session.
- * It's a hashtable keyed by command id, e.g., "search_command.m2"
+ * It's a hashtable keyed by a unique key combination of command id
+ * and query datum id, e.g., "search_command.m2_results"
  * For each command, QueryData stores two values:
  *  1. A boolean "execute" flag. If true, the search should be run.
  *     If not, just fetch the current values of the prompts.
