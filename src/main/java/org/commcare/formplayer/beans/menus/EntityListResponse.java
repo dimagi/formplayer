@@ -118,9 +118,9 @@ public class EntityListResponse extends MenuBean {
                 groupHeaderRows = detail.getGroup().getHeaderRows();
             }
 
-            setQueryKey(session.getCommand());
             QueryScreen queryScreen = nextScreen.getQueryScreen();
             if (queryScreen != null) {
+                setQueryKey(queryScreen.getQueryKey());
                 queryResponse = new QueryResponseBean(queryScreen);
             }
         }
