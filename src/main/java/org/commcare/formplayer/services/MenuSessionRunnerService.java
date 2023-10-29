@@ -181,8 +181,9 @@ public class MenuSessionRunnerService {
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
-            String queryKey = menuSession.getSessionWrapper().getCommand();
-            answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey);
+            String queryKey = ((FormplayerQueryScreen)nextScreen).getQueryDatum().getDataId();
+            String fallbackQueryKey = menuSession.getSessionWrapper().getCommand();
+            answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey, fallbackQueryKey);
             menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
             Sentry.setTag(Constants.MODULE_TAG, "case_search");
@@ -413,12 +414,13 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             boolean replay, boolean skipCache)
             throws CommCareSessionException {
-        String queryKey = menuSession.getSessionWrapper().getCommand();
-        boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
+        String queryKey = queryScreen.getQueryDatum().getDataId();
+        String fallbackQueryKey = menuSession.getSessionWrapper().getCommand();
+        boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey, fallbackQueryKey);
 
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
-        answerQueryPrompts(queryScreen, queryData, queryKey);
-        if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+        answerQueryPrompts(queryScreen, queryData, queryKey, fallbackQueryKey);
+        if ((queryData != null && queryData.getExecute(queryKey, fallbackQueryKey)) || autoSearch) {
             return doQuery(
                     queryScreen,
                     queryScreen.doDefaultSearch() && !forceManualSearch,
@@ -433,8 +435,9 @@ public class MenuSessionRunnerService {
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
-    private void answerQueryPrompts(FormplayerQueryScreen screen, QueryData queryData, String queryKey) {
-        Hashtable<String, String> queryDictionary = queryData == null ? null : queryData.getInputs(queryKey);
+    private void answerQueryPrompts(FormplayerQueryScreen screen, QueryData queryData, String queryKey,
+            String fallbackQueryKey) {
+        Hashtable<String, String> queryDictionary = queryData == null ? null : queryData.getInputs(queryKey, fallbackQueryKey);
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
