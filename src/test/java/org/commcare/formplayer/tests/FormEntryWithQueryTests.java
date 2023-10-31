@@ -64,8 +64,8 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
         Hashtable<String, String> inputs = new Hashtable<>();
         QueryData queryData = new QueryData();
-        queryData.setInputs("m1", inputs);
-        queryData.setExecute("m1", true);
+        queryData.setInputs("m1_results", inputs);
+        queryData.setExecute("m1_results", true);
 
         sessionNavigateWithQuery(new String[]{"1"},
                 "caseclaimquery",
@@ -116,8 +116,8 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
         Hashtable<String, String> inputs = new Hashtable<>();
         QueryData queryData = new QueryData();
-        queryData.setInputs("m2", inputs);
-        queryData.setExecute("m2", true);
+        queryData.setInputs("m2_results", inputs);
+        queryData.setExecute("m2_results", true);
 
         // execute search query
         sessionNavigateWithQuery(new String[]{"2"},
@@ -184,8 +184,8 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
         Hashtable<String, String> inputs = new Hashtable<>();
         QueryData queryData = new QueryData();
-        queryData.setInputs("m2", inputs);
-        queryData.setExecute("m2", true);
+        queryData.setInputs("m2_results", inputs);
+        queryData.setExecute("m2_results", true);
 
         // execute search query
         sessionNavigateWithQuery(new String[]{"2"},
@@ -217,7 +217,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         selections.add("0");  // m3-f0
 
         QueryData queryData = new QueryData();
-        queryData.setInputs("m3", new Hashtable<String, String>() {{ put("name", "bob"); }});
+        queryData.setInputs("m3_results", new Hashtable<String, String>() {{ put("name", "bob"); }});
 
         when(webClientMock.postFormData(any(), any())).thenReturn(
                 FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
