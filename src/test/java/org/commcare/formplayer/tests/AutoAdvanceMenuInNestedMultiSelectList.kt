@@ -44,8 +44,6 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
             "query_responses/case_search_multi_select_response.xml", 2
         ).use {
             val queryData = QueryData()
-            queryData.setExecute("search_command.m1", true)
-
             var response = sessionNavigateWithQuery(
                 arrayOf("1", USE_SELECTED_VALUES),
                 APP_NAME,
@@ -53,9 +51,6 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
                 arrayOf("94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"),
                 QueryResponseBean::class.java
             )
-
-            queryData.setExecute("search_command.m2", true)
-
             val updatedSelections = ArrayList<String>()
             updatedSelections.addAll(response.getSelections().asList())
             updatedSelections.add(USE_SELECTED_VALUES)

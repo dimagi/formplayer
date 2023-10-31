@@ -61,11 +61,11 @@ public class SmartLinkTests extends BaseTestClass {
 
         mockSearchAgainResponse();
         QueryData queryData = new QueryData();
-        queryData.setExecute("search_command.m1", true);
-        queryData.setForceManualSearch("search_command.m1", true);
+        queryData.setExecute("search_command.m1_results", true);
+        queryData.setForceManualSearch("search_command.m1_results", true);
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("mood", "3");
-        queryData.setInputs("search_command.m1", inputs);
+        queryData.setInputs("search_command.m1_results", inputs);
 
         sessionNavigateWithQuery(
                 new String[]{"1"},
