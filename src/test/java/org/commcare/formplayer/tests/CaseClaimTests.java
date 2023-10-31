@@ -87,7 +87,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testEmptySearch() throws Exception {
         configureQueryMock();
         QueryData queryData = new QueryData();
-        queryData.setForceManualSearch("search_command.m1", true);
+        queryData.setForceManualSearch("results", true);
         // When no queryData, Formplayer should return the default values
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
@@ -113,7 +113,7 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[2].getValue() == null;
 
         // Empty params should be carried over to url as well
-        queryData.setExecute("search_command.m1", true);
+        queryData.setExecute("results", true);
         inputs.put("age", "22");
         inputs.put("state", "ka");
         inputs.put("name", "Burt");
@@ -136,13 +136,13 @@ public class CaseClaimTests extends BaseTestClass {
         inputs.put("name", "#,#chris");
         inputs.put("state", "ka");
         inputs.put("district", "#,#hampi");
-        queryData.setExecute("search_command.m1", false);
+        queryData.setExecute("results", false);
         queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("ka");
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#hampi");
 
-        queryData.setExecute("search_command.m1", true);
+        queryData.setExecute("results", true);
         sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
@@ -187,7 +187,7 @@ public class CaseClaimTests extends BaseTestClass {
         testDetailResponse(detailSelections, null);
 
         QueryData queryData = new QueryData();
-        queryData.setForceManualSearch("search_command.m1", true);
+        queryData.setForceManualSearch("results", true);
         // forceManualAction true when default Search on should result in query screen
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays().length == 5;
@@ -233,7 +233,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         // Execute Search to get results
         inputs.put("age", "22"); // satisfy required condition to execute search
-        queryData.setExecute("search_command.m1", true);
+        queryData.setExecute("results", true);
         responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
@@ -318,7 +318,7 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testQueryPromptRequired() throws Exception {
         QueryData queryData = new QueryData();
-        queryData.setForceManualSearch("search_command.m1", true);
+        queryData.setForceManualSearch("results", true);
 
         // forceManualAction true when default Search on should result in query screen
         QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
@@ -346,7 +346,7 @@ public class CaseClaimTests extends BaseTestClass {
         // dynamic condition, inputting age should make dob not required
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("age", "12");
-        queryData.setInputs("search_command.m1", inputs);
+        queryData.setInputs("results", inputs);
         queryResponseBean = sessionNavigateWithQuery(
                 new String[]{"1", "action 1"},
                 "caseclaim",
@@ -561,12 +561,12 @@ public class CaseClaimTests extends BaseTestClass {
     private QueryData setUpQueryDataWithInput(Hashtable<String, String> inputs, boolean forceManual,
             boolean execute) {
         QueryData queryData = new QueryData();
-        queryData.setInputs("search_command.m1", inputs);
+        queryData.setInputs("results", inputs);
         if (forceManual) {
-            queryData.setForceManualSearch("search_command.m1", true);
+            queryData.setForceManualSearch("results", true);
         }
         if (execute) {
-            queryData.setExecute("search_command.m1", true);
+            queryData.setExecute("results", true);
         }
         return queryData;
     }
