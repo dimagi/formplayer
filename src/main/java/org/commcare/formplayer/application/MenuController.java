@@ -75,7 +75,8 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getSelections(),
                     sessionNavigationBean.getQueryData(),
                     entityScreenContext,
-                    null
+                    null,
+                    true
             );
             notificationLogger.logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
@@ -103,7 +104,8 @@ public class MenuController extends AbstractBaseController {
                 commitSelections,
                 sessionNavigationBean.getQueryData(),
                 entityScreenContext,
-                null
+                null,
+                true
         );
         notificationLogger.logNotification(baseResponseBean.getNotification(),request);
 
@@ -164,7 +166,8 @@ public class MenuController extends AbstractBaseController {
                 selections,
                 sessionNavigationBean.getQueryData(),
                 entityScreenContext,
-                sessionNavigationBean.getFormSessionId()
+                sessionNavigationBean.getFormSessionId(),
+                true
         );
         if (response instanceof NewFormResponse) {
             NewFormResponse formResponse = ((NewFormResponse)response);

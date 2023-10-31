@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.services.BrowserValuesProvider;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -119,5 +121,26 @@ public class EndpointLaunchTest extends BaseTestClass {
         assertArrayEquals(formResponse.getSelections(),
                 new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1",
                         "f04bf0e8-2001-4885-a724-5497b34abe95"});
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointsRelevancy() throws Exception {
+        // With respect-relevancy set to false, we can navigate to the hidden form
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("case_id", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18");
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_child_not_respect_relevancy",
+                endpointArgs,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Add Child");
+
+        // With respect-relevancy set, we can't navigate to the hidden form
+        Assertions.assertThrows(Exception.class, () -> {
+            sessionNavigateWithEndpoint(APP_NAME,
+                    "add_child_respect_relevancy",
+                    endpointArgs,
+                    NewFormResponse.class);
+        });
     }
 }
