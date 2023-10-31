@@ -214,7 +214,7 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
 
         // we should see parent case list with search action
         EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
+                appName,
                 queryData,
                 EntityListResponse.class);
 
@@ -223,7 +223,7 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
         // move to search screen
         selections.add("action 0");
         sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
+                appName,
                 queryData,
                 EntityListResponse.class);
 
@@ -309,7 +309,7 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
         // we move to child search directly
         selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SEARCH_FIRST);
         sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
+                appName,
                 queryData,
                 QueryResponseBean.class);
 
@@ -325,7 +325,7 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
         // we move to child search results directly
         selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SKIP_TO_RESULTS);
         EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
+                appName,
                 queryData,
                 EntityListResponse.class);
         testChildSearchResult(appName, queryData, selections, subCaseSelectionId);
@@ -393,7 +393,7 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
         // we see a case list first
         selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SEE_MORE);
         EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                APP_CASE_CLAIM_SPF_PARENT,
+                appName,
                 queryData,
                 EntityListResponse.class);
 
