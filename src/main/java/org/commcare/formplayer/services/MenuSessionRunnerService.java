@@ -1,7 +1,6 @@
 package org.commcare.formplayer.services;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
-import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -371,8 +370,7 @@ public class MenuSessionRunnerService {
                                 menuSession.getSessionWrapper());
                     }
                 }
-                if (previousScreen != null && previousScreen instanceof QueryScreen
-                        && FeatureFlagChecker.isToggleEnabled(TOGGLE_SPLIT_SCREEN_CASE_SEARCH)) {
+                if (previousScreen != null && previousScreen instanceof QueryScreen) {
                     ((EntityScreen)nextScreen).setQueryScreen(((QueryScreen)previousScreen));
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
