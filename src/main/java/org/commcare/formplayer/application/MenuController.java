@@ -7,6 +7,7 @@ import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SessionNavigationBean;
+import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
@@ -59,8 +60,8 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
-                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                               HttpServletRequest request) throws Exception {
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            HttpServletRequest request) throws Exception {
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
         boolean isFuzzySearch = storageFactory.getPropertyManager().isFuzzySearchEnabled();
         if (sessionNavigationBean.getIsPersistent()) {
@@ -78,9 +79,10 @@ public class MenuController extends AbstractBaseController {
                     null,
                     true
             );
-            notificationLogger.logNotification(baseResponseBean.getNotification(),request);
+            notificationLogger.logNotification(baseResponseBean.getNotification(), request);
             // See if we have a persistent case tile to expand
-            EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled());
+            EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession,
+                    storageFactory.getPropertyManager().isFuzzySearchEnabled());
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
@@ -107,13 +109,14 @@ public class MenuController extends AbstractBaseController {
                 null,
                 true
         );
-        notificationLogger.logNotification(baseResponseBean.getNotification(),request);
+        notificationLogger.logNotification(baseResponseBean.getNotification(), request);
 
         Screen currentScreen = menuSession.getNextScreen(true, entityScreenContext);
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailResponse detail = runnerService.getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled());
+            EntityDetailResponse detail = runnerService.getPersistentDetail(menuSession,
+                    storageFactory.getPropertyManager().isFuzzySearchEnabled());
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
@@ -144,13 +147,14 @@ public class MenuController extends AbstractBaseController {
      * @param authToken             The Django session id auth token
      * @return A MenuBean or a NewFormResponse
      */
-    @RequestMapping(value = {Constants.URL_MENU_NAVIGATION, Constants.URL_INITIAL_MENU_NAVIGATION}, method = RequestMethod.POST)
+    @RequestMapping(value = {Constants.URL_MENU_NAVIGATION,
+            Constants.URL_INITIAL_MENU_NAVIGATION}, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
-                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                                    HttpServletRequest request) throws Exception {
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            HttpServletRequest request) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
@@ -169,6 +173,20 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getFormSessionId(),
                 true
         );
+
+        SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
+                response);
+        if (formSubmissionResponse != null) {
+            return formSubmissionResponse;
+        } else {
+            notificationLogger.logNotification(response.getNotification(), request);
+            return setLocationNeeds(response, menuSession);
+        }
+    }
+
+    private SubmitResponseBean handleAutoFormSubmission(HttpServletRequest request,
+            SessionNavigationBean sessionNavigationBean,
+            BaseResponseBean response) throws Exception {
         if (response instanceof NewFormResponse) {
             NewFormResponse formResponse = ((NewFormResponse)response);
             if (formResponse.getShouldAutoSubmit()) {
@@ -177,11 +195,11 @@ public class MenuController extends AbstractBaseController {
                         true, new HashMap<>());
             }
         }
-        notificationLogger.logNotification(response.getNotification(), request);
-        return setLocationNeeds(response, menuSession);
+        return null;
     }
 
-    private static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean, MenuSession menuSession) {
+    private static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean,
+            MenuSession menuSession) {
         responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
         responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
         return responseBean;
@@ -192,8 +210,8 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateToEndpoint(@RequestBody SessionNavigationBean sessionNavigationBean,
-                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                                    HttpServletRequest request) throws Exception {
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            HttpServletRequest request) throws Exception {
         // Apps using aggressive syncs are likely to hit a sync whenever using endpoint-based navigation,
         // since they use it to jump between different sandboxes. Turn it off.
         restoreFactory.setPermitAggressiveSyncs(false);
@@ -202,7 +220,13 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
                 sessionNavigationBean.getEndpointId(),
                 sessionNavigationBean.getEndpointArgs());
-        notificationLogger.logNotification(response.getNotification(), request);
-        return setLocationNeeds(response, menuSession);
+        SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
+                response);
+        if (formSubmissionResponse != null) {
+            return formSubmissionResponse;
+        } else {
+            notificationLogger.logNotification(response.getNotification(), request);
+            return setLocationNeeds(response, menuSession);
+        }
     }
 }

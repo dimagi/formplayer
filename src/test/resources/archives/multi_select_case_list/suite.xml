@@ -199,4 +199,12 @@
       </push>
     </stack>
   </endpoint>
+  <endpoint id="auto_submit_form">
+    <stack>
+      <push>
+        <command value="'menu-auto-submit'"/>
+        <command value="'m0-auto-submit-form'"/>
+      </push>
+    </stack>
+  </endpoint>
 </suite>
