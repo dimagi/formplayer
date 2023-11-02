@@ -215,7 +215,13 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
                 sessionNavigationBean.getEndpointId(),
                 sessionNavigationBean.getEndpointArgs());
-        notificationLogger.logNotification(response.getNotification(), request);
-        return setLocationNeeds(response, menuSession);
+        SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
+                response);
+        if (formSubmissionResponse != null) {
+            return formSubmissionResponse;
+        } else {
+            notificationLogger.logNotification(response.getNotification(), request);
+            return setLocationNeeds(response, menuSession);
+        }
     }
 }
