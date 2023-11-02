@@ -780,4 +780,8 @@ public class MenuSessionRunnerService {
     public CaseSearchHelper getCaseSearchHelper() {
         return caseSearchHelper;
     }
+
+    public void clearCaseSearchCache() {
+        caseSearchHelper.clearCache();
+    }
 }
