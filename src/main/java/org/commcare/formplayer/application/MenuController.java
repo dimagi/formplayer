@@ -7,6 +7,7 @@ import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SessionNavigationBean;
+import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
@@ -169,6 +170,19 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getFormSessionId(),
                 true
         );
+
+        SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
+                response);
+        if (formSubmissionResponse != null) {
+            return formSubmissionResponse;
+        } else {
+            notificationLogger.logNotification(response.getNotification(), request);
+            return setLocationNeeds(response, menuSession);
+        }
+    }
+
+    private SubmitResponseBean handleAutoFormSubmission(HttpServletRequest request, SessionNavigationBean sessionNavigationBean,
+            BaseResponseBean response) throws Exception {
         if (response instanceof NewFormResponse) {
             NewFormResponse formResponse = ((NewFormResponse)response);
             if (formResponse.getShouldAutoSubmit()) {
@@ -177,8 +191,7 @@ public class MenuController extends AbstractBaseController {
                         true, new HashMap<>());
             }
         }
-        notificationLogger.logNotification(response.getNotification(), request);
-        return setLocationNeeds(response, menuSession);
+        return null;
     }
 
     private static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean, MenuSession menuSession) {
