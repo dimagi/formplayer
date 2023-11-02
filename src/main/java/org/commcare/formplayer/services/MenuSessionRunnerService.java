@@ -305,6 +305,7 @@ public class MenuSessionRunnerService {
                 entityScreenContext
         );
         restoreFactory.cacheSessionSelections(menuSession.getSelections());
+        clearVolatiles(menuSession.getSessionWrapper(), new StackObserver());
 
         if (nextResponse != null) {
             if (nextResponse.getNotification() == null && notificationMessage != null) {
