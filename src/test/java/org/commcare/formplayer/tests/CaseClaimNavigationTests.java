@@ -72,7 +72,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         selections.add("action 1");  // load case search
 
         QueryData queryData = new QueryData();
-        queryData.setExecute("case_search.m1", true);
+        queryData.setExecute("results", true);
 
         EntityListResponse entityListResponse;
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
@@ -295,7 +295,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         selections.add("3512eb7c-7a58-4a95-beda-205eb0d7f163");
 
         QueryData queryData = new QueryData();
-        queryData.setInputs("m2-f3", new Hashtable<String, String>() {{ put("name", "bob"); }});
+        queryData.setInputs("results", new Hashtable<String, String>() {{ put("name", "bob"); }});
 
         NewFormResponse formResponse;
         try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_response_owned.xml")) {
