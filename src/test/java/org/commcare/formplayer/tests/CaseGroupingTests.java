@@ -71,7 +71,7 @@ public class CaseGroupingTests {
 
     @Test
     public void testCaseListWithGrouping() {
-        EntityListResponse entityListResponse= loadCaseList( 0, 100);
+        EntityListResponse entityListResponse = loadCaseList( 0, 100);
         assertEquals(entityListResponse.getGroupHeaderRows(), 2);
         EntityBean[] entities = entityListResponse.getEntities();
         assertTrue(entities.length == 8);
