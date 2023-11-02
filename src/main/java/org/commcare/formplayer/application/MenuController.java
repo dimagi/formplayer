@@ -94,6 +94,10 @@ public class MenuController extends AbstractBaseController {
         String detailSelection = selections[selections.length - 1];
         System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
 
+        if (sessionNavigationBean.getIsRefreshCaseSearch()) {
+            runnerService.clearCaseSearchCache();
+        }
+
         EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
