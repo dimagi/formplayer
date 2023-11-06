@@ -150,9 +150,11 @@ public class MenuSession implements HereFunctionHandlerListener {
      *                              allowing this step to skip validation
      * @param allowAutoLaunch       If this step is allowed to automatically launch an action,
      *                              assuming it has an autolaunch action specified.
+     * @param respectRelevancy      Whether to respect display conditions on a module or form while
+     *                              handling input
      */
     public boolean handleInput(String input, boolean needsFullEntityScreen, boolean inputValidated,
-            boolean allowAutoLaunch, EntityScreenContext entityScreenContext)
+            boolean allowAutoLaunch, EntityScreenContext entityScreenContext, boolean respectRelevancy)
             throws CommCareSessionException {
         Screen screen = getNextScreen(needsFullEntityScreen, entityScreenContext);
         log.info("Screen " + screen + " handling input " + input);
@@ -171,14 +173,15 @@ public class MenuSession implements HereFunctionHandlerListener {
                     // auto-launch takes preference over auto-select
                     if (screen.shouldBeSkipped() && !autoLaunch &&
                             entityScreen.autoSelectEntities(sessionWrapper)) {
-                        return handleInput(input, true, inputValidated, allowAutoLaunch, entityScreenContext);
+                        return handleInput(input, true, inputValidated, allowAutoLaunch, entityScreenContext, respectRelevancy);
                     }
-                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
+                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues,
+                            respectRelevancy);
                 } else {
                     entityScreen.updateDatum(sessionWrapper, input);
                 }
             } else {
-                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues, respectRelevancy);
             }
 
             if (screen instanceof MultiSelectEntityScreen && input.contentEquals(

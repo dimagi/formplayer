@@ -8,8 +8,8 @@ plugins {
     id 'org.springframework.boot' version '2.7.3'
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
     id "io.freefair.lombok" version "8.4"
-    id 'org.jetbrains.kotlin.jvm' version '1.9.10'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.9.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.20'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.9.20'
 }
 
 springBoot {
@@ -109,11 +109,11 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.21.0'
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.22.0'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.2.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
-    implementation group: 'commons-io', name: 'commons-io', version: '2.14.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.15.0'
     implementation group: 'org.json', name: 'json', version: '20231013'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: "${shedlockVersion}"
