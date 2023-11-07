@@ -217,4 +217,8 @@ public class CaseSearchHelper {
         }
         return builder.toString();
     }
+
+    public void clearCache() {
+        cacheManager.getCache("case_search").clear();
+    }
 }
