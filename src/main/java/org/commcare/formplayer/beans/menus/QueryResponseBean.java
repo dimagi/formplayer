@@ -23,6 +23,7 @@ public class QueryResponseBean extends MenuBean {
     private DisplayElement[] displays;
     private final String type = "query";
     private String description;
+    private Boolean hasDynamicSearch;
 
     QueryResponseBean() {
     }
@@ -86,6 +87,7 @@ public class QueryResponseBean extends MenuBean {
         setTitle(queryScreen.getScreenTitle());
         setDescription(queryScreen.getDescriptionText());
         setQueryKey(querySession.getCommand());
+        setDynamicSearch(queryScreen.getDynamicSearch());
     }
 
     @Override
