@@ -695,15 +695,15 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, null, clazz, false, false);
+        return getDetails(selections, testName, null, null, clazz, false, false, false);
     }
 
     <T> T getDetails(String[] selections, String testName, QueryData queryData, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, queryData, clazz, false, false);
+        return getDetails(selections, testName, null, queryData, clazz, false, false, false);
     }
 
     <T> T getDetails(String[] selections, String testName, String locale, QueryData queryData, Class<T> clazz,
-            boolean inline, boolean isShortDetail) throws Exception {
+            boolean inline, boolean isShortDetail, boolean isRefreshCaseSearch) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
@@ -712,6 +712,7 @@ public class BaseTestClass {
         sessionNavigationBean.setIsPersistent(inline);
         sessionNavigationBean.setQueryData(queryData);
         sessionNavigationBean.setIsShortDetail(isShortDetail);
+        sessionNavigationBean.setIsRefreshCaseSearch(isRefreshCaseSearch);
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
@@ -724,7 +725,7 @@ public class BaseTestClass {
     }
 
     <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, null, clazz, true, false);
+        return getDetails(selections, testName, null, null, clazz, true, false, false);
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
