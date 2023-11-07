@@ -44,14 +44,6 @@ public class QueryResponseBean extends MenuBean {
         this.displays = displays;
     }
 
-    public boolean hasDynamicSearch() {
-        return hasDynamicSearch;
-    }
-
-    public void setDynamicSearch(boolean dynamicSearch) {
-        hasDynamicSearch = dynamicSearch;
-    }
-
     public QueryResponseBean(QueryScreen queryScreen) {
         OrderedHashtable<String, QueryPrompt> queryPromptMap = queryScreen.getUserInputDisplays();
         Hashtable<String, String> currentAnswers = queryScreen.getCurrentAnswers();
@@ -95,7 +87,7 @@ public class QueryResponseBean extends MenuBean {
         setTitle(queryScreen.getScreenTitle());
         setDescription(queryScreen.getDescriptionText());
         setQueryKey(querySession.getCommand());
-        setDynamicSearch(queryScreen.hasDynamicSearch());
+        setDynamicSearch(queryScreen.getDynamicSearch());
     }
 
     @Override
