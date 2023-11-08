@@ -23,7 +23,6 @@ public class QueryResponseBean extends MenuBean {
     private DisplayElement[] displays;
     private final String type = "query";
     private String description;
-    private Boolean hasDynamicSearch;
 
     QueryResponseBean() {
     }

@@ -85,8 +85,6 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     private String smartLinkRedirect;
 
-    private boolean dynamicSearch;
-
     public MenuSession(SerializableMenuSession session,
             FormplayerConfigEngine engine, CommCareSession commCareSession, RestoreFactory restoreFactory,
             FormplayerRemoteInstanceFetcher instanceFetcher) throws Exception {
