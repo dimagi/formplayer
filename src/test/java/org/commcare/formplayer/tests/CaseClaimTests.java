@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +31,7 @@ import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.HqUserDetails;
+import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
 import org.commcare.suite.model.QueryPrompt;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,12 +65,15 @@ public class CaseClaimTests extends BaseTestClass {
     @Captor
     ArgumentCaptor<Multimap<String, String>> requestDataCaptor;
 
+    private MockRequestUtils mockRequest;
+
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
         cacheManager.getCache("case_search").clear();
+        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
     }
 
     @Override
@@ -304,7 +309,8 @@ public class CaseClaimTests extends BaseTestClass {
                 queryData,
                 EntityDetailListResponse.class,
                 false,
-                true);
+                true,
+                false);
         entityDetailResponse = responseBean.getEntityDetailList();
         assertEquals(entityDetailResponse.length, 1);
         entityDetailResponseItem = entityDetailResponse[0];
@@ -313,6 +319,55 @@ public class CaseClaimTests extends BaseTestClass {
         assertEquals(detailFields[0], "Burt Maclin");
         assertEquals(detailFields[1], "Burt Maclin");
         assertEquals(detailFields[2], "Kurt Maclin");
+    }
+
+    @Test
+    public void testDetailCaseSearchRefresh() throws Exception {
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_claim_response.xml")) {
+            sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                    "caseclaim",
+                    null,
+                    EntityListResponse.class);
+        }
+
+        Mockito.reset(webClientMock);
+
+        // Making a detail request without case search refresh flag will use the existing cache build by above request
+        // and therefore passes without us mocking the query again
+        String[] detailSelections = new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"};
+        EntityDetailListResponse detailResponse = getDetails(detailSelections,
+                "caseclaim",
+                null,
+                EntityDetailListResponse.class);
+        assertNotNull(detailResponse);
+
+        // making the same request as above with the case search refresh should fail
+        // as we have not configured request mock
+        assertThrows(Exception.class, () ->
+                getDetails(detailSelections,
+                        "caseclaim",
+                        null,
+                        null,
+                        EntityDetailListResponse.class,
+                        false,
+                        false,
+                        true)
+        );
+
+        // make sure above request passes with query mock configured
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_claim_response.xml")) {
+            detailResponse = getDetails(detailSelections,
+                    "caseclaim",
+                    null,
+                    null,
+                    EntityDetailListResponse.class,
+                    false,
+                    false,
+                    true);
+            assertNotNull(detailResponse);
+        }
     }
 
     @Test
