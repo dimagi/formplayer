@@ -183,6 +183,14 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testBackwardCompatibilityForQueryKey() throws Exception {
+        QueryData queryData = new QueryData();
+        queryData.setForceManualSearch("results", true);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assert queryResponseBean.getDisplays().length == 5;
+    }
+
+    @Test
     public void testQueryScreen() throws Exception {
         UserSqlSandbox sandbox = new UserSqlSandbox(
                 getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
