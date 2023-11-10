@@ -23,6 +23,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private String[] selections;
     private HashMap<String, String> translations;
     private String smartLinkRedirect;
+    private boolean dynamicSearch;
 
     public BaseResponseBean() {
     }
@@ -52,6 +53,14 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public void setSmartLinkRedirect(String smartLinkRedirect) {
         this.smartLinkRedirect = smartLinkRedirect;
+    }
+
+    public boolean getDynamicSearch() {
+        return dynamicSearch;
+    }
+
+    public void setDynamicSearch(boolean dynamicSearch) {
+        this.dynamicSearch = dynamicSearch;
     }
 
     public NotificationMessage getNotification() {

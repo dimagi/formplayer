@@ -89,6 +89,23 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testDynamicSearch() throws Exception {
+        configureQueryMock();
+        // Run query with an app with dynamic_search true and verify
+        QueryData queryData = new QueryData();
+        queryData.setForceManualSearch("search_command.m1", true);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assertTrue(queryResponseBean.getDynamicSearch());
+
+        // Run query with an app with dynamic_search false and verify
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1"},
+                "case_claim_eof_navigation",
+                null,
+                QueryResponseBean.class);
+        assertFalse(queryResponseBean.getDynamicSearch());
+    }
+
+    @Test
     public void testEmptySearch() throws Exception {
         configureQueryMock();
         QueryData queryData = new QueryData();
@@ -196,6 +213,7 @@ public class CaseClaimTests extends BaseTestClass {
         // forceManualAction true when default Search on should result in query screen
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assert queryResponseBean.getDisplays().length == 5;
+        assertTrue(queryResponseBean.getDynamicSearch());
 
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
