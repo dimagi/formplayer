@@ -52,7 +52,7 @@ public class EntityDetailResponse {
         this.details = processDetails(entityScreen.getData());
         this.headers = entityScreen.getHeaders();
         this.styles = entityScreen.getStyles();
-
+        processCaseTiles(entityScreen.getDetail()); // TODO: always?
     }
 
     private static Object[] processDetails(Object[] data) {
@@ -94,12 +94,13 @@ public class EntityDetailResponse {
         entityList.toArray(this.entities);
         this.title = title;
         this.styles = processStyles(detail);
+        processCaseTiles(detail);   // TODO: always?
         Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec, 0);
         setHeaders(pair.first);
         setUseNodeset(true);
     }
 
-    private void processCaseTiles(Detail shortDetail) {
+    private void processCaseTiles(Detail shortDetail) {     // TODO: not necessarily short
         DetailField[] fields = shortDetail.getFields();
         if (!shortDetail.usesEntityTileView()) {
             return;
@@ -118,6 +119,7 @@ public class EntityDetailResponse {
         maxWidth = maxWidthHeight.first;
         maxHeight = maxWidthHeight.second;
         useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
+        this.tiles = tiles;     // TODO: is this a good idea?
     }
 
     protected static Style[] processStyles(Detail detail) {
