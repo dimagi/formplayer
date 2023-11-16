@@ -85,7 +85,7 @@ public class QueryResponseBean extends MenuBean {
         }
         setTitle(queryScreen.getScreenTitle());
         setDescription(queryScreen.getDescriptionText());
-        setQueryKey(querySession.getCommand());
+        setQueryKey(queryScreen.getQueryKey());
         setDynamicSearch(queryScreen.getDynamicSearch());
     }
 

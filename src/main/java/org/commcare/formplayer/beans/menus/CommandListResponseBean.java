@@ -42,7 +42,6 @@ public class CommandListResponseBean extends MenuBean {
         }
 
         this.layoutStyle = session.getPlatform().getMenuDisplayStyle(menuId);
-        setQueryKey(menuId);
     }
 
     @Override
