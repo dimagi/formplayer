@@ -459,7 +459,7 @@
     </text>
     <command id="m2-f0"/>
   </menu>
-  <menu id="m3">
+  <menu id="m3" relevant="1=2">
     <text>
       <locale id="modules.m1"/>
     </text>
