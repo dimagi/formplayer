@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -93,7 +94,7 @@ public class SubmitTests extends BaseTestClass {
 
         doThrow(new Exception("mock stack fail"))
                 .doCallRealMethod()
-                .when(menuSessionRunnerService).resolveFormGetNext(any(), any());
+                .when(menuSessionRunnerService).resolveFormGetNext(any(), any(), anyBoolean());
 
         SubmitResponseBean errorResponse = submitForm(answers, sessionId);
         assertEquals("error", errorResponse.getStatus());

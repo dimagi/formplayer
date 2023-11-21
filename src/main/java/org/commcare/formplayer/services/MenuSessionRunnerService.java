@@ -265,7 +265,7 @@ public class MenuSessionRunnerService {
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
                 Screen nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
-                        needsFullEntityScreen, entityScreenContext);
+                        needsFullEntityScreen, entityScreenContext, respectRelevancy);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                     // we've reached the end of this navigation path and no form in sight
@@ -275,7 +275,7 @@ public class MenuSessionRunnerService {
                         executeAndRebuildSession(menuSession);
                     } else {
                         // no more nav, we're done
-                        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession, entityScreenContext);
+                        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession, entityScreenContext, respectRelevancy);
                         if (postSyncResponse == null) {
                             // Return use to the app root
                             postSyncResponse = new BaseResponseBean(null,
@@ -339,7 +339,8 @@ public class MenuSessionRunnerService {
             String nextInput,
             QueryData queryData,
             boolean needsFullEntityScreen,
-            EntityScreenContext entityScreenContext) throws CommCareSessionException {
+            EntityScreenContext entityScreenContext,
+            boolean respectRelevancy) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
         Screen previousScreen;
@@ -381,7 +382,7 @@ public class MenuSessionRunnerService {
                         replay, skipCache
                 );
             } else if (nextScreen instanceof MenuScreen) {
-                sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
+                sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu(), respectRelevancy);
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
                     doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
@@ -490,7 +491,8 @@ public class MenuSessionRunnerService {
     }
 
     @Trace
-    public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext)
+    public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext,
+            boolean respectRelevancy)
             throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             if (menuSession.getSmartLinkRedirect() != null) {
@@ -502,7 +504,7 @@ public class MenuSessionRunnerService {
             }
 
             autoAdvanceSession(menuSession, "", new QueryData(),
-                    true, entityScreenContext
+                    true, entityScreenContext, respectRelevancy
             );
             BaseResponseBean response = getNextMenu(menuSession, null, entityScreenContext);
             response.setSelections(menuSession.getSelections());

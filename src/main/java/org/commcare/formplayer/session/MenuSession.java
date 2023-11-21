@@ -203,17 +203,18 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
-     * @param screen          The current screen that has been navigated to.
-     * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be.
+     * @param screen           The current screen that has been navigated to.
+     * @param autoAdvanceMenu  Whether the menu navigation should be advanced if it can be.
+     * @param respectRelevancy Whether to respect menu relevancy conditions while trying to auto-advance
      * @return true if the session was advanced
      * @throws CommCareSessionException
      */
-    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu)
+    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu, boolean respectRelevancy)
             throws CommCareSessionException {
         if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
             return false;
         }
-        return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
+        return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper, respectRelevancy);
     }
 
     /**
