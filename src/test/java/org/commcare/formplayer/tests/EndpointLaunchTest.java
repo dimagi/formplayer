@@ -135,6 +135,12 @@ public class EndpointLaunchTest extends BaseTestClass {
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Add Child");
 
+         formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_child_not_respect_relevancy_m0_f1",
+                endpointArgs,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Followup");
+
         // With respect-relevancy set, we can't navigate to the hidden form
         Assertions.assertThrows(Exception.class, () -> {
             sessionNavigateWithEndpoint(APP_NAME,

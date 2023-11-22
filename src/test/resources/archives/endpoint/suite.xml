@@ -465,6 +465,13 @@
     </text>
     <command id="m1-f0" relevant="1=2"/>
   </menu>
+  <menu id="m4" relevant="1=2">
+    <text>
+      <locale id="modules.m1"/>
+    </text>
+    <command id="m0-f1" relevant="1=2"/>
+    <command id="m1-f0"/>
+  </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test-1/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/search_case_id]) = 0">
       <data key="case_id" ref="instance('commcaresession')/session/data/search_case_id"/>
@@ -650,6 +657,16 @@
         <command value="'m3'" />
         <datum id="case_id" value="$case_id" />
         <command value="'m1-f0'" />
+      </push>
+    </stack>
+  </endpoint>
+  <endpoint id="add_child_not_respect_relevancy_m0_f1" respect-relevancy="false">
+    <argument id="case_id" />
+    <stack>
+      <push>
+        <command value="'m4'" />
+        <datum id="case_id" value="$case_id" />
+        <command value="'m0-f1'" />
       </push>
     </stack>
   </endpoint>

@@ -89,7 +89,7 @@ public class MenuSessionFactory {
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
-                if (menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu())) {
+                if (menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu(), respectRelevancy)) {
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }

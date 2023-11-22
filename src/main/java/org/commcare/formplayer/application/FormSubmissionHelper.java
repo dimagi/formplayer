@@ -372,7 +372,7 @@ public class FormSubmissionHelper {
             CommCareSession commCareSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = menuSessionFactory.buildSession(serializedSession, engine, commCareSession);
-        return runnerService.resolveFormGetNext(menuSession, new EntityScreenContext());
+        return runnerService.resolveFormGetNext(menuSession, new EntityScreenContext(), true);
     }
 
     private SubmitResponseBean performSync(FormSubmissionContext context) throws SyncRestoreException {
