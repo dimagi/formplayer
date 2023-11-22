@@ -133,8 +133,8 @@ public class NewFormResponseFactory {
                 serializedSession.getInstanceXml()
         );
 
-        String[] translationKey = {"repeat.dialog.add.new"};
-        for (String key : translationKey) {
+        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title"};
+        for (String key : translationKeys) {
             String translation = Localization.getWithDefault(key, null);
             if (translation != null) {
                 response.addToTranslation(key, translation);
