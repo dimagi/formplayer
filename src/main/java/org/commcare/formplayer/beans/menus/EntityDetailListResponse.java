@@ -18,8 +18,13 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
+    private boolean removeCaseRow;
 
     public EntityDetailListResponse() {
+    }
+
+    public EntityDetailListResponse(boolean removeCaseRow) {
+        this.removeCaseRow = removeCaseRow;
     }
 
     public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
@@ -108,5 +113,15 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     @JsonSetter(value = "isPersistentDetail")
     public void setPersistentDetail(boolean persistentDetail) {
         this.isPersistentDetail = persistentDetail;
+    }
+
+    @JsonGetter(value = "removeCaseRow")
+    public boolean getRemoveCaseRow() {
+        return removeCaseRow;
+    }
+
+    @JsonSetter(value = "removeCaseRow")
+    public void setRemoveCaseRow(boolean persistentDetail) {
+        this.removeCaseRow = removeCaseRow;
     }
 }

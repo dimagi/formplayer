@@ -130,7 +130,12 @@ public class MenuController extends AbstractBaseController {
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
 
         if (reference == null) {
-            throw new RuntimeException("Could not find case with ID " + detailSelection);
+            if (sessionNavigationBean.getIsRefreshCaseSearch()) {
+                EntityDetailListResponse removeCaseRowResponse = new EntityDetailListResponse(true);
+                return removeCaseRowResponse;
+            } else {
+                throw new RuntimeException("Could not find case with ID " + detailSelection);
+            }
         }
 
         restoreFactory.cacheSessionSelections(selections);
