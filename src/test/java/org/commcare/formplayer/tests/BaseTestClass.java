@@ -703,7 +703,8 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String[] selections, String testName, String locale, QueryData queryData, Class<T> clazz,
-            boolean inline, boolean isShortDetail, boolean isRefreshCaseSearch) throws Exception {
+            boolean inline, boolean isShortDetail, boolean isRefreshCaseSearch,
+            boolean isClickableIcon) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
@@ -713,6 +714,7 @@ public class BaseTestClass {
         sessionNavigationBean.setQueryData(queryData);
         sessionNavigationBean.setIsShortDetail(isShortDetail);
         sessionNavigationBean.setIsRefreshCaseSearch(isRefreshCaseSearch);
+        sessionNavigationBean.setIsClickableIcon(isClickableIcon);
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
