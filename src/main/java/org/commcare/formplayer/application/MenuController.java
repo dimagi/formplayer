@@ -1,5 +1,7 @@
 package org.commcare.formplayer.application;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.AppInstall;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 
@@ -130,7 +133,7 @@ public class MenuController extends AbstractBaseController {
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
 
         if (reference == null) {
-            throw new RuntimeException("Could not find case with ID " + detailSelection);
+            throw new ResponseStatusException(NOT_FOUND, "Could not find case with ID " + detailSelection);
         }
 
         restoreFactory.cacheSessionSelections(selections);
