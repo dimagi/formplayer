@@ -28,7 +28,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     private boolean isShortDetail;
 
     private boolean isRefreshCaseSearch;
-    private boolean isClickableIcon;
     /**
      * Form session ID used to prevent attempts to navigate into a form session
      * e.g. pressing the back button
@@ -126,12 +125,6 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setIsRefreshCaseSearch(boolean refreshCaseSearch) {
         isRefreshCaseSearch = refreshCaseSearch;
-    }
-    public boolean getIsClickableIcon() {
-        return isClickableIcon;
-    }
-    public void setIsClickableIcon(boolean clickableIcon) {
-        isClickableIcon = clickableIcon;
     }
 
     public void setIsShortDetail(boolean shortDetail) {
