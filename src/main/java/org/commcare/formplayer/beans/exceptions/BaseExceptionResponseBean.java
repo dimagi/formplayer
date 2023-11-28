@@ -10,6 +10,7 @@ public abstract class BaseExceptionResponseBean {
     protected String status;
     protected String url;
     protected String type;
+    protected int statusCode;
 
     public String getException() {
         return exception;
@@ -35,6 +36,15 @@ public abstract class BaseExceptionResponseBean {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @JsonGetter(value = "statusCode")
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String status) {
+        this.statusCode = statusCode;
     }
 
     @JsonGetter(value = "url")
