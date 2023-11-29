@@ -148,7 +148,7 @@ public class MenuController extends AbstractBaseController {
     }
 
     /**
-     * Make a a series of menu selections (as above, but can have multiple)
+     * Make a series of menu selections (as above, but can have multiple)
      *
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
      * @param authToken             The Django session id auth token
