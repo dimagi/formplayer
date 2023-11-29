@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -132,6 +133,9 @@ public class GlobalDefaultExceptionHandler {
             return null;
         } else if (exception instanceof DataAccessException) {
             message = "An issue prevented us from processing your action, please try again";
+        } else if (exception instanceof ResponseStatusException) {
+            int statusCode = ((ResponseStatusException)exception).getRawStatusCode();
+            return new ExceptionResponseBean(message, req.getRequestURL().toString(), statusCode);
         }
         return new ExceptionResponseBean(message, req.getRequestURL().toString());
     }

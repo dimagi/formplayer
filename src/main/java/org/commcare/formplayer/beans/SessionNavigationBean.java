@@ -28,7 +28,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     private boolean isShortDetail;
 
     private boolean isRefreshCaseSearch;
-
     /**
      * Form session ID used to prevent attempts to navigate into a form session
      * e.g. pressing the back button
