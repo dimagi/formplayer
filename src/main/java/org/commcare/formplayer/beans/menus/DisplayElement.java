@@ -51,6 +51,9 @@ public class DisplayElement {
     @Nullable
     private String requiredMsg;
 
+    @Nullable
+    private String groupKey;
+
     public DisplayElement() {
     }
 
@@ -68,8 +71,8 @@ public class DisplayElement {
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id,
             @Nullable String input,
             @Nullable String receive, @Nullable String hidden, @Nullable String value,
-            @Nullable String[] itemsetChoicesKeys, @Nullable String[] itemsetChoicesLabels, boolean allowBlankValue, boolean required,
-            String requiredMsg, String error) {
+            @Nullable String[] itemsetChoicesKeys, @Nullable String[] itemsetChoicesLabels, boolean allowBlankValue,
+            boolean required, String requiredMsg, String error, @Nullable String groupKey) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -91,6 +94,7 @@ public class DisplayElement {
         this.allowBlankValue = allowBlankValue;
         this.required = required;
         this.requiredMsg = requiredMsg;
+        this.groupKey = groupKey;
         this.error = error;
     }
 
@@ -186,5 +190,11 @@ public class DisplayElement {
     @Nullable
     public String getRequiredMsg() {
         return requiredMsg;
+    }
+
+    @JsonGetter(value = "group_key")
+    @Nullable
+    public String getGroupKey() {
+        return groupKey;
     }
 }
