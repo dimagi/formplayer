@@ -79,7 +79,8 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.isAllowBlankValue(),
                     isRequired,
                     requiredMessage,
-                    errors.get(key)
+                    errors.get(key),
+                    queryPromptItem.getGroupKey()
                     );
             count++;
         }
