@@ -4,6 +4,7 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
+import org.commcare.suite.model.QueryGroup;
 import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.utils.ItemSetUtils;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Created by willpride on 4/13/16.
@@ -23,6 +25,7 @@ public class QueryResponseBean extends MenuBean {
     private DisplayElement[] displays;
     private final String type = "query";
     private String description;
+    private OrderedHashtable<String, String> groupHeader;
 
     QueryResponseBean() {
     }
@@ -41,6 +44,10 @@ public class QueryResponseBean extends MenuBean {
 
     private void setDisplays(DisplayElement[] displays) {
         this.displays = displays;
+    }
+
+    public OrderedHashtable<String, String> getGroupHeader(){
+        return groupHeader;
     }
 
     public QueryResponseBean(QueryScreen queryScreen) {
@@ -84,6 +91,16 @@ public class QueryResponseBean extends MenuBean {
                     );
             count++;
         }
+
+        OrderedHashtable<String, QueryGroup> queryGroupMap = queryScreen.getGroupHeaders();
+        groupHeader = new OrderedHashtable<>();
+        for (Map.Entry<String, QueryGroup> entry : queryGroupMap.entrySet()) {
+            String key = entry.getKey();
+            QueryGroup queryGroupItem = entry.getValue();
+            String text = queryGroupItem.getDisplay().getText().evaluate(ec);
+            groupHeader.put(key, text);
+        }
+
         setTitle(queryScreen.getScreenTitle());
         setDescription(queryScreen.getDescriptionText());
         setQueryKey(queryScreen.getQueryKey());
