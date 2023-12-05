@@ -192,7 +192,7 @@ public class DisplayElement {
         return requiredMsg;
     }
 
-    @JsonGetter(value = "group_key")
+    @JsonGetter(value = "groupKey")
     @Nullable
     public String getGroupKey() {
         return groupKey;
