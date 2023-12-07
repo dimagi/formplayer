@@ -196,6 +196,36 @@
             <sample_choice_question/>
             <sample_number_question/>
         </update>
+        <index>
+            <parent case_type="parent">bbb</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="bbb" date_modified="2016-07-18T19:55:11.240000Z" user_id="67056dfba972ea70017477f2217d0b77">
+        <create>
+            <case_type>parent</case_type>
+            <case_name>parent_case_name</case_name>
+            <owner_id>67056dfba972ea70017477f2217d0b77</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-07-18</date_opened>
+            <sample_choice_question/>
+            <sample_number_question/>
+        </update>
+    </case>
+        <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="ccc" date_modified="2016-07-18T19:55:11.240000Z" user_id="">
+        <create>
+            <case_type>parent</case_type>
+            <case_name>parent_case_name</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-07-18</date_opened>
+            <sample_choice_question/>
+            <sample_number_question/>
+        </update>
+        <index>
+            <host case_type="parent" relationship="extension">bbb</host>
+        </index>
     </case>
     <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="3512eb7c-7a58-4a95-beda-205eb0d7f163" date_modified="2017-04-21T14:38:49.323000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
