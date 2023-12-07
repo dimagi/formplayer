@@ -217,6 +217,11 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 "count(instance('casedb')/casedb/case[@case_id='0156fa3e-093e-4136-b95c-01b13dae66c6'])",
                 "1"
         );
+        checkXpath(
+        formResponse.getSessionId(),
+        "count(instance('casedb')/casedb/case[@case_id='0156fa3e-093e-4136-b95c-01b13dae66c7'])",
+        "1"
+        );
     }
 
     /**

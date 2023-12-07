@@ -267,12 +267,15 @@
         <locale id="forms.m2f1"/>
       </text>
     </command>
-    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
+    <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="$case_id!=''">
       <data ref="instance('commcaresession')/session/data/case_id" key="case_id"/>
+      <data ref="instance('commcaresession')/session/data/parent_id" key="parent_id"/>
     </post>
     <instance id="casedb" src="jr://instance/casedb"/>
     <instance id="commcaresession" src="jr://instance/session"/>
     <session>
+      <datum id="parent_id" nodeset="instance('casedb')/casedb/case[@case_type='parent']"
+        value="./@case_id" detail-select="m0_search_short"/>
       <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true">
         <data ref="'case'" key="case_type"/>
       </query>
