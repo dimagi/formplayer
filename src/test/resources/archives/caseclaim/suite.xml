@@ -371,14 +371,28 @@
         <data ref="'case2'" key="case_type"/>
         <data ref="'case3'" key="case_type"/>
         <data ref="'False'" key="include_closed"/>
-        <prompt key="name" default="instance('commcaresession')/session/context/deviceid" required="true()">
+        <group key="group_header_0">
+          <display>
+            <text>
+              <locale id="search_property.m0.group_header_0"/>
+            </text>
+          </display>
+        </group>
+        <group key="group_header_3">
+          <display>
+            <text>
+              <locale id="search_property.m0.group_header_3"/>
+            </text>
+          </display>
+        </group>
+        <prompt key="name" default="instance('commcaresession')/session/context/deviceid" required="true()" group_key="group_header_0">
           <display>
             <text>
               <locale id="search_property.m1.name"/>
             </text>
           </display>
         </prompt>
-        <prompt key="state" input="select1" default="&quot;ka&quot;" allow_blank_value="true" required="true()">
+        <prompt key="state" input="select1" default="&quot;ka&quot;" allow_blank_value="true" required="true()" group_key="group_header_0">
           <display>
             <text>
               <locale id="search_property.m1.state"/>
@@ -395,7 +409,7 @@
             <sort ref="id"/>
           </itemset>
         </prompt>
-        <prompt key="district" input="select">
+        <prompt key="district" input="select" group_key="group_header_3">
           <display>
             <text>
               <locale id="search_property.m1.district"/>
@@ -407,7 +421,7 @@
             <sort ref="id"/>
           </itemset>
         </prompt>
-        <prompt key="age">
+        <prompt key="age" group_key="group_header_3">
           <validation test="count(.) = 1 and int(instance('my-search-input')/input/field[@name='age'])>18">
             <text>
               <locale id="search_property.m1.age.validation"/>
@@ -424,7 +438,7 @@
             </text>
           </display>
         </prompt>
-        <prompt key="dob">
+        <prompt key="dob" group_key="group_header_3">
           <display>
             <text>
               <locale id="search_property.m1.dob"/>

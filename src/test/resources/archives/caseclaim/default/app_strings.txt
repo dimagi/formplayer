@@ -42,3 +42,5 @@ search_property.m1.age.validation=age should be greater than 18
 search_property.m1.age.required=One of age or DOB is required
 search_property.m1.dob=Date of Birth
 search_property.m1.dob.required=One of age or DOB is required
+search_property.m0.group_header_0=Group1 Header
+search_property.m0.group_header_3=Group2 Header

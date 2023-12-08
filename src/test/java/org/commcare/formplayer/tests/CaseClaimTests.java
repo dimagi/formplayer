@@ -438,6 +438,27 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testQueryPromptGrouped() throws Exception {
+        QueryData queryData = new QueryData();
+
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                QueryResponseBean.class);
+
+        String groupKey1 = "group_header_0";
+        String groupKey2 = "group_header_3";
+        String expectedHeader1 = "Group1 Header";
+        String expectedHeader2 = "Group2 Header";
+
+        assertEquals(queryResponseBean.getGroupHeaders().get(groupKey1), expectedHeader1);
+        assertEquals(queryResponseBean.getGroupHeaders().get(groupKey2), expectedHeader2);
+        assertEquals(queryResponseBean.getDisplays()[0].getGroupKey(), groupKey1);
+        assertEquals(queryResponseBean.getDisplays()[4].getGroupKey(), groupKey2);
+    }
+
+    @Test
     public void testDependentItemsets_DependentChoicesChangeWithSelection() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "rj");
