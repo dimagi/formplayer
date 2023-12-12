@@ -92,7 +92,7 @@ public class QueryResponseBean extends MenuBean {
             count++;
         }
 
-        OrderedHashtable<String, QueryGroup> queryGroupMap = queryScreen.getGroupHeaders();
+        Hashtable<String, QueryGroup> queryGroupMap = queryScreen.getGroupHeaders();
         groupHeaders = new OrderedHashtable<>();
         for (Map.Entry<String, QueryGroup> entry : queryGroupMap.entrySet()) {
             String key = entry.getKey();
