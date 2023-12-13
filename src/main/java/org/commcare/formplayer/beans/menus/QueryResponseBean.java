@@ -25,7 +25,7 @@ public class QueryResponseBean extends MenuBean {
     private DisplayElement[] displays;
     private final String type = "query";
     private String description;
-    private OrderedHashtable<String, String> groupHeaders;
+    private Hashtable<String, String> groupHeaders;
 
     QueryResponseBean() {
     }
@@ -46,8 +46,12 @@ public class QueryResponseBean extends MenuBean {
         this.displays = displays;
     }
 
-    public OrderedHashtable<String, String> getGroupHeaders(){
+    public Hashtable<String, String> getGroupHeaders(){
         return groupHeaders;
+    }
+
+    public void setGroupHeaders(Hashtable<String, String> groupHeaders){
+        this.groupHeaders = groupHeaders;
     }
 
     public QueryResponseBean(QueryScreen queryScreen) {
@@ -92,15 +96,7 @@ public class QueryResponseBean extends MenuBean {
             count++;
         }
 
-        Hashtable<String, QueryGroup> queryGroupMap = queryScreen.getGroupHeaders();
-        groupHeaders = new OrderedHashtable<>();
-        for (Map.Entry<String, QueryGroup> entry : queryGroupMap.entrySet()) {
-            String key = entry.getKey();
-            QueryGroup queryGroupItem = entry.getValue();
-            String text = queryGroupItem.getDisplay().getText().evaluate(ec);
-            groupHeaders.put(key, text);
-        }
-
+        setGroupHeaders(queryScreen.evalGroupHeaders());
         setTitle(queryScreen.getScreenTitle());
         setDescription(queryScreen.getDescriptionText());
         setQueryKey(queryScreen.getQueryKey());
