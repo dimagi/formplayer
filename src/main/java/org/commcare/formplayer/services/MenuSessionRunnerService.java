@@ -66,6 +66,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
+import org.javarosa.core.services.locale.Localization;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -668,6 +669,10 @@ public class MenuSessionRunnerService {
                 formDefinitionService);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
+
+        String commandId = menuSession.getSessionWrapper().getCommand();
+        newFormResponseFactory.setTranslations(response, commandId);
+
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
         return response;

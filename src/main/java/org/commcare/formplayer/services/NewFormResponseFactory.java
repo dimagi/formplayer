@@ -133,14 +133,6 @@ public class NewFormResponseFactory {
                 serializedSession.getInstanceXml()
         );
 
-        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title"};
-        for (String key : translationKeys) {
-            String translation = Localization.getWithDefault(key, null);
-            if (translation != null) {
-                response.addToTranslation(key, translation);
-            }
-        }
-
         return response;
     }
 
@@ -165,6 +157,20 @@ public class NewFormResponseFactory {
                 formplayerRemoteInstanceFetcher,
                 formDefinitionService
         );
+    }
+    public void setTranslations(NewFormResponse response, String commandId) {
+        String modifiedCommandId = commandId.replace("-", "");
+        String submit_label_key = "forms." + modifiedCommandId + ".submit_label";
+        String submit_translation = Localization.getWithDefault(submit_label_key, "Submit");
+        response.addToTranslation(submit_label_key, submit_translation);
+
+        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title"};
+        for (String key : translationKeys) {
+            String translation = Localization.getWithDefault(key, null);
+            if (translation != null) {
+                response.addToTranslation(key, translation);
+            }
+        }
     }
 
     private String getFormXml(String formUrl) {
