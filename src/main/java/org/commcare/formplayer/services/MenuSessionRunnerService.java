@@ -66,7 +66,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
-import org.javarosa.core.services.locale.Localization;
 
 import java.io.IOException;
 import java.util.Arrays;
