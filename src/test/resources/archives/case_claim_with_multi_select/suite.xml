@@ -61,6 +61,43 @@
       </stack>
     </action>
   </detail>
+  <detail id="m1_case_short_lazy_load" lazy_loading="true">
+    <title>
+      <text>
+        <locale id="m1.case_short.title"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+    </field>
+    <group function="string(case_name)" grid-header-rows="2" />
+  </detail>
   <detail id="m1_case_short_autolaunch">
     <title>
       <text>
@@ -261,6 +298,18 @@
   </entry>
   <entry>
     <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <command id="m1-f3">
+      <text>
+        <locale id="forms.m1f1"/>
+      </text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <session>
+      <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short_lazy_load" detail-confirm="m1_case_long"/>
+    </session>
+  </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
     <post url="http://localhost:8000/a/shubham/phone/claim-case/" relevant="$case_id != ''">
       <data key="case_id" ref="." nodeset="instance('selected_cases')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id=current()/.]) = 1"/>
     </post>
@@ -315,6 +364,12 @@
       <locale id="modules.m1"/>
     </text>
     <command id="m2-f0"/>
+  </menu>
+  <menu id="m1-lazy-loading">
+    <text>
+      <locale id="modules.m1"/>
+    </text>
+    <command id="m1-f3"/>
   </menu>
   <endpoint id="inline_case_search_list_without_selection">
     <stack>
