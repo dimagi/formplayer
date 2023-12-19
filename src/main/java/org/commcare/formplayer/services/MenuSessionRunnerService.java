@@ -668,6 +668,10 @@ public class MenuSessionRunnerService {
                 formDefinitionService);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
+
+        String commandId = menuSession.getSessionWrapper().getCommand();
+        newFormResponseFactory.setTranslations(response, commandId);
+
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
         return response;
