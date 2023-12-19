@@ -161,10 +161,8 @@ public class NewFormResponseFactory {
     public void setTranslations(NewFormResponse response, String commandId) {
         String modifiedCommandId = commandId.replace("-", "");
         String submit_label_key = "forms." + modifiedCommandId + ".submit_label";
-        String submit_translation = Localization.getWithDefault(submit_label_key, "Submit");
-        response.addToTranslation(submit_label_key, submit_translation);
 
-        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title"};
+        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title", submit_label_key};
         for (String key : translationKeys) {
             String translation = Localization.getWithDefault(key, null);
             if (translation != null) {
