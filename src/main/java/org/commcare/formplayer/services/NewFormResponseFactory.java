@@ -12,6 +12,7 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.services.locale.Localization;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -162,13 +163,12 @@ public class NewFormResponseFactory {
     public void setTranslations(NewFormResponse response, String commandId) {
         String modifiedCommandId = commandId.replace("-", "");
         String submit_label_key = "forms." + modifiedCommandId + ".submit_label";
-
-        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title", submit_label_key};
-        for (String key : translationKeys) {
-            String translation = Localization.getWithDefault(key, null);
-            if (translation != null) {
-                response.addToTranslation(key, translation);
+        String translation = Localization.getWithDefault(submit_label_key, null);
+        if (translation != null) {
+            if (response.translations == null) {
+                response.translations = new HashMap<String, String>();
             }
+            response.translations.put(key, translation);
         }
     }
 
