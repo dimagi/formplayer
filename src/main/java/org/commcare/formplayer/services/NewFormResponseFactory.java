@@ -12,7 +12,6 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.core.services.locale.Localization;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -133,13 +132,7 @@ public class NewFormResponseFactory {
                 serializedSession.getInstanceXml()
         );
 
-        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title"};
-        for (String key : translationKeys) {
-            String translation = Localization.getWithDefault(key, null);
-            if (translation != null) {
-                response.addToTranslation(key, translation);
-            }
-        }
+        response.populateTranslations();
 
         return response;
     }

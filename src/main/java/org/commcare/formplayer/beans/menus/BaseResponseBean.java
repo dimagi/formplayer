@@ -6,6 +6,8 @@ import org.commcare.util.screen.ScreenUtils;
 
 import java.util.HashMap;
 
+import org.javarosa.core.services.locale.Localization;
+
 /**
  * Base class for responses being sent to the front end. Params are: title - self explanatory
  * notification - A message String and error boolean to be displayed by frontend sholdAutoSubmit - A
@@ -128,10 +130,17 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         this.translations = translations;
     }
 
-    public void addToTranslation(String key, String value) {
+    public void populateTranslations() {
         if (this.translations == null) {
             this.translations = new HashMap<String, String>();
         }
-        this.translations.put(key, value);
+
+        String[] translationKeys = {"repeat.dialog.add.new", "upload.clear.title"};
+        for (String key : translationKeys) {
+            String translation = Localization.getWithDefault(key, null);
+            if (translation != null) {
+                this.translations.put(key, translation);
+            }
+        }
     }
 }
