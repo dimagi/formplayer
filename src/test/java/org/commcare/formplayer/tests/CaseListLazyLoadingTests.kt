@@ -5,10 +5,10 @@ import org.commcare.formplayer.beans.menus.BaseResponseBean
 import org.commcare.formplayer.beans.menus.EntityListResponse
 import org.commcare.formplayer.configuration.CacheConfiguration
 import org.commcare.formplayer.junit.*
+import org.commcare.formplayer.junit.Installer.Companion.getInstallReference
 import org.commcare.formplayer.junit.request.SessionNavigationRequest
 import org.commcare.formplayer.utils.TestContext
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -22,10 +22,10 @@ import org.springframework.test.web.servlet.MockMvc
 @Import(MenuController::class)
 @ContextConfiguration(classes = [TestContext::class, CacheConfiguration::class])
 @ExtendWith(InitializeStaticsExtension::class)
-class EndpointActionsTest {
+class CaseListLazyLoadingTests {
 
     companion object {
-        const val APP_NAME = "multi_select_case_list"
+        const val APP_NAME = "case_claim_with_multi_select"
     }
 
     @Autowired
@@ -34,35 +34,46 @@ class EndpointActionsTest {
     @RegisterExtension
     var restoreFactoryExt = RestoreFactoryExtension.builder()
         .withUser("test").withDomain("test")
-        .withRestorePath("test_restore.xml")
+        .withRestorePath("restores/caseclaim.xml")
         .build()
 
     @RegisterExtension
     var storageExt = StorageFactoryExtension.builder()
         .withUser("test").withDomain("test").build()
 
+
     @Test
-    fun testEndpointActionResponse() {
-        val selections = arrayOf("0", "1")
-        val entityListResponse: EntityListResponse = navigate(
-            selections,
-            EntityListResponse::class.java
-        )
-        val endpoitnActionsResponse = entityListResponse.endpointActions
-        assertEquals(endpoitnActionsResponse.size, 2)
-        assertEquals("/a/{domain}/app/v1/{appid}/case_list/?selected_cases={selected_cases}", endpoitnActionsResponse[0].urlTemplate)
-        assertEquals(true, endpoitnActionsResponse[0].isBackground)
-        assertNull(endpoitnActionsResponse[1], "Endpoint Action response for fields with no endpoint_action should be null")
+    fun testLazyLoadingDetail_PaginatesAsNormal() {
+        val selections = arrayOf("5")
+        var response = navigate(selections, EntityListResponse::class.java, 0, 2)
+        var entitites = response.entities
+        assertEquals(response.pageCount, 4)
+        assertEquals(entitites.size, 2)
+
+        // Ensure both sort and non sort fields are populated
+        var singleEntity = entitites[1]
+        assertEquals(singleEntity.data[0], "Batman Begins")
+        assertEquals(singleEntity.data[1], "Batman Begins")
+        assertEquals(singleEntity.groupKey, "Batman Begins")
+
+        response = navigate(selections, EntityListResponse::class.java, 1, 3)
+        entitites = response.entities
+        assertEquals(response.pageCount, 3)
+        assertEquals(entitites.size, 3)
+        singleEntity = entitites[2]
+        assertEquals(singleEntity.data[0], "Rudolph")
+        assertEquals(singleEntity.data[1], "Rudolph")
+        assertEquals(singleEntity.groupKey, "Rudolph")
     }
 
     private fun <T : BaseResponseBean> navigate(
-        selections: Array<String>, responseClass: Class<T>
+        selections: Array<String>, responseClass: Class<T>, offset: Int, casesPerPage: Int
     ): T {
-        val installReference = Installer.getInstallReference(APP_NAME)
+        val installReference = getInstallReference(APP_NAME)
         val request = SessionNavigationRequest(
             mockMvc, responseClass, installReference
         )
-        val bean = request.getNavigationBean(selections)
+        val bean = request.getNavigationBeanForPage(selections, offset, casesPerPage)
         return request.requestWithBean(bean).bean()
     }
 }

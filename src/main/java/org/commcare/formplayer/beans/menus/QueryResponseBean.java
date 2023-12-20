@@ -4,6 +4,7 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
+import org.commcare.suite.model.QueryGroup;
 import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.utils.ItemSetUtils;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Created by willpride on 4/13/16.
@@ -23,6 +25,7 @@ public class QueryResponseBean extends MenuBean {
     private DisplayElement[] displays;
     private final String type = "query";
     private String description;
+    private Hashtable<String, String> groupHeaders;
 
     QueryResponseBean() {
     }
@@ -41,6 +44,14 @@ public class QueryResponseBean extends MenuBean {
 
     private void setDisplays(DisplayElement[] displays) {
         this.displays = displays;
+    }
+
+    public Hashtable<String, String> getGroupHeaders(){
+        return groupHeaders;
+    }
+
+    public void setGroupHeaders(Hashtable<String, String> groupHeaders){
+        this.groupHeaders = groupHeaders;
     }
 
     public QueryResponseBean(QueryScreen queryScreen) {
@@ -79,10 +90,13 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.isAllowBlankValue(),
                     isRequired,
                     requiredMessage,
-                    errors.get(key)
+                    errors.get(key),
+                    queryPromptItem.getGroupKey()
                     );
             count++;
         }
+
+        setGroupHeaders(queryScreen.evalGroupHeaders());
         setTitle(queryScreen.getScreenTitle());
         setDescription(queryScreen.getDescriptionText());
         setQueryKey(queryScreen.getQueryKey());

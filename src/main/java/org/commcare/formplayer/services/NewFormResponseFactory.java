@@ -12,7 +12,6 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.core.services.locale.Localization;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -132,6 +131,8 @@ public class NewFormResponseFactory {
                 serializedSession.getId(), serializedSession.getVersion(),
                 serializedSession.getInstanceXml()
         );
+
+        response.populateTranslations();
 
         return response;
     }

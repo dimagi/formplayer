@@ -236,6 +236,8 @@ public class FormController extends AbstractBaseController {
 
         updateSession(formEntrySession);
 
+        responseBean.populateTranslations();
+
         categoryTimingHelper.timed(
                 Constants.TimingCategories.COMPILE_RESPONSE,
                 () -> {

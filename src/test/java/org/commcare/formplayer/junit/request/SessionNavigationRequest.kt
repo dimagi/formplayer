@@ -61,4 +61,11 @@ class SessionNavigationRequest<out T : BaseResponseBean>(
         sessionNavigationBean.selections = selections
         return sessionNavigationBean
     }
+
+    fun getNavigationBeanForPage(selections: Array<String>, offset : Int, casesPerPage : Int): SessionNavigationBean {
+        val sessionNavigationBean = getNavigationBean(selections)
+        sessionNavigationBean.offset = offset
+        sessionNavigationBean.casesPerPage = casesPerPage
+        return sessionNavigationBean
+    }
 }
