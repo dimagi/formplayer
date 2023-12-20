@@ -55,6 +55,7 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.services.locale.Localization;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -670,7 +671,12 @@ public class MenuSessionRunnerService {
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
 
         String commandId = menuSession.getSessionWrapper().getCommand();
-        newFormResponseFactory.setTranslations(response, commandId);
+        String modifiedCommandId = commandId.replace("-", "");
+        String submit_label_key = "forms." + modifiedCommandId + ".submit_label";
+        String translation = Localization.getWithDefault(submit_label_key, null);
+        if (translation != null) {
+            response.addToTranslation(key, translation);
+        }
 
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
