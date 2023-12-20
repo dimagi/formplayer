@@ -31,7 +31,7 @@ class StorageFactoryExtension(
     private val appId: String,
     private val asUser: String?,
     private val asCaseId: String?
-) : BeforeAllCallback, BeforeEachCallback, AfterEachCallback {
+) : BeforeEachCallback, AfterEachCallback {
 
     private lateinit var storageFactory: FormplayerStorageFactory
 
@@ -54,11 +54,8 @@ class StorageFactoryExtension(
         }
     }
 
-    override fun beforeAll(context: ExtensionContext) {
-        storageFactory = SpringExtension.getApplicationContext(context).getBean(FormplayerStorageFactory::class.java)
-    }
-
     override fun beforeEach(context: ExtensionContext) {
+        storageFactory = SpringExtension.getApplicationContext(context).getBean(FormplayerStorageFactory::class.java)
         storageFactory.configure(username, domain, appId, asUser, asCaseId)
     }
 
