@@ -675,7 +675,7 @@ public class MenuSessionRunnerService {
         String submit_label_key = "forms." + modifiedCommandId + ".submit_label";
         String translation = Localization.getWithDefault(submit_label_key, null);
         if (translation != null) {
-            response.addToTranslation(key, translation);
+            response.addToTranslation(submit_label_key, translation);
         }
 
         response.setNotification(establishVolatility(formEntrySession));
