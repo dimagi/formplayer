@@ -130,6 +130,13 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         this.translations = translations;
     }
 
+    public void addToTranslation(String key, String value) {
+        if (this.translations == null) {
+            this.translations = new HashMap<String, String>();
+        }
+        this.translations.put(key, value);
+    }
+
     public void populateTranslations() {
         if (this.translations == null) {
             this.translations = new HashMap<String, String>();
