@@ -93,7 +93,7 @@ public class CaseClaimTests extends BaseTestClass {
         configureQueryMock();
         // Run query with an app with dynamic_search true and verify
         QueryData queryData = new QueryData();
-        queryData.setForceManualSearch("search_command.m1", true);
+        queryData.setForceManualSearch("search_command.m1_results", true);
         QueryResponseBean queryResponseBean = runQuery(queryData);
         assertTrue(queryResponseBean.getDynamicSearch());
 
