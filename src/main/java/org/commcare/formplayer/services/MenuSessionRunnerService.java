@@ -377,7 +377,8 @@ public class MenuSessionRunnerService {
                 }
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
-                boolean skipCache = !(replay || entityScreenContext.getDetailSelection() != null);
+                boolean skipCache = !(replay || entityScreenContext.getDetailSelection() != null
+                        || entityScreenContext.getOffSet() != 0);
                 sessionAdvanced = handleQueryScreen(
                         (FormplayerQueryScreen)nextScreen, menuSession, queryData,
                         replay, skipCache
