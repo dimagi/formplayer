@@ -24,12 +24,12 @@ public class QueryData extends Hashtable<String, Object> {
     public static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
     private static final String KEY_INPUTS = "inputs";
 
-    public Boolean getExecute(String key, String fallbackKey) {
-        return getPropertyWithFallback(key, fallbackKey, KEY_EXECUTE);
+    public Boolean getExecute(String key) {
+        return getPropertyWithFallback(key, KEY_EXECUTE);
     }
 
-    public boolean isForceManualSearch(String key, String fallbackKey) {
-        return getPropertyWithFallback(key, fallbackKey, KEY_FORCE_MANUAL_SEARCH);
+    public boolean isForceManualSearch(String key) {
+        return getPropertyWithFallback(key, KEY_FORCE_MANUAL_SEARCH);
     }
 
     public void setExecute(String key, Boolean value) {
@@ -40,11 +40,8 @@ public class QueryData extends Hashtable<String, Object> {
         setProperty(key, value, KEY_FORCE_MANUAL_SEARCH);
     }
 
-    public Hashtable<String, String> getInputs(String key, String fallbackKey) {
+    public Hashtable<String, String> getInputs(String key) {
         Map<String, Object> value = (Map<String, Object>) this.get(key);
-        if (value == null) {
-            value = (Map<String, Object>) this.get(fallbackKey);
-        }
         if (value != null) {
             Map<String, String> valueInputs = (Map<String, String>) value.get(this.KEY_INPUTS);
             if (valueInputs != null) {
@@ -87,11 +84,8 @@ public class QueryData extends Hashtable<String, Object> {
 
     // temporary method for backward compatibility, will be replaced with original getProperty method
     // without fallback in the subsequent deploy
-    private Boolean getPropertyWithFallback(String key, String fallbackKey, String property) {
+    private Boolean getPropertyWithFallback(String key, String property) {
         Map<String, Object> value = (Map<String, Object>) this.get(key);
-        if(value == null){
-            value = (Map<String, Object>) this.get(fallbackKey);
-        }
         if (value != null) {
             return value.containsKey(property) && (Boolean) value.get(property);
         }
