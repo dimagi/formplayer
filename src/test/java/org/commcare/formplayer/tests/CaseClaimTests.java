@@ -396,6 +396,38 @@ public class CaseClaimTests extends BaseTestClass {
         }
     }
 
+
+    @Test
+    public void testCacheSkipWithPageChanges() throws Exception {
+        // open case search list for the first time to ppopulate the cache
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_claim_response.xml")) {
+            sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                    "caseclaim",
+                    null,
+                    null,
+                    0,
+                    2,
+                    EntityListResponse.class);
+        }
+
+        Mockito.reset(webClientMock);
+
+        // Making the same request with non zero offset should use the cache and hence should pass without
+        // mocking the case search request
+        try {
+            sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                    "caseclaim",
+                    null,
+                    null,
+                    1,
+                    2,
+                    EntityListResponse.class);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
     @Test
     public void testQueryPromptRequired() throws Exception {
         QueryData queryData = new QueryData();
