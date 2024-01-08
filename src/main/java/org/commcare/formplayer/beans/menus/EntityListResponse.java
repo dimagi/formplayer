@@ -102,7 +102,7 @@ public class EntityListResponse extends MenuBean {
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
             setNoItemsText(getNoItemsTextLocaleString(detail));
-            hasDetails = nextScreen.getLongDetail() != null;
+            hasDetails = hasDetails(nextScreen);
 
             processTitle(session);
             processCaseTiles(detail);
@@ -129,6 +129,15 @@ public class EntityListResponse extends MenuBean {
                 }
             }
         }
+    }
+
+    private boolean hasDetails(EntityScreen nextScreen) {
+        if (nextScreen.getLongDetail() == null) {
+            return false;
+        }
+        return !Arrays
+                .stream(nextScreen.getLongDetail().getFields())
+                .allMatch(field -> "address-popup".equals(field.getTemplateForm()));
     }
 
     private void processCaseTiles(Detail shortDetail) {
