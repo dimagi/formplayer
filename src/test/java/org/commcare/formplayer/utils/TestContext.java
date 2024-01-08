@@ -23,6 +23,7 @@ import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.MenuSessionRunnerService;
 import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
+import org.commcare.formplayer.services.ResponseMetaDataTracker;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.services.VirtualDataInstanceService;
@@ -134,6 +135,11 @@ public class TestContext {
     @Bean
     public RestoreFactory restoreFactory() {
         return Mockito.spy(RestoreFactory.class);
+    }
+
+    @Bean
+    public ResponseMetaDataTracker responseMetaDataTracker() {
+        return Mockito.spy(ResponseMetaDataTracker.class);
     }
 
     @Bean
