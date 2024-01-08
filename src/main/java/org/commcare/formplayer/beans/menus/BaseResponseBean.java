@@ -1,6 +1,7 @@
 package org.commcare.formplayer.beans.menus;
 
 import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.ResponseMetaData;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.screen.ScreenUtils;
 
@@ -26,6 +27,8 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private HashMap<String, String> translations;
     private String smartLinkRedirect;
     private boolean dynamicSearch;
+
+    private ResponseMetaData metaData;
 
     public BaseResponseBean() {
     }
@@ -128,6 +131,14 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public void setTranslations(HashMap<String, String> translations) {
         this.translations = translations;
+    }
+
+    public ResponseMetaData getMetaData() {
+        return metaData;
+    }
+
+    public void setMetaData(ResponseMetaData metaData) {
+        this.metaData = metaData;
     }
 
     public void addToTranslation(String key, String value) {

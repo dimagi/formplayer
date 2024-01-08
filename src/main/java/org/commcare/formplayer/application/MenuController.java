@@ -8,6 +8,7 @@ import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.ResponseMetaData;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
@@ -16,6 +17,7 @@ import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MenuSessionFactory;
+import org.commcare.formplayer.services.ResponseMetaDataTracker;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.NotificationLogger;
@@ -55,6 +57,9 @@ public class MenuController extends AbstractBaseController {
 
     @Autowired
     private FormSubmissionHelper formSubmissionHelper;
+
+    @Autowired
+    private ResponseMetaDataTracker responseMetaDataTracker;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -181,6 +186,8 @@ public class MenuController extends AbstractBaseController {
                 true
         );
 
+        setResponseMetaData(response);
+
         SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
                 response);
         if (formSubmissionResponse != null) {
@@ -189,6 +196,12 @@ public class MenuController extends AbstractBaseController {
             notificationLogger.logNotification(response.getNotification(), request);
             return setLocationNeeds(response, menuSession);
         }
+    }
+
+    private void setResponseMetaData(BaseResponseBean response) {
+        ResponseMetaData responseMetaData = new ResponseMetaData(responseMetaDataTracker.isAttemptRestore(),
+                responseMetaDataTracker.isNewInstall());
+        response.setMetaData(responseMetaData);
     }
 
     private SubmitResponseBean handleAutoFormSubmission(HttpServletRequest request,
@@ -227,6 +240,7 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
                 sessionNavigationBean.getEndpointId(),
                 sessionNavigationBean.getEndpointArgs());
+        setResponseMetaData(response);
         SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
                 response);
         if (formSubmissionResponse != null) {
