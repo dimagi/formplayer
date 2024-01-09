@@ -116,6 +116,9 @@ public class RestoreFactory {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
+    private ResponseMetaDataTracker responseMetaDataTracker;
+
+    @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
@@ -535,6 +538,7 @@ public class RestoreFactory {
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {
+            responseMetaDataTracker.setAttemptRestore(true);
             response = webClient.getRaw(restoreUrl, org.springframework.core.io.Resource.class);
             status = response.getStatusCode().toString();
         } catch (HttpClientErrorException e) {

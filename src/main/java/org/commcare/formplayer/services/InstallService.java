@@ -44,6 +44,9 @@ public class InstallService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private ResponseMetaDataTracker responseMetaDataTracker;
+
     private final Log log = LogFactory.getLog(InstallService.class);
 
     CategoryTimingHelper.RecordingTimer installTimer;
@@ -91,6 +94,7 @@ public class InstallService {
             engine.initEnvironment();
             installTimer.end();
             installTimer.record();
+            responseMetaDataTracker.setNewInstall(true);
             return new Pair<>(engine, newInstall);
         } catch (UnresolvedResourceException e) {
             throw new UnresolvedResourceRuntimeException(e);
