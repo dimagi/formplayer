@@ -101,6 +101,7 @@ public class QueryResponseBean extends MenuBean {
         setDescription(queryScreen.getDescriptionText());
         setQueryKey(queryScreen.getQueryKey());
         setDynamicSearch(queryScreen.getDynamicSearch());
+        setIsSearchOnClear(queryScreen.isSearchOnClear());
     }
 
     @Override
