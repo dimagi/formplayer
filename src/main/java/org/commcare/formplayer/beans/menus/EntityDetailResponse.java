@@ -99,9 +99,9 @@ public class EntityDetailResponse {
         setUseNodeset(true);
     }
 
-    private Tile[] processCaseTiles(Detail shortDetail) {
-        DetailField[] fields = shortDetail.getFields();
-        if (!shortDetail.usesEntityTileView()) {
+    private Tile[] processCaseTiles(Detail detail) {
+        DetailField[] fields = detail.getFields();
+        if (!detail.usesEntityTileView()) {
             return null;
         }
         tiles = new Tile[fields.length];
@@ -113,11 +113,11 @@ public class EntityDetailResponse {
                 tiles[i] = null;
             }
         }
-        numEntitiesPerRow = shortDetail.getNumEntitiesToDisplayPerRow();
-        Pair<Integer, Integer> maxWidthHeight = shortDetail.getMaxWidthHeight();
+        numEntitiesPerRow = detail.getNumEntitiesToDisplayPerRow();
+        Pair<Integer, Integer> maxWidthHeight = detail.getMaxWidthHeight();
         maxWidth = maxWidthHeight.first;
         maxHeight = maxWidthHeight.second;
-        useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
+        useUniformUnits = detail.useUniformUnitsInCaseTile();
         return tiles;
     }
 
