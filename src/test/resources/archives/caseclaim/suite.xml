@@ -366,7 +366,7 @@
     <instance id="state" src="jr://fixture/item-list:state"/>
     <instance id="my-search-input" src="jr://instance/search-input/results"/>
     <session>
-      <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true" dynamic_search="true">
+      <query url="http://localhost:8000/a/test/phone/search/" template="case" storage-instance="results" default_search="true" dynamic_search="true" search_on_clear="true">
         <data ref="'case1'" key="case_type"/>
         <data ref="'case2'" key="case_type"/>
         <data ref="'case3'" key="case_type"/>
