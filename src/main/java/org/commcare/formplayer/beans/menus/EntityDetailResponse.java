@@ -52,7 +52,7 @@ public class EntityDetailResponse {
         this.details = processDetails(entityScreen.getData());
         this.headers = entityScreen.getHeaders();
         this.styles = entityScreen.getStyles();
-
+        this.tiles = processCaseTiles(entityScreen.getDetail());
     }
 
     private static Object[] processDetails(Object[] data) {
@@ -94,15 +94,16 @@ public class EntityDetailResponse {
         entityList.toArray(this.entities);
         this.title = title;
         this.styles = processStyles(detail);
+        this.tiles = processCaseTiles(detail);
         Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec, 0);
         setHeaders(pair.first);
         setUseNodeset(true);
     }
 
-    private void processCaseTiles(Detail shortDetail) {
-        DetailField[] fields = shortDetail.getFields();
-        if (!shortDetail.usesEntityTileView()) {
-            return;
+    private Tile[] processCaseTiles(Detail detail) {
+        DetailField[] fields = detail.getFields();
+        if (!detail.usesEntityTileView()) {
+            return null;
         }
         tiles = new Tile[fields.length];
         setUsesCaseTiles(true);
@@ -113,11 +114,12 @@ public class EntityDetailResponse {
                 tiles[i] = null;
             }
         }
-        numEntitiesPerRow = shortDetail.getNumEntitiesToDisplayPerRow();
-        Pair<Integer, Integer> maxWidthHeight = shortDetail.getMaxWidthHeight();
+        numEntitiesPerRow = detail.getNumEntitiesToDisplayPerRow();
+        Pair<Integer, Integer> maxWidthHeight = detail.getMaxWidthHeight();
         maxWidth = maxWidthHeight.first;
         maxHeight = maxWidthHeight.second;
-        useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
+        useUniformUnits = detail.useUniformUnitsInCaseTile();
+        return tiles;
     }
 
     protected static Style[] processStyles(Detail detail) {
