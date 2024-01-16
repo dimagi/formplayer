@@ -99,10 +99,10 @@ public class EntityDetailResponse {
         setUseNodeset(true);
     }
 
-    private void processCaseTiles(Detail shortDetail) {
+    private Tile[] processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
         if (!shortDetail.usesEntityTileView()) {
-            return;
+            return null;
         }
         tiles = new Tile[fields.length];
         setUsesCaseTiles(true);
@@ -118,6 +118,7 @@ public class EntityDetailResponse {
         maxWidth = maxWidthHeight.first;
         maxHeight = maxWidthHeight.second;
         useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
+        return tiles;
     }
 
     protected static Style[] processStyles(Detail detail) {
