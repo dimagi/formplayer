@@ -9,8 +9,6 @@ import java.util.HashMap;
 
 import org.javarosa.core.services.locale.Localization;
 
-import io.micrometer.core.lang.Nullable;
-
 /**
  * Base class for responses being sent to the front end. Params are: title - self explanatory
  * notification - A message String and error boolean to be displayed by frontend sholdAutoSubmit - A
@@ -29,9 +27,6 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private HashMap<String, String> translations;
     private String smartLinkRedirect;
     private boolean dynamicSearch;
-
-    @Nullable
-    private boolean searchOnClear;
 
     private ResponseMetaData metaData;
 
@@ -71,14 +66,6 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public void setDynamicSearch(boolean dynamicSearch) {
         this.dynamicSearch = dynamicSearch;
-    }
-
-    public boolean isSearchOnClear() {
-        return searchOnClear;
-    }
-
-    public void setIsSearchOnClear(boolean searchOnClear) {
-        this.searchOnClear = searchOnClear;
     }
 
     public NotificationMessage getNotification() {
