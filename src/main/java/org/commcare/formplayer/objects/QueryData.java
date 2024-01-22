@@ -23,6 +23,7 @@ public class QueryData extends Hashtable<String, Object> {
     private static final String KEY_EXECUTE = "execute";
     public static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
     private static final String KEY_INPUTS = "inputs";
+    private static final String INITIATED_BY = "initiatedBy";
 
     public Boolean getExecute(String key) {
         return getPropertyWithFallback(key, KEY_EXECUTE);
@@ -38,6 +39,17 @@ public class QueryData extends Hashtable<String, Object> {
 
     public void setForceManualSearch(String key, Boolean value) {
         setProperty(key, value, KEY_FORCE_MANUAL_SEARCH);
+    }
+
+    public String getInitiatedBy(String key) {
+        Map<String, Object> value = (Map<String, Object>) this.get(key);
+        if (value != null) {
+            String initiatedBy = (String) value.get(INITIATED_BY);
+            if (initiatedBy != null) {
+                return initiatedBy;
+            }
+        }
+        return null;
     }
 
     public Hashtable<String, String> getInputs(String key) {
