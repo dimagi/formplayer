@@ -55,6 +55,7 @@ public class EntityListResponse extends MenuBean {
     private boolean useUniformUnits;
     private int[] sortIndices;
     private String noItemsText;
+    private String selectText;
 
     private int pageCount;
     private int currentPage;
@@ -102,6 +103,7 @@ public class EntityListResponse extends MenuBean {
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
             setNoItemsText(getNoItemsTextLocaleString(detail));
+            setSelectText(getSelectTextLocaleString(detail));
             hasDetails = nextScreen.getLongDetail() != null;
 
             processTitle(session);
@@ -515,6 +517,24 @@ public class EntityListResponse extends MenuBean {
             return null;
         }
         return noItemsTextString;
+    }
+
+    private void setSelectText(String selectText) {
+        this.selectText = selectText;
+    }
+
+    public String getSelectText() {
+        return selectText;
+    }
+
+    private String getSelectTextLocaleString(Detail detail) {
+        String selectTextString;
+        try {
+            selectTextString = detail.getSelectText().evaluate();
+        } catch (NoLocalizedTextException | NullPointerException e) {
+            return null;
+        }
+        return selectTextString;
     }
 
     public QueryResponseBean getQueryResponse() {
