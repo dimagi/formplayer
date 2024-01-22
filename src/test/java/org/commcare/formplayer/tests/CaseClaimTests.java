@@ -491,6 +491,13 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testQueryInitiatedBy() throws Exception {
+        QueryData queryData = new QueryData();
+        queryData.setInitiatedBy("search_command.m1_results", "field_change");
+        assertEquals(queryData.getInitiatedBy("search_command.m1_results"), "field_change");
+    }
+
+    @Test
     public void testDependentItemsets_DependentChoicesChangeWithSelection() throws Exception {
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "rj");

@@ -52,6 +52,11 @@ public class QueryData extends Hashtable<String, Object> {
         return null;
     }
 
+    public void setInitiatedBy(String key, String value) {
+        this.initKey(key);
+        ((Map<String, Object>) this.get(key)).put(INITIATED_BY, value);
+    }
+
     public Hashtable<String, String> getInputs(String key) {
         Map<String, Object> value = (Map<String, Object>) this.get(key);
         if (value != null) {
