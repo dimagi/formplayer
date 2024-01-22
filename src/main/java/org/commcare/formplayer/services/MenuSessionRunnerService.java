@@ -188,6 +188,8 @@ public class MenuSessionRunnerService {
             if (queryInitiatedBy != null) {
                 datadog.addRequestScopedTag(Constants.MODULE_INITIATED_BY_TAG, queryInitiatedBy);
             }
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
             Sentry.setTag(Constants.MODULE_TAG, "case_search");
         } else {
