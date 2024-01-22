@@ -184,7 +184,7 @@ public class MenuSessionRunnerService {
             String queryKey = ((FormplayerQueryScreen)nextScreen).getQueryKey();
             answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey);
             menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
-            String queryInitiatedBy = queryData.getInitiatedBy(queryKey);
+            String queryInitiatedBy = queryData == null ? null : queryData.getInitiatedBy(queryKey);
             if (queryInitiatedBy != null) {
                 datadog.addRequestScopedTag(Constants.MODULE_INITIATED_BY_TAG, queryInitiatedBy);
             }
