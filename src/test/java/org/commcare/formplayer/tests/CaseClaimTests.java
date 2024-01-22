@@ -106,6 +106,23 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testSearchOnClear() throws Exception {
+        configureQueryMock();
+        // Run query with an app with dynamic_search true and verify
+        QueryData queryData = new QueryData();
+        queryData.setForceManualSearch("search_command.m1_results", true);
+        QueryResponseBean queryResponseBean = runQuery(queryData);
+        assertTrue(queryResponseBean.isSearchOnClear());
+
+        // Run query with an app with dynamic_search false and verify
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1"},
+                "case_claim_eof_navigation",
+                null,
+                QueryResponseBean.class);
+        assertFalse(queryResponseBean.isSearchOnClear());
+    }
+
+    @Test
     public void testEmptySearch() throws Exception {
         configureQueryMock();
         QueryData queryData = new QueryData();

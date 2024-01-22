@@ -26,6 +26,7 @@ public class QueryResponseBean extends MenuBean {
     private final String type = "query";
     private String description;
     private Hashtable<String, String> groupHeaders;
+    private Boolean searchOnClear;
 
     QueryResponseBean() {
     }
@@ -52,6 +53,14 @@ public class QueryResponseBean extends MenuBean {
 
     public void setGroupHeaders(Hashtable<String, String> groupHeaders){
         this.groupHeaders = groupHeaders;
+    }
+
+    public boolean isSearchOnClear() {
+        return searchOnClear;
+    }
+
+    public void setIsSearchOnClear(boolean searchOnClear) {
+        this.searchOnClear = searchOnClear;
     }
 
     public QueryResponseBean(QueryScreen queryScreen) {
@@ -101,6 +110,7 @@ public class QueryResponseBean extends MenuBean {
         setDescription(queryScreen.getDescriptionText());
         setQueryKey(queryScreen.getQueryKey());
         setDynamicSearch(queryScreen.getDynamicSearch());
+        setIsSearchOnClear(queryScreen.isSearchOnClear());
     }
 
     @Override
