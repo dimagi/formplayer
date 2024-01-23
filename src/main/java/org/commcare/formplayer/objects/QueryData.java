@@ -45,9 +45,7 @@ public class QueryData extends Hashtable<String, Object> {
         Map<String, Object> value = (Map<String, Object>) this.get(key);
         if (value != null) {
             String initiatedBy = (String) value.get(INITIATED_BY);
-            if (initiatedBy != null) {
                 return initiatedBy;
-            }
         }
         return null;
     }
