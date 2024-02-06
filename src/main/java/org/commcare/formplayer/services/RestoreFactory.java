@@ -25,6 +25,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.SimpleTimer;
@@ -114,6 +115,9 @@ public class RestoreFactory {
 
     @Autowired
     protected StatsDClient datadogStatsDClient;
+
+    @Autowired
+    private FormplayerDatadog datadog;
 
     @Autowired
     private ResponseMetaDataTracker responseMetaDataTracker;
@@ -539,6 +543,7 @@ public class RestoreFactory {
         downloadRestoreTimer.start();
         try {
             responseMetaDataTracker.setAttemptRestore(true);
+            datadog.addRequestScopedTag("metadata", "restore");
             response = webClient.getRaw(restoreUrl, org.springframework.core.io.Resource.class);
             status = response.getStatusCode().toString();
         } catch (HttpClientErrorException e) {
