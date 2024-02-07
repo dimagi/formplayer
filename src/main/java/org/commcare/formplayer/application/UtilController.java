@@ -13,16 +13,20 @@ import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.ServerUpBean;
 import org.commcare.formplayer.beans.SyncDbRequestBean;
 import org.commcare.formplayer.beans.SyncDbResponseBean;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.NotificationLogger;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.JSONReporter;
+import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -102,7 +106,12 @@ public class UtilController {
     @UserLock
     public NotificationMessage clearUserData(
             @RequestBody AuthenticatedRequestBean requestBean,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws InvalidStructureException {
+
+        // Test clearing case db
+        CaseSearchDB caseSearchDB = new CaseSearchDB(requestBean.getDomain(), requestBean.getUsername(),
+                requestBean.getRestoreAs());
+        caseSearchDB.deleteDatabaseFile();
 
         String message = "Successfully cleared the user data for  " + requestBean.getUsername();
         new UserDB(
