@@ -108,11 +108,6 @@ public class UtilController {
             @RequestBody AuthenticatedRequestBean requestBean,
             HttpServletRequest request) throws InvalidStructureException {
 
-        // Test clearing case db
-        CaseSearchDB caseSearchDB = new CaseSearchDB(requestBean.getDomain(), requestBean.getUsername(),
-                requestBean.getRestoreAs());
-        caseSearchDB.deleteDatabaseFile();
-
         String message = "Successfully cleared the user data for  " + requestBean.getUsername();
         new UserDB(
                 requestBean.getDomain(),
@@ -121,6 +116,9 @@ public class UtilController {
         ).deleteDatabaseFolder();
         NotificationMessage notificationMessage = new NotificationMessage(message, false, NotificationMessage.Tag.clear_data);
         notificationLogger.logNotification(notificationMessage, request);
+        CaseSearchDB caseSearchDB = new CaseSearchDB(requestBean.getDomain(), requestBean.getUsername(),
+                requestBean.getRestoreAs());
+        caseSearchDB.deleteDatabaseFile();
         return notificationMessage;
     }
 
