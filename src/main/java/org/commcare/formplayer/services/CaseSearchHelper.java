@@ -151,7 +151,9 @@ public class CaseSearchHelper {
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
         if (skipCache) {
             log.info("Skipping cache check for case search results");
+            System.out.println("cache key (skipping get) source url: " + url + " cache key: " + cacheKey);
         } else {
+            System.out.println("cache key (get) source url: " + url + " cache key: " + cacheKey);
             TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
             if (cachedRoot != null) {
                 log.info(String.format("Using cached case search results for %s", url));
