@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import org.commcare.formplayer.util.FormplayerDatadog;
+import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -22,7 +23,7 @@ public class ResponseMetaDataTracker {
     }
 
     public void setAttemptRestore(boolean attemptRestore) {
-        datadog.addRequestScopedTag("metadata", "attempt_restore");
+        datadog.addRequestScopedTag(Constants.METADATA_TAG, "attempt_restore");
         this.attemptRestore = attemptRestore;
     }
 
@@ -31,7 +32,7 @@ public class ResponseMetaDataTracker {
     }
 
     public void setNewInstall(boolean newInstall) {
-        datadog.addRequestScopedTag("metadata", "app_install");
+        datadog.addRequestScopedTag(Constants.METADATA_TAG, "app_install");
         this.newInstall = newInstall;
     }
 }
