@@ -89,6 +89,7 @@ public class CaseSearchHelper {
                 } else {
                     TreeElement root = TreeUtilities.xmlStreamToTreeElement(responeStream, instanceId);
                     if (root != null) {
+                        System.out.println("cache key (put) source url: " + url + " cache key: " + cacheKey);
                         cache.put(cacheKey, root);
                     }
                     return root;
@@ -183,6 +184,7 @@ public class CaseSearchHelper {
         }
         String cacheKey = getCacheKey(source.getSourceUri(), source.getRequestData());
         Cache cache = cacheManager.getCache("case_search");
+        System.out.println("cache key (evict) source url: " + source.getSourceUri() + " cache key: " + cacheKey);
         cache.evict(cacheKey);
 
         CaseSearchDB caseSearchDb = initCaseSearchDB();
