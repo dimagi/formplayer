@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMultimap;
 import org.commcare.data.xml.VirtualInstances;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
+import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.objects.QueryData;
@@ -212,6 +213,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         );
     }
 
+
     /**
      * This tests that the session volatiles are cleared after the sync. The 'post'
      * and the 'assertion' share the same XPath case lookup expression so without clearing volatiles
@@ -248,10 +250,62 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                     queryData,
                     NewFormResponse.class);
         }
+
+        SubmitResponseBean submitResponse = submitForm(new HashMap<>(), formResponse.getSessionId());
+
+        CommandListResponseBean commandResponse = getNextScreenForEofNavigation(submitResponse,
+                CommandListResponseBean.class);
+        assert commandResponse.getCommands().length == 4;
+
         if (formResponse.getNotification() != null && formResponse.getNotification().isError()) {
             fail(formResponse.getNotification().getMessage());
         }
     }
+
+    /**
+     * Test that volatiles are cleared when a query session is completed
+     */
+    @Test
+    public void testPostSearch_clearVolatiles() throws Exception {
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("3");  // m3
+        selections.add("1");  // form
+
+
+        QueryData queryData = new QueryData();
+
+        EntityListResponse entityListResponse;
+        try (MockRequestUtils.VerifiedMock ignored = mockRequest.mockQuery("query_responses/case_claim_before_form.xml")) {
+            entityListResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    EntityListResponse.class);
+        }
+
+
+        assertThat(entityListResponse.getEntities()).anyMatch(e -> {
+            return e.getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+        });
+
+        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
+
+
+
+        NewFormResponse formResponse;
+        try (
+                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true);
+                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml");
+        ) {
+            formResponse = sessionNavigateWithQuery(selections,
+                    APP_PATH,
+                    queryData,
+                    NewFormResponse.class);
+        }
+        if (formResponse.getNotification() != null && formResponse.getNotification().isError()) {
+            fail(formResponse.getNotification().getMessage());
+        }
+    }
+
 
     @Test
     public void testClearCachesAfterFormSubmission() throws Exception {
