@@ -130,10 +130,12 @@ public class CaseSearchHelper {
             XmlPullParserException, IOException {
         try {
             DbUtils.setAutoCommit(caseSearchDb, false);
+            caseSearchIndexTable.delete();
             caseSearchIndexTable.createTable();
             CaseInstanceXmlTransactionParserFactory factory = new CaseInstanceXmlTransactionParserFactory(
                     caseSearchSandbox, caseSearchIndexTable);
             caseSearchStorage.initStorage();
+            caseSearchStorage.removeAll();
             ParseUtils.parseIntoSandbox(responeStream, factory, true, true);
             DbUtils.commit(caseSearchDb);
         } catch (Exception e) {
