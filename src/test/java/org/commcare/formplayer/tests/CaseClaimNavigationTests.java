@@ -64,6 +64,30 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         return "restores/caseclaim.xml";
     }
 
+    @Test
+    public void testGetCacheKey() {
+        String keyWithCorrectSorting = "caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/_a=case2=case5_b=False_d=case1=case4";
+
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "a", "case5",
+                "d", "case4",
+                "d","case1",
+                "a", "case2",
+                "b", "False");
+        String key = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data);
+        assertEquals(keyWithCorrectSorting, key);
+        // same keys and values in a different order
+        ImmutableMultimap<String, String> data2 = ImmutableMultimap.of(
+                "b", "False",
+                "d", "case1",
+                "a", "case5",
+                "d","case4",
+                "a", "case2");
+        String key2 = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data2);
+        assertEquals(keyWithCorrectSorting, key2);
+    }
 
     @Test
     public void testNormalClaim() throws Exception {
