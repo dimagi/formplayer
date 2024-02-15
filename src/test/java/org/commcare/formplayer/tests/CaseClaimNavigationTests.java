@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -66,7 +67,6 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
     @Test
     public void testGetCacheKey() {
-        String keyWithCorrectSorting = "caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/_a=case2=case5_b=False_d=case1=case4";
 
         ImmutableMultimap<String, String> data = ImmutableMultimap.of(
                 "a", "case5",
@@ -74,10 +74,10 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 "d","case1",
                 "a", "case2",
                 "b", "False");
-        String key = ReflectionTestUtils.invokeMethod(
+        String key1 = ReflectionTestUtils.invokeMethod(
                 caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data);
-        assertEquals(keyWithCorrectSorting, key);
-        // same keys and values in a different order
+
+         // same keys and values as key1 in a different order
         ImmutableMultimap<String, String> data2 = ImmutableMultimap.of(
                 "b", "False",
                 "d", "case1",
@@ -86,7 +86,27 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 "a", "case2");
         String key2 = ReflectionTestUtils.invokeMethod(
                 caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data2);
-        assertEquals(keyWithCorrectSorting, key2);
+        assertEquals(key1, key2);
+
+        // same keys as key2, but one value removed
+        ImmutableMultimap<String, String> data3 = ImmutableMultimap.of(
+                "b", "False",
+                "d", "case1",
+                "d","case4",
+                "a", "case2");
+        String key3 = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data3);
+        assertNotEquals(key2, key3);
+
+        // different keys, but same values as key3
+        ImmutableMultimap<String, String> data4 = ImmutableMultimap.of(
+                "b", "False",
+                "d", "case1",
+                "d","case4",
+                "c", "case2");
+        String key4 = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data4);
+        assertNotEquals(key3, key4);
     }
 
     @Test
