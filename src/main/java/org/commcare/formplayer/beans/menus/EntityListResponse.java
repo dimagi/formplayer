@@ -245,6 +245,7 @@ public class EntityListResponse extends MenuBean {
         }
         entityBean.setData(data);
         entityBean.setGroupKey(entity.getGroupKey());
+        entityBean.setAltText(entity.getAltText());
         return entityBean;
     }
 
