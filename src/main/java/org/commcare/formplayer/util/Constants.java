@@ -130,7 +130,6 @@ public class Constants {
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
-    public static final String METADATA_TAG = "metadata";
 
     //.Sentry tags
     public static final String URI = "uri";
