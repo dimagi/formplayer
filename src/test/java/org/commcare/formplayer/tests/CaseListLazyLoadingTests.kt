@@ -55,6 +55,7 @@ class CaseListLazyLoadingTests {
         assertEquals(singleEntity.data[0], "Batman Begins")
         assertEquals(singleEntity.data[1], "Batman Begins")
         assertEquals(singleEntity.groupKey, "Batman Begins")
+        assertEquals(singleEntity.altText.toList(), arrayOfNulls<String>(singleEntity.data.size).toList())
 
         response = navigate(selections, EntityListResponse::class.java, 1, 3)
         entitites = response.entities
@@ -64,6 +65,7 @@ class CaseListLazyLoadingTests {
         assertEquals(singleEntity.data[0], "Rudolph")
         assertEquals(singleEntity.data[1], "Rudolph")
         assertEquals(singleEntity.groupKey, "Rudolph")
+        assertEquals(singleEntity.altText.toList(), arrayOfNulls<String>(singleEntity.data.size).toList())
     }
 
     private fun <T : BaseResponseBean> navigate(
