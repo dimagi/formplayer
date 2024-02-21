@@ -10,6 +10,7 @@ public class EntityBean {
     private Object[] data;
 
     private String groupKey;
+    private String[] altText;
 
     public EntityBean() {
     }
@@ -40,6 +41,14 @@ public class EntityBean {
 
     public void setGroupKey(String groupKey) {
         this.groupKey = groupKey;
+    }
+
+    public String[] getAltText() {
+        return altText;
+    }
+
+    public void setAltText(String[] altText) {
+        this.altText = altText;
     }
 
     @Override
