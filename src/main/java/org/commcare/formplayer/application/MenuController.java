@@ -11,6 +11,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.ResponseMetaData;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
+import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
@@ -62,6 +63,19 @@ public class MenuController extends AbstractBaseController {
     private ResponseMetaDataTracker responseMetaDataTracker;
 
     private final Log log = LogFactory.getLog(MenuController.class);
+
+    @RequestMapping(value = Constants.URL_INTERVAL_SYNC_DB, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @AppInstall
+    public SyncDbResponseBean scheduleSync(@RequestBody SessionNavigationBean sessionNavigationBean,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            HttpServletRequest request) throws Exception {
+        if (restoreFactory.isRestoreXmlExpired()) {
+            restoreFactory.performTimedSync();
+        }
+        return new SyncDbResponseBean();
+    }
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
     @UserLock
