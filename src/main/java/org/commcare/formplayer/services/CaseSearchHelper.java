@@ -40,6 +40,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @CacheConfig(cacheNames = "case_search")
 @Component
@@ -211,9 +215,12 @@ public class CaseSearchHelper {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
         builder.append("_").append(uri);
-        for (String key : queryParams.keySet()) {
+        Map<String, Collection<String>> sortedQueryParams = new TreeMap<>(queryParams.asMap());
+        for (String key : sortedQueryParams.keySet()) {
             builder.append("_").append(key);
-            for (String value : queryParams.get(key)) {
+            Collection<String> values = queryParams.get(key);
+            List<String> valuesList = values.stream().sorted().toList();
+            for (String value : valuesList) {
                 builder.append("=").append(value);
             }
         }
