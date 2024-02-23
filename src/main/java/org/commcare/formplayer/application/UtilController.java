@@ -2,6 +2,7 @@ package org.commcare.formplayer.application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.NoLogging;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
@@ -11,6 +12,7 @@ import org.commcare.formplayer.beans.DeleteApplicationDbsRequestBean;
 import org.commcare.formplayer.beans.LockReportBean;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.ServerUpBean;
+import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SyncDbRequestBean;
 import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.services.CaseSearchHelper;
@@ -76,6 +78,19 @@ public class UtilController {
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(value = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         restoreFactory.performTimedSync();
+        return new SyncDbResponseBean();
+    }
+
+    @RequestMapping(value = Constants.URL_INTERVAL_SYNC_DB, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @AppInstall
+    public SyncDbResponseBean scheduleSync(@RequestBody SessionNavigationBean sessionNavigationBean,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            HttpServletRequest request) throws Exception {
+        if (restoreFactory.isRestoreXmlExpired()) {
+            restoreFactory.performTimedSync();
+        }
         return new SyncDbResponseBean();
     }
 
