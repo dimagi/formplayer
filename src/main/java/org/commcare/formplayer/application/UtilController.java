@@ -19,6 +19,7 @@ import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
+import org.commcare.formplayer.services.ResponseMetaDataTracker;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -59,6 +60,9 @@ public class UtilController {
     protected RestoreFactory restoreFactory;
 
     @Autowired
+    private ResponseMetaDataTracker responseMetaDataTracker;
+
+    @Autowired
     protected FormSessionService formSessionService;
 
     @Autowired
@@ -88,10 +92,12 @@ public class UtilController {
     public SyncDbResponseBean scheduleSync(@RequestBody SessionNavigationBean sessionNavigationBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
+        SyncDbResponseBean response = new SyncDbResponseBean();
         if (restoreFactory.isRestoreXmlExpired()) {
             restoreFactory.performTimedSync();
         }
-        return new SyncDbResponseBean();
+        response.setAttemptRestore(responseMetaDataTracker.isAttemptRestore());
+        return response;
     }
 
     @RequestMapping(value = {Constants.URL_DELETE_APPLICATION_DBS, Constants.URL_UPDATE}, method = RequestMethod.POST)
