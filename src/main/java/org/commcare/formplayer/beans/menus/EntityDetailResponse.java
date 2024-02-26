@@ -33,6 +33,7 @@ public class EntityDetailResponse {
     private EntityBean[] entities;
     protected Style[] styles;
     protected String[] headers;
+    protected String[] altText;
     protected String title;
     protected boolean isUseNodeset;
 
@@ -53,6 +54,7 @@ public class EntityDetailResponse {
         this.headers = entityScreen.getHeaders();
         this.styles = entityScreen.getStyles();
         this.tiles = processCaseTiles(entityScreen.getDetail());
+        this.altText = entityScreen.getAltText();
     }
 
     private static Object[] processDetails(Object[] data) {
@@ -171,6 +173,14 @@ public class EntityDetailResponse {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String[] getAltText() {
+        return altText;
+    }
+
+    public void setAltText(String[] altText) {
+        this.altText = altText;
     }
 
     public boolean isUsesCaseTiles() {

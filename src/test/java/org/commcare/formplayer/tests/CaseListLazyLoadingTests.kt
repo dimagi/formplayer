@@ -8,6 +8,7 @@ import org.commcare.formplayer.junit.*
 import org.commcare.formplayer.junit.Installer.Companion.getInstallReference
 import org.commcare.formplayer.junit.request.SessionNavigationRequest
 import org.commcare.formplayer.utils.TestContext
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -55,6 +56,7 @@ class CaseListLazyLoadingTests {
         assertEquals(singleEntity.data[0], "Batman Begins")
         assertEquals(singleEntity.data[1], "Batman Begins")
         assertEquals(singleEntity.groupKey, "Batman Begins")
+        assertArrayEquals(singleEntity.altText, arrayOfNulls<String>(singleEntity.data.size))
 
         response = navigate(selections, EntityListResponse::class.java, 1, 3)
         entitites = response.entities
@@ -64,6 +66,7 @@ class CaseListLazyLoadingTests {
         assertEquals(singleEntity.data[0], "Rudolph")
         assertEquals(singleEntity.data[1], "Rudolph")
         assertEquals(singleEntity.groupKey, "Rudolph")
+        assertArrayEquals(singleEntity.altText, arrayOfNulls<String>(singleEntity.data.size))
     }
 
     private fun <T : BaseResponseBean> navigate(
