@@ -2,6 +2,7 @@ package org.commcare.formplayer.application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.NoLogging;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
@@ -11,12 +12,14 @@ import org.commcare.formplayer.beans.DeleteApplicationDbsRequestBean;
 import org.commcare.formplayer.beans.LockReportBean;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.ServerUpBean;
+import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SyncDbRequestBean;
 import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
+import org.commcare.formplayer.services.ResponseMetaDataTracker;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -57,6 +60,9 @@ public class UtilController {
     protected RestoreFactory restoreFactory;
 
     @Autowired
+    private ResponseMetaDataTracker responseMetaDataTracker;
+
+    @Autowired
     protected FormSessionService formSessionService;
 
     @Autowired
@@ -77,6 +83,21 @@ public class UtilController {
                                          @CookieValue(value = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         restoreFactory.performTimedSync();
         return new SyncDbResponseBean();
+    }
+
+    @RequestMapping(value = Constants.URL_INTERVAL_SYNC_DB, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @AppInstall
+    public SyncDbResponseBean scheduleSync(@RequestBody SessionNavigationBean sessionNavigationBean,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            HttpServletRequest request) throws Exception {
+        SyncDbResponseBean response = new SyncDbResponseBean();
+        if (restoreFactory.isRestoreXmlExpired()) {
+            restoreFactory.performTimedSync();
+        }
+        response.setAttemptRestore(responseMetaDataTracker.isAttemptRestore());
+        return response;
     }
 
     @RequestMapping(value = {Constants.URL_DELETE_APPLICATION_DBS, Constants.URL_UPDATE}, method = RequestMethod.POST)

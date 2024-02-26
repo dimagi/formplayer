@@ -34,4 +34,14 @@ public class FilterTests extends BaseTestClass {
 
         //TODO add ledgers, fixtures, etc.
     }
+
+    @Test
+    public void testIntervalSyncDb() throws Exception {
+        configureRestoreFactory("synctestdomain", "synctestuser");
+
+        SyncDbResponseBean syncDbResponseBean = intervalSyncDB("synctest", "synctestuser");
+
+        assert (syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
+        assert (SqlSandboxUtils.databaseFolderExists(SQLiteProperties.getDataDir()));
+    }
 }
