@@ -122,6 +122,7 @@ public class Constants {
     public static final String DATADOG_RESTORE_COUNT = "restore.count";
 
     // Datadog/Sentry tags
+    public static final String APP_NAME_TAG = "app_name";
     public static final String DOMAIN_TAG = "domain";
     public static final String FORM_NAME_TAG = "form_name";
     public static final String MODULE_TAG = "module";
