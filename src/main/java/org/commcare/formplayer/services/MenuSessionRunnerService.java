@@ -482,7 +482,9 @@ public class MenuSessionRunnerService {
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
                 Multimap<String, String> queryParams = screen.getQueryParams(isDefaultSearch);
-                queryParams.put("module_name_tag", moduleNameTagValue);
+                if (moduleNameTagValue != null && !moduleNameTagValue.isEmpty()) {
+                    queryParams.put("module_name_tag", moduleNameTagValue);
+                }
                 ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
