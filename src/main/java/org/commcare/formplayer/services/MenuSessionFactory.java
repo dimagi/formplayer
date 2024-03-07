@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -154,6 +155,8 @@ public class MenuSessionFactory {
                             }
                         });
                         try {
+                            Multimap<String, String> caseSearchMetricTags = caseSearchHelper.getMetricTags(menuSession);
+                            dataBuilder.putAll(caseSearchMetricTags);
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),

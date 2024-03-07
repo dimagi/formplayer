@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import org.apache.commons.logging.Log;
@@ -12,10 +13,12 @@ import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
+import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
@@ -229,5 +232,16 @@ public class CaseSearchHelper {
 
     public void clearCache() {
         cacheManager.getCache("case_search").clear();
+    }
+
+    public Multimap<String, String> getMetricTags(MenuSession menuSession) {
+        String moduleNameTagValue = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+
+        Multimap<String, String> multimap = ArrayListMultimap.create();
+        if (moduleNameTagValue != null && !moduleNameTagValue.isEmpty()) {
+            multimap.put("module_name_tag", moduleNameTagValue);
+        }
+
+        return multimap;
     }
 }

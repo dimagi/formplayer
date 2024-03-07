@@ -424,14 +424,14 @@ public class MenuSessionRunnerService {
         String queryKey = queryScreen.getQueryKey();
         boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
-        String moduleNameTagValue = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+        Multimap<String, String> caseSearchMetricTags = caseSearchHelper.getMetricTags(menuSession);
         answerQueryPrompts(queryScreen, queryData, queryKey);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
             return doQuery(
                     queryScreen,
                     queryScreen.doDefaultSearch() && !forceManualSearch,
                     skipCache,
-                    moduleNameTagValue
+                    caseSearchMetricTags
             );
         }
         return false;
@@ -477,14 +477,12 @@ public class MenuSessionRunnerService {
      */
     @Trace
     private boolean doQuery(FormplayerQueryScreen screen,
-            boolean isDefaultSearch, boolean skipCache, String moduleNameTagValue) throws CommCareSessionException {
+            boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags) throws CommCareSessionException {
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
                 Multimap<String, String> queryParams = screen.getQueryParams(isDefaultSearch);
-                if (moduleNameTagValue != null && !moduleNameTagValue.isEmpty()) {
-                    queryParams.put("module_name_tag", moduleNameTagValue);
-                }
+                queryParams.putAll(caseSearchMetricTags);
                 ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
