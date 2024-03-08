@@ -137,7 +137,7 @@ public class CaseSearchResultsInStorageTests {
 
         // Verify the results are stored in storage and not cache
         String cacheKey = "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
-                + "/_case_type=case1=case2=case3_include_closed=False_module_name_tag=Search All Cases";
+                + "/_case_type=case1=case2=case3_include_closed=False_x_commcare_module_name_tag=Search All Cases";
         assertNull(cacheManager.getCache("case_search").get(cacheKey));
 
         // Verify case search storage exists for our query
@@ -192,7 +192,7 @@ public class CaseSearchResultsInStorageTests {
 
         // Verify the results are stored in storage and not cache
         String cacheKey = "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
-                + "/_case_type=case1=case2=case3_include_closed=False_module_name_tag=Search All Cases";
+                + "/_case_type=case1=case2=case3_include_closed=False_x_commcare_module_name_tag=Search All Cases";
         assertNull(cacheManager.getCache("case_search").get(cacheKey));
 
         // Verify case search storage exists for our query

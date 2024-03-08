@@ -224,7 +224,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         assert cacheManager.getCache("case_search")
                 .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search"
-                        + "/_case_type=case1=case2=case3_include_closed=False_module_name_tag=Search All Cases")
+                        + "/_case_type=case1=case2=case3_include_closed=False_x_commcare_module_name_tag=Search All Cases")
                 != null;
 
         assert responseBean.getEntities().length == 1;

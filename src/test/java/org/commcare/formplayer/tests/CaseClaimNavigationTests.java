@@ -137,7 +137,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 "case_type", "case2",
                 "case_type", "case3",
                 "include_closed", "False",
-                "module_name_tag", "Search All Cases");
+                "x_commcare_module_name_tag", "Search All Cases");
         String key = ReflectionTestUtils.invokeMethod(
                 caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data);
         Cache.ValueWrapper cachedValue = cacheManager.getCache("case_search").get(key);
