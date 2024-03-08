@@ -801,6 +801,21 @@ public class BaseTestClass {
                 clazz);
     }
 
+    SyncDbResponseBean intervalSyncDB(String testName, String restoreAs) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setRestoreAs(restoreAs);
+        return generateMockQuery(
+                ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_INTERVAL_SYNC_DB,
+                sessionNavigationBean,
+                SyncDbResponseBean.class
+        );
+    }
+
     <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
             Class<T> clazz)
             throws Exception {
