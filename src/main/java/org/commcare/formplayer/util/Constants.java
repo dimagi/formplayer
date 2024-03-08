@@ -18,6 +18,7 @@ public class Constants {
     public static final String URL_NEW_REPEAT = "new-repeat";
     public static final String URL_DELETE_REPEAT = "delete-repeat";
     public static final String URL_SYNC_DB = "sync-db";
+    public static final String URL_INTERVAL_SYNC_DB = "interval_sync-db";
     public static final String URL_LIST_SESSIONS = "sessions";
     public static final String URL_GET_SESSION = "get_session";
     public static final String URL_UPDATE = "update";
