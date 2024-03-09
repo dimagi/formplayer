@@ -162,6 +162,8 @@ public class MenuSessionRunnerService {
                     (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             Sentry.setTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
