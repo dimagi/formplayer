@@ -177,7 +177,7 @@ public class MenuController extends AbstractBaseController {
         String[] requestInitiatedByTags = sessionNavigationBean.getRequestInitiatedByTags();
         if (requestInitiatedByTags != null) {
             for (String requestInitiatedByTag : requestInitiatedByTags) {
-                datadog.addRequestScopedTag(Constants.MODULE_INITIATED_BY_TAG, requestInitiatedByTag);
+                datadog.addRequestScopedTag(Constants.REQUEST_INITIATED_BY_TAG, requestInitiatedByTag);
             }
         }
         EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
