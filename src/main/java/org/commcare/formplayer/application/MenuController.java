@@ -20,6 +20,7 @@ import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.ResponseMetaDataTracker;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
@@ -60,6 +61,9 @@ public class MenuController extends AbstractBaseController {
 
     @Autowired
     private ResponseMetaDataTracker responseMetaDataTracker;
+
+    @Autowired
+    private FormplayerDatadog datadog;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -170,6 +174,12 @@ public class MenuController extends AbstractBaseController {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
+        String[] requestInitiatedByTags = sessionNavigationBean.getRequestInitiatedByTags();
+        if (requestInitiatedByTags != null) {
+            for (String requestInitiatedByTag : requestInitiatedByTags) {
+                datadog.addRequestScopedTag(Constants.MODULE_INITIATED_BY_TAG, requestInitiatedByTag);
+            }
+        }
         EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
