@@ -239,7 +239,7 @@ public class CaseSearchHelper {
 
         Multimap<String, String> multimap = ArrayListMultimap.create();
         if (moduleNameTagValue != null && !moduleNameTagValue.isEmpty()) {
-            multimap.put("x_commcare_module_name_tag", moduleNameTagValue);
+            multimap.put("x_commcare_tag_module_name", moduleNameTagValue);
         }
 
         return multimap;
