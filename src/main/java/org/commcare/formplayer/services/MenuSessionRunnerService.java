@@ -4,6 +4,7 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Multimap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -423,12 +424,14 @@ public class MenuSessionRunnerService {
         String queryKey = queryScreen.getQueryKey();
         boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
+        Multimap<String, String> caseSearchMetricTags = caseSearchHelper.getMetricTags(menuSession);
         answerQueryPrompts(queryScreen, queryData, queryKey);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
             return doQuery(
                     queryScreen,
                     queryScreen.doDefaultSearch() && !forceManualSearch,
-                    skipCache
+                    skipCache,
+                    caseSearchMetricTags
             );
         }
         return false;
@@ -474,15 +477,17 @@ public class MenuSessionRunnerService {
      */
     @Trace
     private boolean doQuery(FormplayerQueryScreen screen,
-            boolean isDefaultSearch, boolean skipCache) throws CommCareSessionException {
+            boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags) throws CommCareSessionException {
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
+                Multimap<String, String> queryParams = screen.getQueryParams(isDefaultSearch);
+                queryParams.putAll(caseSearchMetricTags);
                 ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
                         screen.getBaseUrl(),
-                        screen.getQueryParams(isDefaultSearch),
+                        queryParams,
                         skipCache);
                 screen.updateSession(searchDataInstance);
                 return true;

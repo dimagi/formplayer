@@ -67,7 +67,8 @@ public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass {
         String searchUrl =
                 "http://localhost:8000/a/test/phone/search/c4d2d3a7b32948cea64d28e961b183cb/";
         ImmutableMultimap<String, String> data = ImmutableMultimap.of("commcare_registry", "test",
-                "case_type", "case");
+                "case_type", "case",
+                "x_commcare_tag_module_name", "Select 2nd case");
         when(webClientMock.postFormData(eq(searchUrl), eq(data))).thenReturn(searchResponse);
 
         String registryUrl =
