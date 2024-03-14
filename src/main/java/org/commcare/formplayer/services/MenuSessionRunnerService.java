@@ -469,8 +469,10 @@ public class MenuSessionRunnerService {
         }
         if (shouldSync) {
             String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
-            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
-            restoreFactory.performTimedSync(false, true, false);
+            Map<String, String> extraTags = new HashMap<>();
+            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
+
+            restoreFactory.performTimedSync(false, true, false, extraTags);
             menuSession.getSessionWrapper().clearVolatiles();
         }
     }

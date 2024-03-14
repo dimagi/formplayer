@@ -132,6 +132,9 @@ public class Constants {
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
 
+    // Datadog tags value
+    public static final String AUTOSELECT = "autoselect";
+
     //.Sentry tags
     public static final String URI = "uri";
     public static final String AS_USER = "as_user";

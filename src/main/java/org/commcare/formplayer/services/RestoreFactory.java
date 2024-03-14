@@ -198,12 +198,15 @@ public class RestoreFactory {
     public UserSqlSandbox performTimedSync() throws SyncRestoreException {
         return performTimedSync(true, false, false);
     }
-
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412)
             throws SyncRestoreException {
+        return performTimedSync(shouldPurge, skipFixtures, isResponseTo412, new HashMap<>());
+    }
+
+    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412, Map<String, String> extraTags)
+            throws SyncRestoreException {
         // create extras to send to category timing helper
-        Map<String, String> extras = new HashMap<>();
-        extras.put(Constants.DOMAIN_TAG, domain);
+        extraTags.put(Constants.DOMAIN_TAG, domain);
 
         SimpleTimer completeRestoreTimer = new SimpleTimer();
         completeRestoreTimer.start();
@@ -230,7 +233,7 @@ public class RestoreFactory {
                         purgeTimer,
                         Constants.TimingCategories.PURGE_CASES,
                         null,
-                        extras
+                        extraTags
                 );
             } catch (InvalidCaseGraphException e) {
                 FormplayerSentry.captureException(e, SentryLevel.WARNING);
@@ -248,7 +251,7 @@ public class RestoreFactory {
                 completeRestoreTimer,
                 Constants.TimingCategories.COMPLETE_RESTORE,
                 null,
-                extras
+                extraTags
         );
         return sandbox;
     }
