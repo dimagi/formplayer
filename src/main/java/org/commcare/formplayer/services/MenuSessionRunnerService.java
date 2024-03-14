@@ -468,6 +468,8 @@ public class MenuSessionRunnerService {
             throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             restoreFactory.performTimedSync(false, true, false);
             menuSession.getSessionWrapper().clearVolatiles();
         }
