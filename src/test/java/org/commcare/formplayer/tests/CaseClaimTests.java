@@ -165,7 +165,7 @@ public class CaseClaimTests extends BaseTestClass {
                 requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
-        assertEquals(6, requestData.keySet().size());
+        assertEquals(7, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{""}, requestData.get("dob").toArray());
@@ -190,7 +190,7 @@ public class CaseClaimTests extends BaseTestClass {
                 requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(2));
         requestData = requestDataCaptor.getAllValues().get(2);
-        assertEquals(7, requestData.keySet().size());
+        assertEquals(8, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"", "chris"}, requestData.get("name").toArray());
@@ -224,7 +224,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         assert cacheManager.getCache("case_search")
                 .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search"
-                        + "/_case_type=case1=case2=case3_include_closed=False")
+                        + "/_case_type=case1=case2=case3_include_closed=False_x_commcare_tag_module_name=Search All Cases")
                 != null;
 
         assert responseBean.getEntities().length == 1;
@@ -312,7 +312,7 @@ public class CaseClaimTests extends BaseTestClass {
         // when default search, prompts doesn't get included
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
-        assertEquals(2, requestData.keySet().size());
+        assertEquals(3, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
@@ -323,7 +323,7 @@ public class CaseClaimTests extends BaseTestClass {
         // Therefore there are only 2 http calls here instead of 3
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(1));
         requestData = requestDataCaptor.getAllValues().get(1);
-        assertEquals(6, requestData.keySet().size());
+        assertEquals(7, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
                 requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"Burt"}, requestData.get("name").toArray());
