@@ -657,8 +657,6 @@ public class MenuSessionRunnerService {
         if (menuSession.getSessionWrapper().getForm() != null) {
             SimpleTimer formEntryTimer = new SimpleTimer();
             formEntryTimer.start();
-            Map<String, String> extraTags = new HashMap<>();
-            extraTags.put(Constants.DOMAIN_TAG, restoreFactory.getDomain());
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setAppId(menuSession.getAppId());
             formResponseBean.setAppVersion(
@@ -674,6 +672,10 @@ public class MenuSessionRunnerService {
             Sentry.setTag(Constants.FORM_NAME_TAG, formName);
 
             formEntryTimer.end();
+
+            Map<String, String> extraTags = new HashMap<>();
+            extraTags.put(Constants.DOMAIN_TAG, restoreFactory.getDomain());
+            extraTags.put(Constants.FORM_NAME_TAG, formName);
             categoryTimingHelper.recordCategoryTiming(
                 formEntryTimer,
                 Constants.TimingCategories.FORM_ENTRY,
