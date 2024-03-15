@@ -475,8 +475,10 @@ public class MenuSessionRunnerService {
         if (shouldSync) {
             String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
             Map<String, String> extraTags = new HashMap<>();
-            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
+            Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
 
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_TAG, extraTags::put);
+            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
             restoreFactory.performTimedSync(false, true, false, extraTags);
             menuSession.getSessionWrapper().clearVolatiles();
         }
@@ -672,8 +674,10 @@ public class MenuSessionRunnerService {
             Sentry.setTag(Constants.FORM_NAME_TAG, formName);
 
             formEntryTimer.end();
-
             Map<String, String> extraTags = new HashMap<>();
+            Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
+
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_TAG, extraTags::put);
             extraTags.put(Constants.DOMAIN_TAG, restoreFactory.getDomain());
             extraTags.put(Constants.FORM_NAME_TAG, formName);
             categoryTimingHelper.recordCategoryTiming(
