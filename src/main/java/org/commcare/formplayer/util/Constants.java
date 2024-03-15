@@ -131,11 +131,13 @@ public class Constants {
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
-    public static final String REQUEST_INCLUDES_TAG = "request_includes";
 
 
-    // Datadog tags value
-    public static final String AUTOSELECT = "autoselect";
+    // Datadog tags assigned true/false values
+    public static final String REQUEST_INCLUDES_AUTOSELECT_TAG = "request_includes_autoselect";
+    public static final String REQUEST_INCLUDES_COMPLETE_RESTORE = "request_includes_complete_restore";
+    public static final String REQUEST_INCLUDES_APP_INSTALL = "request_includes_app_install";
+    public static final String TAG_VALUE_TRUE = "true";
 
     //.Sentry tags
     public static final String URI = "uri";

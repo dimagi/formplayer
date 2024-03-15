@@ -175,7 +175,7 @@ public class MenuSessionRunnerService {
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
-                    datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.AUTOSELECT);
+                    datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, Constants.TAG_VALUE_TRUE);
                     return getNextMenu(menuSession, queryData, entityScreenContext);
                 }
             }
@@ -383,7 +383,7 @@ public class MenuSessionRunnerService {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());
                         if (sessionAdvanced) {
-                            datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.AUTOSELECT);
+                            datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, Constants.TAG_VALUE_TRUE);
                         }
                     }
                 }
@@ -477,7 +477,7 @@ public class MenuSessionRunnerService {
             Map<String, String> extraTags = new HashMap<>();
             Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
 
-            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_TAG, extraTags::put);
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
             extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
             restoreFactory.performTimedSync(false, true, false, extraTags);
             menuSession.getSessionWrapper().clearVolatiles();
@@ -677,7 +677,7 @@ public class MenuSessionRunnerService {
             Map<String, String> extraTags = new HashMap<>();
             Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
 
-            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_TAG, extraTags::put);
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
             extraTags.put(Constants.DOMAIN_TAG, restoreFactory.getDomain());
             extraTags.put(Constants.FORM_NAME_TAG, formName);
             categoryTimingHelper.recordCategoryTiming(

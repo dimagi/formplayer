@@ -23,7 +23,7 @@ public class ResponseMetaDataTracker {
     }
 
     public void setAttemptRestore(boolean attemptRestore) {
-        datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.TimingCategories.COMPLETE_RESTORE);
+        datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_COMPLETE_RESTORE, Constants.TAG_VALUE_TRUE);
         this.attemptRestore = attemptRestore;
     }
 
@@ -32,7 +32,7 @@ public class ResponseMetaDataTracker {
     }
 
     public void setNewInstall(boolean newInstall) {
-        datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.TimingCategories.APP_INSTALL);
+        datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_APP_INSTALL, Constants.TAG_VALUE_TRUE);
         this.newInstall = newInstall;
     }
 }
