@@ -24,6 +24,7 @@ import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
+import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
@@ -31,6 +32,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -97,6 +99,9 @@ public class MenuSessionRunnerService {
 
     @Autowired
     private CaseSearchHelper caseSearchHelper;
+
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
     private WebClient webClient;
@@ -172,6 +177,7 @@ public class MenuSessionRunnerService {
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
+                    datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.AUTOSELECT);
                     return getNextMenu(menuSession, queryData, entityScreenContext);
                 }
             }
@@ -374,6 +380,9 @@ public class MenuSessionRunnerService {
                     if (nextScreen.shouldBeSkipped()) {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());
+                        if (sessionAdvanced) {
+                            datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.AUTOSELECT);
+                        }
                     }
                 }
                 if (previousScreen != null && previousScreen instanceof QueryScreen) {
@@ -462,7 +471,11 @@ public class MenuSessionRunnerService {
             throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
-            restoreFactory.performTimedSync(false, true, false);
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            Map<String, String> extraTags = new HashMap<>();
+            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
+
+            restoreFactory.performTimedSync(false, true, false, extraTags);
             menuSession.getSessionWrapper().clearVolatiles();
         }
     }
@@ -640,6 +653,10 @@ public class MenuSessionRunnerService {
     @Trace
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
         if (menuSession.getSessionWrapper().getForm() != null) {
+            SimpleTimer formEntryTimer = new SimpleTimer();
+            formEntryTimer.start();
+            Map<String, String> extraTags = new HashMap<>();
+            extraTags.put(Constants.DOMAIN_TAG, restoreFactory.getDomain());
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setAppId(menuSession.getAppId());
             formResponseBean.setAppVersion(
@@ -653,6 +670,14 @@ public class MenuSessionRunnerService {
             String formName = formResponseBean.getTitle();
             datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, formName);
             Sentry.setTag(Constants.FORM_NAME_TAG, formName);
+
+            formEntryTimer.end();
+            categoryTimingHelper.recordCategoryTiming(
+                formEntryTimer,
+                Constants.TimingCategories.FORM_ENTRY,
+                null,
+                extraTags
+            );
             return formResponseBean;
         } else {
             return null;

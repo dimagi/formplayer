@@ -132,6 +132,11 @@ public class Constants {
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
+    public static final String REQUEST_INCLUDES_TAG = "request_includes";
+
+
+    // Datadog tags value
+    public static final String AUTOSELECT = "autoselect";
 
     //.Sentry tags
     public static final String URI = "uri";
@@ -153,6 +158,7 @@ public class Constants {
         public static final String VALIDATE_SUBMISSION = "validate_submission";
         public static final String VALIDATE_ANSWERS = "validate_answers";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
+        public static final String FORM_ENTRY = "form_entry";
 
         public static final String GET_SESSION = "get_session";
         public static final String INITIALIZE_SESSION = "initialize_session";
