@@ -175,7 +175,7 @@ public class MenuSessionRunnerService {
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
-                    datadog.addRequestScopedTag(Constants.CATEGORY_TAG, Constants.AUTOSELECT);
+                    datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.AUTOSELECT);
                     return getNextMenu(menuSession, queryData, entityScreenContext);
                 }
             }
@@ -383,7 +383,7 @@ public class MenuSessionRunnerService {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());
                         if (sessionAdvanced) {
-                            datadog.addRequestScopedTag(Constants.CATEGORY_TAG, Constants.AUTOSELECT);
+                            datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_TAG, Constants.AUTOSELECT);
                         }
                     }
                 }
