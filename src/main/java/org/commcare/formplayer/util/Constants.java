@@ -133,7 +133,6 @@ public class Constants {
     public static final String DURATION_TAG = "duration";
     public static final String REQUEST_INITIATED_BY_TAG_PREFIX = "request_initiated_by_";
 
-    public static final String TAG_VALUE_TRUE = "true";
 
 
     // Datadog tags assigned true/false values
