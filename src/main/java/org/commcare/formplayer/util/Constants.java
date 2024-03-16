@@ -123,14 +123,17 @@ public class Constants {
     public static final String DATADOG_RESTORE_COUNT = "restore.count";
 
     // Datadog/Sentry tags
+    public static final String APP_NAME_TAG = "app_name";
     public static final String DOMAIN_TAG = "domain";
     public static final String FORM_NAME_TAG = "form_name";
     public static final String MODULE_TAG = "module";
-    public static final String MODULE_INITIATED_BY_TAG = "module_initiated_by";
     public static final String MODULE_NAME_TAG = "module_name";
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
+    public static final String REQUEST_INITIATED_BY_TAG_PREFIX = "request_initiated_by_";
+
+    public static final String TAG_VALUE_TRUE = "true";
 
     //.Sentry tags
     public static final String URI = "uri";
