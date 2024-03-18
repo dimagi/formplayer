@@ -31,8 +31,8 @@
             <instance id="commcaresession" src="jr://instance/session"/>
             <instance id="casedb" src="jr://instance/casedb"/>
             <instance id="search-input:results" src="jr://instance/search-input"/>
-            <bind nodeset="/data/welcome_message"
-                  calculate="instance('search-input:results')/input/field[@name='name']"/>
+            <!--bind nodeset="/data/welcome_message"
+                  calculate="instance('search-input:results')/input/field[@name='name']"/-->
             <bind nodeset="/data/close_confirmation"/>
             <bind nodeset="/data/close_reason" type="xsd:string" relevant="/data/close_confirmation = 'yes'"/>
             <itext>
