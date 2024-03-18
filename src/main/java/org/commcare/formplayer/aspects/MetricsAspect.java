@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.InstallRequestBean;
+import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.util.*;
 import org.commcare.util.screen.ScreenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,16 @@ public class MetricsAspect {
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
+        }
+
+        if (args != null && args.length > 0 && args[0] instanceof SessionNavigationBean) {
+            SessionNavigationBean bean = (SessionNavigationBean) args[0];
+            String[] requestInitiatedByTags = bean.getRequestInitiatedByTags();
+            if (requestInitiatedByTags != null) {
+                for (String requestInitiatedByTag : requestInitiatedByTags) {
+                    datadog.addRequestScopedTag(Constants.REQUEST_INITIATED_BY_TAG_PREFIX + requestInitiatedByTag, Constants.TAG_VALUE_TRUE);
+                }
+            }
         }
 
         SimpleTimer timer = new SimpleTimer();
