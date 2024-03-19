@@ -20,7 +20,6 @@ import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.ResponseMetaDataTracker;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
@@ -61,9 +60,6 @@ public class MenuController extends AbstractBaseController {
 
     @Autowired
     private ResponseMetaDataTracker responseMetaDataTracker;
-
-    @Autowired
-    private FormplayerDatadog datadog;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 

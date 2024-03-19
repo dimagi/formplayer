@@ -60,7 +60,6 @@ public class MetricsAspect {
             SessionNavigationBean bean = (SessionNavigationBean) args[0];
             String requestInitiatedByTag = bean.getRequestInitiatedByTag();
             if (requestInitiatedByTag != null) {
-                System.out.println("requestedInitiateydby is " + requestInitiatedByTag);
                 datadog.addRequestScopedTag(Constants.REQUEST_INITIATED_BY_TAG, requestInitiatedByTag);
             }
         }
