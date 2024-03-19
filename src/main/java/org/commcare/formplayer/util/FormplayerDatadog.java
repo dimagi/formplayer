@@ -36,6 +36,14 @@ public class FormplayerDatadog {
             this.value = value;
         }
 
+        public String getValue() {
+            return value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
         public String formatted() {
             return name + ":" + value;
         }
@@ -72,6 +80,15 @@ public class FormplayerDatadog {
 
     public List<Tag> getRequestScopedTags() {
         return new ArrayList<>(this.requestScopedTags.values());
+    }
+
+    public Map<String, String> getRequestScopedTagNameAndValue() {
+        Map<String, String> tagNameAndValueMap = new HashMap<>();
+        for (Map.Entry<String, Tag> entry : requestScopedTags.entrySet()) {
+            Tag tag = entry.getValue();
+            tagNameAndValueMap.put(tag.getName(), tag.getValue());
+        }
+        return tagNameAndValueMap;
     }
 
     public Set<String> getDetailedTagNames() {
