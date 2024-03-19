@@ -163,6 +163,8 @@ public class MenuSessionRunnerService {
                     (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             Sentry.setTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
@@ -185,10 +187,6 @@ public class MenuSessionRunnerService {
             String queryKey = ((FormplayerQueryScreen)nextScreen).getQueryKey();
             answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey);
             menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
-            String queryInitiatedBy = queryData == null ? null : queryData.getInitiatedBy(queryKey);
-            if (queryInitiatedBy != null) {
-                datadog.addRequestScopedTag(Constants.MODULE_INITIATED_BY_TAG, queryInitiatedBy);
-            }
             String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
