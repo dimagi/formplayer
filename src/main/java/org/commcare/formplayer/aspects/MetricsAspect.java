@@ -58,11 +58,10 @@ public class MetricsAspect {
 
         if (args != null && args.length > 0 && args[0] instanceof SessionNavigationBean) {
             SessionNavigationBean bean = (SessionNavigationBean) args[0];
-            String[] requestInitiatedByTags = bean.getRequestInitiatedByTags();
-            if (requestInitiatedByTags != null) {
-                for (String requestInitiatedByTag : requestInitiatedByTags) {
-                    datadog.addRequestScopedTag(Constants.REQUEST_INITIATED_BY_TAG_PREFIX + requestInitiatedByTag, Constants.TAG_VALUE_TRUE);
-                }
+            String requestInitiatedByTag = bean.getRequestInitiatedByTag();
+            if (requestInitiatedByTag != null) {
+                System.out.println("requestedInitiateydby is " + requestInitiatedByTag);
+                datadog.addRequestScopedTag(Constants.REQUEST_INITIATED_BY_TAG, requestInitiatedByTag);
             }
         }
 

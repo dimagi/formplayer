@@ -26,7 +26,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private int casesPerPage;
     private String[] selectedValues;
     private boolean isShortDetail;
-    private String[] requestInitiatedByTags;
+    private String requestInitiatedByTag;
 
     private boolean isRefreshCaseSearch;
     /**
@@ -79,12 +79,12 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.endpointArgs = endpointArgs;
     }
 
-    public String[] getRequestInitiatedByTags() {
-        return requestInitiatedByTags;
+    public String getRequestInitiatedByTag() {
+        return requestInitiatedByTag;
     }
 
-    public void setRequestInitiatedByTags(String[] requestInitiatedByTags) {
-        this.requestInitiatedByTags = requestInitiatedByTags;
+    public void requestInitiatedByTag(String requestInitiatedByTag) {
+        this.requestInitiatedByTag = requestInitiatedByTag;
     }
 
     @JsonGetter(value = "search_text")

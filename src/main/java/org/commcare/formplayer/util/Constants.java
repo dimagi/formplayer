@@ -130,9 +130,7 @@ public class Constants {
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
-    public static final String REQUEST_INITIATED_BY_TAG_PREFIX = "request_initiated_by_";
-
-    public static final String TAG_VALUE_TRUE = "true";
+    public static final String REQUEST_INITIATED_BY_TAG = "request_initiated_by";
 
     //.Sentry tags
     public static final String URI = "uri";
