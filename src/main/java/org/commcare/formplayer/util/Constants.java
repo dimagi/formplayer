@@ -133,6 +133,13 @@ public class Constants {
     public static final String DURATION_TAG = "duration";
     public static final String REQUEST_INITIATED_BY_TAG = "request_initiated_by";
 
+
+    // Datadog tags assigned true/false values
+    public static final String REQUEST_INCLUDES_AUTOSELECT_TAG = "request_includes_autoselect";
+    public static final String REQUEST_INCLUDES_COMPLETE_RESTORE = "request_includes_complete_restore";
+    public static final String REQUEST_INCLUDES_APP_INSTALL = "request_includes_app_install";
+    public static final String TAG_VALUE_TRUE = "true";
+
     //.Sentry tags
     public static final String URI = "uri";
     public static final String AS_USER = "as_user";
@@ -153,6 +160,7 @@ public class Constants {
         public static final String VALIDATE_SUBMISSION = "validate_submission";
         public static final String VALIDATE_ANSWERS = "validate_answers";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
+        public static final String FORM_ENTRY = "form_entry";
 
         public static final String GET_SESSION = "get_session";
         public static final String INITIALIZE_SESSION = "initialize_session";
