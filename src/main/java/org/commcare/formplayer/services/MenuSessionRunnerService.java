@@ -792,7 +792,9 @@ public class MenuSessionRunnerService {
         boolean respectRelevancy = endpoint.isRespectRelevancy();
         menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper, respectRelevancy);
         String[] selections = menuSession.getSelections();
-
+        for(String s: selections) {
+            System.out.println("selection: " + s);
+        }
         // reset session and play it back with derived selections
         menuSession.resetSession();
         return advanceSessionWithSelections(menuSession, selections, null, new EntityScreenContext(), null, respectRelevancy);
