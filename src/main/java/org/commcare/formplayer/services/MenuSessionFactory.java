@@ -125,6 +125,9 @@ public class MenuSessionFactory {
                             currentStep = step.getValue();
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
+                        } else {
+                            log.error("could not get %s=%s from entity screen references"
+                                    .formatted(neededDatum.getDataId(), step.getValue()));
                         }
                         break;
                     }
