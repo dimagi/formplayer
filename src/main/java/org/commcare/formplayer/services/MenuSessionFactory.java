@@ -121,7 +121,8 @@ public class MenuSessionFactory {
                 }
                 if (currentStep == null && processedStepsCount != steps.size()) {
                     for (StackFrameStep unprocessedStep : unprocessedSteps) {
-                        if (unprocessedStep.getType().equals(SessionFrame.STATE_COMMAND_ID)) {
+                        if (unprocessedStep.getType().equals(SessionFrame.STATE_COMMAND_ID) &&
+                            !unprocessedStep.getId().startsWith("claim_command")) {
                             StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
                             StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
                             for (MenuDisplayable option : options) {
