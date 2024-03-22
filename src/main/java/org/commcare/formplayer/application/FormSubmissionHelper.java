@@ -212,7 +212,7 @@ public class FormSubmissionHelper {
         return Optional.of(response);
     }
 
-    private SubmitResponseBean validateAnswers(FormSubmissionContext context) {
+    private SubmitResponseBean validateAnswers(FormSubmissionContext context) throws Exception {
         Map<String, ErrorBean> errors = categoryTimingHelper.timed(
                 Constants.TimingCategories.VALIDATE_SUBMISSION,
                 () -> validateSubmitAnswers(context),
@@ -348,7 +348,7 @@ public class FormSubmissionHelper {
     }
 
     @Trace
-    private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {
+    private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) throws Exception{
         Object nextScreen = categoryTimingHelper.timed(
                 Constants.TimingCategories.END_OF_FORM_NAV,
                 () -> {
