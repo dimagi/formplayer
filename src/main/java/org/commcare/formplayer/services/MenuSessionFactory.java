@@ -12,6 +12,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.session.CommCareSession;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
@@ -115,6 +116,21 @@ public class MenuSessionFactory {
                         if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();
                             needsFullInit = ++processedStepsCount == steps.size();
+                        } else {
+                            StringBuilder sb = new StringBuilder();
+                            entityScreen.getReferences().forEach(ref -> {
+                                String refStr =
+                                        EntityScreen.getReturnValueFromSelection(
+                                                ref,
+                                                (EntityDatum) neededDatum,
+                                                entityScreen.getEvalContext());
+                                sb.append(refStr);
+                                sb.append("\n");
+                            });
+
+                            String refs = entityScreen.getReferences().toString();
+                            log.error("could not get %s=%s from entity screen references: \n%s"
+                                    .formatted(neededDatum.getDataId(), step.getValue(), sb.toString()));
                         }
                         break;
                     }
