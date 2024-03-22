@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.StringJoiner;
 import java.util.Vector;
 
 import datadog.trace.api.Trace;
@@ -105,6 +106,17 @@ public class MenuSessionFactory {
                             needsFullInit = ++processedStepsCount == steps.size();
                         }
                     }
+                }
+                if (currentStep == null) {
+                    StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
+                    StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
+                    for (MenuDisplayable option : options) {
+                        optionsIDJoiner.add(option.getCommandID());
+                    }
+                    for (StackFrameStep step : steps) {
+                        stepIDJoiner.add(step.getId());
+                    }
+                    throw new CommCareSessionException("Match Error: Steps " + stepIDJoiner.toString() + " do not contain a valid option " + optionsIDJoiner.toString());
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
