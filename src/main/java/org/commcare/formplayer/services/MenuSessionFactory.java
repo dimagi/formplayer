@@ -12,6 +12,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
@@ -33,7 +34,9 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.Vector;
 
@@ -83,6 +86,7 @@ public class MenuSessionFactory {
             boolean respectRelevancy)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
+        List<StackFrameStep> processedSteps = new ArrayList<>();
         menuSession.resetSession();
         EntityScreenContext entityScreenContext = new EntityScreenContext();
         Screen screen = menuSession.getNextScreen(false, entityScreenContext);
@@ -102,21 +106,33 @@ public class MenuSessionFactory {
                     for (StackFrameStep step : steps) {
                         if (step.getId().equals(options[i].getCommandID())) {
                             currentStep = String.valueOf(i);
+                            processedSteps.add(step);
                             // final step, needs to init fully to show to screen
                             needsFullInit = ++processedStepsCount == steps.size();
                         }
                     }
                 }
+
+                Vector<StackFrameStep> unprocessedSteps = new Vector<>();
+                for (StackFrameStep step : steps) {
+                    if (!processedSteps.contains(step)) {
+                        unprocessedSteps.add(step);
+                    }
+                }
                 if (currentStep == null && processedStepsCount != steps.size()) {
-                    StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
-                    StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
-                    for (MenuDisplayable option : options) {
-                        optionsIDJoiner.add(option.getCommandID());
+                    for (StackFrameStep unprocessedStep : unprocessedSteps) {
+                        if (unprocessedStep.getType().equals(SessionFrame.STATE_COMMAND_ID)) {
+                            StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
+                            StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
+                            for (MenuDisplayable option : options) {
+                                optionsIDJoiner.add(option.getCommandID());
+                            }
+                            for (StackFrameStep step : steps) {
+                                stepIDJoiner.add(step.getId());
+                            }
+                            throw new CommCareSessionException("Match Error: Steps " + stepIDJoiner.toString() + " do not contain a valid option " + optionsIDJoiner.toString());
+                        }
                     }
-                    for (StackFrameStep step : steps) {
-                        stepIDJoiner.add(step.getId());
-                    }
-                    throw new CommCareSessionException("Match Error: Steps " + stepIDJoiner.toString() + " do not contain a valid option " + optionsIDJoiner.toString());
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
@@ -126,6 +142,7 @@ public class MenuSessionFactory {
                     if (step.getId().equals(neededDatum.getDataId())) {
                         if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();
+                            processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
                         }
                         break;
@@ -152,6 +169,7 @@ public class MenuSessionFactory {
                         URI uri = null;
                         try {
                             uri = new URI(step.getValue());
+                            processedSteps.add(step);
                             processedStepsCount++;
                         } catch (URISyntaxException e) {
                             e.printStackTrace();
