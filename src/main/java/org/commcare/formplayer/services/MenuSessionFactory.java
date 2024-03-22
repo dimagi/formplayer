@@ -107,7 +107,7 @@ public class MenuSessionFactory {
                         }
                     }
                 }
-                if (currentStep == null) {
+                if (currentStep == null && processedStepsCount != steps.size()) {
                     StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
                     StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
                     for (MenuDisplayable option : options) {
