@@ -1,0 +1,9 @@
+{
+  "username": "loaduser",
+  "password": "loadpass",
+  "domain": "loaddomain",
+  "app_id": "loadappid",
+  "selections": [2, 1, "5748ee5a-91ba-49d5-95d4-90c2eaf2bd9c"],
+  "offset": 70,
+  "installReference": "archives/basic.ccz"
+}

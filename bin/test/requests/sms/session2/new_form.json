@@ -1,0 +1,20 @@
+{
+  "username": "wsp",
+  "domain": "test",
+  "nav_mode": "prompt",
+  "session-data": {
+    "username": "wsp",
+    "domain": "test",
+    "user_id": "7c41aebad7c6445d97a285c272c66320",
+    "app_version": "2.0",
+    "app_id": "sms_test",
+    "user_data": {
+      "commcare_project": "test",
+      "commcare_last_name": "",
+      "commcare_phone_number": "123456",
+      "commcare_first_name": ""
+    },
+    "device_id": "commconnect"
+  },
+  "form-url": "dummy"
+}

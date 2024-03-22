@@ -1,0 +1,67 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>Date Picker Field List OQPS</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/11FAC65A-F2CD-427F-A870-CF126336AAB5" uiVersion="1" version="15" name="Date Picker Field List OQPS">
+                    <question1/>
+                    <question4>
+                        <question2/>
+                        <question5/>
+                        <question6/>
+                    </question4>
+                    <question7/>
+                    <orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
+            </instance><instance id="commcaresession" src="jr://instance/session"/>
+            <bind nodeset="/data/question1"/>
+            <bind nodeset="/data/question4"/>
+            <bind nodeset="/data/question4/question2" type="xsd:string"/>
+            <bind nodeset="/data/question4/question5" type="xsd:date" required="true()"/>
+            <bind nodeset="/data/question4/question6" type="xsd:string" required="true()"/>
+            <bind nodeset="/data/question7"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="question1-label">
+                        <value>This is a placeholder, go to the next question and try to use a date, weird things will happen
+                        </value>
+                    </text>
+                    <text id="question4-label">
+                        <value>Field List</value>
+                    </text>
+                    <text id="question4/question2-label">
+                        <value>Text  goes here</value>
+                    </text>
+                    <text id="question4/question5-label">
+                        <value>Date Picker (using this will break things)</value>
+                    </text>
+                    <text id="question4/question6-label">
+                        <value>You need to put text here to proceed</value>
+                    </text>
+                    <text id="question7-label">
+                        <value>If you chose a date and got here, things are golden!</value>
+                    </text>
+                </translation>
+            </itext>
+            <setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/></model>
+    </h:head>
+    <h:body>
+        <trigger ref="/data/question1" appearance="minimal">
+            <label ref="jr:itext('question1-label')"/>
+        </trigger>
+        <group ref="/data/question4" appearance="field-list">
+            <label ref="jr:itext('question4-label')"/>
+            <input ref="/data/question4/question2">
+                <label ref="jr:itext('question4/question2-label')"/>
+            </input>
+            <input ref="/data/question4/question5">
+                <label ref="jr:itext('question4/question5-label')"/>
+            </input>
+            <input ref="/data/question4/question6">
+                <label ref="jr:itext('question4/question6-label')"/>
+            </input>
+        </group>
+        <trigger ref="/data/question7" appearance="minimal">
+            <label ref="jr:itext('question7-label')"/>
+        </trigger>
+    </h:body>
+</h:html>

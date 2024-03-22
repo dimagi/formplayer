@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/E8B02EC5-D090-4AD5-8D81-64435E067FD5" uiVersion="1" version="1" name="Functions">
+    <form_intro />
+    <random />
+    <num1 />
+    <num2 />
+    <concat_hidden />
+    <concat />
+    <min_max>
+        <min_value />
+        <summation />
+        <divisible />
+        <coal_numbers />
+    </min_max>
+    <mod />
+    <hidden_max />
+    <hidden_numb />
+    <hidden_min />
+    <boolean />
+    <boolean_display />
+    <selected_at />
+    <selected_at_hidden />
+    <int_dec />
+    <if_output />
+    <number />
+    <if_dec />
+    <pow />
+    <one />
+    <one_1 />
+    <two />
+    <true />
+    <false />
+    <n0:meta
+            xmlns:n0="http://openrosa.org/jr/xforms">
+        <n0:deviceID/>
+        <n0:timeStart/>
+        <n0:timeEnd/>
+        <n0:username/>
+        <n0:userID/>
+        <n0:instanceID/>
+        <n1:appVersion
+                xmlns:n1="http://commcarehq.org/xforms"/>
+        <n2:location
+                xmlns:n2="http://commcarehq.org/xforms"/>
+    </n0:meta>
+</data>

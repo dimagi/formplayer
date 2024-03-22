@@ -1,0 +1,37 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+  <h:head>
+    <h:title>Registration Form</h:title>
+    <model>
+      <instance>
+        <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/3790E8AF-599A-4792-A621-117F912CB291" uiVersion="1" version="37" name="Registration Form">
+          <name/>
+          <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id="">
+            <create>
+              <case_name/>
+              <owner_id/>
+              <case_type>case</case_type>
+            </create>
+          </case>
+        </data>
+      </instance>
+      <instance id="commcaresession" src="jr://instance/session"/>
+      <instance id="selected_cases" src="jr://instance/selected-entities/selected_cases"/>
+      <bind nodeset="/data/name" type="xsd:string" required="true()"/>
+      <itext>
+        <translation lang="en" default="">
+          <text id="name-label">
+            <value>Name</value>
+          </text>
+        </translation>
+      </itext>
+      <setvalue ref="/data/case/@case_id" value="instance('commcaresession')/session/data/case_id_new_case_0" event="xforms-ready"/>
+      <bind nodeset="/data/case/create/case_name" calculate="/data/name"/>
+      <bind nodeset="/data/case/create/owner_id" calculate="/data/meta/userID"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/name">
+      <label ref="jr:itext('name-label')"/>
+    </input>
+  </h:body>
+</h:html>

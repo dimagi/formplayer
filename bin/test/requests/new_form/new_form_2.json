@@ -1,0 +1,24 @@
+{
+  "username": "test",
+  "domain": "test",
+  "session-data": {
+    "session_name": "ccqa > Question Types",
+    "app_version": "2.0",
+    "device_id": "cloudcare",
+    "user_id": "84c246edf58bfa69e03bdecc39692e1f",
+    "domain": "test",
+    "host": "http://localhost:8000",
+    "user_data": {
+      "commcare_first_name": "",
+      "commcare_last_name": "",
+      "commcare_phone_number": null
+    },
+    "app_id": "10a706429116a3e55f1d1302cd3db69f",
+    "username": "test"
+  },
+  "form_context": {
+    "case_model": null
+  },
+  "lang": "en",
+  "form-url": "http://localhost:8000/a/test/apps/download/10a706429116a3e55f1d1302cd3db69f/modules-0/forms-1.xml"
+}

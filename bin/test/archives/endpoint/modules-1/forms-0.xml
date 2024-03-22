@@ -1,0 +1,26 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+	<h:head>
+		<h:title>Add Child</h:title>
+		<model>
+			<instance>
+				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/76643AC2-F7E8-401B-A8DD-418920D5A9BC" uiVersion="1" version="148" name="Add Child">
+					<child_name/>
+				<subcase_0><case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""><create><case_name/><owner_id/><case_type>child_case</case_type></create><update/><index><parent case_type="case"/></index></case></subcase_0><case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""/>
+				</data>
+			</instance><instance id="commcaresession" src="jr://instance/session"/>
+			<bind nodeset="/data/child_name" type="xsd:string" required="true()"/>
+			<itext>
+				<translation lang="en" default="">
+					<text id="child_name-label">
+						<value>Child Name</value>
+					</text>
+				</translation>
+			</itext>
+		</model>
+	</h:head>
+	<h:body>
+		<input ref="/data/child_name">
+			<label ref="jr:itext('child_name-label')"/>
+		</input>
+	</h:body>
+</h:html>

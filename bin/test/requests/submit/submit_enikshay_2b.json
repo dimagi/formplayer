@@ -1,0 +1,15 @@
+{
+  "action": "submit-all",
+  "answers": {
+    "6,0": "3",
+    "6,2": "2",
+    "7,0": "[1]",
+    "7,1": "Any value"
+  },
+  "prevalidated": true,
+  "domain": "sheel-enikshay",
+  "username": "wpride@dimagi.com",
+  "restoreAs": "demophi1user1",
+  "session-id": "e319df89-3c3d-4731-b68d-ddb59ba5d033",
+  "session_id": "e319df89-3c3d-4731-b68d-ddb59ba5d033"
+}

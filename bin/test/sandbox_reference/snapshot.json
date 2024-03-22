@@ -1,0 +1,7 @@
+{
+  "username": "snapshot_test",
+  "password": "test",
+  "domain": "snapshot",
+  "app_id": "snapshot_app",
+  "installReference": "sandbox_reference/app_archive.ccz"
+}
