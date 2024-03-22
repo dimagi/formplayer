@@ -124,9 +124,11 @@ public class MenuSessionFactory {
                                                 ref,
                                                 (EntityDatum) neededDatum,
                                                 entityScreen.getEvalContext());
+                                sb.append("  ");
                                 sb.append(refStr);
-                                sb.append("\n");
+                                sb.append(",\n");
                             });
+                            sb.append("]");
 
                             String refs = entityScreen.getReferences().toString();
                             log.error("could not get %s=%s from entity screen references: \n%s"
