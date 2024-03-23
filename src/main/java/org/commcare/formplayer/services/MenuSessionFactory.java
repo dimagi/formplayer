@@ -112,28 +112,8 @@ public class MenuSessionFactory {
                         }
                     }
                 }
-
-                Vector<StackFrameStep> unprocessedSteps = new Vector<>();
-                for (StackFrameStep step : steps) {
-                    if (!processedSteps.contains(step)) {
-                        unprocessedSteps.add(step);
-                    }
-                }
                 if (currentStep == null && processedStepsCount != steps.size()) {
-                    for (StackFrameStep unprocessedStep : unprocessedSteps) {
-                        if (unprocessedStep.getType().equals(SessionFrame.STATE_COMMAND_ID) &&
-                            !unprocessedStep.getId().startsWith("claim_command")) {
-                            StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
-                            StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
-                            for (MenuDisplayable option : options) {
-                                optionsIDJoiner.add(option.getCommandID());
-                            }
-                            for (StackFrameStep step : steps) {
-                                stepIDJoiner.add(step.getId());
-                            }
-                            throw new CommCareSessionException("Match Error: Steps " + stepIDJoiner.toString() + " do not contain a valid option " + optionsIDJoiner.toString());
-                        }
-                    }
+                    checkAndThrowCommandIDMatchError(steps, processedSteps, options);
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
@@ -259,5 +239,32 @@ public class MenuSessionFactory {
                 bean.getRestoreAs(),
                 bean.getPreview()
         );
+    }
+
+    private void checkAndThrowCommandIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
+        MenuDisplayable[] options) throws CommCareSessionException {
+        Vector<StackFrameStep> unprocessedSteps = new Vector<>();
+        for (StackFrameStep step : steps) {
+            if (!processedSteps.contains(step)) {
+                unprocessedSteps.add(step);
+            }
+        }
+        for (StackFrameStep unprocessedStep : unprocessedSteps) {
+            if (unprocessedStep.getType().equals(SessionFrame.STATE_COMMAND_ID) &&
+                !unprocessedStep.getId().startsWith("claim_command")) {
+                StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
+                StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
+                for (MenuDisplayable option : options) {
+                    optionsIDJoiner.add(option.getCommandID());
+                }
+                for (StackFrameStep step : steps) {
+                    stepIDJoiner.add(step.getId());
+                }
+                throw new CommCareSessionException(
+                    "Match Error: Steps " + stepIDJoiner.toString() +
+                    " do not contain a valid option " + optionsIDJoiner.toString()
+                );
+            }
+        }
     }
 }
