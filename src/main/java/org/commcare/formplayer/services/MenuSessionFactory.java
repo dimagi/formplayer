@@ -168,6 +168,7 @@ public class MenuSessionFactory {
                             queryScreen.updateSession(searchDataInstance);
                             screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                             currentStep = NEXT_SCREEN;
+                            processedStepsCount++;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
                             e.printStackTrace();
