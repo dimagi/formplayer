@@ -151,7 +151,6 @@ public class MenuSessionFactory {
                         try {
                             uri = new URI(step.getValue());
                             processedSteps.add(step);
-                            processedStepsCount++;
                         } catch (URISyntaxException e) {
                             e.printStackTrace();
                             throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
