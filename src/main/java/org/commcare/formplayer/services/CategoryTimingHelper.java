@@ -86,7 +86,7 @@ public class CategoryTimingHelper {
     }
 
     @SneakyThrows
-    public <T> T timed(String category, CheckedSupplier<T> timed, Map<String, String> extras) {
+    public <T> T timed(String category, CheckedSupplier<T> timed, Map<String, String> extras) throws Exception{
         SimpleTimer timer = new SimpleTimer();
         timer.start();
         try {
