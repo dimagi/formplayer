@@ -1,0 +1,5 @@
+{
+  "filter_expr": "[(singleselect = 'b')]",
+  "domain": "filtertesttestdomain",
+  "username": "filtertestuser",
+}

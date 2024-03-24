@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile version="174"
+         update="http://localhost:8000/a/test-1/apps/download/343af03494944cf4affdf775964eba54/media_profile.ccpr?latest=true&amp;profile=None"
+         uniqueid="b4b865cb92c46a01b0a45173b800bc14"
+         name="Case Claim"
+         buildProfileID="">
+
+    <property key="ota-restore-url" value="http://localhost:8000/a/test-1/phone/restore/343af03494944cf4affdf775964eba54/" force="true"/>
+    <property key="PostURL" value="http://localhost:8000/a/test-1/receiver/secure/343af03494944cf4affdf775964eba54/" force="true"/>
+
+    <property key="cc-auto-advance-menu" value="yes" force="true"/>
+
+    <suite><resource id="suite" version="174">
+        <location authority="local">./suite.xml</location>
+    </resource></suite>
+    
+    <suite><resource id="media-suite" version="174">
+        <location authority="local">./media_suite.xml</location>
+    </resource></suite>
+    
+</profile>

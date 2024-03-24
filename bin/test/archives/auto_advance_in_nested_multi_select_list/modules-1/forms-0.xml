@@ -1,0 +1,27 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+  <h:head>
+    <h:title/>
+    <model>
+      <instance>
+        <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/095C4E02-C18D-4286-A80D-DC981B782CDB" uiVersion="1" version="37" name="Followup Form">
+          <default_label/>
+        </data>
+      </instance>
+      <instance id="commcaresession" src="jr://instance/session"/>
+      <instance id="selected_cases" src="jr://instance/selected-entities/selected_cases"/>
+      <bind nodeset="/data/default_label"/>
+      <itext>
+        <translation lang="en" default="">
+          <text id="default_label-label">
+            <value> This is your follow up form. Delete this label and add questions for any follow up visits. </value>
+          </text>
+        </translation>
+      </itext>
+    </model>
+  </h:head>
+  <h:body>
+    <trigger ref="/data/default_label" appearance="minimal">
+      <label ref="jr:itext('default_label-label')"/>
+    </trigger>
+  </h:body>
+</h:html>

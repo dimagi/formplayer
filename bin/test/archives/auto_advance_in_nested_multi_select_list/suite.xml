@@ -1,0 +1,308 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<suite version="40" descriptor="Suite File">
+  <xform>
+    <resource id="98085a76f97745ca8eb3f8e256a1bde8" version="37" descriptor="Form: (Module Case List) - Registration Form">
+      <location authority="local">./modules-0/forms-0.xml</location>
+      <location authority="remote">./modules-0/forms-0.xml</location>
+    </resource>
+  </xform>
+  <xform>
+    <resource id="80dd849bbf974589979b47c43c9012b6" version="37" descriptor="Form: (Module Parent Case List) - Followup Form">
+      <location authority="local">./modules-1/forms-0.xml</location>
+      <location authority="remote">./modules-1/forms-0.xml</location>
+    </resource>
+  </xform>
+  <xform>
+    <resource id="b047f7d9d04b42dfaef8adbb4b57f8a0" version="37" descriptor="Form: (Module Nested Case List) - Followup">
+      <location authority="local">./modules-2/forms-0.xml</location>
+      <location authority="remote">./modules-2/forms-0.xml</location>
+    </resource>
+  </xform>
+  <locale language="default">
+    <resource id="app_default_strings" version="40" descriptor="Translations: Default Language">
+      <location authority="local">./default/app_strings.txt</location>
+      <location authority="remote">./default/app_strings.txt</location>
+    </resource>
+  </locale>
+  <locale language="en">
+    <resource id="app_en_strings" version="40" descriptor="Translations: English">
+      <location authority="local">./en/app_strings.txt</location>
+      <location authority="remote">./en/app_strings.txt</location>
+    </resource>
+  </locale>
+  <detail id="m1_case_short">
+    <title>
+      <text>
+        <locale id="cchq.case"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+    </field>
+    <action auto_launch="count(instance('next_input')/results/value) = 0 or count(instance('next_input')/results/value[count(instance('casedb')/casedb/case[@case_id = current()/.]) = 0]) &gt; 0" redo_last="false">
+      <display>
+        <text>
+          <locale id="case_search.m1"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m1'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
+  <detail id="m1_search_short">
+    <title>
+      <text>
+        <locale id="cchq.case"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m1.search_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <action auto_launch="false()" redo_last="true">
+      <display>
+        <text>
+          <locale id="case_search.m1.again"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m1'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
+  <detail id="m2_case_short">
+    <title>
+      <text>
+        <locale id="cchq.case"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m2.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <action auto_launch="count(instance('next_input')/results/value) = 0 or count(instance('next_input')/results/value[count(instance('casedb')/casedb/case[@case_id = current()/.]) = 0]) &gt; 0" redo_last="false">
+      <display>
+        <text>
+          <locale id="case_search.m2"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m2'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
+  <detail id="m2_search_short">
+    <title>
+      <text>
+        <locale id="cchq.case"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m2.search_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <action auto_launch="false()" redo_last="true">
+      <display>
+        <text>
+          <locale id="case_search.m2.again"/>
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m2'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
+  <entry>
+    <form>http://openrosa.org/formdesigner/3790E8AF-599A-4792-A621-117F912CB291</form>
+    <command id="m0-f0">
+      <text>
+        <locale id="forms.m0f0"/>
+      </text>
+    </command>
+    <session>
+      <datum id="case_id_new_case_0" function="uuid()"/>
+    </session>
+  </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/095C4E02-C18D-4286-A80D-DC981B782CDB</form>
+    <command id="m1-f0">
+      <text>
+        <locale id="forms.m1f0"/>
+      </text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <session>
+      <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short"/>
+    </session>
+  </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/06F07035-D13F-4E61-8B69-BE1DEF4FD3F5</form>
+    <command id="m2-f0">
+      <text>
+        <locale id="forms.m2f0"/>
+      </text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <session>
+      <instance-datum id="selected_cases" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m1_case_short"/>
+      <instance-datum id="selected_cases_case" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m2_case_short"/>
+    </session>
+  </entry>
+  <menu id="m0">
+    <text>
+      <locale id="modules.m0"/>
+    </text>
+    <command id="m0-f0"/>
+  </menu>
+  <menu id="m1">
+    <text>
+      <locale id="modules.m1"/>
+    </text>
+    <command id="m1-f0" relevant="false()"/>
+  </menu>
+  <menu root="m1" id="m2">
+    <text>
+      <locale id="modules.m2"/>
+    </text>
+    <command id="m2-f0"/>
+  </menu>
+  <remote-request>
+    <post url="https://staging.commcarehq.org/a/shubhamgoyaltest/phone/claim-case/" relevant="$case_id != ''">
+      <data key="case_id" ref="." nodeset="instance('search_selected_cases')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id=current()/.]) = 1"/>
+    </post>
+    <command id="search_command.m1">
+      <display>
+        <text>
+          <locale id="case_search.m1"/>
+        </text>
+      </display>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <instance id="results" src="jr://instance/remote/results"/>
+    <instance id="search_selected_cases" src="jr://instance/selected-entities/search_selected_cases"/>
+    <session>
+      <query url="https://staging.commcarehq.org/a/shubhamgoyaltest/phone/search/593a8b62be76498b82d0d91f767902e4/" storage-instance="results" template="case" default_search="false">
+        <title>
+          <text>
+            <locale id="case_search.m1.inputs"/>
+          </text>
+        </title>
+        <data key="case_type" ref="'case'"/>
+        <prompt key="name">
+          <display>
+            <text>
+              <locale id="search_property.m1.name"/>
+            </text>
+          </display>
+        </prompt>
+      </query>
+      <instance-datum id="search_selected_cases" nodeset="instance('results')/results/case[@case_type='case'][not(commcare_is_related_case=true())]" value="./@case_id" detail-select="m1_search_short"/>
+    </session>
+    <stack>
+      <push>
+        <rewind value="instance('commcaresession')/session/data/search_selected_cases"/>
+      </push>
+    </stack>
+  </remote-request>
+  <remote-request>
+    <post url="https://staging.commcarehq.org/a/shubhamgoyaltest/phone/claim-case/" relevant="$case_id != ''">
+      <data key="case_id" ref="." nodeset="instance('search_selected_cases')/results/value" exclude="count(instance('casedb')/casedb/case[@case_id=current()/.]) = 1"/>
+    </post>
+    <command id="search_command.m2">
+      <display>
+        <text>
+          <locale id="case_search.m2"/>
+        </text>
+      </display>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <instance id="results" src="jr://instance/remote/results"/>
+    <instance id="search_selected_cases" src="jr://instance/selected-entities/search_selected_cases"/>
+    <session>
+      <query url="https://staging.commcarehq.org/a/shubhamgoyaltest/phone/search/593a8b62be76498b82d0d91f767902e4/" storage-instance="results" template="case" default_search="false">
+        <title>
+          <text>
+            <locale id="case_search.m2.inputs"/>
+          </text>
+        </title>
+        <data key="case_type" ref="'case'"/>
+        <prompt key="name">
+          <display>
+            <text>
+              <locale id="search_property.m2.name"/>
+            </text>
+          </display>
+        </prompt>
+      </query>
+      <instance-datum id="search_selected_cases" nodeset="instance('results')/results/case[@case_type='case'][not(commcare_is_related_case=true())]" value="./@case_id" detail-select="m2_search_short"/>
+    </session>
+    <stack>
+      <push>
+        <rewind value="instance('commcaresession')/session/data/search_selected_cases"/>
+      </push>
+    </stack>
+  </remote-request>
+</suite>

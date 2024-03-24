@@ -1,0 +1,33 @@
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account shubham!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>ffda7dca6c5111ebb8fa02815ebb940b</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>shubham</username>
+        <password>sha1$uvTRQGiKsw69$fd362c6e0eb3976e548568273cdd548812244a48</password>
+        <uuid>9c3f4cae5974456194797c6b609fd326</uuid>
+        <date>2021-02-10</date>
+        <user_data>
+            <data key="color">red</data>
+            <data key="commcare_first_name">Shubham</data>
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_profile"/>
+            <data key="commcare_project">bosco</data>
+            <data key="title"/>
+        </user_data>
+    </Registration>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="not_in_case_db_case" user_id="9c3f4cae5974456194797c6b609fd326" date_modified="2021-02-10T17:33:10.692000Z">
+        <create>
+            <case_type>song</case_type>
+            <case_name>Where the Streets Have No Name</case_name>
+            <owner_id>other_user</owner_id>
+        </create>
+        <update>
+            <date_opened>1987-08-31</date_opened>
+            <artist>U2</artist>
+            <play_count>50</play_count>
+        </update>
+    </case>
+</OpenRosaResponse>

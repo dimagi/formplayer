@@ -1,0 +1,46 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>Field List</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/DFF120A0-D413-46F7-A0E2-44DA7471A053" uiVersion="1" version="9" name="Field List">
+                    <no_build_question/>
+                    <question1>
+                        <first_question_field_list/>
+                        <second_question_field_list/>
+                    </question1>
+                    <orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
+            </instance><instance id="commcaresession" src="jr://instance/session"/>
+            <bind nodeset="/data/no_build_question" type="xsd:string"/>
+            <bind nodeset="/data/question1"/>
+            <bind nodeset="/data/question1/first_question_field_list" type="xsd:string"/>
+            <bind nodeset="/data/question1/second_question_field_list" type="xsd:string"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="no_build_question-label">
+                        <value>First question</value>
+                    </text>
+                    <text id="question1/first_question_field_list-label">
+                        <value>First question field list</value>
+                    </text>
+                    <text id="question1/second_question_field_list-label">
+                        <value>Second question field list</value>
+                    </text>
+                </translation>
+            </itext>
+            <setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/></model>
+    </h:head>
+    <h:body>
+        <input ref="/data/no_build_question">
+            <label ref="jr:itext('no_build_question-label')"/>
+        </input>
+        <group ref="/data/question1" appearance="field-list">
+            <input ref="/data/question1/first_question_field_list">
+                <label ref="jr:itext('question1/first_question_field_list-label')"/>
+            </input>
+            <input ref="/data/question1/second_question_field_list">
+                <label ref="jr:itext('question1/second_question_field_list-label')"/>
+            </input>
+        </group>
+    </h:body>
+</h:html>

@@ -1,0 +1,9 @@
+{
+  "username": "loaduser",
+  "password": "loadpass",
+  "domain": "loaddomain",
+  "app_id": "loadappid",
+  "selections": [0, 1],
+  "search_text": "batman",
+  "installReference": "archives/multi_select_case_list"
+}

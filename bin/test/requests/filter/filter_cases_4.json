@@ -1,0 +1,20 @@
+{
+  "username": "test",
+  "domain": "test",
+  "action": "touchcare-filter-cases",
+  "filter_expr": "[(not(singleselect = 'a'))]",
+  "uses_sql_backend": true,
+  "session_data": {
+    "username": "test",
+    "domain": "test",
+    "user_id": "84c246edf58bfa69e03bdecc39692e1f",
+    "user_data": {
+      "commcare_first_name": "",
+      "commcare_last_name": "",
+      "commcare_phone_number": null
+    },
+    "extra_instances": [],
+    "app_version": "2.0",
+    "device_id": "cloudcare"
+  }
+}
