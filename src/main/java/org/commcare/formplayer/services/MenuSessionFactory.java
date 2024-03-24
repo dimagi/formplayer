@@ -103,6 +103,7 @@ public class MenuSessionFactory {
                             currentStep = String.valueOf(i);
                             // final step, needs to init fully to show to screen
                             needsFullInit = ++processedStepsCount == steps.size();
+                            break;
                         }
                     }
                 }
