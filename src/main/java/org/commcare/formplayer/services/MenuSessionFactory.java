@@ -12,6 +12,8 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.session.CommCareSession;
+import org.commcare.suite.model.EntityDatum;
+import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
@@ -33,7 +35,10 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.Vector;
 
 import datadog.trace.api.Trace;
@@ -82,6 +87,7 @@ public class MenuSessionFactory {
             boolean respectRelevancy)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
+        List<StackFrameStep> processedSteps = new ArrayList<>();
         menuSession.resetSession();
         EntityScreenContext entityScreenContext = new EntityScreenContext();
         Screen screen = menuSession.getNextScreen(false, entityScreenContext);
@@ -101,10 +107,14 @@ public class MenuSessionFactory {
                     for (StackFrameStep step : steps) {
                         if (step.getId().equals(options[i].getCommandID())) {
                             currentStep = String.valueOf(i);
+                            processedSteps.add(step);
                             // final step, needs to init fully to show to screen
                             needsFullInit = ++processedStepsCount == steps.size();
                         }
                     }
+                }
+                if (currentStep == null && processedStepsCount != steps.size()) {
+                    checkAndThrowCommandIDMatchError(steps, processedSteps, options);
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
@@ -114,7 +124,24 @@ public class MenuSessionFactory {
                     if (step.getId().equals(neededDatum.getDataId())) {
                         if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();
+                            processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
+                        } else {
+                            StringBuilder refsSb = new StringBuilder("[");
+                            entityScreen.getReferences().forEach(ref -> {
+                                String refStr =
+                                        EntityScreen.getReturnValueFromSelection(
+                                                ref,
+                                                (EntityDatum) neededDatum,
+                                                entityScreen.getEvalContext());
+                                refsSb.append("  ");
+                                refsSb.append(refStr);
+                                refsSb.append(",\n");
+                            });
+                            refsSb.append("]");
+
+                            log.error("could not get %s=%s from entity screen.\nnode set: %s\nreferences: \n%s"
+                                    .formatted(neededDatum.getDataId(), step.getValue(), ((EntityDatum) neededDatum).getNodeset().toString(), refsSb.toString()));
                         }
                         break;
                     }
@@ -140,6 +167,7 @@ public class MenuSessionFactory {
                         URI uri = null;
                         try {
                             uri = new URI(step.getValue());
+                            processedSteps.add(step);
                         } catch (URISyntaxException e) {
                             e.printStackTrace();
                             throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
@@ -227,5 +255,32 @@ public class MenuSessionFactory {
                 bean.getRestoreAs(),
                 bean.getPreview()
         );
+    }
+
+    private void checkAndThrowCommandIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
+        MenuDisplayable[] options) throws CommCareSessionException {
+        Vector<StackFrameStep> unprocessedSteps = new Vector<>();
+        for (StackFrameStep step : steps) {
+            if (!processedSteps.contains(step)) {
+                unprocessedSteps.add(step);
+            }
+        }
+        for (StackFrameStep unprocessedStep : unprocessedSteps) {
+            if (unprocessedStep.getType().equals(SessionFrame.STATE_COMMAND_ID) &&
+                !unprocessedStep.getId().startsWith("claim_command")) {
+                StringJoiner optionsIDJoiner = new StringJoiner(", ", "[", "]");
+                StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
+                for (MenuDisplayable option : options) {
+                    optionsIDJoiner.add(option.getCommandID());
+                }
+                for (StackFrameStep step : steps) {
+                    stepIDJoiner.add(step.getId());
+                }
+                throw new CommCareSessionException(
+                    "Match Error: Steps " + stepIDJoiner.toString() +
+                    " do not contain a valid option " + optionsIDJoiner.toString()
+                );
+            }
+        }
     }
 }
