@@ -127,22 +127,21 @@ public class MenuSessionFactory {
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
                         } else {
-                            StringBuilder sb = new StringBuilder();
+                            StringBuilder refsSb = new StringBuilder("[");
                             entityScreen.getReferences().forEach(ref -> {
                                 String refStr =
                                         EntityScreen.getReturnValueFromSelection(
                                                 ref,
                                                 (EntityDatum) neededDatum,
                                                 entityScreen.getEvalContext());
-                                sb.append("  ");
-                                sb.append(refStr);
-                                sb.append(",\n");
+                                refsSb.append("  ");
+                                refsSb.append(refStr);
+                                refsSb.append(",\n");
                             });
-                            sb.append("]");
+                            refsSb.append("]");
 
-                            String refs = entityScreen.getReferences().toString();
-                            log.error("could not get %s=%s from entity screen references: \n%s"
-                                    .formatted(neededDatum.getDataId(), step.getValue(), sb.toString()));
+                            log.error("could not get %s=%s from entity screen.\nnode set: %s\nreferences: \n%s"
+                                    .formatted(neededDatum.getDataId(), step.getValue(), ((EntityDatum) neededDatum).getNodeset().toString(), refsSb.toString()));
                         }
                         break;
                     }
