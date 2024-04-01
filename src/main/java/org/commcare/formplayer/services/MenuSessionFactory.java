@@ -125,6 +125,9 @@ public class MenuSessionFactory {
                             currentStep = step.getValue();
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
+                        } else {
+                            throw new CommCareSessionException("Value " + step.getValue() +" is not found in " +
+                                entityScreen.toString());
                         }
                         break;
                     }
