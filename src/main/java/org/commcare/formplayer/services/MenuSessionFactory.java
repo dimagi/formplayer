@@ -145,6 +145,9 @@ public class MenuSessionFactory {
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
+                if (currentStep == null && processedStepsCount != steps.size()) {
+                    checkAndThrowCaseIDMatchError(steps, processedSteps, neededDatum.getDataId());
+                }
             } else if (screen instanceof QueryScreen) {
                 QueryScreen queryScreen = (QueryScreen)screen;
                 RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum();
@@ -265,6 +268,28 @@ public class MenuSessionFactory {
                 throw new CommCareSessionException(
                     "Match Error: Steps " + stepIDJoiner.toString() +
                     " do not contain a valid option " + optionsIDJoiner.toString()
+                );
+            }
+        }
+    }
+
+    private void checkAndThrowCaseIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
+        String neededDatumID) throws CommCareSessionException {
+        Vector<StackFrameStep> unprocessedSteps = new Vector<>();
+        for (StackFrameStep step : steps) {
+            if (!processedSteps.contains(step)) {
+                unprocessedSteps.add(step);
+            }
+        }
+        for (StackFrameStep unprocessedStep : unprocessedSteps) {
+            if (unprocessedStep.getType().equals(SessionFrame.STATE_DATUM_VAL)) {
+                StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
+                for (StackFrameStep step : steps) {
+                    stepIDJoiner.add(step.getId());
+                }
+                throw new CommCareSessionException(
+                    "Match Error: Steps " + stepIDJoiner.toString() +
+                    " do not contain a valid datum ID " + neededDatumID
                 );
             }
         }
