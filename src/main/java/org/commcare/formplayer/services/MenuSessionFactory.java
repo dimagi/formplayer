@@ -13,6 +13,7 @@ import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
@@ -39,6 +40,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import datadog.trace.api.Trace;
 
@@ -126,8 +128,16 @@ public class MenuSessionFactory {
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
                         } else {
-                            throw new CommCareSessionException("Value " + step.getValue() +" is not found in " +
-                                entityScreen.toString());
+                            // This block constructs the message to display then throws the exception
+                            List<String> refsList = entityScreen.getReferences().stream()
+                            .map(ref -> EntityScreen.getReturnValueFromSelection(ref, (EntityDatum) neededDatum, entityScreen.getEvalContext()))
+                            .collect(Collectors.toList());
+
+                            String referencesString = String.join(",\n  ", refsList);
+                            String nodeSetString = ((EntityDatum) neededDatum).getNodeset().toString();
+
+                            throw new CommCareSessionException(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
+                            neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString));
                         }
                         break;
                     }
