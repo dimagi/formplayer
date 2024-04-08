@@ -128,16 +128,7 @@ public class MenuSessionFactory {
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
                         } else {
-                            // This block constructs the message to display then throws the exception
-                            List<String> refsList = entityScreen.getReferences().stream()
-                            .map(ref -> EntityScreen.getReturnValueFromSelection(ref, (EntityDatum) neededDatum, entityScreen.getEvalContext()))
-                            .toList();
-
-                            String referencesString = String.join(",\n  ", refsList);
-                            String nodeSetString = ((EntityDatum) neededDatum).getNodeset().toString();
-
-                            throw new CommCareSessionException(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
-                            neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString));
+                            throwStepNotInEntityScreenException(entityScreen, neededDatum, step);
                         }
                         break;
                     }
@@ -303,5 +294,19 @@ public class MenuSessionFactory {
                 );
             }
         }
+    }
+
+    private void throwStepNotInEntityScreenException(EntityScreen entityScreen, SessionDatum neededDatum, StackFrameStep step) throws CommCareSessionException {
+        // This block constructs the message to display then throws the exception
+        List<String> refsList = entityScreen.getReferences().stream()
+        .map(ref -> EntityScreen.getReturnValueFromSelection(ref, (EntityDatum) neededDatum, entityScreen.getEvalContext()))
+        .toList();
+
+        String referencesString = String.join(",\n  ", refsList);
+        String nodeSetString = ((EntityDatum) neededDatum).getNodeset().toString();
+
+        throw new CommCareSessionException(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
+        neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString));
+
     }
 }
