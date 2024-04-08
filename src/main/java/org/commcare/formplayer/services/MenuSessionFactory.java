@@ -131,7 +131,7 @@ public class MenuSessionFactory {
                             // This block constructs the message to display then throws the exception
                             List<String> refsList = entityScreen.getReferences().stream()
                             .map(ref -> EntityScreen.getReturnValueFromSelection(ref, (EntityDatum) neededDatum, entityScreen.getEvalContext()))
-                            .collect(Collectors.toList());
+                            .toList();
 
                             String referencesString = String.join(",\n  ", refsList);
                             String nodeSetString = ((EntityDatum) neededDatum).getNodeset().toString();
