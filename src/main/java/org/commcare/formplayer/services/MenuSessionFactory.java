@@ -14,6 +14,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.session.CommCareSession;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
@@ -40,6 +41,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import datadog.trace.api.Trace;
 
@@ -127,21 +129,7 @@ public class MenuSessionFactory {
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
                         } else {
-                            StringBuilder refsSb = new StringBuilder("[");
-                            entityScreen.getReferences().forEach(ref -> {
-                                String refStr =
-                                        EntityScreen.getReturnValueFromSelection(
-                                                ref,
-                                                (EntityDatum) neededDatum,
-                                                entityScreen.getEvalContext());
-                                refsSb.append("  ");
-                                refsSb.append(refStr);
-                                refsSb.append(",\n");
-                            });
-                            refsSb.append("]");
-
-                            log.error("could not get %s=%s from entity screen.\nnode set: %s\nreferences: \n%s"
-                                    .formatted(neededDatum.getDataId(), step.getValue(), ((EntityDatum) neededDatum).getNodeset().toString(), refsSb.toString()));
+                            throwStepNotInEntityScreenException(entityScreen, neededDatum, step);
                         }
                         break;
                     }
@@ -158,6 +146,9 @@ public class MenuSessionFactory {
                     menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
+                }
+                if (currentStep == null && processedStepsCount != steps.size()) {
+                    checkAndThrowCaseIDMatchError(steps, processedSteps, neededDatum.getDataId());
                 }
             } else if (screen instanceof QueryScreen) {
                 QueryScreen queryScreen = (QueryScreen)screen;
@@ -282,5 +273,45 @@ public class MenuSessionFactory {
                 );
             }
         }
+    }
+
+    private void checkAndThrowCaseIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
+        String neededDatumID) throws CommCareSessionException {
+        Vector<StackFrameStep> unprocessedSteps = new Vector<>();
+        for (StackFrameStep step : steps) {
+            if (!processedSteps.contains(step)) {
+                unprocessedSteps.add(step);
+            }
+        }
+        for (StackFrameStep unprocessedStep : unprocessedSteps) {
+            if (unprocessedStep.getType().equals(SessionFrame.STATE_DATUM_VAL)) {
+                StringJoiner stepIDJoiner = new StringJoiner(", ", "[", "]");
+                for (StackFrameStep step : steps) {
+                    stepIDJoiner.add(step.getId());
+                }
+                throw new CommCareSessionException(
+                    "Match Error: Steps " + stepIDJoiner.toString() +
+                    " do not contain a valid datum ID " + neededDatumID
+                );
+            }
+        }
+    }
+
+    private void throwStepNotInEntityScreenException(EntityScreen entityScreen, SessionDatum neededDatum, StackFrameStep step) throws CommCareSessionException {
+        // This block constructs the message to display then throws the exception
+        List<String> refsList = entityScreen.getReferences().stream()
+        .map(ref -> EntityScreen.getReturnValueFromSelection(ref, (EntityDatum) neededDatum, entityScreen.getEvalContext()))
+        .toList();
+
+        String referencesString = String.join(",\n  ", refsList);
+        String nodeSetString = ((EntityDatum) neededDatum).getNodeset().toString();
+
+        String error_message = String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
+        neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString);
+ 
+        log.error(error_message);
+
+        throw new CommCareSessionException(error_message);
+
     }
 }
