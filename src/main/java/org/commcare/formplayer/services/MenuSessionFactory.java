@@ -12,6 +12,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.session.CommCareSession;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
@@ -305,8 +306,12 @@ public class MenuSessionFactory {
         String referencesString = String.join(",\n  ", refsList);
         String nodeSetString = ((EntityDatum) neededDatum).getNodeset().toString();
 
-        throw new CommCareSessionException(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
-        neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString));
+        String error_message = String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
+        neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString);
+ 
+        log.error(error_message);
+
+        throw new CommCareSessionException(error_message);
 
     }
 }
