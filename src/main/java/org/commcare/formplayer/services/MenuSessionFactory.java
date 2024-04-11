@@ -111,6 +111,7 @@ public class MenuSessionFactory {
                             processedSteps.add(step);
                             // final step, needs to init fully to show to screen
                             needsFullInit = ++processedStepsCount == steps.size();
+                            break;
                         }
                     }
                 }
@@ -185,6 +186,7 @@ public class MenuSessionFactory {
                             queryScreen.updateSession(searchDataInstance);
                             screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                             currentStep = NEXT_SCREEN;
+                            processedStepsCount++;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
                             e.printStackTrace();

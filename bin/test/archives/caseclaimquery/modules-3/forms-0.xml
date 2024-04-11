@@ -1,0 +1,68 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
+        xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>test-search-input</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
+                      xmlns="http://openrosa.org/formdesigner/test-search-input" uiVersion="1"
+                      version="7" name="Followup Form">
+                    <name_legacy_instance_ref/>
+                    <name_new_instance_ref/>
+                    <orx:meta xmlns:cc="http://commcarehq.org/xforms">
+                        <orx:deviceID/>
+                        <orx:timeStart/>
+                        <orx:timeEnd/>
+                        <orx:username/>
+                        <orx:userID/>
+                        <orx:instanceID/>
+                        <cc:appVersion/>
+                        <orx:drift/>
+                    </orx:meta>
+                </data>
+            </instance>
+            <instance src="jr://instance/session" id="commcaresession"/>
+            <instance src="jr://instance/search-input/results" id="my-search-input"/>
+            <!-- legacy instance ref-->
+            <instance src="jr://instance/search-input" id="search-input:results"/>
+            <bind nodeset="/data/name_legacy_instance_ref" type="xsd:string"/>
+            <bind nodeset="/data/name_new_instance_ref" type="xsd:string"/>
+            <setvalue event="xforms-ready" ref="/data/name_legacy_instance_ref"
+                      value="instance('search-input:results')/input/field[@name='name']"/>
+            <setvalue event="xforms-ready" ref="/data/name_new_instance_ref"
+                      value="instance('my-search-input')/input/field[@name='name']"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="name-label">
+                        <value>name</value>
+                    </text>
+                </translation>
+            </itext>
+            <setvalue ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"
+                      event="xforms-ready"/>
+            <setvalue ref="/data/meta/timeStart" value="now()" event="xforms-ready"/>
+            <bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/>
+            <setvalue ref="/data/meta/timeEnd" value="now()" event="xforms-revalidate"/>
+            <bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/>
+            <setvalue ref="/data/meta/username" value="instance('commcaresession')/session/context/username"
+                      event="xforms-ready"/>
+            <setvalue ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"
+                      event="xforms-ready"/>
+            <setvalue ref="/data/meta/instanceID" value="uuid()" event="xforms-ready"/>
+            <setvalue ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"
+                      event="xforms-ready"/>
+            <setvalue ref="/data/meta/drift"
+                      value="if(count(instance('commcaresession')/session/context/drift) = 1, instance('commcaresession')/session/context/drift, '')"
+                      event="xforms-revalidate"/>
+        </model>
+    </h:head>
+    <h:body>
+        <input ref="/data/name_legacy_instance_ref">
+            <label ref="jr:itext('name-label')"/>
+        </input>
+        <input ref="/data/name_new_instance_ref">
+            <label ref="jr:itext('name-label')"/>
+        </input>
+    </h:body>
+</h:html>

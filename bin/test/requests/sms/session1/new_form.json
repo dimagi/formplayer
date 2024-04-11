@@ -1,0 +1,20 @@
+{
+  "username": "wsp",
+  "domain": "test",
+  "nav_mode": "prompt",
+  "session-data": {
+    "username": "wsp",
+    "domain": "test",
+    "user_id": "7c41aebad7c6445d97a285c272c66320",
+    "app_version": "2.0",
+    "app_id": "sms_test",
+    "user_data": {
+      "commcare_project": "test",
+      "commcare_last_name": "",
+      "commcare_phone_number": "123456",
+      "commcare_first_name": ""
+    },
+    "device_id": "commconnect"
+  },
+  "form-content": "<h:html xmlns:h=\"http://www.w3.org/1999/xhtml\" xmlns:orx=\"http://openrosa.org/jr/xforms\" xmlns=\"http://www.w3.org/2002/xforms\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:jr=\"http://openrosa.org/javarosa\" xmlns:vellum=\"http://commcarehq.org/xforms/vellum\">\n\t<h:head>\n\t\t<h:title>Two Questions</h:title>\n\t\t<model>\n\t\t\t<instance>\n\t\t\t\t<data xmlns:jrm=\"http://dev.commcarehq.org/jr/xforms\" xmlns=\"http://openrosa.org/formdesigner/5C506F60-E6BE-4063-AC3A-5D8AB4BDE3FD\" uiVersion=\"1\" version=\"32\" name=\"Two Questions\">\n\t\t\t\t\t<question1/>\n\t\t\t\t\t<text_2/>\n\t\t\t\t<orx:meta xmlns:cc=\"http://commcarehq.org/xforms\"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>\n\t\t\t</instance><instance id=\"commcaresession\" src=\"jr://instance/session\"/>\n\t\t\t<bind nodeset=\"/data/question1\" type=\"xsd:string\"/>\n\t\t\t<bind nodeset=\"/data/text_2\" type=\"xsd:string\"/>\n\t\t\t<itext>\n\t\t\t\t<translation lang=\"en\" default=\"\">\n\t\t\t\t\t<text id=\"question1-label\">\n\t\t\t\t\t\t<value>Text 1</value>\n\t\t\t\t\t</text>\n\t\t\t\t\t<text id=\"text_2-label\">\n\t\t\t\t\t\t<value>Text 2</value>\n\t\t\t\t\t</text>\n\t\t\t\t</translation>\n\t\t\t</itext>\n\t\t<setvalue event=\"xforms-ready\" ref=\"/data/meta/deviceID\" value=\"instance('commcaresession')/session/context/deviceid\"/><setvalue event=\"xforms-ready\" ref=\"/data/meta/timeStart\" value=\"now()\"/><bind nodeset=\"/data/meta/timeStart\" type=\"xsd:dateTime\"/><setvalue event=\"xforms-revalidate\" ref=\"/data/meta/timeEnd\" value=\"now()\"/><bind nodeset=\"/data/meta/timeEnd\" type=\"xsd:dateTime\"/><setvalue event=\"xforms-ready\" ref=\"/data/meta/username\" value=\"instance('commcaresession')/session/context/username\"/><setvalue event=\"xforms-ready\" ref=\"/data/meta/userID\" value=\"instance('commcaresession')/session/context/userid\"/><setvalue event=\"xforms-ready\" ref=\"/data/meta/instanceID\" value=\"uuid()\"/><setvalue event=\"xforms-ready\" ref=\"/data/meta/appVersion\" value=\"instance('commcaresession')/session/context/appversion\"/></model>\n\t</h:head>\n\t<h:body>\n\t\t<input ref=\"/data/question1\">\n\t\t\t<label ref=\"jr:itext('question1-label')\"/>\n\t\t</input>\n\t\t<input ref=\"/data/text_2\">\n\t\t\t<label ref=\"jr:itext('text_2-label')\"/>\n\t\t</input>\n\t</h:body>\n</h:html>"
+}

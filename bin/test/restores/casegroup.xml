@@ -1,0 +1,127 @@
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account claimant!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>9e5bb063c1264e0fa93f560f481220ae</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>claimant</username>
+        <password>
+            sha1$4JSloCqp4bcl$9123edc2ac2fba8b403c7366b8c72806662a188c
+        </password>
+        <uuid>47ef5ea3cc348fb6538702449c855dcd</uuid>
+        <date>2017-04-21</date>
+        <user_data>
+            <data key="test">1</data>
+            <data key="commcare_project">test</data>
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_location_id">7455e6f4780e4393a77c88568ce1e413</data>
+            <data key="commcare_location_ids">7455e6f4780e4393a77c88568ce1e413</data>
+            <data key="commcare_first_name"/>
+        </user_data>
+    </Registration>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case1" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 1</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentB</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case2" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 2</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentA</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case3" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 3</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentB</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case4" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 4</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentC</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case5" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 5</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentA</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case6" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 6</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentB</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case7" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 7</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentC</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="case8" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Case 8</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <parent case_type="parent">parentA</parent>
+        </index>
+    </case>
+</OpenRosaResponse>
