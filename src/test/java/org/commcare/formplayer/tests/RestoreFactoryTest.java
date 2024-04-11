@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import static java.util.Collections.singletonList;
 
 import org.commcare.cases.util.CaseDBUtils;
-import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.services.RestoreFactory;
@@ -78,7 +77,7 @@ public class RestoreFactoryTest {
         requestBean.setRestoreAs(asUsername);
         requestBean.setUsername(username);
         requestBean.setDomain(domain);
-        restoreFactorySpy.configure(requestBean, new DjangoAuth("key"));
+        restoreFactorySpy.configure(requestBean);
         restoreFactorySpy.setAsUsername(null);
         restoreFactorySpy.setCaseId(null);
 
@@ -244,6 +243,7 @@ public class RestoreFactoryTest {
     }
 
     @Test
+    @WithHqUser(authToken = "key")
     public void testGetRequestHeaders() {
         String syncToken = "synctoken";
         Mockito.doReturn(syncToken).when(restoreFactorySpy).getSyncToken();

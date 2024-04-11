@@ -1,9 +1,7 @@
 package org.commcare.formplayer.junit
 
-import org.commcare.formplayer.auth.DjangoAuth
 import org.commcare.formplayer.services.RestoreFactory
 import org.junit.jupiter.api.extension.AfterEachCallback
-import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.mockito.ArgumentMatchers
@@ -61,7 +59,7 @@ class RestoreFactoryExtension(
     override fun beforeEach(context: ExtensionContext) {
         restoreFactory = SpringExtension.getApplicationContext(context).getBean(RestoreFactory::class.java)
         reset()
-        restoreFactory.configure(username, domain, asUser, DjangoAuth("test"))
+        restoreFactory.configure(username, domain, asUser)
         configureMock()
     }
 

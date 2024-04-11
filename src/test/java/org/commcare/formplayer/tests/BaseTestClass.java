@@ -26,7 +26,6 @@ import org.commcare.formplayer.application.FormSubmissionHelper;
 import org.commcare.formplayer.application.MenuController;
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.application.UtilController;
-import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AnswerQuestionRequestBean;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.ChangeLocaleRequestBean;
@@ -545,7 +544,7 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
-        restoreFactoryMock.configure(newSessionRequestBean, new DjangoAuth("derp"));
+        restoreFactoryMock.configure(newSessionRequestBean);
         return new NewFormRequest(mockFormController, webClientMock, formPath)
                 .requestWithBean(newSessionRequestBean)
                 .bean();
@@ -559,7 +558,7 @@ public class BaseTestClass {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
-        restoreFactoryMock.configure(submitRequestBean, new DjangoAuth("123"));
+        restoreFactoryMock.configure(submitRequestBean);
         return new SubmitFormRequest(mockFormSubmissionController)
                 .requestWithBean(submitRequestBean).bean();
     }
@@ -575,7 +574,7 @@ public class BaseTestClass {
                 sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(prevalidated);
-        restoreFactoryMock.configure(submitRequestBean, new DjangoAuth("123"));
+        restoreFactoryMock.configure(submitRequestBean);
         return new SubmitFormRequest(mockFormSubmissionController)
                 .requestWithBean(submitRequestBean).bean();
     }
@@ -585,7 +584,7 @@ public class BaseTestClass {
         syncDbRequestBean.setDomain(restoreFactoryMock.getDomain());
         syncDbRequestBean.setUsername(restoreFactoryMock.getUsername());
         syncDbRequestBean.setRestoreAs(restoreFactoryMock.getAsUsername());
-        restoreFactoryMock.configure(syncDbRequestBean, new DjangoAuth("derp"));
+        restoreFactoryMock.configure(syncDbRequestBean);
         return new SyncDbRequest(mockUtilController, restoreFactoryMock).requestWithBean(syncDbRequestBean).bean();
     }
 
@@ -962,7 +961,7 @@ public class BaseTestClass {
 
         if (bean instanceof AuthenticatedRequestBean) {
             restoreFactoryMock.getSQLiteDB().closeConnection();
-            restoreFactoryMock.configure((AuthenticatedRequestBean)bean, new DjangoAuth("derp"));
+            restoreFactoryMock.configure((AuthenticatedRequestBean)bean);
         }
 
         if (bean instanceof InstallRequestBean) {

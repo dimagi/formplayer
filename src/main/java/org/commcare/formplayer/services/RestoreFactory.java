@@ -13,7 +13,6 @@ import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
-import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
@@ -96,8 +95,6 @@ public class RestoreFactory {
     private String username;
     private String scrubbedUsername;
     private String domain;
-    private HqAuth hqAuth;
-
     private boolean permitAggressiveSyncs = true;
 
     public static final String FREQ_DAILY = "freq-daily";
@@ -157,11 +154,10 @@ public class RestoreFactory {
     private String caseId;
     private boolean configured = false;
 
-    public void configure(String domain, String caseId, HqAuth auth) {
+    public void configure(String domain, String caseId) {
         this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
         this.setDomain(domain);
         this.setCaseId(caseId);
-        this.setHqAuth(auth);
         this.hasRestored = false;
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, null);
@@ -169,11 +165,10 @@ public class RestoreFactory {
                 "username = %s, caseId = %s, domain = %s", username, caseId, domain));
     }
 
-    public void configure(String username, String domain, String asUsername, HqAuth auth) {
+    public void configure(String username, String domain, String asUsername) {
         this.setUsername(username);
         this.setDomain(domain);
         this.setAsUsername(asUsername);
-        this.hqAuth = auth;
         this.hasRestored = false;
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
@@ -181,11 +176,10 @@ public class RestoreFactory {
                 "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
     }
 
-    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
-        this.setHqAuth(auth);
         this.hasRestored = false;
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
@@ -450,7 +444,7 @@ public class RestoreFactory {
         if (RequestUtils.requestAuthedWithHmac()) {
             headers = getHmacHeader(url);
         } else {
-            headers = getHqAuth().getAuthHeaders();;
+            headers = getSessionHeaders();
         }
         headers.addAll(getStandardHeaders());
         return headers;
@@ -655,6 +649,17 @@ public class RestoreFactory {
         };
     }
 
+    public HttpHeaders getSessionHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        RequestUtils.getUserDetails().ifPresent(userDetails -> {
+            String authToken = userDetails.getAuthToken();
+            headers.add("Cookie", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authToken);
+            headers.add(Constants.POSTGRES_DJANGO_SESSION_ID, authToken);
+            headers.add("Authorization", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authToken);
+        });
+        return headers;
+    }
+
     public URI getCaseRestoreUrl() {
         return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain, caseId).toUri();
     }
@@ -685,7 +690,7 @@ public class RestoreFactory {
                 asUserParam += "@" + domain + ".commcarehq.org";
             }
             params.put("as", asUserParam);
-        } else if (getHqAuth() == null && username != null) {
+        } else if (RequestUtils.requestAuthedWithHmac() && username != null) {
             // HQ requesting to force a sync for a user
             params.put("as", username);
         }
@@ -781,14 +786,6 @@ public class RestoreFactory {
 
     public void setDomain(String domain) {
         this.domain = domain;
-    }
-
-    public HqAuth getHqAuth() {
-        return hqAuth;
-    }
-
-    public void setHqAuth(HqAuth hqAuth) {
-        this.hqAuth = hqAuth;
     }
 
     public String getAsUsername() {
