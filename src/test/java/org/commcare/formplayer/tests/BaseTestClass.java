@@ -999,7 +999,6 @@ public class BaseTestClass {
                 result = controller.perform(
                         post(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                                 .content((String)bean));
                 break;
 
@@ -1007,7 +1006,6 @@ public class BaseTestClass {
                 result = controller.perform(
                         get(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                                 .content((String)bean));
                 break;
         }
