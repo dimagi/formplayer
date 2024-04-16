@@ -25,6 +25,9 @@ public class RestTemplateConfig {
     @Value("${commcarehq.host}")
     private String commcareHost;
 
+    @Value("${commcarehq.formplayerAuthKey}")
+    private String formplayerAuthKey;
+
     public RestTemplateConfig() {
     }
 
@@ -43,7 +46,8 @@ public class RestTemplateConfig {
         builder = builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
                 .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
-                .requestFactory(OkHttp3ClientHttpRequestFactory.class);
+                .requestFactory(OkHttp3ClientHttpRequestFactory.class)
+                .additionalInterceptors(new HmacRequestInterceptor(formplayerAuthKey));
 
         if (externalRequestMode.equals(MODE_REPLACE_HOST)) {
             log.warn(String.format("RestTemplate configured in '%s' mode", externalRequestMode));

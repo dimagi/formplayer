@@ -142,9 +142,6 @@ public class RestoreFactory {
     @Resource(name = "redisSetTemplate")
     private SetOperations<String, String> redisSessionCache;
 
-    @Value("${commcarehq.formplayerAuthKey}")
-    private String formplayerAuthKey;
-
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
     CategoryTimingHelper.RecordingTimer downloadRestoreTimer;
@@ -440,13 +437,10 @@ public class RestoreFactory {
     }
 
     public HttpHeaders getRequestHeaders(URI url) {
-        HttpHeaders headers;
-        if (RequestUtils.requestAuthedWithHmac()) {
-            headers = getHmacHeader(url);
-        } else {
-            headers = getSessionHeaders();
+        HttpHeaders headers = getStandardHeaders();
+        if (!RequestUtils.requestAuthedWithHmac()) {
+            headers.addAll(getSessionHeaders());
         }
-        headers.addAll(getStandardHeaders());
         return headers;
     }
 
@@ -624,31 +618,6 @@ public class RestoreFactory {
         });
     }
 
-    private HttpHeaders getHmacHeader(URI url) {
-        // Do HMAC auth which requires only the path and query components of the URL
-        String requestPath = url.getRawPath();
-        if (url.getRawQuery() != null) {
-            requestPath = String.format("%s?%s", requestPath, url.getRawQuery());
-        }
-        if (!RequestUtils.requestAuthedWithHmac()) {
-            throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
-                    "was not validated with HMAC.", requestPath));
-        }
-        String digest;
-        try {
-            digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
-        } catch (Exception e) {
-            log.error("Could not get HMAC signature to auth restore request", e);
-            throw new RuntimeException(e);
-        }
-
-        return new HttpHeaders() {
-            {
-                add("X-MAC-DIGEST", digest);
-            }
-        };
-    }
-
     public HttpHeaders getSessionHeaders() {
         HttpHeaders headers = new HttpHeaders();
         RequestUtils.getUserDetails().ifPresent(userDetails -> {
@@ -690,9 +659,6 @@ public class RestoreFactory {
                 asUserParam += "@" + domain + ".commcarehq.org";
             }
             params.put("as", asUserParam);
-        } else if (RequestUtils.requestAuthedWithHmac() && username != null) {
-            // HQ requesting to force a sync for a user
-            params.put("as", username);
         }
         if (skipFixtures) {
             params.put("skip_fixtures", "true");
