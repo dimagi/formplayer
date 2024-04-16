@@ -1,6 +1,8 @@
 package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -35,60 +37,145 @@ public class RepeatTests extends BaseTestClass {
     }
 
     @Test
-    public void testRepeat() throws Exception {
-
+    public void testRepeatNonCountedSimple() throws Exception {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
                 "xforms/repeat.xml");
+        QuestionBean[] tree = newSessionResponse.getTree();
+        assert (tree.length == 2);
+        QuestionBean dummyNode = tree[1];
+        assertEquals("false", dummyNode.getExists());
 
         String sessionId = newSessionResponse.getSessionId();
+        FormEntryResponseBean newRepeatResponseBean = newRepeatRequest(sessionId, "1_0");
 
-        FormEntryResponseBean newRepeatResponseBean = newRepeatRequest(sessionId);
-
-        QuestionBean[] tree = newRepeatResponseBean.getTree();
-
-        assert (tree.length == 2);
-        QuestionBean questionBean = tree[1];
-        assert (questionBean.getChildren() != null);
-        QuestionBean[] children = questionBean.getChildren();
+        // Verify the repeat has been added to form tree correctly
+        tree = newRepeatResponseBean.getTree();
+        assert (tree.length == 3);
+        QuestionBean firstRepeat = tree[1];
+        assertEquals("true", firstRepeat.getExists());
+        assert (firstRepeat.getChildren().length == 1);
+        QuestionBean[] children = firstRepeat.getChildren();
         assert (children.length == 1);
         QuestionBean child = children[0];
-        assert (child.getIx().contains("1_0"));
-        children = child.getChildren();
-        assert (children.length == 1);
-        child = children[0];
         assert (child.getIx().contains("1_0,0"));
 
+        // verify that a second dummy repeat node is added with "exists=false"
+        QuestionBean secondRepeat = tree[2];
+        assertEquals("false", secondRepeat.getExists());
+        assert (secondRepeat.getChildren().length == 0);
 
-        newRepeatResponseBean = newRepeatRequest(sessionId);
+        // Add another repeat and verify the form tree accordingly
+        newRepeatResponseBean = newRepeatRequest(sessionId, "1_1");
+        tree = newRepeatResponseBean.getTree();
+        assert (tree.length == 4);
+        secondRepeat = tree[2];
+        assertEquals("true", secondRepeat.getExists());
+        assert (secondRepeat.getChildren().length == 1);
+        children = secondRepeat.getChildren();
+        assert (children[0].getIx().contains("1_1,0"));
 
+        QuestionBean thirdRepeat = tree[3];
+        assertEquals("false", thirdRepeat.getExists());
+        assert (thirdRepeat.getChildren().length == 0);
+
+        newRepeatRequest(sessionId, "1_2");
+        answerQuestionGetResult("1_0,0", "repeat 1", sessionId);
+        answerQuestionGetResult("1_1,0", "repeat 2", sessionId);
+        answerQuestionGetResult("1_2,0", "repeat 3", sessionId);
+
+        // delete second repeat
+        FormEntryResponseBean deleteRepeatResponseBean = deleteRepeatRequest(sessionId,"1_1,0");
+
+        // Verify that we deleted the repeat at right index
+        tree = deleteRepeatResponseBean.getTree();
+        assert (tree.length == 4);
+        firstRepeat = tree[1];
+        secondRepeat = tree[2];
+        thirdRepeat = tree[3];
+        assertEquals(firstRepeat.getChildren()[0].getAnswer(),"repeat 1");
+        assertEquals(secondRepeat.getChildren()[0].getAnswer(),"repeat 3");
+        assertEquals("false", thirdRepeat.getExists());
+
+
+        // delete second repeat again from the new tree
+        deleteRepeatResponseBean = deleteRepeatRequest(sessionId, "1_1,0");
+        tree = deleteRepeatResponseBean.getTree();
+        assert (tree.length == 3);
+        firstRepeat = tree[1];
+        secondRepeat = tree[2];
+        assertEquals(firstRepeat.getChildren()[0].getAnswer(),"repeat 1");
+        assertEquals("false", secondRepeat.getExists());
+    }
+
+    @Test
+    public void testRepeatNonCountedNested() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
+                "xforms/nested_repeat.xml");
+        QuestionBean[] tree = newSessionResponse.getTree();
+        assert (tree.length == 1);
+        QuestionBean dummyNode = tree[0];
+        assertEquals("false", dummyNode.getExists());
+
+        String sessionId = newSessionResponse.getSessionId();
+        FormEntryResponseBean newRepeatResponseBean = newRepeatRequest(sessionId, "0_0");
+        tree = newRepeatResponseBean.getTree();
+
+        // Verify the repeat has been added to form tree correctly
+        assert (tree.length == 2);
+        QuestionBean firstRepeat = tree[0];
+        assertEquals("true", firstRepeat.getExists());
+        assert (firstRepeat.getChildren().length == 1);
+        QuestionBean[] children = firstRepeat.getChildren();
+        assert (children.length == 1);
+        QuestionBean child = children[0];
+        assertEquals(child.getIx(), "0_0,0_0");
+        assertEquals("false", child.getExists());
+
+        // Child repeat request
+        newRepeatResponseBean = newRepeatRequest(sessionId, "0_0, 0_0");
         tree = newRepeatResponseBean.getTree();
         assert (tree.length == 2);
-        questionBean = tree[1];
-        assert (questionBean.getChildren() != null);
-        children = questionBean.getChildren();
+        children = tree[0].getChildren();
         assert (children.length == 2);
+        QuestionBean firstChild = children[0];
+        assertEquals(firstChild.getIx(), "0_0,0_0");
+        assertEquals("true", firstChild.getExists());
+        QuestionBean secondChild = children[1];
+        assertEquals(secondChild.getIx(), "0_0,0_1");
+        assertEquals("false", secondChild.getExists());
 
-        child = children[0];
-        assert (child.getIx().contains("1_0"));
-        QuestionBean[] children2 = child.getChildren();
-        assert (children2.length == 1);
-        child = children2[0];
-        assert (child.getIx().contains("1_0,0"));
+        newRepeatRequest(sessionId, "0_0, 0_1");
 
-        child = children[1];
-        children2 = child.getChildren();
-        assert (children2.length == 1);
-        child = children2[0];
-        assert (child.getIx().contains("1_1,0"));
+        // create another parent repeat with three children
+        newRepeatRequest(sessionId, "0_1");
+        newRepeatRequest(sessionId, "0_1, 0_0");
+        newRepeatRequest(sessionId, "0_1, 0_1");
+        tree = newRepeatRequest(sessionId, "0_1, 0_2").getTree();
 
-        FormEntryResponseBean deleteRepeatResponseBean = deleteRepeatRequest(sessionId);
+        // verify the form tree has 2 parent node with 2 and 3 children respectively
+        // count below is count + 1 to account for dummy node
+        assertEquals(3, tree.length);
+        assertEquals (3, tree[0].getChildren().length);
+        assertEquals (4, tree[1].getChildren().length);
 
-        tree = deleteRepeatResponseBean.getTree();
-        assert (tree.length == 2);
-        questionBean = tree[1];
-        assert (questionBean.getChildren() != null);
-        children = questionBean.getChildren();
-        assert (children.length == 1);
+        // Answer repeats
+        answerQuestionGetResult("0_0,0_0,0", "repeat 1_1", sessionId);
+        answerQuestionGetResult("0_0,0_1,0", "repeat 1_2", sessionId);
+        answerQuestionGetResult("0_1,0_0,0", "repeat 2_1", sessionId);
+        answerQuestionGetResult("0_1,0_1,0", "repeat 2_2", sessionId);
+        answerQuestionGetResult("0_1,0_2,0", "repeat 2_3", sessionId);
+
+        // delete 1_1 and 2_2 and verify the state
+        deleteRepeatRequest(sessionId, "0_0,0_0");
+        tree = deleteRepeatRequest(sessionId, "0_1,0_1").getTree();
+        assertEquals(3, tree.length);
+        assertEquals (2, tree[0].getChildren().length);
+        assertEquals (3, tree[1].getChildren().length);
+        assertEquals(tree[0].getChildren()[0].getChildren()[0].getAnswer(),"repeat 1_2");
+        assertEquals(tree[0].getChildren()[1].getExists(),"false");
+        assertEquals(tree[1].getChildren()[0].getChildren()[0].getAnswer(),"repeat 2_1");
+        assertEquals(tree[1].getChildren()[1].getChildren()[0].getAnswer(),"repeat 2_3");
+        assertEquals(tree[1].getChildren()[2].getExists(),"false");
     }
 
     @Test
