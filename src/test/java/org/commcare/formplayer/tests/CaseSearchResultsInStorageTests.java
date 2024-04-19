@@ -17,6 +17,7 @@ import org.commcare.formplayer.beans.menus.EntityBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.junit.InitializeStaticsExtension;
 import org.commcare.formplayer.junit.Installer;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
@@ -30,14 +31,18 @@ import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
+import org.commcare.resources.model.installers.SuiteInstaller;
+import org.commcare.suite.model.Suite;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.MD5;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,6 +89,9 @@ public class CaseSearchResultsInStorageTests {
     @Autowired
     FormplayerStorageFactory storageFactoryMock;
 
+    @Autowired
+    InstallService installService;
+
     @RegisterExtension
     static RestoreFactoryExtension restoreFactoryExt = new RestoreFactoryExtension.builder()
             .withUser("caseclaimuser").withDomain("caseclaimdomain")
@@ -129,7 +137,7 @@ public class CaseSearchResultsInStorageTests {
 
         // Verify the results are stored in storage and not cache
         String cacheKey = "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
-                + "/_case_type=case1=case2=case3_include_closed=False";
+                + "/_case_type=case1=case2=case3_include_closed=False_x_commcare_tag_module_name=Search All Cases";
         assertNull(cacheManager.getCache("case_search").get(cacheKey));
 
         // Verify case search storage exists for our query
@@ -161,6 +169,66 @@ public class CaseSearchResultsInStorageTests {
         assertFalse(caseSearchStorage.isStorageExists(),
                 "Case search storage has not been cleared after case claim");
         assertFalse(caseSearchIndexTable.isStorageExists(), "Case Indexes have not been cleared after case claim");
+    }
+
+    /**
+     * Test case search:
+     *   * with auto-launch (skip to default search results)
+     *   * with results in storage (so no claim and auto-launch not fired after selection)
+     */
+    @Test
+    public void testCaseClaimWithResultsInStorageWithAutoLaunch() throws Exception {
+        String queryFile = "query_responses/case_claim_response_owned.xml";
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(queryFile)) {
+            Response<EntityListResponse> response = navigate(new String[]{"2"},
+                    EntityListResponse.class);
+            EntityListResponse entityResponse = response.bean();
+            assertEquals(entityResponse.getEntities().length, 1);
+
+            // Verify the entity and the calculated fields
+            EntityBean entity = entityResponse.getEntities()[0];
+            assertEquals(entity.getId(), "3512eb7c-7a58-4a95-beda-205eb0d7f163");
+        }
+
+        // Verify the results are stored in storage and not cache
+        String cacheKey = "caseclaimdomain_caseclaimuser_http://localhost:8000/a/test/phone/search"
+                + "/_case_type=case1=case2=case3_include_closed=False_x_commcare_tag_module_name=Search All Cases";
+        assertNull(cacheManager.getCache("case_search").get(cacheKey));
+
+        // Verify case search storage exists for our query
+        SQLiteDB caseSearchDb = new CaseSearchDB("caseclaimdomain", "caseclaimuser", null);
+        String caseSearchTableName = getCaseSearchTableName(cacheKey);
+        UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
+        IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
+        assertTrue(caseSearchStorage.isStorageExists(), "No case storage found for the given case search query");
+        FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
+        assertTrue(caseSearchIndexTable.isStorageExists(),
+                "No case storage found for the given case search query");
+
+
+        // Select a case that's already in the casedb
+        // (so no claim and also no mark/rewind since auto-launch isn't triggered)
+        CommandListResponseBean response = navigate(
+                new String[]{"2", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
+                CommandListResponseBean.class).bean();
+        assertNotNull(response);
+
+        // case storage has not been cleared since mark/rewind was not triggered
+        assertTrue(caseSearchStorage.isStorageExists());
+        assertTrue(caseSearchIndexTable.isStorageExists());
+
+        // verify that a 2nd query does not include stale data
+        queryFile = "query_responses/case_claim_response.xml";
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(queryFile)) {
+            Response<EntityListResponse> searchResponse = navigate(new String[]{"2"},
+                    EntityListResponse.class);
+            EntityListResponse entityResponse = searchResponse.bean();
+            assertEquals(entityResponse.getEntities().length, 1);
+
+            // Verify the entity and the calculated fields
+            EntityBean entity = entityResponse.getEntities()[0];
+            assertEquals(entity.getId(), "0156fa3e-093e-4136-b95c-01b13dae66c6");
+        }
     }
 
     private String getCaseSearchTableName(String cacheKey) {

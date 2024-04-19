@@ -7,6 +7,7 @@ import org.commcare.formplayer.util.Constants;
  */
 public class SyncDbResponseBean {
     private String status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
+    private boolean attemptRestore = true;
 
     public String getStatus() {
         return status;
@@ -14,5 +15,13 @@ public class SyncDbResponseBean {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean getAttemptRestore() {
+        return attemptRestore;
+    }
+
+    public void setAttemptRestore(boolean attemptRestore) {
+        this.attemptRestore = attemptRestore;
     }
 }

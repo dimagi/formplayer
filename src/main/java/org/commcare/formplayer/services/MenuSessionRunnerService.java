@@ -4,6 +4,7 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Multimap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +24,7 @@ import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
+import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
@@ -30,6 +32,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -98,6 +101,9 @@ public class MenuSessionRunnerService {
     private CaseSearchHelper caseSearchHelper;
 
     @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
     private WebClient webClient;
 
     @Autowired
@@ -162,6 +168,8 @@ public class MenuSessionRunnerService {
                     (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             Sentry.setTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
@@ -169,6 +177,7 @@ public class MenuSessionRunnerService {
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
+                    datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, Constants.TAG_VALUE_TRUE);
                     return getNextMenu(menuSession, queryData, entityScreenContext);
                 }
             }
@@ -184,10 +193,6 @@ public class MenuSessionRunnerService {
             String queryKey = ((FormplayerQueryScreen)nextScreen).getQueryKey();
             answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey);
             menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
-            String queryInitiatedBy = queryData == null ? null : queryData.getInitiatedBy(queryKey);
-            if (queryInitiatedBy != null) {
-                datadog.addRequestScopedTag(Constants.MODULE_INITIATED_BY_TAG, queryInitiatedBy);
-            }
             String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
@@ -375,6 +380,9 @@ public class MenuSessionRunnerService {
                     if (nextScreen.shouldBeSkipped()) {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());
+                        if (sessionAdvanced) {
+                            datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, Constants.TAG_VALUE_TRUE);
+                        }
                     }
                 }
                 if (previousScreen != null && previousScreen instanceof QueryScreen) {
@@ -423,12 +431,14 @@ public class MenuSessionRunnerService {
         String queryKey = queryScreen.getQueryKey();
         boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
+        Multimap<String, String> caseSearchMetricTags = caseSearchHelper.getMetricTags(menuSession);
         answerQueryPrompts(queryScreen, queryData, queryKey);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
             return doQuery(
                     queryScreen,
                     queryScreen.doDefaultSearch() && !forceManualSearch,
-                    skipCache
+                    skipCache,
+                    caseSearchMetricTags
             );
         }
         return false;
@@ -461,7 +471,13 @@ public class MenuSessionRunnerService {
             throw new SyncRestoreException("Unknown error performing case claim", e);
         }
         if (shouldSync) {
-            restoreFactory.performTimedSync(false, true, false);
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            Map<String, String> extraTags = new HashMap<>();
+            Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
+
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
+            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
+            restoreFactory.performTimedSync(false, true, false, extraTags);
             menuSession.getSessionWrapper().clearVolatiles();
         }
     }
@@ -474,15 +490,17 @@ public class MenuSessionRunnerService {
      */
     @Trace
     private boolean doQuery(FormplayerQueryScreen screen,
-            boolean isDefaultSearch, boolean skipCache) throws CommCareSessionException {
+            boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags) throws CommCareSessionException {
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
+                Multimap<String, String> queryParams = screen.getQueryParams(isDefaultSearch);
+                queryParams.putAll(caseSearchMetricTags);
                 ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
                         screen.getBaseUrl(),
-                        screen.getQueryParams(isDefaultSearch),
+                        queryParams,
                         skipCache);
                 screen.updateSession(searchDataInstance);
                 return true;
@@ -637,6 +655,8 @@ public class MenuSessionRunnerService {
     @Trace
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
         if (menuSession.getSessionWrapper().getForm() != null) {
+            SimpleTimer formEntryTimer = new SimpleTimer();
+            formEntryTimer.start();
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setAppId(menuSession.getAppId());
             formResponseBean.setAppVersion(
@@ -650,6 +670,20 @@ public class MenuSessionRunnerService {
             String formName = formResponseBean.getTitle();
             datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, formName);
             Sentry.setTag(Constants.FORM_NAME_TAG, formName);
+
+            formEntryTimer.end();
+            Map<String, String> extraTags = new HashMap<>();
+            Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
+
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
+            extraTags.put(Constants.DOMAIN_TAG, restoreFactory.getDomain());
+            extraTags.put(Constants.FORM_NAME_TAG, formName);
+            categoryTimingHelper.recordCategoryTiming(
+                formEntryTimer,
+                Constants.TimingCategories.FORM_ENTRY,
+                null,
+                extraTags
+            );
             return formResponseBean;
         } else {
             return null;

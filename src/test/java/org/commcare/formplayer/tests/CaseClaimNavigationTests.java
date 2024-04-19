@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -64,6 +65,49 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         return "restores/caseclaim.xml";
     }
 
+    @Test
+    public void testGetCacheKey() {
+
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "a", "case5",
+                "d", "case4",
+                "d","case1",
+                "a", "case2",
+                "b", "False");
+        String key1 = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data);
+
+         // same keys and values as key1 in a different order
+        ImmutableMultimap<String, String> data2 = ImmutableMultimap.of(
+                "b", "False",
+                "d", "case1",
+                "a", "case5",
+                "d","case4",
+                "a", "case2");
+        String key2 = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data2);
+        assertEquals(key1, key2);
+
+        // same keys as key2, but one value removed
+        ImmutableMultimap<String, String> data3 = ImmutableMultimap.of(
+                "b", "False",
+                "d", "case1",
+                "d","case4",
+                "a", "case2");
+        String key3 = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data3);
+        assertNotEquals(key2, key3);
+
+        // different keys, but same values as key3
+        ImmutableMultimap<String, String> data4 = ImmutableMultimap.of(
+                "b", "False",
+                "d", "case1",
+                "d","case4",
+                "c", "case2");
+        String key4 = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data4);
+        assertNotEquals(key3, key4);
+    }
 
     @Test
     public void testNormalClaim() throws Exception {
@@ -92,7 +136,8 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 "case_type", "case1",
                 "case_type", "case2",
                 "case_type", "case3",
-                "include_closed", "False");
+                "include_closed", "False",
+                "x_commcare_tag_module_name", "Search All Cases");
         String key = ReflectionTestUtils.invokeMethod(
                 caseSearchHelper, "getCacheKey", "http://localhost:8000/a/test/phone/search/", data);
         Cache.ValueWrapper cachedValue = cacheManager.getCache("case_search").get(key);

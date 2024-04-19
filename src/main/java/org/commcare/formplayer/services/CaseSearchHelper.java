@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import org.apache.commons.logging.Log;
@@ -12,10 +13,12 @@ import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
+import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
@@ -40,6 +43,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @CacheConfig(cacheNames = "case_search")
 @Component
@@ -129,10 +136,12 @@ public class CaseSearchHelper {
             XmlPullParserException, IOException {
         try {
             DbUtils.setAutoCommit(caseSearchDb, false);
+            caseSearchIndexTable.delete();
             caseSearchIndexTable.createTable();
             CaseInstanceXmlTransactionParserFactory factory = new CaseInstanceXmlTransactionParserFactory(
                     caseSearchSandbox, caseSearchIndexTable);
             caseSearchStorage.initStorage();
+            caseSearchStorage.removeAll();
             ParseUtils.parseIntoSandbox(responeStream, factory, true, true);
             DbUtils.commit(caseSearchDb);
         } catch (Exception e) {
@@ -209,9 +218,12 @@ public class CaseSearchHelper {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
         builder.append("_").append(uri);
-        for (String key : queryParams.keySet()) {
+        Map<String, Collection<String>> sortedQueryParams = new TreeMap<>(queryParams.asMap());
+        for (String key : sortedQueryParams.keySet()) {
             builder.append("_").append(key);
-            for (String value : queryParams.get(key)) {
+            Collection<String> values = queryParams.get(key);
+            List<String> valuesList = values.stream().sorted().toList();
+            for (String value : valuesList) {
                 builder.append("=").append(value);
             }
         }
@@ -220,5 +232,16 @@ public class CaseSearchHelper {
 
     public void clearCache() {
         cacheManager.getCache("case_search").clear();
+    }
+
+    public Multimap<String, String> getMetricTags(MenuSession menuSession) {
+        String moduleNameTagValue = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+
+        Multimap<String, String> multimap = ArrayListMultimap.create();
+        if (moduleNameTagValue != null && !moduleNameTagValue.isEmpty()) {
+            multimap.put("x_commcare_tag_module_name", moduleNameTagValue);
+        }
+
+        return multimap;
     }
 }
