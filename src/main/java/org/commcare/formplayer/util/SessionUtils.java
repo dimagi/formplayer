@@ -1,21 +1,12 @@
 package org.commcare.formplayer.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.CaseBean;
 import org.commcare.formplayer.hq.CaseAPIs;
 import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.modern.session.SessionWrapper;
-import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.StackFrameStep;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
-import org.javarosa.core.util.NoLocalizedTextException;
-import org.javarosa.xpath.XPathException;
-import java.net.URISyntaxException;
 import java.util.NoSuchElementException;
-import java.util.Vector;
 
 import okhttp3.HttpUrl;
 
@@ -23,8 +14,6 @@ import okhttp3.HttpUrl;
  * Created by willpride on 4/14/16.
  */
 public class SessionUtils {
-
-    private static final Log log = LogFactory.getLog(SessionUtils.class);
 
     public static String tryLoadCaseName(SqlStorage<Case> caseStorage, String caseId)
             throws NoSuchElementException {
@@ -44,8 +33,6 @@ public class SessionUtils {
             localizer.setLocale(locale);
         }
     }
-
-
 
     public static String resolveInstallReference(String appId, String host, String domain) {
         if (appId == null || "".equals(appId)) {
