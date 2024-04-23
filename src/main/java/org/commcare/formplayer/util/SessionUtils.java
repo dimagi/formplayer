@@ -2,7 +2,6 @@ package org.commcare.formplayer.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.utils.URIBuilder;
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.CaseBean;
 import org.commcare.formplayer.hq.CaseAPIs;
@@ -14,10 +13,11 @@ import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
 import org.javarosa.xpath.XPathException;
-
 import java.net.URISyntaxException;
 import java.util.NoSuchElementException;
 import java.util.Vector;
+
+import okhttp3.HttpUrl;
 
 /**
  * Created by willpride on 4/14/16.
@@ -51,7 +51,7 @@ public class SessionUtils {
         if (appId == null || "".equals(appId)) {
             throw new RuntimeException("app_id required for install");
         }
-        return host + getReferenceToLatest(appId, domain);
+        return getReferenceToLatest(host, appId, domain);
     }
 
     /**
@@ -60,16 +60,12 @@ public class SessionUtils {
      * @param appId An id of the application of the CCZ needed
      * @return An HQ URI to download the CCZ
      */
-    public static String getReferenceToLatest(String appId, String domain) {
-        URIBuilder builder;
-        try {
-            builder = new URIBuilder("/a/" + domain + "/apps/api/download_ccz/");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Unable to instantiate URIBuilder");
-        }
-        builder.addParameter("app_id", appId);
-        builder.addParameter("latest", Constants.CCZ_LATEST_SAVED);
+    public static String getReferenceToLatest(String host, String appId, String domain) {
+        HttpUrl.Builder builder;
+        builder = HttpUrl.parse(host).newBuilder()
+                .addPathSegments("a/" + domain + "/apps/api/download_ccz/")
+                .addQueryParameter("app_id", appId)
+                .addQueryParameter("latest", Constants.CCZ_LATEST_SAVED);
         return builder.toString();
     }
 }
