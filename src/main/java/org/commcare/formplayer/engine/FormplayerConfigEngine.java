@@ -3,8 +3,6 @@ package org.commcare.formplayer.engine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.FormattedApplicationConfigException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
@@ -37,6 +35,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.zip.ZipFile;
 
+import okhttp3.HttpUrl;
+
 /**
  * Created by willpride on 11/22/16.
  */
@@ -56,18 +56,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     }
 
     private String parseAppId(String url) {
-        String appId = null;
-        try {
-            List<NameValuePair> params = new URIBuilder(url).getQueryParams();
-            for (NameValuePair param : params) {
-                if (param.getName().equals("app_id")) {
-                    appId = param.getValue();
-                }
-            }
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        return appId;
+        return HttpUrl.parse(url).queryParameter("app_id");
     }
 
     @Override
