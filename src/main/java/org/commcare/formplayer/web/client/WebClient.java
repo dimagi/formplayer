@@ -1,22 +1,15 @@
 package org.commcare.formplayer.web.client;
 
 import com.google.common.collect.Multimap;
-
+import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-
-import lombok.extern.apachecommons.CommonsLog;
 
 @Component
 @CommonsLog
@@ -62,10 +55,6 @@ public class WebClient {
         HttpHeaders headers = restoreFactory.getRequestHeaders(uri);
         if (isMultipart) {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        }
-        String ipAddress = RequestUtils.getIpAddress();
-        if (ipAddress != null) {
-            headers.add("X-CommCareHQ-Origin-IP", ipAddress);
         }
         return postRaw(uri, headers, body, String.class).getBody();
     }

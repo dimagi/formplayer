@@ -1,6 +1,7 @@
 package org.commcare.formplayer.web.client;
 
 import org.commcare.formplayer.util.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,9 @@ import lombok.extern.apachecommons.CommonsLog;
 public class RestTemplateConfig {
 
     public static String MODE_REPLACE_HOST = "replace-host";
+
+    @Autowired
+    private CommCareDefaultHeaders commCareDefaultHeaders;
 
     @Value("${formplayer.externalRequestMode}")
     private String externalRequestMode;
@@ -45,7 +49,8 @@ public class RestTemplateConfig {
         builder = builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
                 .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
-                .requestFactory(OkHttp3ClientHttpRequestFactory.class);
+                .requestFactory(OkHttp3ClientHttpRequestFactory.class)
+                .additionalRequestCustomizers(commCareDefaultHeaders);
 
         if (externalRequestMode.equals(MODE_REPLACE_HOST)) {
             log.warn(String.format("RestTemplate configured in '%s' mode", externalRequestMode));
@@ -53,8 +58,8 @@ public class RestTemplateConfig {
                     new RewriteHostRequestInterceptor(commcareHost));
         }
 
-        CommCareRequestFilter hmacAuthFilter = new CommCareRequestFilter(commcareHost, true);
-        CommCareRequestFilter sessionAuthFilter = new CommCareRequestFilter(commcareHost, false);
+        CommCareRequestFilter hmacAuthFilter = new CommCareHmacRequestFilter(commcareHost, true);
+        CommCareRequestFilter sessionAuthFilter = new CommCareHmacRequestFilter(commcareHost, false);
         return builder.additionalInterceptors(
                 new HmacAuthInterceptor(hmacAuthFilter, formplayerAuthKey),
                 new SessionAuthInterceptor(sessionAuthFilter)

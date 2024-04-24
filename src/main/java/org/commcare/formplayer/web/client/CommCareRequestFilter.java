@@ -6,22 +6,17 @@ import org.springframework.http.HttpRequest;
 import java.util.function.Predicate;
 
 /**
- * Filter to determine if a request is a request to CommCare. Additionally, it can filter based on
- * whether the current Spring request was authenticated with HMAC.
+ * Filter to determine if a request is a request to CommCare.
  */
 public class CommCareRequestFilter {
 
     private final String commcareHost;
-    private final boolean matchHmac;
 
-    public CommCareRequestFilter(String commcareHost, boolean matchHmac) {
+    public CommCareRequestFilter(String commcareHost) {
         this.commcareHost = commcareHost;
-        this.matchHmac = matchHmac;
     }
 
     public boolean isMatch(HttpRequest request) {
-        boolean currentRequestUsedHMAC = RequestUtils.requestAuthedWithHmac();
-        boolean isCommCareRequest = request.getURI().toString().startsWith(commcareHost);
-        return isCommCareRequest && (matchHmac == currentRequestUsedHMAC);
+        return request.getURI().toString().startsWith(commcareHost);
     }
 }

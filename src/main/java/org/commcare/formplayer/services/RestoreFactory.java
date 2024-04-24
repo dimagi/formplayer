@@ -1,10 +1,9 @@
 package org.commcare.formplayer.services;
 
-import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
-
 import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
-
+import datadog.trace.api.Trace;
+import io.sentry.SentryLevel;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,14 +24,12 @@ import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.formplayer.util.UserUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
-import org.javarosa.core.util.PropertyUtils;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -55,27 +52,23 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.sql.SQLException;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import datadog.trace.api.Trace;
-import io.sentry.SentryLevel;
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
 
 
 /**
@@ -107,8 +100,6 @@ public class RestoreFactory {
 
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
-    private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
-
     @Autowired
     protected StatsDClient datadogStatsDClient;
 
@@ -124,17 +115,8 @@ public class RestoreFactory {
     @Autowired
     private WebClient webClient;
 
-    @Autowired
-    private RedisTemplate redisTemplateLong;
-
     @Resource(name = "redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
-
-    @Autowired
-    private RedisTemplate redisTemplateString;
-
-    @Resource(name = "redisTemplateString")
-    private ValueOperations<String, String> originTokens;
 
     @Autowired
     private RedisTemplate redisSetTemplate;
@@ -593,15 +575,7 @@ public class RestoreFactory {
         if (syncToken != null) {
             headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
         }
-        headers.setAll(getOriginTokenHeader());
         return headers;
-    }
-
-    private Map<String, String> getOriginTokenHeader() {
-        String originToken = PropertyUtils.genUUID();
-        String redisKey = String.format("%s%s", ORIGIN_TOKEN_SLUG, originToken);
-        originTokens.set(redisKey, "valid", Duration.ofSeconds(60));
-        return Collections.singletonMap("X-CommCareHQ-Origin-Token", originToken);
     }
 
     public URI getRestoreUrl(boolean skipFixtures) {
