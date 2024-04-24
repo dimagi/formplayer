@@ -46,14 +46,17 @@ public class RestTemplateConfig {
         builder = builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
                 .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
-                .requestFactory(OkHttp3ClientHttpRequestFactory.class)
-                .additionalInterceptors(new HmacRequestInterceptor(formplayerAuthKey));
+                .requestFactory(OkHttp3ClientHttpRequestFactory.class);
 
         if (externalRequestMode.equals(MODE_REPLACE_HOST)) {
             log.warn(String.format("RestTemplate configured in '%s' mode", externalRequestMode));
             builder = builder.additionalInterceptors(
                     new RewriteHostRequestInterceptor(commcareHost));
         }
-        return builder.build();
+
+        CommCareRequestFilter hmacAuthFilter = new CommCareRequestFilter(commcareHost, true);
+        return builder.additionalInterceptors(
+                new HmacRequestInterceptor(formplayerAuthKey, hmacAuthFilter)
+        ).build();
     }
 }

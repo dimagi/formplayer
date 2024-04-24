@@ -23,17 +23,18 @@ import java.util.*;
 @CommonsLog
 public class HmacRequestInterceptor implements ClientHttpRequestInterceptor {
 
+    private final CommCareRequestFilter requestFilter;
     private String formplayerAuthKey;
 
-
-    public HmacRequestInterceptor(String formplayerAuthKey) throws URISyntaxException {
+    public HmacRequestInterceptor(String formplayerAuthKey, CommCareRequestFilter requestFilter) throws URISyntaxException {
         this.formplayerAuthKey = formplayerAuthKey;
+        this.requestFilter = requestFilter;
     }
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body,
             ClientHttpRequestExecution execution) throws IOException {
-        if (RequestUtils.requestAuthedWithHmac()) {
+        if (requestFilter.test(request)) {
             request = addAsParamIfNotPresent(request);
             HttpHeaders hmacHeaders = getHmacHeaders(request, body);
             request.getHeaders().addAll(hmacHeaders);
