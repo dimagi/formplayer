@@ -27,9 +27,10 @@ public class SessionAuthInterceptor extends CommCareAuthInterceptor {
         HttpHeaders headers = new HttpHeaders();
         RequestUtils.getUserDetails().ifPresent(userDetails -> {
             String authToken = userDetails.getAuthToken();
-            headers.add("Cookie", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authToken);
+            String auth = Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authToken;
+            headers.add("Cookie", auth);
             headers.add(Constants.POSTGRES_DJANGO_SESSION_ID, authToken);
-            headers.add("Authorization", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authToken);
+            headers.add("Authorization", auth);
         });
         return headers;
     }

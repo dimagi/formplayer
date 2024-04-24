@@ -31,7 +31,8 @@ class RestTemplateConfigTest_noCustomization {
 
     protected RestTemplate getRestTemplate(String commcareHost, String mode)
             throws URISyntaxException {
-        return new RestTemplateConfig(commcareHost, mode).restTemplate(new RestTemplateBuilder());
+        return new RestTemplateConfig(commcareHost, "authKey", mode)
+                .restTemplate(new RestTemplateBuilder());
     }
 
     protected String getExpectedUrl() {

@@ -43,7 +43,7 @@ public class WebClientTest {
     public void init() throws URISyntaxException {
         MockitoAnnotations.openMocks(this);
 
-        RestTemplateConfig config = new RestTemplateConfig("", "");
+        RestTemplateConfig config = new RestTemplateConfig("", "", "");
         restTemplate = config.restTemplate(new RestTemplateBuilder());
         mockServer = MockRestServiceServer.createServer(restTemplate);
 

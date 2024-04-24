@@ -37,8 +37,9 @@ public class RestTemplateConfig {
      *
      * @param externalRequestMode
      */
-    public RestTemplateConfig(String commcareHost, String externalRequestMode) {
+    public RestTemplateConfig(String commcareHost, String formplayerAuthKey, String externalRequestMode) {
         this.commcareHost = commcareHost;
+        this.formplayerAuthKey = formplayerAuthKey;
         this.externalRequestMode = externalRequestMode;
     }
 

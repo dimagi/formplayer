@@ -2,6 +2,7 @@ package org.commcare.formplayer.web.client;
 
 import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
@@ -83,7 +84,7 @@ public class HmacAuthInterceptor extends CommCareAuthInterceptor {
         String digest = RequestUtils.getHmac(formplayerAuthKey, data);
         return new HttpHeaders() {
             {
-                add("X-MAC-DIGEST", digest);
+                add(Constants.HMAC_HEADER, digest);
             }
         };
     }
