@@ -27,6 +27,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
 
 @Configuration
@@ -53,10 +54,12 @@ public class WebSecurityConfig {
                 .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
 
                 // not auth required
-                .antMatchers("/serverup", "/favicon.ico").permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/serverup")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
 
                 // validate form auth
-                .antMatchers("/validate_form").access(getFormValidationAuthManager())
+                .requestMatchers(new AntPathRequestMatcher("/validate_form")).access(
+                        getFormValidationAuthManager())
 
                 // full auth required for all other requests
                 .anyRequest().authenticated()
