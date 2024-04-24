@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.7.3'
+    id 'org.springframework.boot' version '3.2.5'
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id "io.freefair.lombok" version "8.10.2"
     id 'org.jetbrains.kotlin.jvm' version '2.0.21'
@@ -137,7 +137,6 @@ dependencies {
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path-assert'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testImplementation group: 'org.mockito', name: 'mockito-core'
-    testImplementation group: 'org.mockito', name: 'mockito-inline'
     testImplementation "org.mockito.kotlin:mockito-kotlin:5.4.0"
     testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert'
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
