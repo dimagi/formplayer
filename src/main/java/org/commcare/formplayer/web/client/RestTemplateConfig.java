@@ -20,7 +20,6 @@ public class RestTemplateConfig {
 
     public static String MODE_REPLACE_HOST = "replace-host";
 
-    @Autowired
     private CommCareDefaultHeaders commCareDefaultHeaders;
 
     @Value("${formplayer.externalRequestMode}")
@@ -64,5 +63,10 @@ public class RestTemplateConfig {
                 new HmacAuthInterceptor(hmacAuthFilter, formplayerAuthKey),
                 new SessionAuthInterceptor(sessionAuthFilter)
         ).build();
+    }
+
+    @Autowired
+    public void setCommCareDefaultHeaders(CommCareDefaultHeaders commCareDefaultHeaders) {
+        this.commCareDefaultHeaders = commCareDefaultHeaders;
     }
 }

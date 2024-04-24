@@ -10,6 +10,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import com.google.common.collect.ImmutableListMultimap;
 
 import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.utils.MockRestTemplateBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,8 +42,7 @@ public class WebClientTest {
 
     @BeforeEach
     public void init() throws URISyntaxException {
-        RestTemplateConfig config = new RestTemplateConfig("", "", "");
-        RestTemplate restTemplate = config.restTemplate(new RestTemplateBuilder());
+        RestTemplate restTemplate = new MockRestTemplateBuilder().getRestTemplate();
         mockServer = MockRestServiceServer.createServer(restTemplate);
 
         webClient = new WebClient();

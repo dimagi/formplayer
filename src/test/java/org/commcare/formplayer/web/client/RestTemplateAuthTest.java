@@ -3,13 +3,14 @@ package org.commcare.formplayer.web.client;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.HqUserDetails;
+import org.commcare.formplayer.utils.MockRestTemplateBuilder;
 import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,7 +25,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
@@ -41,27 +42,39 @@ class RestTemplateAuthTest {
 
     @Mock
     private HttpServletRequest request;
+
+    @Mock
+    ValueOperations<String, String> originTokens;
+
     private final String commcareHost = "https://www.commcarehq.org";
     private final String formplayerAuthKey = "authKey";
 
     @BeforeEach
     public void init() throws URISyntaxException {
-        restTemplate = new RestTemplateConfig(commcareHost, formplayerAuthKey, "")
-                .restTemplate(new RestTemplateBuilder());
+        restTemplate = new MockRestTemplateBuilder()
+                .withCommcareHost(commcareHost)
+                .withFormpayerAuthKey(formplayerAuthKey)
+                .getRestTemplate();
         mockServer = MockRestServiceServer.createServer(restTemplate);
         RequestContextHolder.setRequestAttributes(requestAttributes);
-        when(requestAttributes.getRequest()).thenReturn(request);
         WithHqUserSecurityContextFactory.setSecurityContext(
                 HqUserDetails.builder().username("testUser").authToken(AUTH_TOKEN).build()
         );
     }
 
+    private void mockGetRequest() {
+        lenient().when(requestAttributes.getRequest()).thenReturn(request);
+    }
+
     private void mockHmacRequest() {
-        when(request.getAttribute(eq(Constants.HMAC_REQUEST_ATTRIBUTE))).thenReturn(true);
+        mockGetRequest();
+        lenient().when(request.getAttribute(eq(Constants.HMAC_REQUEST_ATTRIBUTE))).thenReturn(true);
     }
 
     @Test
     public void testRestTemplateSessionAuth() throws URISyntaxException {
+        mockGetRequest();
+
         String url = commcareHost + "/a/demo/receiver/1234";
 
         expectRequest(url, HttpMethod.GET)

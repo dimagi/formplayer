@@ -2,6 +2,7 @@ package org.commcare.formplayer.web.client;
 
 import org.commcare.formplayer.util.RequestUtils;
 import org.javarosa.core.util.PropertyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateRequestCustomizer;
 import org.springframework.data.redis.core.ValueOperations;
@@ -21,11 +22,16 @@ public class CommCareDefaultHeaders implements RestTemplateRequestCustomizer {
     private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
     private final CommCareRequestFilter requestFilter;
 
-    @Resource(name = "redisTemplateString")
     private ValueOperations<String, String> originTokens;
 
+    @Autowired
     public CommCareDefaultHeaders(@Value("${commcarehq.host}") String commcareHost) {
         requestFilter = new CommCareRequestFilter(commcareHost);
+    }
+
+    @Resource(name = "redisTemplateString")
+    public void setOriginTokens(ValueOperations<String, String> originTokens) {
+        this.originTokens = originTokens;
     }
 
     @Override
