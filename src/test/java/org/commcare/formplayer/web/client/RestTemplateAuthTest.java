@@ -65,6 +65,7 @@ class RestTemplateAuthTest {
     @AfterEach
     public void tearDown() throws Exception {
         securityContext.close();
+        RequestContextHolder.resetRequestAttributes();
     }
 
     private void mockGetRequest() {
