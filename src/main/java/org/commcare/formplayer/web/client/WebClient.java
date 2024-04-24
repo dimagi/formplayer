@@ -7,6 +7,7 @@ import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class WebClient {
                     responseType
             );
         } finally {
-            HttpStatus status = response == null ? null : response.getStatusCode();
+            HttpStatusCode status = response == null ? null : response.getStatusCode();
             log.info(String.format("HTTP GET to '%s'. Response %s", uri, status));
         }
         return response;
@@ -102,7 +103,7 @@ public class WebClient {
                     responseType
             );
         } finally {
-            HttpStatus status = response == null ? null : response.getStatusCode();
+            HttpStatusCode status = response == null ? null : response.getStatusCode();
             log.info(String.format("HTTP POST to '%s'. Response %s. Request body '%s'", uri, status, body));
         }
 
