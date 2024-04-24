@@ -437,11 +437,7 @@ public class RestoreFactory {
     }
 
     public HttpHeaders getRequestHeaders(URI url) {
-        HttpHeaders headers = getStandardHeaders();
-        if (!RequestUtils.requestAuthedWithHmac()) {
-            headers.addAll(getSessionHeaders());
-        }
-        return headers;
+        return getStandardHeaders();
     }
 
     private void recordSentryData(final String restoreUrl) {
@@ -616,17 +612,6 @@ public class RestoreFactory {
             }
             return getUserRestoreUrl(skipFixtures);
         });
-    }
-
-    public HttpHeaders getSessionHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        RequestUtils.getUserDetails().ifPresent(userDetails -> {
-            String authToken = userDetails.getAuthToken();
-            headers.add("Cookie", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authToken);
-            headers.add(Constants.POSTGRES_DJANGO_SESSION_ID, authToken);
-            headers.add("Authorization", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authToken);
-        });
-        return headers;
     }
 
     public URI getCaseRestoreUrl() {

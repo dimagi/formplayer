@@ -243,70 +243,15 @@ public class RestoreFactoryTest {
     }
 
     @Test
-    @WithHqUser(authToken = "key")
     public void testGetRequestHeaders() {
         String syncToken = "synctoken";
         Mockito.doReturn(syncToken).when(restoreFactorySpy).getSyncToken();
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(null);
-        assertEquals(7, headers.size());
+        assertEquals(4, headers.size());
         validateHeaders(headers, Arrays.asList(
-                hasEntry("Cookie", singletonList("sessionid=key")),
-                hasEntry("sessionid", singletonList("key")),
-                hasEntry("Authorization", singletonList("sessionid=key")),
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
-        );
-    }
-
-    @Test
-    public void testGetRequestHeaders_HmacAuth() throws Exception {
-        mockHmacRequest();
-        restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
-                new URI("http://localhost:8000" + requestPath));
-        assertEquals(4, headers.size());
-        validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST",
-                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
-                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
-                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
-        );
-    }
-
-    @Test
-    public void testGetRequestHeaders_HmacAuth_UrlWithQuery() throws Exception {
-        mockHmacRequest();
-        restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath =
-                "/a/restore-domain/phone/case_restore/case_id_123/?query_param=true";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
-                new URI("http://localhost:8000" + requestPath));
-        assertEquals(4, headers.size());
-        validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST",
-                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
-                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
-                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
-        );
-    }
-
-    @Test
-    public void testGetRequestHeaders_UseHmacAuthEvenIfHqAuthPresent() throws Exception {
-        mockHmacRequest();
-        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
-                new URI("http://localhost:8000" + requestPath));
-        assertEquals(4, headers.size());
-        validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST",
-                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
-                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
-                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
         );
     }

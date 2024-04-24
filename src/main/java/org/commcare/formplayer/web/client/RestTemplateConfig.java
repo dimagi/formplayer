@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.util.ArrayList;
 
 import lombok.extern.apachecommons.CommonsLog;
 
@@ -55,8 +56,10 @@ public class RestTemplateConfig {
         }
 
         CommCareRequestFilter hmacAuthFilter = new CommCareRequestFilter(commcareHost, true);
+        CommCareRequestFilter sessionAuthFilter = new CommCareRequestFilter(commcareHost, false);
         return builder.additionalInterceptors(
-                new HmacRequestInterceptor(formplayerAuthKey, hmacAuthFilter)
+                new HmacAuthInterceptor(hmacAuthFilter, formplayerAuthKey),
+                new SessionAuthInterceptor(sessionAuthFilter)
         ).build();
     }
 }

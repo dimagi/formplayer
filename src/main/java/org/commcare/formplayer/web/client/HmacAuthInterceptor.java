@@ -6,14 +6,9 @@ import org.commcare.formplayer.util.RequestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -21,25 +16,21 @@ import java.util.*;
  * Rest request interceptor that will add HMAC headers to requests that require it
  */
 @CommonsLog
-public class HmacRequestInterceptor implements ClientHttpRequestInterceptor {
+public class HmacAuthInterceptor extends CommCareAuthInterceptor {
 
-    private final CommCareRequestFilter requestFilter;
     private String formplayerAuthKey;
 
-    public HmacRequestInterceptor(String formplayerAuthKey, CommCareRequestFilter requestFilter) throws URISyntaxException {
+    public HmacAuthInterceptor(CommCareRequestFilter requestFilter, String formplayerAuthKey) {
+        super(requestFilter);
         this.formplayerAuthKey = formplayerAuthKey;
-        this.requestFilter = requestFilter;
     }
 
     @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-            ClientHttpRequestExecution execution) throws IOException {
-        if (requestFilter.test(request)) {
-            request = addAsParamIfNotPresent(request);
-            HttpHeaders hmacHeaders = getHmacHeaders(request, body);
-            request.getHeaders().addAll(hmacHeaders);
-        }
-        return execution.execute(request, body);
+    protected HttpRequest modifyRequest(HttpRequest request, byte[] body) {
+        request = addAsParamIfNotPresent(request);
+        HttpHeaders hmacHeaders = getHmacHeaders(request, body);
+        request.getHeaders().addAll(hmacHeaders);
+        return request;
     }
 
     /**
