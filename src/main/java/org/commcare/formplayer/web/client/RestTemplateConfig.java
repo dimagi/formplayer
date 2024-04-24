@@ -10,7 +10,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.util.ArrayList;
 
 import lombok.extern.apachecommons.CommonsLog;
 
@@ -34,8 +33,6 @@ public class RestTemplateConfig {
 
     /**
      * Constructor for tests
-     *
-     * @param externalRequestMode
      */
     public RestTemplateConfig(String commcareHost, String formplayerAuthKey, String externalRequestMode) {
         this.commcareHost = commcareHost;

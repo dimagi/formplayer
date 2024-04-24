@@ -13,8 +13,9 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -28,9 +29,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URISyntaxException;
 
+@ExtendWith(MockitoExtension.class)
 public class WebClientTest {
-
-    private RestTemplate restTemplate;
 
     private MockRestServiceServer mockServer;
 
@@ -41,10 +41,8 @@ public class WebClientTest {
 
     @BeforeEach
     public void init() throws URISyntaxException {
-        MockitoAnnotations.openMocks(this);
-
         RestTemplateConfig config = new RestTemplateConfig("", "", "");
-        restTemplate = config.restTemplate(new RestTemplateBuilder());
+        RestTemplate restTemplate = config.restTemplate(new RestTemplateBuilder());
         mockServer = MockRestServiceServer.createServer(restTemplate);
 
         webClient = new WebClient();

@@ -13,11 +13,11 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,27 +39,21 @@ import static org.mockito.ArgumentMatchers.any;
  */
 @WebMvcTest
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
+@ExtendWith(MockitoExtension.class)
 public class RestoreFactoryTest {
 
     private static final String BASE_URL = "http://localhost:8000/a/restore-domain/phone/restore/";
-    private String username = "restore-dude";
-    private String domain = "restore-domain";
-    private String asUsername = "restore-gal";
-
-    @Value("${commcarehq.formplayerAuthKey}")
-    private String formplayerAuthKey;
 
     @Autowired
     RestoreFactory restoreFactorySpy;
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         Mockito.reset(restoreFactorySpy);
         AuthenticatedRequestBean requestBean = new AuthenticatedRequestBean();
-        requestBean.setRestoreAs(asUsername);
-        requestBean.setUsername(username);
-        requestBean.setDomain(domain);
+        requestBean.setRestoreAs("restore-gal");
+        requestBean.setUsername("restore-dude");
+        requestBean.setDomain("restore-domain");
         restoreFactorySpy.configure(requestBean);
         restoreFactorySpy.setAsUsername(null);
         restoreFactorySpy.setCaseId(null);

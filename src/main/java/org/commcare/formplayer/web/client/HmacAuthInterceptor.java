@@ -19,7 +19,7 @@ import java.util.*;
 @CommonsLog
 public class HmacAuthInterceptor extends CommCareAuthInterceptor {
 
-    private String formplayerAuthKey;
+    private final String formplayerAuthKey;
 
     public HmacAuthInterceptor(CommCareRequestFilter requestFilter, String formplayerAuthKey) {
         super(requestFilter);

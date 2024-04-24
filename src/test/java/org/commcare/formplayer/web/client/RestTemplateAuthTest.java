@@ -31,6 +31,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @ExtendWith(MockitoExtension.class)
 class RestTemplateAuthTest {
 
+    public static final String AUTH_TOKEN = "123abc";
     private RestTemplate restTemplate;
 
     private MockRestServiceServer mockServer;
@@ -40,8 +41,8 @@ class RestTemplateAuthTest {
 
     @Mock
     private HttpServletRequest request;
-    private String commcareHost = "https://www.commcarehq.org";
-    private String formplayerAuthKey = "authKey";
+    private final String commcareHost = "https://www.commcarehq.org";
+    private final String formplayerAuthKey = "authKey";
 
     @BeforeEach
     public void init() throws URISyntaxException {
@@ -51,7 +52,7 @@ class RestTemplateAuthTest {
         RequestContextHolder.setRequestAttributes(requestAttributes);
         when(requestAttributes.getRequest()).thenReturn(request);
         WithHqUserSecurityContextFactory.setSecurityContext(
-                HqUserDetails.builder().username("testUser").authToken("123abc").build()
+                HqUserDetails.builder().username("testUser").authToken(AUTH_TOKEN).build()
         );
     }
 
@@ -64,7 +65,7 @@ class RestTemplateAuthTest {
         String url = commcareHost + "/a/demo/receiver/1234";
 
         expectRequest(url, HttpMethod.GET)
-                .andExpect(sessionAuth("123abc"))
+                .andExpect(sessionAuth())
                 .andRespond(response());
 
         restTemplate.getForObject(url, String.class);
@@ -157,10 +158,10 @@ class RestTemplateAuthTest {
         );
     }
 
-    private RequestMatcher sessionAuth(String token) {
-        String authHeader = Constants.POSTGRES_DJANGO_SESSION_ID + "=" + token;
+    private RequestMatcher sessionAuth() {
+        String authHeader = Constants.POSTGRES_DJANGO_SESSION_ID + "=" + AUTH_TOKEN;
         return compoundMatcher(
-                header(Constants.POSTGRES_DJANGO_SESSION_ID, token),
+                header(Constants.POSTGRES_DJANGO_SESSION_ID, AUTH_TOKEN),
                 header("Cookie", authHeader),
                 header("Authorization", authHeader),
                 headerDoesNotExist(Constants.HMAC_HEADER)
