@@ -28,9 +28,6 @@ class RestTemplateConfigTest_noCustomization {
 
     private MockRestServiceServer mockServer;
 
-    @Mock
-    ValueOperations<String, String> originTokens;
-
     @BeforeEach
     public void init() throws URISyntaxException {
         restTemplate = getRestTemplate("https://web");
@@ -39,7 +36,7 @@ class RestTemplateConfigTest_noCustomization {
 
     protected RestTemplate getRestTemplate(String commcareHost)
             throws URISyntaxException {
-        return new MockRestTemplateBuilder().withCommcareHost("https://web").getRestTemplate();
+        return new MockRestTemplateBuilder().withCommcareHost(commcareHost).getRestTemplate();
     }
 
     protected String getExpectedUrl() {
@@ -67,7 +64,7 @@ class RestTemplateConfigTest_replaceHost extends RestTemplateConfigTest_noCustom
     public RestTemplate getRestTemplate(String commcareHost)
             throws URISyntaxException {
         return new MockRestTemplateBuilder()
-                .withCommcareHost("https://web")
+                .withCommcareHost(commcareHost)
                 .withExternalRequestMode(RestTemplateConfig.MODE_REPLACE_HOST)
                 .getRestTemplate();
     }

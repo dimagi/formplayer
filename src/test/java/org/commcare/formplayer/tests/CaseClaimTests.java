@@ -1,30 +1,10 @@
 package org.commcare.formplayer.tests;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Multimap;
-
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
-import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
-import org.commcare.formplayer.beans.menus.EntityDetailResponse;
-import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.commcare.formplayer.beans.menus.QueryResponseBean;
+import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.sandbox.SqlStorage;
@@ -45,10 +25,13 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCache;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import javax.annotation.Nullable;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Regression tests for fixed behaviors
@@ -751,13 +734,14 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
         assertNull(responseBean.getQueryResponse(),
                 "Query response attached to entity response when split screen is disabled");
-        WithHqUserSecurityContextFactory.setSecurityContext(
+        try (AutoCloseable __ = WithHqUserSecurityContextFactory.setSecurityContext(
                 HqUserDetails.builder().enabledToggles(new String[]{"SPLIT_SCREEN_CASE_SEARCH"}).build()
-        );
-        responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                null,
-                EntityListResponse.class);
+        )) {
+            responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                    "caseclaim",
+                    null,
+                    EntityListResponse.class);
+        }
         assertNotNull(responseBean.getQueryResponse(),
                 "No query response attached to entity response when split screen is enabled");
     }

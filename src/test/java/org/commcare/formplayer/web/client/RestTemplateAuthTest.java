@@ -5,6 +5,7 @@ import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.HqUserDetails;
 import org.commcare.formplayer.utils.MockRestTemplateBuilder;
 import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,11 +44,10 @@ class RestTemplateAuthTest {
     @Mock
     private HttpServletRequest request;
 
-    @Mock
-    ValueOperations<String, String> originTokens;
-
     private final String commcareHost = "https://www.commcarehq.org";
     private final String formplayerAuthKey = "authKey";
+    private AutoCloseable securityContext;
+
 
     @BeforeEach
     public void init() throws URISyntaxException {
@@ -57,9 +57,14 @@ class RestTemplateAuthTest {
                 .getRestTemplate();
         mockServer = MockRestServiceServer.createServer(restTemplate);
         RequestContextHolder.setRequestAttributes(requestAttributes);
-        WithHqUserSecurityContextFactory.setSecurityContext(
+        securityContext = WithHqUserSecurityContextFactory.setSecurityContext(
                 HqUserDetails.builder().username("testUser").authToken(AUTH_TOKEN).build()
         );
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        securityContext.close();
     }
 
     private void mockGetRequest() {
