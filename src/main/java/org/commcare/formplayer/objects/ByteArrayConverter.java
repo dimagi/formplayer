@@ -2,8 +2,8 @@ package org.commcare.formplayer.objects;
 
 import org.springframework.util.SerializationUtils;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter
 public class ByteArrayConverter implements AttributeConverter<Object, byte[]> {
