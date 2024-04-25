@@ -216,12 +216,11 @@ public class RestoreFactoryTest {
         String syncToken = "synctoken";
         Mockito.doReturn(syncToken).when(restoreFactorySpy).getSyncToken();
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(null);
-        assertEquals(4, headers.size());
+        assertEquals(3, headers.size());
         validateHeaders(headers, Arrays.asList(
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
-                hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
+                hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)))
         );
     }
 
