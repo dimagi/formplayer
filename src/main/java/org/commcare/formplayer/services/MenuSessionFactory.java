@@ -128,7 +128,7 @@ public class MenuSessionFactory {
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
                         } else {
-                            LogStepNotInEntityScreenError(entityScreen, neededDatum, step);
+                            logStepNotInEntityScreenError(entityScreen, neededDatum, step);
                         }
                         break;
                     }
@@ -296,7 +296,7 @@ public class MenuSessionFactory {
         }
     }
 
-    private void LogStepNotInEntityScreenError(EntityScreen entityScreen, SessionDatum neededDatum, StackFrameStep step) throws CommCareSessionException {
+    private void logStepNotInEntityScreenError(EntityScreen entityScreen, SessionDatum neededDatum, StackFrameStep step) throws CommCareSessionException {
         // This block constructs the message to display then throws the exception
         List<String> refsList = entityScreen.getReferences().stream()
         .map(ref -> EntityScreen.getReturnValueFromSelection(ref, (EntityDatum) neededDatum, entityScreen.getEvalContext()))
