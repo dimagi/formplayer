@@ -128,7 +128,7 @@ public class MenuSessionFactory {
                             processedSteps.add(step);
                             needsFullInit = ++processedStepsCount == steps.size();
                         } else {
-                            throwStepNotInEntityScreenException(entityScreen, neededDatum, step);
+                            logStepNotInEntityScreenError(entityScreen, neededDatum, step);
                         }
                         break;
                     }
@@ -147,7 +147,7 @@ public class MenuSessionFactory {
                     continue;
                 }
                 if (currentStep == null && processedStepsCount != steps.size()) {
-                    checkAndThrowCaseIDMatchError(steps, processedSteps, neededDatum.getDataId());
+                    checkAndLogCaseIDMatchError(steps, processedSteps, neededDatum.getDataId());
                 }
             } else if (screen instanceof QueryScreen) {
                 QueryScreen queryScreen = (QueryScreen)screen;
@@ -274,7 +274,7 @@ public class MenuSessionFactory {
         }
     }
 
-    private void checkAndThrowCaseIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
+    private void checkAndLogCaseIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
         String neededDatumID) throws CommCareSessionException {
         Vector<StackFrameStep> unprocessedSteps = new Vector<>();
         for (StackFrameStep step : steps) {
@@ -288,7 +288,7 @@ public class MenuSessionFactory {
                 for (StackFrameStep step : steps) {
                     stepIDJoiner.add(step.getId());
                 }
-                throw new CommCareSessionException(
+                log.error(
                     "Match Error: Steps " + stepIDJoiner.toString() +
                     " do not contain a valid datum ID " + neededDatumID
                 );
@@ -296,7 +296,7 @@ public class MenuSessionFactory {
         }
     }
 
-    private void throwStepNotInEntityScreenException(EntityScreen entityScreen, SessionDatum neededDatum, StackFrameStep step) throws CommCareSessionException {
+    private void logStepNotInEntityScreenError(EntityScreen entityScreen, SessionDatum neededDatum, StackFrameStep step) throws CommCareSessionException {
         // This block constructs the message to display then throws the exception
         List<String> refsList = entityScreen.getReferences().stream()
         .map(ref -> EntityScreen.getReturnValueFromSelection(ref, (EntityDatum) neededDatum, entityScreen.getEvalContext()))
@@ -305,7 +305,7 @@ public class MenuSessionFactory {
         String referencesString = String.join(",\n  ", refsList);
         String nodeSetString = ((EntityDatum) neededDatum).getNodeset().toString();
 
-        throw new CommCareSessionException(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
+        log.error(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
         neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString));
 
     }
