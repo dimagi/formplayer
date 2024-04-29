@@ -115,7 +115,7 @@ public class MenuSessionFactory {
                     }
                 }
                 if (currentStep == null && processedStepsCount != steps.size()) {
-                    checkAndThrowCommandIDMatchError(steps, processedSteps, options);
+                    checkAndLogCommandIDMatchError(steps, processedSteps, options);
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
@@ -247,7 +247,7 @@ public class MenuSessionFactory {
         );
     }
 
-    private void checkAndThrowCommandIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
+    private void checkAndLogCommandIDMatchError(Vector<StackFrameStep> steps, List<StackFrameStep> processedSteps,
         MenuDisplayable[] options) throws CommCareSessionException {
         Vector<StackFrameStep> unprocessedSteps = new Vector<>();
         for (StackFrameStep step : steps) {
@@ -266,7 +266,7 @@ public class MenuSessionFactory {
                 for (StackFrameStep step : steps) {
                     stepIDJoiner.add(step.getId());
                 }
-                throw new CommCareSessionException(
+                log.error(
                     "Match Error: Steps " + stepIDJoiner.toString() +
                     " do not contain a valid option " + optionsIDJoiner.toString()
                 );
