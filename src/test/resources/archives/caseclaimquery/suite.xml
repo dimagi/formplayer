@@ -277,4 +277,18 @@
       </push>
     </stack>
   </endpoint>
+  <endpoint id="m3_f0_endpoint" respect-relevancy="false">
+    <argument id="case_id"/>
+    <stack>
+      <push>
+        <command value="'m3'"/>
+        <query id="results" value="http://localhost:8000/a/test-1/phone/case_fixture/dec220eae9974c788654f23320f3a8d3/">
+          <data key="case_type" ref="'case'"/>
+          <data key="case_id" ref="$case_id"/>
+        </query>
+        <datum id="case_id" value="$case_id"/>
+        <command value="'m3-f0'"/>
+      </push>
+    </stack>
+  </endpoint>
 </suite>

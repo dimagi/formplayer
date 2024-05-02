@@ -29,9 +29,9 @@
             <bind nodeset="/data/name_legacy_instance_ref" type="xsd:string"/>
             <bind nodeset="/data/name_new_instance_ref" type="xsd:string"/>
             <setvalue event="xforms-ready" ref="/data/name_legacy_instance_ref"
-                      value="instance('search-input:results')/input/field[@name='name']"/>
+                      value="if(count(instance('search-input:results')/input/field[@name='name'])>0, instance('search-input:results')/input/field[@name='name'], '')"/>
             <setvalue event="xforms-ready" ref="/data/name_new_instance_ref"
-                      value="instance('my-search-input')/input/field[@name='name']"/>
+                      value="if(count(instance('my-search-input')/input/field[@name='name'])>0, instance('my-search-input')/input/field[@name='name'], '')"/>
             <itext>
                 <translation lang="en" default="">
                     <text id="name-label">
