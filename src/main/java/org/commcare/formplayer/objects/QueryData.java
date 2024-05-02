@@ -1,6 +1,7 @@
 package org.commcare.formplayer.objects;
 
 import com.fasterxml.jackson.annotation.*;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
 import java.util.Hashtable;
@@ -72,7 +73,7 @@ public class QueryData extends Hashtable<String, Object> {
         if (value != null) {
             return  (Multimap<String, String>) value.get(this.KEY_EXTRAS);
         }
-        return null;
+        return ImmutableMultimap.of();
     }
 
     public Boolean hasProperty(String key, String property) {
