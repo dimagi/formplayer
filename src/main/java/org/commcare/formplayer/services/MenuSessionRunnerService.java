@@ -4,6 +4,7 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
 import org.apache.commons.logging.Log;
@@ -24,7 +25,6 @@ import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
@@ -73,6 +73,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -438,7 +439,8 @@ public class MenuSessionRunnerService {
                     queryScreen,
                     queryScreen.doDefaultSearch() && !forceManualSearch,
                     skipCache,
-                    caseSearchMetricTags
+                    caseSearchMetricTags,
+                    queryData.getExtras(queryKey)
             );
         }
         return false;
@@ -490,12 +492,14 @@ public class MenuSessionRunnerService {
      */
     @Trace
     private boolean doQuery(FormplayerQueryScreen screen,
-            boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags) throws CommCareSessionException {
+            boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags,
+            Multimap<String, String> queryExtras) throws CommCareSessionException {
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
                 Multimap<String, String> queryParams = screen.getQueryParams(isDefaultSearch);
                 queryParams.putAll(caseSearchMetricTags);
+                mergeQueryParamsWithQueryExtras(queryParams, queryExtras);
                 ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
@@ -510,6 +514,18 @@ public class MenuSessionRunnerService {
             }
         }
         return false;
+    }
+
+    private void mergeQueryParamsWithQueryExtras(Multimap<String, String> queryParams, Multimap<String, String> queryExtras) {
+        for (String key : queryExtras.keySet()) {
+            Collection<String> queryExtrasForKey = queryExtras.get(key);
+            Collection<String> queryParamsForKey = queryParams.get(key);
+            for (String extra : queryExtrasForKey) {
+                if (!queryParamsForKey.contains(extra)) {
+                    queryParams.put(key, extra);
+                }
+            }
+        }
     }
 
     @Trace
@@ -790,12 +806,37 @@ public class MenuSessionRunnerService {
             }
         }
         boolean respectRelevancy = endpoint.isRespectRelevancy();
+        SessionFrame endpointSessionFrame = new SessionFrame(menuSession.getSessionWrapper().getFrame());
         menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper, respectRelevancy);
         String[] selections = menuSession.getSelections();
-
+        QueryData queryData = getQueryDataFromFrame(menuSession.getSessionWrapper().getFrame(), endpointSessionFrame);
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections, null, new EntityScreenContext(), null, respectRelevancy);
+        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null, respectRelevancy);
+    }
+
+    // Builds Query Data extras using session built using the endpoint
+    private static QueryData getQueryDataFromFrame(SessionFrame currentFrame, SessionFrame endpointSessionFrame) {
+        QueryData queryData = new QueryData();
+        String lastCommandId = null;
+        for (StackFrameStep step : currentFrame.getSteps()) {
+            if (step.getType().contentEquals(SessionFrame.STATE_QUERY_REQUEST) && lastCommandId != null) {
+                for (StackFrameStep frameStep : endpointSessionFrame.getSteps()) {
+                    if(frameStep.getId().contentEquals(step.getId())){
+                        String queryKey = lastCommandId + "_" + step.getId();
+                        ImmutableMultimap.Builder<String, String> queryExtras = ImmutableMultimap.builder();
+                        Multimap<String, Object> frameExtras = frameStep.getExtras();
+                        for (String key : frameExtras.keySet()) {
+                            queryExtras.putAll(key, (Collection)frameExtras.get(key));
+                        }
+                        queryData.setExtras(queryKey, queryExtras.build());
+                    }
+                }
+            } else if (step.getType().contentEquals(SessionFrame.STATE_COMMAND_ID)) {
+                    lastCommandId = step.getId();
+            }
+        }
+        return queryData;
     }
 
     private Map<String, ExternalDataInstance> processEndpointArgumentsForVirualInstance(Endpoint endpoint,
