@@ -435,12 +435,14 @@ public class MenuSessionRunnerService {
         Multimap<String, String> caseSearchMetricTags = caseSearchHelper.getMetricTags(menuSession);
         answerQueryPrompts(queryScreen, queryData, queryKey);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+            Multimap<String, String> queryExtras =
+                    queryData == null ? ImmutableMultimap.of() : queryData.getExtras(queryKey);
             return doQuery(
                     queryScreen,
                     queryScreen.doDefaultSearch() && !forceManualSearch,
                     skipCache,
                     caseSearchMetricTags,
-                    queryData.getExtras(queryKey)
+                    queryExtras
             );
         }
         return false;
