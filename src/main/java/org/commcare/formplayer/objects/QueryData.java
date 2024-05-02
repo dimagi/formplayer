@@ -1,6 +1,8 @@
 package org.commcare.formplayer.objects;
 
 import com.fasterxml.jackson.annotation.*;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -23,6 +25,7 @@ public class QueryData extends Hashtable<String, Object> {
     private static final String KEY_EXECUTE = "execute";
     public static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
     private static final String KEY_INPUTS = "inputs";
+    private static final String KEY_EXTRAS = "extras";
 
     public Boolean getExecute(String key) {
         return getPropertyWithFallback(key, KEY_EXECUTE);
@@ -58,6 +61,19 @@ public class QueryData extends Hashtable<String, Object> {
     public void setInputs(String key, Hashtable<String, String> value) {
         this.initKey(key);
         ((Map<String, Object>) this.get(key)).put(this.KEY_INPUTS, value);
+    }
+
+    public void setExtras(String key, Multimap<String, String> value) {
+        this.initKey(key);
+        ((Map<String, Object>) this.get(key)).put(this.KEY_EXTRAS, value);
+    }
+
+    public Multimap<String, String> getExtras(String key) {
+        Map<String, Object> value = (Map<String, Object>) this.get(key);
+        if (value != null) {
+            return  (Multimap<String, String>) value.get(this.KEY_EXTRAS);
+        }
+        return ImmutableMultimap.of();
     }
 
     public Boolean hasProperty(String key, String property) {

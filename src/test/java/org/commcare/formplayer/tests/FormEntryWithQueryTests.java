@@ -1,10 +1,12 @@
 package org.commcare.formplayer.tests;
 
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.commcare.formplayer.util.FormplayerPropertyManager.AUTO_ADVANCE_MENU;
 import static org.commcare.formplayer.util.FormplayerPropertyManager.YES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
@@ -13,6 +15,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
@@ -24,17 +27,22 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 @WebMvcTest
@@ -46,16 +54,22 @@ public class FormEntryWithQueryTests extends BaseTestClass {
     @Autowired
     CacheManager cacheManager;
 
+    private MockRequestUtils mockRequest;
+
+    @Captor
+    ArgumentCaptor<Multimap<String, String>> requestDataCaptor;
+
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
         cacheManager.getCache("case_search").clear();
-        configureQueryMock();
+        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
     }
 
     @Test
     public void testFormEntryWithQuery() throws Exception {
+        configureQueryMock();
         // selecting the command containing form with `query` should launch the query screen
         sessionNavigateWithQuery(new String[]{"1"},
                 "caseclaimquery",
@@ -107,6 +121,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
     @Test
     public void testNavigationToFormEntryWithMultipleQueries() throws Exception {
+        configureQueryMock();
         // select module 2
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
@@ -175,6 +190,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
      */
     @Test
     public void testNavigationToFormEntryWithQueriesAutoAdvance() throws Exception {
+        configureQueryMock();
         // select module 2
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
@@ -211,20 +227,23 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
     @Test
     public void testSearchInputInstanceInForm() throws Exception {
+        configureQueryMock();
         ArrayList<String> selections = new ArrayList<>();
         selections.add("3");  // m3
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
         selections.add("0");  // m3-f0
 
         QueryData queryData = new QueryData();
-        queryData.setInputs("m3_results", new Hashtable<String, String>() {{ put("name", "bob"); }});
+        queryData.setInputs("m3_results", new Hashtable<String, String>() {{
+            put("name", "bob");
+        }});
 
         when(webClientMock.postFormData(any(), any())).thenReturn(
                 FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
         NewFormResponse formResponse = sessionNavigateWithQuery(selections,
-                    "caseclaimquery",
-                    queryData,
-                    NewFormResponse.class);
+                "caseclaimquery",
+                queryData,
+                NewFormResponse.class);
 
         assertEquals("test-search-input", formResponse.getTitle());
         QuestionBean nameLegacyInstanceRef = formResponse.getTree()[0];
@@ -241,6 +260,41 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         nameNewInstanceRef = newFormResponse.getTree()[1];
         assertEquals("bob", nameLegacyInstanceRef.getAnswer());
         assertEquals("bob", nameNewInstanceRef.getAnswer());
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointToFormWithQuery_QueryParamsContainsEndpointExtras() throws Exception {
+        String selectedCaseId = "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18";
+
+        // mock case fixture api to return a result containing selectedCaseId
+        String caseFixtureUri =
+                "http://localhost:8000/a/test-1/phone/case_fixture/dec220eae9974c788654f23320f3a8d3/";
+        when(webClientMock.postFormData(eq(caseFixtureUri), any())).thenReturn(
+                getFileStream("query_responses/case_search_multi_select_response.xml"));
+
+        // case search to return a result that doesn't contain the selectedCaseId
+        String caseSearchUri = "http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/";
+        when(webClientMock.postFormData(eq(caseSearchUri), requestDataCaptor.capture())).thenReturn(
+                getFileStream("query_responses/case_search_multi_select_response.xml"));
+
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("case_id", selectedCaseId);
+
+        NewFormResponse formResponse = sessionNavigateWithEndpoint("caseclaimquery",
+                "m3_f0_endpoint",
+                endpointArgs,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("test-search-input");
+
+        Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
+        assertTrue(requestData.get("case_id").contains(selectedCaseId),
+                "case search request doesn't have selectedCaseId as a query param");
+
+    }
+
+    private String getFileStream(String filePath) {
+        return FileUtils.getFile(this.getClass(), filePath);
     }
 
     @Override
