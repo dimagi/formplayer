@@ -1,6 +1,9 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.formplayer.util.CaseSearchNavigationUtils.getQueryDataFromFrame;
+import static org.commcare.formplayer.util.CaseSearchNavigationUtils.mergeQueryParamsWithQueryExtras;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
+
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -518,18 +521,6 @@ public class MenuSessionRunnerService {
         return false;
     }
 
-    private void mergeQueryParamsWithQueryExtras(Multimap<String, String> queryParams, Multimap<String, String> queryExtras) {
-        for (String key : queryExtras.keySet()) {
-            Collection<String> queryExtrasForKey = queryExtras.get(key);
-            Collection<String> queryParamsForKey = queryParams.get(key);
-            for (String extra : queryExtrasForKey) {
-                if (!queryParamsForKey.contains(extra)) {
-                    queryParams.put(key, extra);
-                }
-            }
-        }
-    }
-
     @Trace
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext,
             boolean respectRelevancy)
@@ -815,30 +806,6 @@ public class MenuSessionRunnerService {
         // reset session and play it back with derived selections
         menuSession.resetSession();
         return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null, respectRelevancy);
-    }
-
-    // Builds Query Data extras using session built using the endpoint
-    private static QueryData getQueryDataFromFrame(SessionFrame currentFrame, SessionFrame endpointSessionFrame) {
-        QueryData queryData = new QueryData();
-        String lastCommandId = null;
-        for (StackFrameStep step : currentFrame.getSteps()) {
-            if (step.getType().contentEquals(SessionFrame.STATE_QUERY_REQUEST) && lastCommandId != null) {
-                for (StackFrameStep frameStep : endpointSessionFrame.getSteps()) {
-                    if(frameStep.getId().contentEquals(step.getId())){
-                        String queryKey = lastCommandId + "_" + step.getId();
-                        ImmutableMultimap.Builder<String, String> queryExtras = ImmutableMultimap.builder();
-                        Multimap<String, Object> frameExtras = frameStep.getExtras();
-                        for (String key : frameExtras.keySet()) {
-                            queryExtras.putAll(key, (Collection)frameExtras.get(key));
-                        }
-                        queryData.setExtras(queryKey, queryExtras.build());
-                    }
-                }
-            } else if (step.getType().contentEquals(SessionFrame.STATE_COMMAND_ID)) {
-                    lastCommandId = step.getId();
-            }
-        }
-        return queryData;
     }
 
     private Map<String, ExternalDataInstance> processEndpointArgumentsForVirualInstance(Endpoint endpoint,
