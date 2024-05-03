@@ -37,8 +37,8 @@ public class IncompleteSessionController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-    public NewFormResponse openIncompleteForm(@RequestBody SessionRequestBean incompleteSessionRequestBean,
-                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public NewFormResponse openIncompleteForm(@RequestBody SessionRequestBean incompleteSessionRequestBean)
+            throws Exception {
         SerializableFormSession session = formSessionService.getSessionById(incompleteSessionRequestBean.getSessionId());
         storageFactory.configure(session);
         return newFormResponseFactory.getResponse(session, commCareSessionFactory.getCommCareSession(session.getMenuSessionId()));
@@ -46,8 +46,7 @@ public class IncompleteSessionController extends AbstractBaseController {
 
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     @UserRestore
-    public GetSessionsResponse getSessions(@RequestBody FormsSessionsRequestBean getSessionRequest,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public GetSessionsResponse getSessions(@RequestBody FormsSessionsRequestBean getSessionRequest) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
         List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(scrubbedUsername, getSessionRequest);
@@ -67,8 +66,7 @@ public class IncompleteSessionController extends AbstractBaseController {
 
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION, method = RequestMethod.POST)
     public NotificationMessage deleteIncompleteForm(
-            @RequestBody SessionRequestBean incompleteSessionRequestBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+            @RequestBody SessionRequestBean incompleteSessionRequestBean) throws Exception {
         deleteSession(incompleteSessionRequestBean.getSessionId());
         return new NotificationMessage("Successfully deleted incomplete form.", false, NotificationMessage.Tag.incomplete_form);
     }

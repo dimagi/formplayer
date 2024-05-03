@@ -1,22 +1,9 @@
 package org.commcare.formplayer.tests;
 
-import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
-import static java.util.Collections.singletonList;
-
 import org.commcare.cases.util.CaseDBUtils;
-import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.hamcrest.Description;
@@ -26,69 +13,50 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
+import static java.util.Collections.singletonList;
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Created by benrudolph on 1/19/17.
  */
 @WebMvcTest
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
+@ExtendWith(MockitoExtension.class)
 public class RestoreFactoryTest {
 
     private static final String BASE_URL = "http://localhost:8000/a/restore-domain/phone/restore/";
-    private String username = "restore-dude";
-    private String domain = "restore-domain";
-    private String asUsername = "restore-gal";
-
-    @Value("${commcarehq.formplayerAuthKey}")
-    private String formplayerAuthKey;
 
     @Autowired
     RestoreFactory restoreFactorySpy;
 
-    @Mock
-    private ServletRequestAttributes requestAttributes;
-
-    @Mock
-    private HttpServletRequest request;
-
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         Mockito.reset(restoreFactorySpy);
         AuthenticatedRequestBean requestBean = new AuthenticatedRequestBean();
-        requestBean.setRestoreAs(asUsername);
-        requestBean.setUsername(username);
-        requestBean.setDomain(domain);
-        restoreFactorySpy.configure(requestBean, new DjangoAuth("key"));
+        requestBean.setRestoreAs("restore-gal");
+        requestBean.setUsername("restore-dude");
+        requestBean.setDomain("restore-domain");
+        restoreFactorySpy.configure(requestBean);
         restoreFactorySpy.setAsUsername(null);
         restoreFactorySpy.setCaseId(null);
-
-        // mock request
-        RequestContextHolder.setRequestAttributes(requestAttributes);
-        when(requestAttributes.getRequest()).thenReturn(request);
-    }
-
-    private void mockHmacRequest() {
-        when(request.getAttribute(eq(Constants.HMAC_REQUEST_ATTRIBUTE))).thenReturn(true);
     }
 
     private void mockSyncFreq(String freq) {
@@ -248,66 +216,11 @@ public class RestoreFactoryTest {
         String syncToken = "synctoken";
         Mockito.doReturn(syncToken).when(restoreFactorySpy).getSyncToken();
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(null);
-        assertEquals(7, headers.size());
+        assertEquals(3, headers.size());
         validateHeaders(headers, Arrays.asList(
-                hasEntry("Cookie", singletonList("sessionid=key")),
-                hasEntry("sessionid", singletonList("key")),
-                hasEntry("Authorization", singletonList("sessionid=key")),
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
-                hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
-        );
-    }
-
-    @Test
-    public void testGetRequestHeaders_HmacAuth() throws Exception {
-        mockHmacRequest();
-        restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
-                new URI("http://localhost:8000" + requestPath));
-        assertEquals(4, headers.size());
-        validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST",
-                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
-                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
-                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
-        );
-    }
-
-    @Test
-    public void testGetRequestHeaders_HmacAuth_UrlWithQuery() throws Exception {
-        mockHmacRequest();
-        restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath =
-                "/a/restore-domain/phone/case_restore/case_id_123/?query_param=true";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
-                new URI("http://localhost:8000" + requestPath));
-        assertEquals(4, headers.size());
-        validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST",
-                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
-                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
-                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
-        );
-    }
-
-    @Test
-    public void testGetRequestHeaders_UseHmacAuthEvenIfHqAuthPresent() throws Exception {
-        mockHmacRequest();
-        String requestPath = "/a/restore-domain/phone/case_restore/case_id_123/";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
-                new URI("http://localhost:8000" + requestPath));
-        assertEquals(4, headers.size());
-        validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST",
-                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
-                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
-                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
-                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
+                hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)))
         );
     }
 

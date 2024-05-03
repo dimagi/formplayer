@@ -3,8 +3,6 @@ package org.commcare.formplayer.aspects;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import io.sentry.Sentry;
-import org.commcare.formplayer.auth.DjangoAuth;
-import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -61,10 +59,7 @@ public class UserRestoreAspect {
                     String.format("Could not configure RestoreFactory with invalid request %s", Arrays.toString(args)));
         }
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
-
-        HqAuth auth = getHqAuth((String) args[1]);
-
-        configureRestoreFactory(requestBean, auth);
+        configureRestoreFactory(requestBean);
         configureSentryScope(restoreFactory);
 
         if (requestBean.isMustRestore()) {
@@ -80,15 +75,15 @@ public class UserRestoreAspect {
         });
     }
 
-    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) throws Exception {
+    private void configureRestoreFactory(AuthenticatedRequestBean requestBean) throws Exception {
         if (requestBean.getRestoreAsCaseId() != null) {
             // SMS user filling out a form as a case
-            restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(), auth);
+            restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId());
             return;
         }
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
             // Normal restore path
-            restoreFactory.configure(requestBean, auth);
+            restoreFactory.configure(requestBean);
             final Span span = GlobalTracer.get().activeSpan();
             if (span != null && (span instanceof MutableSpan)) {
                 MutableSpan localRootSpan = ((MutableSpan) span).getLocalRootSpan();
@@ -101,9 +96,9 @@ public class UserRestoreAspect {
             SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
 
             if (formSession.getRestoreAsCaseId() != null) {
-                restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(), auth);
+                restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId());
             } else {
-                restoreFactory.configure(formSession.getUsername(), formSession.getDomain(), formSession.getAsUser(), auth);
+                restoreFactory.configure(formSession.getUsername(), formSession.getDomain(), formSession.getAsUser());
             }
         } else {
             throw new Exception("Unable to configure restore factory");
@@ -114,13 +109,4 @@ public class UserRestoreAspect {
     public void closeRestoreFactory(JoinPoint joinPoint) throws Throwable {
         restoreFactory.getSQLiteDB().closeConnection();
     }
-
-    private HqAuth getHqAuth(String sessionToken) {
-        if (sessionToken != null) {
-            return new DjangoAuth(sessionToken);
-        }
-        // Null auth expected for SMS requests
-        return null;
-    }
-
 }

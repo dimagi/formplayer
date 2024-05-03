@@ -68,7 +68,6 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
         boolean isFuzzySearch = storageFactory.getPropertyManager().isFuzzySearchEnabled();
@@ -165,7 +164,6 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
@@ -230,7 +228,6 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateToEndpoint(@RequestBody SessionNavigationBean sessionNavigationBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
         // Apps using aggressive syncs are likely to hit a sync whenever using endpoint-based navigation,
         // since they use it to jump between different sandboxes. Turn it off.

@@ -36,9 +36,8 @@ open class MockRequest<B, out T : Any>(
     open fun getRequestBuilder(requestPath: String, requestBean: B): MockHttpServletRequestBuilder {
         return post(requestPath)
             .contentType(MediaType.APPLICATION_JSON)
-            .cookie(Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
             .with(SecurityMockMvcRequestPostProcessors.csrf())
-            .with(SecurityMockMvcRequestPostProcessors.user(HqUserDetailsBean("domain", "user")))
+            .with(SecurityMockMvcRequestPostProcessors.user(HqUserDetailsBean("derp", "domain", "user")))
             .content(mapper.writeValueAsString(requestBean))
     }
 }
