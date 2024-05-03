@@ -1,13 +1,13 @@
 package org.commcare.formplayer.web.client;
 
 import lombok.extern.apachecommons.CommonsLog;
+import okhttp3.HttpUrl;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -42,15 +42,12 @@ public class HmacAuthInterceptor extends CommCareAuthInterceptor {
     private static HttpRequest addAsParamIfNotPresent(HttpRequest request) {
         URI uri = request.getURI();
 
-        String rawQuery = uri.getRawQuery();
-        boolean asParamMissing = rawQuery == null || Arrays.stream(rawQuery.split("&"))
-                .noneMatch(param -> param.startsWith("as="));
+        HttpUrl httpUrl = HttpUrl.get(uri);
+        boolean asParamMissing = httpUrl != null && !httpUrl.queryParameterNames().contains("as");
         Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
         if (asParamMissing && userDetails.isPresent()) {
             String asParamValue = userDetails.get().getUsername();
-            URI newUri = UriComponentsBuilder.fromUri(uri)
-                    .queryParam("as", asParamValue)
-                    .build().toUri();
+            URI newUri = httpUrl.newBuilder().addQueryParameter("as", asParamValue).build().uri();
             request = new ReplaceUriHttpRequest(newUri, request);
             log.warn(String.format("HMAC request augmented with 'as=%s' param", asParamValue));
         }
