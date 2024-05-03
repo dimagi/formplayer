@@ -1,9 +1,13 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.formplayer.util.CaseSearchNavigationUtils.getQueryDataFromFrame;
+import static org.commcare.formplayer.util.CaseSearchNavigationUtils.mergeQueryParamsWithQueryExtras;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
+
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
 import org.apache.commons.logging.Log;
@@ -24,7 +28,6 @@ import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
@@ -73,6 +76,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -434,11 +438,14 @@ public class MenuSessionRunnerService {
         Multimap<String, String> caseSearchMetricTags = caseSearchHelper.getMetricTags(menuSession);
         answerQueryPrompts(queryScreen, queryData, queryKey);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+            Multimap<String, String> queryExtras =
+                    queryData == null ? ImmutableMultimap.of() : queryData.getExtras(queryKey);
             return doQuery(
                     queryScreen,
                     queryScreen.doDefaultSearch() && !forceManualSearch,
                     skipCache,
-                    caseSearchMetricTags
+                    caseSearchMetricTags,
+                    queryExtras
             );
         }
         return false;
@@ -490,12 +497,14 @@ public class MenuSessionRunnerService {
      */
     @Trace
     private boolean doQuery(FormplayerQueryScreen screen,
-            boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags) throws CommCareSessionException {
+            boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags,
+            Multimap<String, String> queryExtras) throws CommCareSessionException {
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
                 Multimap<String, String> queryParams = screen.getQueryParams(isDefaultSearch);
                 queryParams.putAll(caseSearchMetricTags);
+                mergeQueryParamsWithQueryExtras(queryParams, queryExtras);
                 ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                         screen.getQueryDatum().getDataId(),
                         screen.getQueryDatum().useCaseTemplate(),
@@ -790,12 +799,13 @@ public class MenuSessionRunnerService {
             }
         }
         boolean respectRelevancy = endpoint.isRespectRelevancy();
+        SessionFrame endpointSessionFrame = new SessionFrame(menuSession.getSessionWrapper().getFrame());
         menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper, respectRelevancy);
         String[] selections = menuSession.getSelections();
-
+        QueryData queryData = getQueryDataFromFrame(menuSession.getSessionWrapper().getFrame(), endpointSessionFrame);
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections, null, new EntityScreenContext(), null, respectRelevancy);
+        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null, respectRelevancy);
     }
 
     private Map<String, ExternalDataInstance> processEndpointArgumentsForVirualInstance(Endpoint endpoint,
