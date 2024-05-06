@@ -45,6 +45,8 @@ public class RepeatTests extends BaseTestClass {
         QuestionBean dummyNode = tree[1];
         assertEquals("false", dummyNode.getExists());
         assertEquals("Add a new question3", dummyNode.getAddChoice());
+        assertEquals("false", dummyNode.getExists());
+        assertEquals(false, dummyNode.isDelete());
 
         String sessionId = newSessionResponse.getSessionId();
         FormEntryResponseBean newRepeatResponseBean = newRepeatRequest(sessionId, "1_0");
@@ -54,6 +56,7 @@ public class RepeatTests extends BaseTestClass {
         assert (tree.length == 3);
         QuestionBean firstRepeat = tree[1];
         assertEquals("true", firstRepeat.getExists());
+        assertEquals(true, firstRepeat.isDelete());
         assert (firstRepeat.getChildren().length == 1);
         QuestionBean[] children = firstRepeat.getChildren();
         assert (children.length == 1);
@@ -63,6 +66,7 @@ public class RepeatTests extends BaseTestClass {
         // verify that a second dummy repeat node is added with "exists=false"
         QuestionBean secondRepeat = tree[2];
         assertEquals("false", secondRepeat.getExists());
+        assertEquals(false, secondRepeat.isDelete());
         assert (secondRepeat.getChildren().length == 0);
         assertEquals("Add another question3", secondRepeat.getAddChoice());
 
@@ -184,6 +188,10 @@ public class RepeatTests extends BaseTestClass {
     public void testRepeatModelIteration() throws Exception {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
                 "xforms/repeat_model_iteration.xml");
+
+        // counted repeat group nodes can't be deleted
+        assertFalse(newSessionResponse.getTree()[1].isDelete());
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(new ByteArrayInputStream(

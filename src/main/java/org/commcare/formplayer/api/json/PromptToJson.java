@@ -3,6 +3,8 @@ package org.commcare.formplayer.api.json;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
+import org.javarosa.core.model.GroupDef;
+import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.GeoPointData;
 import org.javarosa.core.model.data.IAnswerData;
@@ -112,6 +114,7 @@ public class PromptToJson {
                 obj.put("type", "sub-group");
                 obj.put("repeatable", true);
                 obj.put("exists", true);
+                obj.put("delete", model.isNonCountedRepeat());
                 break;
             case FormEntryController.EVENT_PROMPT_NEW_REPEAT:
                 // we're in a subgroup, dummy node for user counted repeat group
@@ -120,6 +123,7 @@ public class PromptToJson {
                 obj.put("type", "sub-group");
                 obj.put("repeatable", true);
                 obj.put("exists", false);
+                obj.put("delete", false);
                 obj.put("add-choice", getRepeatAddText(prompt));
                 break;
         }
