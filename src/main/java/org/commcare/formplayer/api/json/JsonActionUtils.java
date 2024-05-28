@@ -37,14 +37,13 @@ public class JsonActionUtils {
      *
      * @param controller      the FormEntryController under consideration
      * @param model           the FormEntryModel under consideration
-     * @param formIndexString the form index of the repeat group to be deleted
+     * @param repeatIndexString the form index of the repeat group to be deleted
      * @return The JSON representation of the updated form tree
      */
     public static JSONObject deleteRepeatToJson(FormEntryController controller,
-            FormEntryModel model, String repeatIndexString, String formIndexString) {
-        FormIndex formIndex = indexFromString(formIndexString, model.getForm());
-        controller.jumpToIndex(formIndex);
-        controller.deleteRepeat(Integer.parseInt(repeatIndexString));
+            FormEntryModel model, String repeatIndexString) {
+        FormIndex indexToDelete = indexFromString(repeatIndexString, model.getForm());
+        controller.deleteRepeat(indexToDelete);
         return getCurrentJson(controller, model);
     }
 

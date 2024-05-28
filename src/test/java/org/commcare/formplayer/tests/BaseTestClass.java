@@ -604,11 +604,10 @@ public class BaseTestClass {
         );
     }
 
-    FormEntryResponseBean newRepeatRequest(String sessionId) throws Exception {
-        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(),
-                "requests/new_repeat/new_repeat.json");
-        RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
-                RepeatRequestBean.class);
+    FormEntryResponseBean newRepeatRequest(String sessionId, String repeatIndex) throws Exception {
+        RepeatRequestBean newRepeatRequestBean = new RepeatRequestBean();
+        newRepeatRequestBean.setRepeatIndex(repeatIndex);
+        newRepeatRequestBean.setSessionId(sessionId);
         populateFromSession(newRepeatRequestBean, sessionId);
 
         return generateMockQuery(
@@ -620,13 +619,11 @@ public class BaseTestClass {
         );
     }
 
-    FormEntryResponseBean deleteRepeatRequest(String sessionId) throws Exception {
-
-        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(),
-                "requests/delete_repeat/delete_repeat.json");
-
-        RepeatRequestBean deleteRepeatRequest = mapper.readValue(newRepeatRequestPayload,
-                RepeatRequestBean.class);
+    FormEntryResponseBean deleteRepeatRequest(String sessionId, String repeatIndex)
+            throws Exception {
+        RepeatRequestBean deleteRepeatRequest = new RepeatRequestBean();
+        deleteRepeatRequest.setRepeatIndex(repeatIndex);
+        deleteRepeatRequest.setSessionId(sessionId);
         populateFromSession(deleteRepeatRequest, sessionId);
         return generateMockQuery(
                 ControllerType.FORM,

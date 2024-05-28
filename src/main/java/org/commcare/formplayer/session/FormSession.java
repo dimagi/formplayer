@@ -180,7 +180,7 @@ public class FormSession {
 
     @Trace
     private void setupJavaRosaObjects() {
-        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
+        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
         formController = new FormController(formEntryController, false);
         langs = formEntryModel.getLanguages();
