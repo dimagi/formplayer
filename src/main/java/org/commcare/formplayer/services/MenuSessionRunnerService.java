@@ -260,7 +260,6 @@ public class MenuSessionRunnerService {
                 String selection = selections[i - 1];
 
                 boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
-                boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
 
                 // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full
                 // entity screen
