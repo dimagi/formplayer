@@ -34,6 +34,8 @@ public class QuestionBean {
     private String repeatable;
     private String exists;
     private String addChoice;
+
+    private boolean delete;
     private String header;
     private int control;
 
@@ -246,6 +248,14 @@ public class QuestionBean {
     @JsonSetter(value = "add-choice")
     public void setAddChoice(String addChoice) {
         this.addChoice = addChoice;
+    }
+
+    public boolean isDelete() {
+        return delete;
+    }
+
+    public void setDelete(boolean delete) {
+        this.delete = delete;
     }
 
     public String getHeader() {

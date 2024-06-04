@@ -1,0 +1,51 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>Nested Non Counted</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/118CD69C-D541-49DB-BAA9-5F9BE5852782" uiVersion="1" version="49" name="Nested Non Counted">
+                    <rg_non_counted jr:template="">
+                        <nested_repeat jr:template="">
+                            <t/>
+                        </nested_repeat>
+                    </rg_non_counted>
+                </data>
+            </instance>
+            <instance id="commcaresession" src="jr://instance/session"/>
+            <bind nodeset="/data/rg_non_counted"/>
+            <bind nodeset="/data/rg_non_counted/nested_repeat"/>
+            <bind nodeset="/data/rg_non_counted/nested_repeat/t" type="xsd:string"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="t1-label">
+                        <value>T1</value>
+                    </text>
+                    <text id="rg_non_counted-label">
+                        <value>RG Non Counted</value>
+                    </text>
+                    <text id="rg_non_counted/nested_repeat-label">
+                        <value>Nested Repeat</value>
+                    </text>
+                    <text id="rg_non_counted/nested_repeat/t-label">
+                        <value>T</value>
+                    </text>
+                </translation>
+            </itext>
+        </model>
+    </h:head>
+    <h:body>
+        <group>
+            <label ref="jr:itext('rg_non_counted-label')"/>
+            <repeat nodeset="/data/rg_non_counted">
+                <group>
+                    <label ref="jr:itext('rg_non_counted/nested_repeat-label')"/>
+                    <repeat nodeset="/data/rg_non_counted/nested_repeat">
+                        <input ref="/data/rg_non_counted/nested_repeat/t">
+                            <label ref="jr:itext('rg_non_counted/nested_repeat/t-label')"/>
+                        </input>
+                    </repeat>
+                </group>
+            </repeat>
+        </group>
+    </h:body>
+</h:html>
