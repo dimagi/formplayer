@@ -7,6 +7,7 @@ import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALU
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.beans.menus.PeristentCommand;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -77,6 +78,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     ArrayList<String> breadcrumbs;
     private ArrayList<String> selections = new ArrayList<>();
 
+    private PersistentMenuHelper persistentMenuHelper;
+
     private String currentBrowserLocation;
     private boolean hereFunctionEvaluated;
 
@@ -142,6 +145,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     private void initializeBreadcrumbs() {
         this.breadcrumbs = new ArrayList<>();
         this.breadcrumbs.add(ScreenUtils.getAppTitle());
+        persistentMenuHelper = new PersistentMenuHelper();
     }
 
     /**
@@ -199,6 +203,12 @@ public class MenuSession implements HereFunctionHandlerListener {
                 breadcrumbs.add(screen.getBreadcrumb(input, sandbox, getSessionWrapper()));
             }
 
+            persistentMenuHelper.advanceCurrentMenuWithInput(screen, input);
+            if (screen instanceof EntityScreen) {
+                String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
+                persistentMenuHelper.addEntitySelection(input, breadcrumb);
+            }
+
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
@@ -245,6 +255,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         } else if (next.equals(SessionFrame.STATE_COMMAND_ID)) {
             MenuScreen menuScreen = new MenuScreen();
             menuScreen.init(sessionWrapper);
+            persistentMenuHelper.addMenusToPeristentMenu(menuScreen);
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
             EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, entityScreenContext);
@@ -440,4 +451,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return session;
     }
 
+    public ArrayList<PeristentCommand> getPersistentMenu() {
+        return persistentMenuHelper.getPersistentMenu();
+    }
 }
