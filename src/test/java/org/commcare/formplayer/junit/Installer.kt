@@ -64,7 +64,7 @@ class Installer(
                 bean.restoreAs,
                 bean.preview
             )
-            menuSessionRunnerService.getNextMenu(menuSession, null, EntityScreenContext()) as CommandListResponseBean
+            menuSessionRunnerService.getNextMenu(null, menuSession, null, EntityScreenContext()) as CommandListResponseBean
         }
         return mockInstallReference(install, refAndBean.first)
     }

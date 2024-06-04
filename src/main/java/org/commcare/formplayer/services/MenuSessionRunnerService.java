@@ -147,10 +147,13 @@ public class MenuSessionRunnerService {
 
     @Trace
     @VisibleForTesting
-    public BaseResponseBean getNextMenu(MenuSession menuSession,
+    public BaseResponseBean getNextMenu(Screen nextScreen, MenuSession menuSession,
             QueryData queryData,
             EntityScreenContext entityScreenContext) throws Exception {
-        Screen nextScreen = menuSession.getNextScreen(true, entityScreenContext);
+
+        if (nextScreen == null) {
+            nextScreen = menuSession.getNextScreen(true, entityScreenContext);
+        }
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -182,7 +185,7 @@ public class MenuSessionRunnerService {
             if (nextScreen.shouldBeSkipped()) {
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
                     datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, Constants.TAG_VALUE_TRUE);
-                    return getNextMenu(menuSession, queryData, entityScreenContext);
+                    return getNextMenu(null, menuSession, queryData, entityScreenContext);
                 }
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
@@ -244,6 +247,7 @@ public class MenuSessionRunnerService {
             String formSessionId, boolean respectRelevancy) throws Exception {
         NotificationMessage notificationMessage = null;
         boolean nonAppNav = formSessionId != null;
+        Screen nextScreen = null;
         try {
             if (nonAppNav) {
                 // User has navigated with a session ID. This means they have navigated 'back' or via
@@ -271,7 +275,7 @@ public class MenuSessionRunnerService {
                     break;
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
-                Screen nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
+                nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
                         needsFullEntityScreen, entityScreenContext, respectRelevancy);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
@@ -304,9 +308,12 @@ public class MenuSessionRunnerService {
                 notificationMessage = new NotificationMessage(ccse.getMessage(), true,
                         NotificationMessage.Tag.menu);
             }
+            // we want to eval next screen again after errors, so set it to null for now
+            nextScreen = null;
         }
 
         BaseResponseBean nextResponse = getNextMenu(
+                nextScreen,
                 menuSession,
                 queryData,
                 entityScreenContext
@@ -526,10 +533,10 @@ public class MenuSessionRunnerService {
                 return responseBean;
             }
 
-            autoAdvanceSession(menuSession, "", new QueryData(),
+            Screen nextScreen = autoAdvanceSession(menuSession, "", new QueryData(),
                     true, entityScreenContext, respectRelevancy
             );
-            BaseResponseBean response = getNextMenu(menuSession, null, entityScreenContext);
+            BaseResponseBean response = getNextMenu(nextScreen, menuSession, null, entityScreenContext);
             response.setSelections(menuSession.getSelections());
             return response;
         }
