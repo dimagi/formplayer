@@ -245,14 +245,6 @@ public class MenuSessionRunnerService {
         NotificationMessage notificationMessage = null;
         boolean nonAppNav = formSessionId != null;
         try {
-            // If we have no selections, we're are the root screen.
-            if (selections == null) {
-                return getNextMenu(
-                        menuSession,
-                        queryData,
-                        entityScreenContext
-                );
-            }
             if (nonAppNav) {
                 // User has navigated with a session ID. This means they have navigated 'back' or via
                 // another non-app mechanism. In this case remove the last selection so that they don't
