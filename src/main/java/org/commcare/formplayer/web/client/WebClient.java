@@ -1,22 +1,15 @@
 package org.commcare.formplayer.web.client;
 
 import com.google.common.collect.Multimap;
-
+import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-
-import lombok.extern.apachecommons.CommonsLog;
 
 @Component
 @CommonsLog
@@ -58,21 +51,15 @@ public class WebClient {
     }
 
     public <T> String post(String url, T body, boolean isMultipart) {
-        checkHmac();
         URI uri = URI.create(url);
         HttpHeaders headers = restoreFactory.getRequestHeaders(uri);
         if (isMultipart) {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         }
-        String ipAddress = RequestUtils.getIpAddress();
-        if (ipAddress != null) {
-            headers.add("X-CommCareHQ-Origin-IP", ipAddress);
-        }
         return postRaw(uri, headers, body, String.class).getBody();
     }
 
     public <T> String postFormData(String url, Multimap<String, String> data) {
-        checkHmac();
         URI uri = URI.create(url);
         LinkedMultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
         data.forEach(postData::add);
@@ -83,7 +70,6 @@ public class WebClient {
     }
 
     public <T> Boolean caseClaimPost(String url, T body) {
-        checkHmac();
         URI uri = URI.create(url);
         ResponseEntity<String> entity = postRaw(uri, restoreFactory.getRequestHeaders(uri), body, String.class);
         Boolean shouldSync = true;
@@ -107,16 +93,6 @@ public class WebClient {
         }
 
         return response;
-    }
-
-    /**
-     * This is not a technical limitation, just a code limitation that should be fixed in the
-     * future.
-     */
-    private void checkHmac() {
-        if (RequestUtils.requestAuthedWithHmac()) {
-            throw new RuntimeException("HMAC auth not supported for POST requests");
-        }
     }
 
     @Autowired

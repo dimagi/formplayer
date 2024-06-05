@@ -79,8 +79,7 @@ public class UtilController {
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
-                                         @CookieValue(value = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
+    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
         restoreFactory.performTimedSync();
         return new SyncDbResponseBean();
     }
@@ -90,7 +89,6 @@ public class UtilController {
     @UserRestore
     @AppInstall
     public SyncDbResponseBean scheduleSync(@RequestBody SessionNavigationBean sessionNavigationBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
         SyncDbResponseBean response = new SyncDbResponseBean();
         if (restoreFactory.isRestoreXmlExpired()) {

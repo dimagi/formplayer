@@ -34,8 +34,7 @@ public class MockMultipartController {
     @ConfigureStorageFromSession
     public void multipartRequest(
             @RequestPart(PART_FILE) MultipartFile file,
-            @RequestPart(PART_ANSWER) SessionRequestBean sessionRequestBean,
-            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) {
+            @RequestPart(PART_ANSWER) SessionRequestBean sessionRequestBean) {
         return;
     }
 }
