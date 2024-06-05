@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import datadog.trace.api.Trace;
 
 
@@ -143,6 +145,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
+     * @param screen                Current Screen if avaialble, null otherwise
      * @param input                 The user step input
      * @param needsFullEntityScreen Whether a full entity screen is required for this request
      *                              or if a list of references is sufficient
@@ -153,10 +156,13 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param respectRelevancy      Whether to respect display conditions on a module or form while
      *                              handling input
      */
-    public boolean handleInput(String input, boolean needsFullEntityScreen, boolean inputValidated,
+    public boolean handleInput(@Nullable Screen screen, String input, boolean needsFullEntityScreen, boolean inputValidated,
             boolean allowAutoLaunch, EntityScreenContext entityScreenContext, boolean respectRelevancy)
             throws CommCareSessionException {
-        Screen screen = getNextScreen(needsFullEntityScreen, entityScreenContext);
+        if (screen == null) {
+            screen = getNextScreen(needsFullEntityScreen, entityScreenContext);
+        }
+
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
             return false;
@@ -173,7 +179,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                     // auto-launch takes preference over auto-select
                     if (screen.shouldBeSkipped() && !autoLaunch &&
                             entityScreen.autoSelectEntities(sessionWrapper)) {
-                        return handleInput(input, true, inputValidated, allowAutoLaunch, entityScreenContext, respectRelevancy);
+                        return handleInput(screen, input, true, inputValidated, allowAutoLaunch, entityScreenContext, respectRelevancy);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues,
                             respectRelevancy);

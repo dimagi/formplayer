@@ -166,8 +166,10 @@ public class MenuController extends AbstractBaseController {
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
             HttpServletRequest request) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
-        MenuSession menuSession;
-        menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
+        if (selections == null) {
+            selections = new String[0];
+        }
+        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
         EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
