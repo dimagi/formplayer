@@ -3,6 +3,8 @@ package org.commcare.formplayer.api.json;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
+import org.javarosa.core.model.GroupDef;
+import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.GeoPointData;
 import org.javarosa.core.model.data.IAnswerData;
@@ -10,6 +12,8 @@ import org.javarosa.core.model.data.SelectMultiData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.services.locale.Localization;
+import org.javarosa.core.util.NoLocalizedTextException;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -110,16 +114,37 @@ public class PromptToJson {
                 obj.put("type", "sub-group");
                 obj.put("repeatable", true);
                 obj.put("exists", true);
+                obj.put("delete", model.isNonCountedRepeat());
                 break;
             case FormEntryController.EVENT_PROMPT_NEW_REPEAT:
-                // we're in a subgroup
-                parseCaption(model.getCaptionPrompt(), obj);
+                // we're in a subgroup, dummy node for user counted repeat group
+                FormEntryCaption prompt = model.getCaptionPrompt();
+                parseCaption(prompt, obj);
                 obj.put("type", "sub-group");
                 obj.put("repeatable", true);
                 obj.put("exists", false);
+                obj.put("delete", false);
+                obj.put("add-choice", getRepeatAddText(prompt));
                 break;
         }
         return obj;
+    }
+
+    private static String getRepeatAddText(FormEntryCaption prompt) {
+        String promptText = prompt.getLongText();
+        if (prompt.getNumRepetitions() > 0) {
+            try {
+                return Localization.get("repeat.dialog.add.another", promptText);
+            } catch (NoLocalizedTextException e) {
+                return "Add another " + promptText;
+            }
+        } else {
+            try {
+                return Localization.get("repeat.dialog.add.new", promptText);
+            } catch (NoLocalizedTextException e) {
+                return "Add a new " + promptText;
+            }
+        }
     }
 
     private static void parseRepeatJuncture(FormEntryModel model, JSONObject obj, FormIndex ix) {
