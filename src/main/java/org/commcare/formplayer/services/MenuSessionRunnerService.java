@@ -147,7 +147,7 @@ public class MenuSessionRunnerService {
 
     @Trace
     @VisibleForTesting
-    public BaseResponseBean getNextMenu(Screen nextScreen, MenuSession menuSession,
+    public BaseResponseBean getNextMenu(@Nullable Screen nextScreen, MenuSession menuSession,
             QueryData queryData,
             EntityScreenContext entityScreenContext) throws Exception {
 
@@ -265,7 +265,7 @@ public class MenuSessionRunnerService {
                 // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full
                 // entity screen
                 boolean needsFullEntityScreen = i == selections.length;
-                boolean gotNextScreen = menuSession.handleInput(selection, needsFullEntityScreen, inputValidated,
+                boolean gotNextScreen = menuSession.handleInput(nextScreen, selection, needsFullEntityScreen, inputValidated,
                         true, entityScreenContext, respectRelevancy);
                 if (!gotNextScreen) {
                     notificationMessage = new NotificationMessage(
