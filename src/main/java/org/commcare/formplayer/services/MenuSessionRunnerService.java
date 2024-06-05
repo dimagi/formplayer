@@ -249,7 +249,7 @@ public class MenuSessionRunnerService {
         boolean nonAppNav = formSessionId != null;
         Screen nextScreen = null;
         try {
-            if (nonAppNav) {
+            if (nonAppNav && selections.length > 0) {
                 // User has navigated with a session ID. This means they have navigated 'back' or via
                 // another non-app mechanism. In this case remove the last selection so that they don't
                 // re-enter the form. This will have the effect of navigating to the screen prior to
