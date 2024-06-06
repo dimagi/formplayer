@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.CaseDBUtils;
@@ -741,10 +742,12 @@ public class RestoreFactory {
      * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
      */
     public void cacheSessionSelections(String[] selections) {
-        String cacheKey = getSessionCacheKey();
-        String cacheValue = getSessionCacheValue(selections);
-        redisSessionCache.add(cacheKey, cacheValue);
-        redisSetTemplate.expire(cacheKey, 1, TimeUnit.HOURS);
+        if (!ArrayUtils.isEmpty(selections)) {
+            String cacheKey = getSessionCacheKey();
+            String cacheValue = getSessionCacheValue(selections);
+            redisSessionCache.add(cacheKey, cacheValue);
+            redisSetTemplate.expire(cacheKey, 1, TimeUnit.HOURS);
+        }
     }
 
     /**
