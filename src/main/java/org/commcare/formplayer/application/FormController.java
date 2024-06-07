@@ -283,7 +283,7 @@ public class FormController extends AbstractBaseController {
         FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
         JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
+                deleteRepeatRequestBean.getRepeatIndex());
         updateSession(formEntrySession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(serializableFormSession.getTitle());
