@@ -5,6 +5,9 @@ package org.commcare.formplayer.util;
  */
 public class StringUtils {
     public static String getFullUsername(String user, String domain, String host) {
+        if (user.contains("@")) {
+            return user;
+        }
         return user + "@" + domain + "." + host;
     }
 
