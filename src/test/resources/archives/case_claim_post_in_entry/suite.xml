@@ -193,6 +193,130 @@
       </template>
     </field>
   </detail>
+
+  <detail id="m3_case_short">
+    <title>
+      <text>
+        <locale id="m3.case_short.title"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          Name
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+    <action auto_launch="$next_input = '' or count(instance('casedb')/casedb/case[@case_id=$next_input]) = 0" redo_last="false">
+      <display>
+        <text>
+          Autofetch
+        </text>
+      </display>
+      <stack>
+        <push>
+          <mark/>
+          <command value="'search_command.m3'"/>
+        </push>
+      </stack>
+    </action>
+  </detail>
+
+  <detail id="m3_search_short">
+    <title>
+      <text>Title
+      </text>
+    </title>
+    <field>
+      <header><text>Name</text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+  </detail>
+
+  <entry>
+    <form>http://openrosa.org/formdesigner/11FAC65A-F2CD-427F-A870-CF126336AAB5</form>
+    <post url="https://failed.commcarehq.org/a/co-carecoordination-test/phone/claim-case/">
+      <data key="case_id" ref="instance('commcaresession')/session/data/case_id"/>
+    </post>
+    <command id="m3-f0">
+      <text>post-claim form</text>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <datum id="case_id" nodeset="instance('casedb')/casedb/case[@case_type='case'][@status='open']" value="./@case_id" detail-select="m3_case_short"/>
+    </session>
+    <stack>
+      <create>
+        <command value="'m3'"/>
+      </create>
+    </stack>
+  </entry>
+
+  <remote-request>
+    <post url="https://fail.commcarehq.org/a/co-carecoordination-test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/search_case_id]) = 0">
+      <data key="case_id" ref="instance('commcaresession')/session/data/search_case_id"/>
+    </post>
+    <command id="search_command.m1">
+      <display>
+        <text>
+          search cases
+        </text>
+      </display>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <instance id="results" src="jr://instance/remote/results"/>
+    <session>
+      <query url="http://www.example.com/a/domain/phone/get_case/" storage-instance="results" template="case" default_search="true" dynamic_search="false">
+        <title><text>
+          searches
+        </text></title>
+        <description>
+          <text>
+            search cases
+          </text>
+        </description>
+        <data key="case_type" ref="'case'"/>
+        <data key="_xpath_query" ref="&quot;on_list = 'yes'&quot;"/>
+        <prompt key="name">
+          <display><text>
+            Name
+          </text></display>
+        </prompt>
+      </query>
+      <datum id="search_case_id" nodeset="instance('results')/results/case[@case_type='case'][not(commcare_is_related_case=true())]" value="./@case_id" detail-select="m1_search_short"/>
+    </session>
+    <stack>
+      <push>
+        <rewind value="instance('commcaresession')/session/data/search_case_id"/>
+      </push>
+    </stack>
+  </remote-request>
+
+
+
+
   <entry>
     <form>http://openrosa.org/formdesigner/11FAC65A-F2CD-427F-A870-CF126336AAB5</form>
     <command id="m0-f0">
@@ -262,7 +386,7 @@
     <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
     <command id="m2-f1">
       <text>
-        <locale id="forms.m2f1"/>
+        m2f1
       </text>
     </command>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
@@ -278,10 +402,10 @@
     </session>
   </entry>
   <entry>
-    <form>http://openrosa.org/formdesigner/5CCB1614-68B3-44C0-A166-D63AA7C1D4FB</form>
+    <form>http://openrosa.org/formdesigner/m2-f3</form>
     <command id="m2-f2">
       <text>
-        <locale id="forms.m2f1"/>
+        m2f2
       </text>
     </command>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
@@ -302,12 +426,17 @@
         </text>
       </assert>
     </assertions>
+    <stack>
+      <create>
+        <command value="'m2'"/>
+      </create>
+    </stack>
   </entry>
   <entry>
     <form>http://openrosa.org/formdesigner/m2-f3</form>
     <command id="m2-f3">
       <text>
-        <locale id="forms.m2f1"/>
+        m2f3
       </text>
     </command>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
@@ -350,6 +479,13 @@
     <command id="m2-f1"/>
     <command id="m2-f2"/>
     <command id="m2-f3"/>
+  </menu>
+
+
+  <menu id="m3">
+    <text>Remote Module
+    </text>
+    <command id="m3-f0"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
@@ -409,7 +545,7 @@
           </itemset>
         </prompt>
       </query>
-      <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short" detail-confirm="m1_case_long"/>
+      <datum id="case_id" nodeset="instance('results')/results/case[@case_type='case']" value="./@case_id" detail-select="m0_search_short"/>
     </session>
     <stack>
       <push>

@@ -42,7 +42,7 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     private Boolean matchesConnection(SQLiteConnection sqLiteConnection) {
-        return sqLiteConnection.getUrl().contains(dbPath.getDatabasePath());
+        return sqLiteConnection.getUrl().contains(dbPath.getDatabasePath().replace("/","\\"));
     }
 
     @Override
