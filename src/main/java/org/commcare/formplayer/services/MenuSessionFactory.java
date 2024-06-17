@@ -142,7 +142,7 @@ public class MenuSessionFactory {
                 }
 
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
+                    menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
@@ -196,7 +196,7 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
+                menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
             }
