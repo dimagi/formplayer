@@ -114,7 +114,7 @@ public class JsonActionUtils {
         IAnswerData answerData;
         int result;
 
-        if (answer == null || answer.equals("None")) {
+        if (answer == null) {
             answerData = null;
         } else {
             try {
