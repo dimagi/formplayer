@@ -203,11 +203,11 @@ public class MenuSession implements HereFunctionHandlerListener {
                 breadcrumbs.add(screen.getBreadcrumb(input, sandbox, getSessionWrapper()));
             }
 
-            persistentMenuHelper.advanceCurrentMenuWithInput(screen, input);
             if (screen instanceof EntityScreen) {
                 String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
                 persistentMenuHelper.addEntitySelection(input, breadcrumb);
             }
+            persistentMenuHelper.advanceCurrentMenuWithInput(screen, input);
 
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
@@ -230,7 +230,11 @@ public class MenuSession implements HereFunctionHandlerListener {
         if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
             return false;
         }
-        return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper, respectRelevancy);
+        boolean autoAdvanced =  ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper, respectRelevancy);
+        if (autoAdvanced) {
+            persistentMenuHelper.advanceCurrentMenuWithInput(screen, "0");
+        }
+        return autoAdvanced;
     }
 
     /**
