@@ -6,9 +6,12 @@ import org.commcare.suite.model.MenuDisplayable;
 
 import java.util.ArrayList;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * Model used to represent a persistent menu in FP HTTP API
  */
+@EqualsAndHashCode
 public class PeristentCommand {
 
     private String index;
