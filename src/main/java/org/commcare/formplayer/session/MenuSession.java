@@ -194,21 +194,23 @@ public class MenuSession implements HereFunctionHandlerListener {
                 screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues, respectRelevancy);
             }
 
-            if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
-                    USE_SELECTED_VALUES)) {
-                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId());
-            }
-
             if (addBreadcrumb) {
                 breadcrumbs.add(screen.getBreadcrumb(input, sandbox, getSessionWrapper()));
             }
 
+            String persistentMenuId = input;
+            if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
+                    USE_SELECTED_VALUES)) {
+                String guid = ((MultiSelectEntityScreen)screen).getStorageReferenceId();
+                addSelection(guid);
+                persistentMenuId = guid;
+            }
+
             if (screen instanceof EntityScreen) {
                 String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
-                persistentMenuHelper.addEntitySelection(input, breadcrumb);
+                persistentMenuHelper.addEntitySelection(persistentMenuId, breadcrumb);
             }
-            persistentMenuHelper.advanceCurrentMenuWithInput(screen, input);
-
+            persistentMenuHelper.advanceCurrentMenuWithInput(screen, persistentMenuId);
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
