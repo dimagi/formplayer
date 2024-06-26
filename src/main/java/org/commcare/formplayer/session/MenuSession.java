@@ -206,11 +206,22 @@ public class MenuSession implements HereFunctionHandlerListener {
                 persistentMenuId = guid;
             }
 
-            if (screen instanceof EntityScreen) {
-                String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
-                persistentMenuHelper.addEntitySelection(persistentMenuId, breadcrumb);
+            /**
+             *  we don't want to show any hidden menus on the persistent menu and it's impossible
+             *  for us to tell based on selection index whether a menu is visible or not. Therefore
+             *  we are restricting to not showing anything on persistent menu except visible root menu options
+             *  if we are not respecing relevancy here.
+             *
+             *  To be able to more selectively show only visible menus in these cases, we will need to switch the
+             *  current index based selections[] to contain menu ids instead of indexes.
+              */
+            if (respectRelevancy) {
+                if (screen instanceof EntityScreen) {
+                    String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
+                    persistentMenuHelper.addEntitySelection(persistentMenuId, breadcrumb);
+                }
+                persistentMenuHelper.advanceCurrentMenuWithInput(screen, persistentMenuId);
             }
-            persistentMenuHelper.advanceCurrentMenuWithInput(screen, persistentMenuId);
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
