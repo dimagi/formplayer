@@ -36,10 +36,9 @@ class PersistentMenuHelper {
      fun advanceCurrentMenuWithInput(screen: Screen, input: String) {
         if (screen is MenuScreen) {
             val index = input.toInt()
-            if (currentMenu != null && index < currentMenu!!.commands.size) {
-                currentMenu =  currentMenu!!.commands[index]
-            } else if (index < persistentMenu!!.size) {
-                currentMenu =  persistentMenu!![index]
+            val parentMenu = if (currentMenu == null) persistentMenu else currentMenu!!.commands
+            if (index < parentMenu.size) {
+                currentMenu =  parentMenu[index]
             }
         } else if (screen is EntityScreen) {
             check(currentMenu != null) { "Current menu can't be null for Entity screen" }
