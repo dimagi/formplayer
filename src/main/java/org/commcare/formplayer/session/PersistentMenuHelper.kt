@@ -51,6 +51,8 @@ class PersistentMenuHelper {
     }
 
     private fun addPersistentCommand(command: PeristentCommand) {
+        // currentMenu!=null implies that we must have added items to persistent menu
+        check(currentMenu == null || persistentMenu.size > 0)
         if (currentMenu == null) {
             persistentMenu.add(command)
         } else {
