@@ -1,10 +1,9 @@
 package org.commcare.formplayer.services;
 
-import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
-
 import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
-
+import datadog.trace.api.Trace;
+import io.sentry.SentryLevel;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -14,7 +13,6 @@ import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
-import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
@@ -27,14 +25,12 @@ import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.formplayer.util.UserUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
-import org.javarosa.core.util.PropertyUtils;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -57,27 +53,23 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.sql.SQLException;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import datadog.trace.api.Trace;
-import io.sentry.SentryLevel;
+import static org.commcare.formplayer.util.Constants.TOGGLE_INCLUDE_STATE_HASH;
 
 
 /**
@@ -97,8 +89,6 @@ public class RestoreFactory {
     private String username;
     private String scrubbedUsername;
     private String domain;
-    private HqAuth hqAuth;
-
     private boolean permitAggressiveSyncs = true;
 
     public static final String FREQ_DAILY = "freq-daily";
@@ -110,8 +100,6 @@ public class RestoreFactory {
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
 
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
-
-    private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
 
     @Autowired
     protected StatsDClient datadogStatsDClient;
@@ -128,26 +116,14 @@ public class RestoreFactory {
     @Autowired
     private WebClient webClient;
 
-    @Autowired
-    private RedisTemplate redisTemplateLong;
-
     @Resource(name = "redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
-
-    @Autowired
-    private RedisTemplate redisTemplateString;
-
-    @Resource(name = "redisTemplateString")
-    private ValueOperations<String, String> originTokens;
 
     @Autowired
     private RedisTemplate redisSetTemplate;
 
     @Resource(name = "redisSetTemplate")
     private SetOperations<String, String> redisSessionCache;
-
-    @Value("${commcarehq.formplayerAuthKey}")
-    private String formplayerAuthKey;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
@@ -158,11 +134,10 @@ public class RestoreFactory {
     private String caseId;
     private boolean configured = false;
 
-    public void configure(String domain, String caseId, HqAuth auth) {
+    public void configure(String domain, String caseId) {
         this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
         this.setDomain(domain);
         this.setCaseId(caseId);
-        this.setHqAuth(auth);
         this.hasRestored = false;
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, null);
@@ -170,11 +145,10 @@ public class RestoreFactory {
                 "username = %s, caseId = %s, domain = %s", username, caseId, domain));
     }
 
-    public void configure(String username, String domain, String asUsername, HqAuth auth) {
+    public void configure(String username, String domain, String asUsername) {
         this.setUsername(username);
         this.setDomain(domain);
         this.setAsUsername(asUsername);
-        this.hqAuth = auth;
         this.hasRestored = false;
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
@@ -182,11 +156,10 @@ public class RestoreFactory {
                 "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
     }
 
-    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
-        this.setHqAuth(auth);
         this.hasRestored = false;
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
@@ -447,14 +420,7 @@ public class RestoreFactory {
     }
 
     public HttpHeaders getRequestHeaders(URI url) {
-        HttpHeaders headers;
-        if (RequestUtils.requestAuthedWithHmac()) {
-            headers = getHmacHeader(url);
-        } else {
-            headers = getHqAuth().getAuthHeaders();;
-        }
-        headers.addAll(getStandardHeaders());
-        return headers;
+        return getStandardHeaders();
     }
 
     private void recordSentryData(final String restoreUrl) {
@@ -610,15 +576,7 @@ public class RestoreFactory {
         if (syncToken != null) {
             headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
         }
-        headers.setAll(getOriginTokenHeader());
         return headers;
-    }
-
-    private Map<String, String> getOriginTokenHeader() {
-        String originToken = PropertyUtils.genUUID();
-        String redisKey = String.format("%s%s", ORIGIN_TOKEN_SLUG, originToken);
-        originTokens.set(redisKey, "valid", Duration.ofSeconds(60));
-        return Collections.singletonMap("X-CommCareHQ-Origin-Token", originToken);
     }
 
     public URI getRestoreUrl(boolean skipFixtures) {
@@ -629,31 +587,6 @@ public class RestoreFactory {
             }
             return getUserRestoreUrl(skipFixtures);
         });
-    }
-
-    private HttpHeaders getHmacHeader(URI url) {
-        // Do HMAC auth which requires only the path and query components of the URL
-        String requestPath = url.getRawPath();
-        if (url.getRawQuery() != null) {
-            requestPath = String.format("%s?%s", requestPath, url.getRawQuery());
-        }
-        if (!RequestUtils.requestAuthedWithHmac()) {
-            throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
-                    "was not validated with HMAC.", requestPath));
-        }
-        String digest;
-        try {
-            digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
-        } catch (Exception e) {
-            log.error("Could not get HMAC signature to auth restore request", e);
-            throw new RuntimeException(e);
-        }
-
-        return new HttpHeaders() {
-            {
-                add("X-MAC-DIGEST", digest);
-            }
-        };
     }
 
     public URI getCaseRestoreUrl() {
@@ -686,9 +619,6 @@ public class RestoreFactory {
                 asUserParam += "@" + domain + ".commcarehq.org";
             }
             params.put("as", asUserParam);
-        } else if (getHqAuth() == null && username != null) {
-            // HQ requesting to force a sync for a user
-            params.put("as", username);
         }
         if (skipFixtures) {
             params.put("skip_fixtures", "true");
@@ -784,14 +714,6 @@ public class RestoreFactory {
 
     public void setDomain(String domain) {
         this.domain = domain;
-    }
-
-    public HqAuth getHqAuth() {
-        return hqAuth;
-    }
-
-    public void setHqAuth(HqAuth hqAuth) {
-        this.hqAuth = hqAuth;
     }
 
     public String getAsUsername() {

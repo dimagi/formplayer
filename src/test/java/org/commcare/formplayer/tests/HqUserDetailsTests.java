@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.io.Closeable;
+
 public class HqUserDetailsTests {
 
     @Test
@@ -38,23 +40,25 @@ public class HqUserDetailsTests {
     }
 
     @Test
-    public void testFeatureFlagChecker_isToggleEnabled() {
-        WithHqUserSecurityContextFactory.setSecurityContext(
+    public void testFeatureFlagChecker_isToggleEnabled() throws Exception {
+        try (AutoCloseable __ = WithHqUserSecurityContextFactory.setSecurityContext(
                 HqUserDetails.builder().enabledToggles(new String[]{"toggle_a", "toggle_b"}).build()
-        );
-        Assertions.assertTrue(FeatureFlagChecker.isToggleEnabled("toggle_a"));
-        Assertions.assertTrue(FeatureFlagChecker.isToggleEnabled("toggle_b"));
-        Assertions.assertFalse(FeatureFlagChecker.isToggleEnabled("toggle_c"));
+        )) {
+            Assertions.assertTrue(FeatureFlagChecker.isToggleEnabled("toggle_a"));
+            Assertions.assertTrue(FeatureFlagChecker.isToggleEnabled("toggle_b"));
+            Assertions.assertFalse(FeatureFlagChecker.isToggleEnabled("toggle_c"));
+        }
     }
 
     @Test
-    public void testFeatureFlagChecker_isPreviewEnabled() {
-        WithHqUserSecurityContextFactory.setSecurityContext(
+    public void testFeatureFlagChecker_isPreviewEnabled() throws Exception {
+        try (AutoCloseable __ = WithHqUserSecurityContextFactory.setSecurityContext(
                 HqUserDetails.builder().enabledPreviews(new String[]{"preview_a", "preview_b"}).build()
-        );
-        Assertions.assertTrue(FeatureFlagChecker.isPreviewEnabled("preview_a"));
-        Assertions.assertTrue(FeatureFlagChecker.isPreviewEnabled("preview_b"));
-        Assertions.assertFalse(FeatureFlagChecker.isPreviewEnabled("preview_c"));
+        )) {
+            Assertions.assertTrue(FeatureFlagChecker.isPreviewEnabled("preview_a"));
+            Assertions.assertTrue(FeatureFlagChecker.isPreviewEnabled("preview_b"));
+            Assertions.assertFalse(FeatureFlagChecker.isPreviewEnabled("preview_c"));
+        }
     }
 
     @AfterEach

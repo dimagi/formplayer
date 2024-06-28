@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import javax.crypto.Mac;
@@ -80,15 +81,19 @@ public class RequestUtils {
         return request == null ? "unknown" : StringUtils.strip(request.getRequestURI(), "/");
     }
 
+    public static String getHmac(String key, String data) throws Exception {
+        return getHmac(key, data.getBytes(StandardCharsets.UTF_8));
+    }
+
     /**
      * Get the HMAC hash of a given request body with a given key Used by Formplayer to validate
      * requests from HQ using shared internal key `commcarehq.formplayerAuthKey`
      */
-    public static String getHmac(String key, String data) throws Exception {
+    public static String getHmac(String key, byte[] data) throws Exception {
         Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
         SecretKeySpec secret_key = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
         sha256_HMAC.init(secret_key);
-        return Base64.encodeBase64String(sha256_HMAC.doFinal(data.getBytes("UTF-8")));
+        return Base64.encodeBase64String(sha256_HMAC.doFinal(data));
     }
 
     public static HttpServletRequest getCurrentRequest() {

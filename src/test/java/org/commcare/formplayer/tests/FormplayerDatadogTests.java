@@ -1,11 +1,6 @@
 package org.commcare.formplayer.tests;
 
-import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import com.timgroup.statsd.StatsDClient;
-
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.utils.HqUserDetails;
 import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
@@ -17,6 +12,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class FormplayerDatadogTests {
     FormplayerDatadog datadog;
@@ -103,15 +102,16 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    public void testAddRequestScopedDetailedTagForEligibleDomain() {
-        enableDetailTagging();
+    public void testAddRequestScopedDetailedTagForEligibleDomain() throws Exception {
+        try (AutoCloseable __ = enableDetailTagging()) {
 
-        // detailed_tag was added to FormplayerDatadog in beforeTest
-        datadog.addRequestScopedTag("detailed_tag", "test_value");
-        datadog.recordExecutionTime("requests", 100, Collections.emptyList());
-        String expectedTag = "detailed_tag:test_value";
-        String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
+            // detailed_tag was added to FormplayerDatadog in beforeTest
+            datadog.addRequestScopedTag("detailed_tag", "test_value");
+            datadog.recordExecutionTime("requests", 100, Collections.emptyList());
+            String expectedTag = "detailed_tag:test_value";
+            String[] args = {expectedTag};
+            verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
+        }
     }
 
     @Test
@@ -125,16 +125,16 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    public void testAddTransientDetailedTagForEligibleDomain() {
-        enableDetailTagging();
-
-        List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
-        // detailed_tag was added to FormplayerDatadog in beforeTest
-        transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
-        datadog.recordExecutionTime("requests", 100, transientTags);
-        String expectedTag = "detailed_tag:test_value";
-        String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
+    public void testAddTransientDetailedTagForEligibleDomain() throws Exception {
+        try (AutoCloseable __ = enableDetailTagging()) {
+            List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
+            // detailed_tag was added to FormplayerDatadog in beforeTest
+            transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
+            datadog.recordExecutionTime("requests", 100, transientTags);
+            String expectedTag = "detailed_tag:test_value";
+            String[] args = {expectedTag};
+            verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
+        }
     }
 
     @Test
@@ -148,8 +148,8 @@ public class FormplayerDatadogTests {
         verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
-    private void enableDetailTagging() {
-        WithHqUserSecurityContextFactory.setSecurityContext(
+    private AutoCloseable enableDetailTagging() {
+        return WithHqUserSecurityContextFactory.setSecurityContext(
                 HqUserDetails.builder().enabledToggles(new String[]{TOGGLE_DETAILED_TAGGING}).build()
         );
     }

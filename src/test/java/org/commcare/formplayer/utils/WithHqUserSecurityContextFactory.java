@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import java.io.Closeable;
+
 /**
  * A WithSecurityContextFactory that works with {@link WithHqUser}.
  *
@@ -28,8 +30,9 @@ public final class WithHqUserSecurityContextFactory implements WithSecurityConte
         return context;
     }
 
-    public static void setSecurityContext(HqUserDetails details) {
+    public static AutoCloseable setSecurityContext(HqUserDetails details) {
         SecurityContext context = createSecurityContext(details);
         SecurityContextHolder.setContext(context);
+        return SecurityContextHolder::clearContext;
     }
 }

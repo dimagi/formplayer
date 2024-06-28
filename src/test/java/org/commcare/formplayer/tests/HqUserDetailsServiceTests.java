@@ -84,7 +84,7 @@ public class HqUserDetailsServiceTests {
                 "\"domains\":[\"domain\"]," +
                 "\"djangoUserId\":1," +
                 "\"username\":\"user@domain.commcarehq.org\"," +
-                "\"authToken\":\"authToke\"," +
+                "\"authToken\":\"authToken\"," +
                 "\"superUser\":false" +
                 "}";
 
@@ -98,6 +98,7 @@ public class HqUserDetailsServiceTests {
 
         assertThat(details.getUsername()).isEqualTo("user@domain.commcarehq.org");
         assertThat(details.getDomains()).isEqualTo(new String[]{"domain"});
+        assertThat(details.getAuthToken()).isEqualTo("authToken");
     }
 
     @Test

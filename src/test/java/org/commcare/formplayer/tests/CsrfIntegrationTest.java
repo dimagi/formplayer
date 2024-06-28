@@ -113,7 +113,6 @@ public class CsrfIntegrationTest {
         mockUtilController.perform(
                 post("/" + Constants.URL_DELETE_APPLICATION_DBS)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(payload)
         ).andExpect(status().isForbidden());
     }
@@ -123,7 +122,6 @@ public class CsrfIntegrationTest {
         mockUtilController.perform(
                 get("/" + Constants.URL_SERVER_UP)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
         ).andExpect(status().isOk());
     }
 
@@ -133,7 +131,6 @@ public class CsrfIntegrationTest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Cookie", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + "derp");
         headers.add(Constants.HMAC_HEADER, "BHOwo3mPXbtWM91RO0g5HQOt+DtiiQVnCWMFsvjkWVc=");
         HttpEntity<String> entity = new HttpEntity<>(payload, headers);
 
