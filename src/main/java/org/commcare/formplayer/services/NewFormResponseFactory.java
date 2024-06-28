@@ -107,7 +107,8 @@ public class NewFormResponseFactory {
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
                 bean.getRestoreAsCaseId(),
                 null,
-                formplayerRemoteInstanceFetcher
+                formplayerRemoteInstanceFetcher,
+                bean.getWindowWidth()
         );
 
         NewFormResponse response = getResponse(formSession);
