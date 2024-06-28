@@ -69,7 +69,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
     @Test
     public void testFormEntryWithQuery() throws Exception {
-        configureQueryMock();
+        configureQueryMock("Followup");
         // selecting the command containing form with `query` should launch the query screen
         sessionNavigateWithQuery(new String[]{"1"},
                 "caseclaimquery",
@@ -121,7 +121,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
     @Test
     public void testNavigationToFormEntryWithMultipleQueries() throws Exception {
-        configureQueryMock();
+        configureQueryMock("Followup1");
         // select module 2
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
@@ -190,7 +190,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
      */
     @Test
     public void testNavigationToFormEntryWithQueriesAutoAdvance() throws Exception {
-        configureQueryMock();
+        configureQueryMock("Followup1");
         // select module 2
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
@@ -227,7 +227,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
 
     @Test
     public void testSearchInputInstanceInForm() throws Exception {
-        configureQueryMock();
+        configureQueryMock("Followup");
         ArrayList<String> selections = new ArrayList<>();
         selections.add("3");  // m3
         selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
@@ -302,12 +302,12 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         return "restores/caseclaim.xml";
     }
 
-    private void configureQueryMock() {
+    private void configureQueryMock(String moduleName) {
         String searchUri =
                 "http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/";
         String searchResponse = "query_responses/case_claim_response.xml";
         ImmutableMultimap<String, String> data = ImmutableMultimap.of("commcare_registry",
-                "shubham", "case_type", "case");
+                "shubham", "case_type", "case", "x_commcare_tag_module_name", moduleName);
         when(webClientMock.postFormData(eq(searchUri), eq(data))).thenReturn(
                 FileUtils.getFile(this.getClass(), searchResponse));
 

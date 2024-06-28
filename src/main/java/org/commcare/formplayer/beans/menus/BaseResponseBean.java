@@ -5,6 +5,7 @@ import org.commcare.formplayer.beans.ResponseMetaData;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.screen.ScreenUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.javarosa.core.services.locale.Localization;
@@ -27,6 +28,8 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private HashMap<String, String> translations;
     private String smartLinkRedirect;
     private boolean dynamicSearch;
+
+    private ArrayList<PeristentCommand> persistentMenu;
 
     private ResponseMetaData metaData;
 
@@ -139,6 +142,14 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public void setMetaData(ResponseMetaData metaData) {
         this.metaData = metaData;
+    }
+
+    public ArrayList<PeristentCommand> getPersistentMenu() {
+        return persistentMenu;
+    }
+
+    public void setPersistentMenu(ArrayList<PeristentCommand> persistentMenu) {
+        this.persistentMenu = persistentMenu;
     }
 
     public void addToTranslation(String key, String value) {
