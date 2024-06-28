@@ -272,7 +272,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         } else if (next.equals(SessionFrame.STATE_COMMAND_ID)) {
             MenuScreen menuScreen = new MenuScreen();
             menuScreen.init(sessionWrapper);
-            persistentMenuHelper.addMenusToPeristentMenu(menuScreen);
+            // if we are not respecting relevancy, we only want to add root menu options to persistent menu
+            if (persistentMenuHelper.getPersistentMenu().isEmpty() || entityScreenContext.isRespectRelevancy()) {
+                persistentMenuHelper.addMenusToPeristentMenu(menuScreen);
+            }
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
             EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, entityScreenContext);
