@@ -157,11 +157,10 @@ public class MenuSession implements HereFunctionHandlerListener {
      *                              allowing this step to skip validation
      * @param allowAutoLaunch       If this step is allowed to automatically launch an action,
      *                              assuming it has an autolaunch action specified.
-     * @param respectRelevancy      Whether to respect display conditions on a module or form while
-     *                              handling input
+     * @param entityScreenContext   navigation context regarding the current screen
      */
     public boolean handleInput(@Nullable Screen screen, String input, boolean needsFullEntityScreen, boolean inputValidated,
-            boolean allowAutoLaunch, EntityScreenContext entityScreenContext, boolean respectRelevancy)
+            boolean allowAutoLaunch, EntityScreenContext entityScreenContext)
             throws CommCareSessionException {
         if (screen == null) {
             screen = getNextScreen(needsFullEntityScreen, entityScreenContext);
@@ -183,15 +182,16 @@ public class MenuSession implements HereFunctionHandlerListener {
                     // auto-launch takes preference over auto-select
                     if (screen.shouldBeSkipped() && !autoLaunch &&
                             entityScreen.autoSelectEntities(sessionWrapper)) {
-                        return handleInput(screen, input, true, inputValidated, allowAutoLaunch, entityScreenContext, respectRelevancy);
+                        return handleInput(screen, input, true, inputValidated, allowAutoLaunch, entityScreenContext);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues,
-                            respectRelevancy);
+                            entityScreenContext.isRespectRelevancy());
                 } else {
                     entityScreen.updateDatum(sessionWrapper, input);
                 }
             } else {
-                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues, respectRelevancy);
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues,
+                        entityScreenContext.isRespectRelevancy());
             }
 
             if (addBreadcrumb) {
@@ -215,7 +215,7 @@ public class MenuSession implements HereFunctionHandlerListener {
              *  To be able to more selectively show only visible menus in these cases, we will need to switch the
              *  current index based selections[] to contain menu ids instead of indexes.
               */
-            if (respectRelevancy) {
+            if (entityScreenContext.isRespectRelevancy()) {
                 if (screen instanceof EntityScreen) {
                     String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
                     persistentMenuHelper.addEntitySelection(persistentMenuId, breadcrumb);
