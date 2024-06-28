@@ -90,7 +90,7 @@ public class MenuSessionFactory {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         List<StackFrameStep> processedSteps = new ArrayList<>();
         menuSession.resetSession();
-        EntityScreenContext entityScreenContext = new EntityScreenContext();
+        EntityScreenContext entityScreenContext = new EntityScreenContext(respectRelevancy);
         Screen screen = menuSession.getNextScreen(false, entityScreenContext);
         int processedStepsCount = 0;
         boolean needsFullInit = false;
@@ -142,7 +142,7 @@ public class MenuSessionFactory {
                 }
 
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
+                    menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext);
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
@@ -196,7 +196,7 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
+                menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext);
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
             }

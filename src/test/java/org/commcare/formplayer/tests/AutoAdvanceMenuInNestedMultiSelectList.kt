@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests
 
 import org.commcare.formplayer.beans.NewFormResponse
+import org.commcare.formplayer.beans.menus.PeristentCommand
 import org.commcare.formplayer.beans.menus.QueryResponseBean
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock
 import org.commcare.formplayer.objects.QueryData
@@ -51,10 +52,23 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
                 arrayOf("94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"),
                 QueryResponseBean::class.java
             )
-            val updatedSelections = ArrayList<String>()
-            updatedSelections.addAll(response.getSelections().asList())
-            updatedSelections.add(USE_SELECTED_VALUES)
 
+            // Peristent Menu check
+            val responseSelections = response.selections.asList()
+            val expectedMenu = java.util.ArrayList<PeristentCommand>()
+            expectedMenu.add(PeristentCommand("0", "Case List"))
+            expectedMenu.add(PeristentCommand("1", "Parent Case List"))
+            val parentCaseListMenu = expectedMenu[1]
+            parentCaseListMenu.addCommand(PeristentCommand(responseSelections.last(), "Batman Begins"))
+            // add the auto-advanced menu
+            val batmanBeginsMenu = parentCaseListMenu.commands[0]
+            batmanBeginsMenu.addCommand(PeristentCommand("0", "Nested Case List"))
+            assertEquals(expectedMenu, response.persistentMenu)
+
+
+            val updatedSelections = ArrayList<String>()
+            updatedSelections.addAll(responseSelections)
+            updatedSelections.add(USE_SELECTED_VALUES)
             val formResponse = sessionNavigateWithQuery(
                 updatedSelections.toTypedArray(),
                 APP_NAME,
@@ -65,6 +79,13 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
 
             // selections array at this point should be ["1", "guid1", "guid2"] without any auto-advanced menu indexes
             assertEquals(formResponse.selections.size, 3)
+
+            // Persistent Menu check
+            val nestedCaseListMenu = batmanBeginsMenu.commands[0]
+            nestedCaseListMenu.addCommand(PeristentCommand(formResponse.selections.last(), "Batman Begins"))
+            val nestedBatmanbeginsMenu = nestedCaseListMenu.commands[0]
+            nestedBatmanbeginsMenu.addCommand(PeristentCommand("0", "Followup"));
+            assertEquals(expectedMenu, formResponse.persistentMenu)
         }
     }
 }
