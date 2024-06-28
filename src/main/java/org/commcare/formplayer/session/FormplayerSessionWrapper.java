@@ -15,23 +15,23 @@ import org.commcare.util.CommCarePlatform;
 class FormplayerSessionWrapper extends SessionWrapper {
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox,
-                                    RemoteInstanceFetcher remoteInstanceFetcher)
+                                    RemoteInstanceFetcher remoteInstanceFetcher, String windowWidth)
             throws RemoteInstanceFetcher.RemoteInstanceException {
-        this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher);
+        this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher, windowWidth);
     }
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame,
-                                    RemoteInstanceFetcher remoteInstanceFetcher)
+                                    RemoteInstanceFetcher remoteInstanceFetcher, String windowWidth)
             throws RemoteInstanceFetcher.RemoteInstanceException {
-        super(platform, sandbox, remoteInstanceFetcher);
+        super(platform, sandbox, remoteInstanceFetcher, windowWidth);
         this.frame = sessionFrame;
         prepareExternalSources();
     }
 
     public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox,
-                                    RemoteInstanceFetcher remoteInstanceFetcher)
+                                    RemoteInstanceFetcher remoteInstanceFetcher, String windowWidth)
             throws RemoteInstanceFetcher.RemoteInstanceException {
-        super(session, platform, sandbox, remoteInstanceFetcher);
+        super(session, platform, sandbox, remoteInstanceFetcher, windowWidth);
         prepareExternalSources();
     }
 

@@ -21,6 +21,7 @@ public class AuthenticatedRequestBean {
 
     private int timezoneOffsetMillis = -1;
     private String timezoneFromBrowser = null;
+    private String windowWidth;
 
     public String getUsername() {
         return username;
@@ -99,5 +100,15 @@ public class AuthenticatedRequestBean {
     @JsonSetter(value = "restoreAsCaseId")
     public void setRestoreAsCaseId(String restoreAsCaseId) {
         this.restoreAsCaseId = restoreAsCaseId;
+    }
+
+    @JsonGetter(value = "windowWidth")
+    public String getWindowWidth() {
+        return windowWidth;
+    }
+
+    @JsonSetter(value = "windowWidth")
+    public void setWindowWidth(String windowWidth) {
+        this.windowWidth = windowWidth;
     }
 }

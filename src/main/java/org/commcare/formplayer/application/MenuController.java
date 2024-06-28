@@ -172,6 +172,7 @@ public class MenuController extends AbstractBaseController {
             selections = new String[0];
         }
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
+        menuSession.setWindowWidth(sessionNavigationBean.getWindowWidth());
         EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),

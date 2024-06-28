@@ -210,10 +210,11 @@ public class MenuSessionFactory {
                                     String locale,
                                     boolean oneQuestionPerScreen,
                                     String asUser,
-                                    boolean preview) throws Exception {
+                                    boolean preview,
+                                    String windowWidth) throws Exception {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
-                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService), windowWidth);
     }
 
     @Trace
@@ -227,6 +228,7 @@ public class MenuSessionFactory {
     public MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession = performInstall(sessionNavigationBean);
         menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
+        menuSession.setWindowWidth(sessionNavigationBean.getWindowWidth());
         return menuSession;
     }
 
@@ -243,7 +245,8 @@ public class MenuSessionFactory {
                 bean.getLocale(),
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),
-                bean.getPreview()
+                bean.getPreview(),
+                bean.getWindowWidth()
         );
     }
 
