@@ -263,7 +263,7 @@ public class FormSession {
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION,
                 storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(
-                platform, this.sandbox, sessionFrame, instanceFetcher, this.windowWidth);
+                platform, this.sandbox, sessionFrame, instanceFetcher, windowWidth);
 
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
@@ -364,6 +364,7 @@ public class FormSession {
                 int timeOutInput = Integer.parseInt(timeOut);
                 timeOutWindow = timeOutInput;
             } catch (NumberFormatException nfe) {
+                System.out.println("Invalid timeout window: " + timeOut);
             }
         }
         return timeOutWindow;
