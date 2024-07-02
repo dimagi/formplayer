@@ -148,7 +148,7 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
-            @Nullable String windowWidth) throws Exception {
+            String windowWidth) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
         this.session = new SerializableFormSession(
