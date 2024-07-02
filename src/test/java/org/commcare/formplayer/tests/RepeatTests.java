@@ -205,4 +205,38 @@ public class RepeatTests extends BaseTestClass {
         assertEquals("0", nodeList.item(0).getAttributes().getNamedItem("index").getNodeValue());
         assertEquals("1", nodeList.item(1).getAttributes().getNamedItem("index").getNodeValue());
     }
+
+    // tests a specific regression casued by stale repeat referenees after a delete repeat action
+    @Test
+    public void testNestedRepeatDeletionRegression() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
+                "xforms/nested_repeat_deletion_regression.xml");
+        String sessionId = newSessionResponse.getSessionId();
+
+        // Add unit 1
+        newRepeatRequest(sessionId, "0_0");
+        answerQuestionGetResult("0_0,0,0", "unit 1", sessionId);
+
+        // Add 2 beds bed 1 and bed 2
+        newRepeatRequest(sessionId, "0_0,0,1,0_0");
+        answerQuestionGetResult("0_0,0,1,0_0,0,0", "bed 1", sessionId);
+        newRepeatRequest(sessionId, "0_0,0,1,0_1");
+        QuestionBean[] tree = answerQuestionGetResult("0_0,0,1,0_1,0,0", "bed 2", sessionId).getTree();
+
+        // verify state after 2 beds addition
+        QuestionBean[] beds = tree[0].getChildren()[0].getChildren()[1].getChildren();
+        assertEquals(3, beds.length);
+        assertEquals("bed 1", beds[0].getChildren()[0].getChildren()[0].getAnswer());
+        assertEquals("bed 2", beds[1].getChildren()[0].getChildren()[0].getAnswer());
+        assertEquals("false", beds[2].getExists());
+
+        // delete the bed 1
+        tree = deleteRepeatRequest(sessionId, "0_0,0,1,0_0").getTree();
+
+        // verify state after deletion
+        beds = tree[0].getChildren()[0].getChildren()[1].getChildren();
+        assertEquals(2, beds.length);
+        assertEquals("bed 2", beds[0].getChildren()[0].getChildren()[0].getAnswer());
+        assertEquals("false", beds[1].getExists());
+    }
 }
