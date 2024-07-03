@@ -94,7 +94,7 @@ public class SubmitTests extends BaseTestClass {
 
         doThrow(new Exception("mock stack fail"))
                 .doCallRealMethod()
-                .when(menuSessionRunnerService).resolveFormGetNext(any(), any(), anyBoolean());
+                .when(menuSessionRunnerService).resolveFormGetNext(any(), any());
 
         SubmitResponseBean errorResponse = submitForm(answers, sessionId);
         assertEquals("error", errorResponse.getStatus());

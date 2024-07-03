@@ -7,6 +7,7 @@ import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALU
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.beans.menus.PeristentCommand;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -77,7 +78,10 @@ public class MenuSession implements HereFunctionHandlerListener {
     ArrayList<String> breadcrumbs;
     private ArrayList<String> selections = new ArrayList<>();
 
+    private PersistentMenuHelper persistentMenuHelper;
+
     private String currentBrowserLocation;
+    private String windowWidth;
     private boolean hereFunctionEvaluated;
 
     // Stores the entity screens created to manage state for the lifecycle of this request
@@ -95,7 +99,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.engine = engine;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
-                commCareSession, engine.getPlatform(), sandbox, instanceFetcher);
+                commCareSession, engine.getPlatform(), sandbox, instanceFetcher, this.getWindowWidth());
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
@@ -104,10 +108,11 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            FormplayerRemoteInstanceFetcher instanceFetcher)
+            FormplayerRemoteInstanceFetcher instanceFetcher, String windowWidth)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
+        this.windowWidth = windowWidth;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
         this.session = new SerializableMenuSession(
                 TableBuilder.scrubName(username),
@@ -126,14 +131,14 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, this.getWindowWidth());
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, this.getWindowWidth());
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -142,6 +147,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     private void initializeBreadcrumbs() {
         this.breadcrumbs = new ArrayList<>();
         this.breadcrumbs.add(ScreenUtils.getAppTitle());
+        persistentMenuHelper = new PersistentMenuHelper();
     }
 
     /**
@@ -153,11 +159,10 @@ public class MenuSession implements HereFunctionHandlerListener {
      *                              allowing this step to skip validation
      * @param allowAutoLaunch       If this step is allowed to automatically launch an action,
      *                              assuming it has an autolaunch action specified.
-     * @param respectRelevancy      Whether to respect display conditions on a module or form while
-     *                              handling input
+     * @param entityScreenContext   navigation context regarding the current screen
      */
     public boolean handleInput(@Nullable Screen screen, String input, boolean needsFullEntityScreen, boolean inputValidated,
-            boolean allowAutoLaunch, EntityScreenContext entityScreenContext, boolean respectRelevancy)
+            boolean allowAutoLaunch, EntityScreenContext entityScreenContext)
             throws CommCareSessionException {
         if (screen == null) {
             screen = getNextScreen(needsFullEntityScreen, entityScreenContext);
@@ -179,26 +184,46 @@ public class MenuSession implements HereFunctionHandlerListener {
                     // auto-launch takes preference over auto-select
                     if (screen.shouldBeSkipped() && !autoLaunch &&
                             entityScreen.autoSelectEntities(sessionWrapper)) {
-                        return handleInput(screen, input, true, inputValidated, allowAutoLaunch, entityScreenContext, respectRelevancy);
+                        return handleInput(screen, input, true, inputValidated, allowAutoLaunch, entityScreenContext);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues,
-                            respectRelevancy);
+                            entityScreenContext.isRespectRelevancy());
                 } else {
                     entityScreen.updateDatum(sessionWrapper, input);
                 }
             } else {
-                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues, respectRelevancy);
-            }
-
-            if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
-                    USE_SELECTED_VALUES)) {
-                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId());
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues,
+                        entityScreenContext.isRespectRelevancy());
             }
 
             if (addBreadcrumb) {
                 breadcrumbs.add(screen.getBreadcrumb(input, sandbox, getSessionWrapper()));
             }
 
+            String persistentMenuId = input;
+            if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
+                    USE_SELECTED_VALUES)) {
+                String guid = ((MultiSelectEntityScreen)screen).getStorageReferenceId();
+                addSelection(guid);
+                persistentMenuId = guid;
+            }
+
+            /**
+             *  we don't want to show any hidden menus on the persistent menu and it's impossible
+             *  for us to tell based on selection index whether a menu is visible or not. Therefore
+             *  we are restricting to not showing anything on persistent menu except visible root menu options
+             *  if we are not respecing relevancy here.
+             *
+             *  To be able to more selectively show only visible menus in these cases, we will need to switch the
+             *  current index based selections[] to contain menu ids instead of indexes.
+              */
+            if (entityScreenContext.isRespectRelevancy()) {
+                if (screen instanceof EntityScreen) {
+                    String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
+                    persistentMenuHelper.addEntitySelection(persistentMenuId, breadcrumb);
+                }
+                persistentMenuHelper.advanceCurrentMenuWithInput(screen, persistentMenuId);
+            }
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
@@ -220,7 +245,11 @@ public class MenuSession implements HereFunctionHandlerListener {
         if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
             return false;
         }
-        return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper, respectRelevancy);
+        boolean autoAdvanced =  ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper, respectRelevancy);
+        if (autoAdvanced) {
+            persistentMenuHelper.advanceCurrentMenuWithInput(screen, "0");
+        }
+        return autoAdvanced;
     }
 
     /**
@@ -245,6 +274,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         } else if (next.equals(SessionFrame.STATE_COMMAND_ID)) {
             MenuScreen menuScreen = new MenuScreen();
             menuScreen.init(sessionWrapper);
+            // if we are not respecting relevancy, we only want to add root menu options to persistent menu
+            if (persistentMenuHelper.getPersistentMenu().isEmpty() || entityScreenContext.isRespectRelevancy()) {
+                persistentMenuHelper.addMenusToPeristentMenu(menuScreen);
+            }
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
             EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, entityScreenContext);
@@ -352,7 +385,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
                 oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
-                instanceFetcher);
+                instanceFetcher, getWindowWidth());
     }
 
     public SessionWrapper getSessionWrapper() {
@@ -440,4 +473,14 @@ public class MenuSession implements HereFunctionHandlerListener {
         return session;
     }
 
+    public void setWindowWidth(String windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public String getWindowWidth() {
+        return this.windowWidth;
+    }
+    public ArrayList<PeristentCommand> getPersistentMenu() {
+        return persistentMenuHelper.getPersistentMenu();
+    }
 }
