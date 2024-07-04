@@ -99,7 +99,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.engine = engine;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
-                commCareSession, engine.getPlatform(), sandbox, instanceFetcher, this.getWindowWidth());
+                commCareSession, engine.getPlatform(), sandbox, instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
@@ -131,14 +131,14 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher, this.getWindowWidth());
+                instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher, this.getWindowWidth());
+                instanceFetcher, getWindowWidth());
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -478,7 +478,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public String getWindowWidth() {
-        return this.windowWidth;
+        return windowWidth;
     }
     public ArrayList<PeristentCommand> getPersistentMenu() {
         return persistentMenuHelper.getPersistentMenu();

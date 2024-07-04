@@ -148,7 +148,7 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
-            @Nullable String windowWidth) throws Exception {
+            String windowWidth) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
         this.session = new SerializableFormSession(
@@ -263,7 +263,7 @@ public class FormSession {
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION,
                 storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(
-                platform, this.sandbox, sessionFrame, instanceFetcher, this.windowWidth);
+                platform, this.sandbox, sessionFrame, instanceFetcher, windowWidth);
 
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
@@ -364,6 +364,7 @@ public class FormSession {
                 int timeOutInput = Integer.parseInt(timeOut);
                 timeOutWindow = timeOutInput;
             } catch (NumberFormatException nfe) {
+                System.out.println("Invalid timeout window: " + timeOut);
             }
         }
         return timeOutWindow;
