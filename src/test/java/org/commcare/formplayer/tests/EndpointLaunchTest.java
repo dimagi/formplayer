@@ -2,10 +2,12 @@ package org.commcare.formplayer.tests;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.beans.menus.PeristentCommand;
 import org.commcare.formplayer.services.BrowserValuesProvider;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
@@ -16,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.util.NestedServletException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -148,5 +151,92 @@ public class EndpointLaunchTest extends BaseTestClass {
                     endpointArgs,
                     NewFormResponse.class);
         });
+    }
+
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testPeristentMenuForEndpointLaunch() throws Exception {
+        CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "caselist",
+                null,
+                CommandListResponseBean.class);
+        ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
+        expectedMenu.add(new PeristentCommand("0", "Case List"));
+        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        PeristentCommand parentMenu = expectedMenu.get(0);
+        parentMenu.addCommand(new PeristentCommand("0", "Add Parent"));
+        parentMenu.addCommand(new PeristentCommand("1", "Followup"));
+        assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
+
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_parent",
+                null,
+                NewFormResponse.class);
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
+
+
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        String caseSelection = "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18";
+        endpointArgs.put("case_id", caseSelection);
+        formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "followup",
+                endpointArgs,
+                NewFormResponse.class);
+        PeristentCommand followupMenu = parentMenu.getCommands().get(1);
+        followupMenu.addCommand(new PeristentCommand(caseSelection, "Batman Begins"));
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
+
+        commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "parents",
+                endpointArgs,
+                CommandListResponseBean.class);
+        expectedMenu = new ArrayList<>();
+        expectedMenu.add(new PeristentCommand("0", "Case List"));
+        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        parentMenu = expectedMenu.get(1);
+        parentMenu.addCommand(new PeristentCommand(caseSelection, "Batman Begins"));
+        PeristentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
+        batmanBeginsMenu.addCommand(new PeristentCommand("0", "Add Child"));
+        batmanBeginsMenu.addCommand(new PeristentCommand("1", "Child Case List"));
+        assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
+
+        formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_child",
+                endpointArgs,
+                NewFormResponse.class);
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
+
+        String childCaseSelection = "f04bf0e8-2001-4885-a724-5497b34abe95";
+        endpointArgs.put("case_id_child_case", childCaseSelection);
+        formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "child_case_list",
+                endpointArgs,
+                NewFormResponse.class);
+        PeristentCommand childCaseListMenu = batmanBeginsMenu.getCommands().get(1);
+        childCaseListMenu.addCommand(new PeristentCommand(childCaseSelection, "The Dark Knight"));
+        PeristentCommand darkKnightMenu = childCaseListMenu.getCommands().get(0);
+        darkKnightMenu.addCommand(new PeristentCommand("0", "Update Child"));
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
+
+        formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "update_child",
+                endpointArgs,
+                NewFormResponse.class);
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testPeristentMenuForEndpointLaunchWithoutRespectRelevancy() throws Exception {
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_parent_not_respect_relevancy",
+                null,
+                NewFormResponse.class);
+        // Verify that we only add root menu
+        ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
+        expectedMenu.add(new PeristentCommand("0", "Case List"));
+        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 }
