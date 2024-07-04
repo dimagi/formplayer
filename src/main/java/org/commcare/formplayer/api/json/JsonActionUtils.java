@@ -193,16 +193,28 @@ public class JsonActionUtils {
         switch (formEntryPrompt.getDataType()) {
             case Constants.DATATYPE_CHOICE:
                 index = Integer.parseInt(data);
-                SelectChoice selectChoiceAnswer = formEntryPrompt.getSelectChoices().get(index - 1);
-                return new SelectOneData(selectChoiceAnswer.selection());
+                Vector<SelectChoice> selectChoices = formEntryPrompt.getSelectChoices();
+                if (index <= selectChoices.size()) {
+                    SelectChoice selectChoiceAnswer = selectChoices.get(index - 1);
+                    return new SelectOneData(selectChoiceAnswer.selection());
+                } else {
+                    throw new IllegalStateException(
+                            "Index " + index + " out of range for question " + formEntryPrompt.getQuestion().getTextID());
+                }
             case Constants.DATATYPE_CHOICE_LIST:
                 String[] split = parseMultiSelectString(data);
                 Vector<Selection> ret = new Vector<>();
                 for (String s : split) {
                     index = Integer.parseInt(s);
-                    Selection selection = formEntryPrompt.getSelectChoices().get(
-                            index - 1).selection();
-                    ret.add(selection);
+                    selectChoices = formEntryPrompt.getSelectChoices();
+                    if (index <= selectChoices.size()) {
+                        Selection selection = selectChoices.get(
+                                index - 1).selection();
+                        ret.add(selection);
+                    } else {
+                        throw new IllegalStateException(
+                                "Index " + index + " out of range for question " + formEntryPrompt.getQuestion().getTextID());
+                    }
                 }
                 return new SelectMultiData(ret);
             case Constants.DATATYPE_GEOPOINT:
