@@ -784,12 +784,12 @@ public class MenuSessionRunnerService {
                     String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
         }
         boolean respectRelevancy = endpoint.isRespectRelevancy();
-
+        SessionFrame endpointSessionFrame = null;
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
+            endpointSessionFrame = new SessionFrame(menuSession.getSessionWrapper().getFrame());
             menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper, respectRelevancy);
-
             Screen screen = menuSession.getNextScreen(false, new EntityScreenContext());
             if (screen instanceof FormplayerSyncScreen) {
                 try {
@@ -801,7 +801,6 @@ public class MenuSessionRunnerService {
                 }
             }
         }
-        SessionFrame endpointSessionFrame = new SessionFrame(menuSession.getSessionWrapper().getFrame());
         String[] selections = menuSession.getSelections();
         QueryData queryData = getQueryDataFromFrame(menuSession.getSessionWrapper().getFrame(), endpointSessionFrame);
         // reset session and play it back with derived selections
