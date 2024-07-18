@@ -214,14 +214,16 @@ public class MenuSessionFactory {
                                     String windowWidth) throws Exception {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
-                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService), windowWidth);
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService), windowWidth,
+                storageFactory.getPropertyManager().isPersistentMenuEnabled());
     }
 
     @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession, FormplayerConfigEngine engine,
             CommCareSession commCareSession) throws Exception {
         return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
-                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService),
+                storageFactory.getPropertyManager().isPersistentMenuEnabled());
     }
 
     @Trace
