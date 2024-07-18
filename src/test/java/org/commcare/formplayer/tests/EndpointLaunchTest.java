@@ -4,13 +4,19 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.PeristentCommand;
+import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
+import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.services.BrowserValuesProvider;
+import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
+import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.properties.Property;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +40,8 @@ public class EndpointLaunchTest extends BaseTestClass {
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("endpointdomain", "endpointusername");
+        storageFactoryMock.configure("endpointusername", "endpointdomain", "app_id", "asUser");
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
     }
 
     @Override

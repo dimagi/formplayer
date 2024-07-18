@@ -70,6 +70,7 @@ import datadog.trace.api.Trace;
  */
 public class MenuSession implements HereFunctionHandlerListener {
     private final SerializableMenuSession session;
+    private final boolean isPersistentMenuEnabled;
     private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
@@ -92,7 +93,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public MenuSession(SerializableMenuSession session,
             FormplayerConfigEngine engine, CommCareSession commCareSession, RestoreFactory restoreFactory,
-            FormplayerRemoteInstanceFetcher instanceFetcher) throws Exception {
+            FormplayerRemoteInstanceFetcher instanceFetcher, boolean isPersistentMenuEnabled) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
         this.engine = engine;
@@ -101,13 +102,14 @@ public class MenuSession implements HereFunctionHandlerListener {
                 commCareSession, engine.getPlatform(), sandbox, instanceFetcher);
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
+        this.isPersistentMenuEnabled = isPersistentMenuEnabled;
         initializeBreadcrumbs();
     }
 
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            FormplayerRemoteInstanceFetcher instanceFetcher)
+            FormplayerRemoteInstanceFetcher instanceFetcher, boolean isPersistentMenuEnabled)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
@@ -131,6 +133,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
                 instanceFetcher);
         SessionUtils.setLocale(locale);
+        this.isPersistentMenuEnabled = isPersistentMenuEnabled;
         initializeBreadcrumbs();
     }
 
@@ -145,7 +148,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     private void initializeBreadcrumbs() {
         this.breadcrumbs = new ArrayList<>();
         this.breadcrumbs.add(ScreenUtils.getAppTitle());
-        persistentMenuHelper = new PersistentMenuHelper();
+        persistentMenuHelper = new PersistentMenuHelper(isPersistentMenuEnabled);
     }
 
     /**

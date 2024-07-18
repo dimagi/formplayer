@@ -41,6 +41,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
+        storageFactoryMock.configure("user", "domain", "app_id", "asUser");
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
     }
 
     @Override
@@ -91,7 +93,6 @@ public class MultiSelectCaseListTest extends BaseTestClass {
 
     @Test
     public void testAutoAdvanceWithMultiSelect() throws Exception {
-        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
         String[] selections = new String[]{"1"};
         sessionNavigate(selections, APP,
                 EntityListResponse.class);

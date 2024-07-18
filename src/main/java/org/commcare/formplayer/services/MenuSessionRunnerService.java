@@ -23,6 +23,7 @@ import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
+import org.commcare.formplayer.beans.menus.PeristentCommand;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
@@ -75,6 +76,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -214,8 +216,14 @@ public class MenuSessionRunnerService {
                 menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(
                 getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
-        menuResponseBean.setPersistentMenu(menuSession.getPersistentMenu());
+        setPeristenMenuToBean(menuResponseBean, menuSession.getPersistentMenu());
         return menuResponseBean;
+    }
+
+    private void setPeristenMenuToBean(BaseResponseBean menuResponseBean, ArrayList<PeristentCommand> persistentMenu) {
+        if (storageFactory.getPropertyManager().isPersistentMenuEnabled()) {
+            menuResponseBean.setPersistentMenu(persistentMenu);
+        }
     }
 
     private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
@@ -670,7 +678,7 @@ public class MenuSessionRunnerService {
             formResponseBean.setPersistentCaseTile(
                     getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
-            formResponseBean.setPersistentMenu(menuSession.getPersistentMenu());
+            setPeristenMenuToBean(formResponseBean, menuSession.getPersistentMenu());
             // update datadog/sentry metrics
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
             Sentry.setTag(Constants.MODULE_TAG, "form");
