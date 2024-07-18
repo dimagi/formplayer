@@ -1,5 +1,7 @@
 package org.commcare.formplayer.beans.menus;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import org.checkerframework.checker.units.qual.A;
 import org.commcare.formplayer.beans.menus.Command.NavIconState;
 import org.commcare.modern.session.SessionWrapper;
@@ -17,6 +19,7 @@ import lombok.EqualsAndHashCode;
  * Model used to represent a persistent menu in FP HTTP API
  */
 @EqualsAndHashCode
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PeristentCommand {
 
     private String index;
