@@ -4,6 +4,8 @@ import org.commcare.cases.util.StringUtils
 import org.commcare.formplayer.beans.menus.PeristentCommand
 import org.commcare.util.screen.EntityScreen
 import org.commcare.util.screen.MenuScreen
+import org.commcare.suite.model.MenuDisplayable;
+import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.screen.MultiSelectEntityScreen
 import org.commcare.util.screen.Screen
 
@@ -22,11 +24,12 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
         }
     }
 
-    fun addMenusToPeristentMenu(menuScreen: MenuScreen) {
+    fun addMenusToPeristentMenu(menuScreen: MenuScreen, sessionWrapper: SessionWrapper) {
         if (isPersistentMenuEnabled) {
             val options = menuScreen.getOptions()
+        val mChoices = menuScreen.getMenuDisplayables()
             for (i in options.indices) {
-                val command = PeristentCommand(i.toString(), options[i])
+                val command = PeristentCommand(i.toString(), options[i], mChoices[i], sessionWrapper)
                 addPersistentCommand(command)
             }
         }
