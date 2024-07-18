@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import org.checkerframework.checker.units.qual.A;
 import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
-import org.commcare.modern.session.SessionWrapper;
-import org.commcare.suite.model.MenuDisplayable;
 
 import java.util.ArrayList;
 
@@ -31,11 +29,11 @@ public class PeristentCommand {
     }
 
     public PeristentCommand(String index, String displayText,
-        MenuDisplayable menuDisplayable, SessionWrapper session) {
+        String imageUri, NavIconState navigationState) {
         this.index = index;
         this.displayText = displayText;
-        this.setImageUri(menuDisplayable.getImageURI());
-        this.setNavigationState(CommandUtils.getIconState(menuDisplayable, session));
+        this.imageUri = imageUri;
+        this.navigationState = navigationState;
     }
 
     public PeristentCommand(String index, String displayText) {
@@ -63,15 +61,8 @@ public class PeristentCommand {
         return navigationState;
     }
 
-    public void setNavigationState(NavIconState navigatonState) {
-        this.navigationState = navigatonState;
-    }
-
     public String getImageUri() {
         return imageUri;
     }
 
-    private void setImageUri(String imageUri) {
-        this.imageUri = imageUri;
-    }
 }
