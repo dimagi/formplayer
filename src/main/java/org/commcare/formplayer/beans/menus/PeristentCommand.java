@@ -65,4 +65,10 @@ public class PeristentCommand {
         return imageUri;
     }
 
+    @Override
+    public String toString() {
+        return "PersistentCommand [index=" + index + ", text=" + displayText + ", " +
+                "navigationState=" + navigationState + ", imageUri=" + imageUri + "]";
+    }
+
 }
