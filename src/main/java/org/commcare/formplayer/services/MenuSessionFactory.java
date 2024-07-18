@@ -90,7 +90,7 @@ public class MenuSessionFactory {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         List<StackFrameStep> processedSteps = new ArrayList<>();
         menuSession.resetSession();
-        EntityScreenContext entityScreenContext = new EntityScreenContext();
+        EntityScreenContext entityScreenContext = new EntityScreenContext(respectRelevancy);
         Screen screen = menuSession.getNextScreen(false, entityScreenContext);
         int processedStepsCount = 0;
         boolean needsFullInit = false;
@@ -142,7 +142,7 @@ public class MenuSessionFactory {
                 }
 
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
+                    menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext);
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
@@ -196,7 +196,7 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext, respectRelevancy);
+                menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext);
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
             }
@@ -210,23 +210,27 @@ public class MenuSessionFactory {
                                     String locale,
                                     boolean oneQuestionPerScreen,
                                     String asUser,
-                                    boolean preview) throws Exception {
+                                    boolean preview,
+                                    String windowWidth) throws Exception {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
-                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService), windowWidth,
+                storageFactory.getPropertyManager().isPersistentMenuEnabled());
     }
 
     @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession, FormplayerConfigEngine engine,
             CommCareSession commCareSession) throws Exception {
         return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
-                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService));
+                new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService),
+                storageFactory.getPropertyManager().isPersistentMenuEnabled());
     }
 
     @Trace
     public MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession = performInstall(sessionNavigationBean);
         menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
+        menuSession.setWindowWidth(sessionNavigationBean.getWindowWidth());
         return menuSession;
     }
 
@@ -243,7 +247,8 @@ public class MenuSessionFactory {
                 bean.getLocale(),
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),
-                bean.getPreview()
+                bean.getPreview(),
+                bean.getWindowWidth()
         );
     }
 

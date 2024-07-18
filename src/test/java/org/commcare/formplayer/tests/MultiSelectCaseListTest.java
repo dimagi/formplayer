@@ -15,6 +15,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.beans.menus.PeristentCommand;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.util.Constants;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -39,6 +41,8 @@ public class MultiSelectCaseListTest extends BaseTestClass {
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
+        storageFactoryMock.configure("user", "domain", "app_id", "asUser");
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
     }
 
     @Override
@@ -89,7 +93,6 @@ public class MultiSelectCaseListTest extends BaseTestClass {
 
     @Test
     public void testAutoAdvanceWithMultiSelect() throws Exception {
-        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
         String[] selections = new String[]{"1"};
         sessionNavigate(selections, APP,
                 EntityListResponse.class);
@@ -205,5 +208,39 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                         NewFormResponse.class)
         );
         assertTrue(thrown.getMessage().contains("Could not select case non_existent_case_id"));
+    }
+
+    @Test
+    public void testPersistentMenu() throws Exception {
+        String[] selections = null;
+        CommandListResponseBean menuResponse = sessionNavigate(selections, APP, CommandListResponseBean.class);
+        ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
+        expectedMenu.add(new PeristentCommand("0", "Case List"));
+        expectedMenu.add(new PeristentCommand("1", "Case List"));
+        expectedMenu.add(new PeristentCommand("2", "Menu with Auto Submit Form"));
+        assertEquals(expectedMenu, menuResponse.getPersistentMenu());
+
+        selections = new String[]{"0"};
+        menuResponse = sessionNavigate(selections, APP, CommandListResponseBean.class);
+        PeristentCommand firstMenu = expectedMenu.get(0);
+        firstMenu.addCommand(new PeristentCommand("0","Registration Form"));
+        firstMenu.addCommand(new PeristentCommand("1","Followup Form"));
+        firstMenu.addCommand(new PeristentCommand("2","Followup Form with AutoSelect Datum"));
+        firstMenu.addCommand(new PeristentCommand("3","Followup Form with AutoSelect Datum"));
+        assertEquals(expectedMenu, menuResponse.getPersistentMenu());
+
+        selections = new String[]{"0", "1"};
+        EntityListResponse entityResponse = sessionNavigate(selections, APP, EntityListResponse.class);
+        assertEquals(expectedMenu, entityResponse.getPersistentMenu());
+
+        selections = new String[]{"0", "1", "use_selected_values"};
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        NewFormResponse formResponse = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                NewFormResponse.class);
+        PeristentCommand firstSecondMenu = firstMenu.getCommands().get(1);
+        String guid = formResponse.getSelections()[2];
+        firstSecondMenu.addCommand(new PeristentCommand(guid, "(2) 123, ..."));
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 }
