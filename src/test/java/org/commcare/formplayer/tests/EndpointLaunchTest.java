@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.PeristentCommand;
+import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.services.BrowserValuesProvider;
@@ -170,11 +171,11 @@ public class EndpointLaunchTest extends BaseTestClass {
                 null,
                 CommandListResponseBean.class);
         ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PeristentCommand("0", "Case List"));
-        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        expectedMenu.add(new PeristentCommand("0", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PeristentCommand("1", "Parents", null, NavIconState.NEXT));
         PeristentCommand parentMenu = expectedMenu.get(0);
-        parentMenu.addCommand(new PeristentCommand("0", "Add Parent"));
-        parentMenu.addCommand(new PeristentCommand("1", "Followup"));
+        parentMenu.addCommand(new PeristentCommand("0", "Add Parent", null, NavIconState.JUMP));
+        parentMenu.addCommand(new PeristentCommand("1", "Followup", null, NavIconState.NEXT));
         assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
 
         NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -200,13 +201,13 @@ public class EndpointLaunchTest extends BaseTestClass {
                 endpointArgs,
                 CommandListResponseBean.class);
         expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PeristentCommand("0", "Case List"));
-        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        expectedMenu.add(new PeristentCommand("0", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PeristentCommand("1", "Parents", null, NavIconState.NEXT));
         parentMenu = expectedMenu.get(1);
         parentMenu.addCommand(new PeristentCommand(caseSelection, "Batman Begins"));
         PeristentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
-        batmanBeginsMenu.addCommand(new PeristentCommand("0", "Add Child"));
-        batmanBeginsMenu.addCommand(new PeristentCommand("1", "Child Case List"));
+        batmanBeginsMenu.addCommand(new PeristentCommand("0", "Add Child", null, NavIconState.JUMP));
+        batmanBeginsMenu.addCommand(new PeristentCommand("1", "Child Case List", null, NavIconState.NEXT));
         assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -224,7 +225,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         PeristentCommand childCaseListMenu = batmanBeginsMenu.getCommands().get(1);
         childCaseListMenu.addCommand(new PeristentCommand(childCaseSelection, "The Dark Knight"));
         PeristentCommand darkKnightMenu = childCaseListMenu.getCommands().get(0);
-        darkKnightMenu.addCommand(new PeristentCommand("0", "Update Child"));
+        darkKnightMenu.addCommand(new PeristentCommand("0", "Update Child", null, NavIconState.JUMP));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
