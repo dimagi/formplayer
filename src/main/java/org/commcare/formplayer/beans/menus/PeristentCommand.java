@@ -25,6 +25,7 @@ public class PeristentCommand {
     private String index;
     private String displayText;
     private NavIconState navigationState;
+    private String imageUri;
     private ArrayList<PeristentCommand> commands = new ArrayList<>();
 
     /**
@@ -37,6 +38,7 @@ public class PeristentCommand {
         MenuDisplayable menuDisplayable, SessionWrapper session) {
         this.index = index;
         this.displayText = displayText;
+        this.setImageUri(menuDisplayable.getImageURI());
         this.setNavigationState(getIconState(menuDisplayable, session));
     }
 
@@ -80,5 +82,13 @@ public class PeristentCommand {
             }
         }
         return iconChoice;
+    }
+
+    public String getImageUri() {
+        return imageUri;
+    }
+
+    private void setImageUri(String imageUri) {
+        this.imageUri = imageUri;
     }
 }
