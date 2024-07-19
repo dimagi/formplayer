@@ -23,7 +23,7 @@ import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
-import org.commcare.formplayer.beans.menus.PeristentCommand;
+import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
@@ -78,7 +78,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -220,7 +219,7 @@ public class MenuSessionRunnerService {
         return menuResponseBean;
     }
 
-    private void setPeristenMenuToBean(BaseResponseBean menuResponseBean, ArrayList<PeristentCommand> persistentMenu) {
+    private void setPeristenMenuToBean(BaseResponseBean menuResponseBean, ArrayList<PersistentCommand> persistentMenu) {
         if (storageFactory.getPropertyManager().isPersistentMenuEnabled()) {
             menuResponseBean.setPersistentMenu(persistentMenu);
         }

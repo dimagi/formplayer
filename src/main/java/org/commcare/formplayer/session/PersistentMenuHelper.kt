@@ -1,7 +1,7 @@
 package org.commcare.formplayer.session
 
 import org.commcare.cases.util.StringUtils
-import org.commcare.formplayer.beans.menus.PeristentCommand
+import org.commcare.formplayer.beans.menus.PersistentCommand
 import org.commcare.util.screen.EntityScreen
 import org.commcare.util.screen.MenuScreen
 import org.commcare.util.screen.MultiSelectEntityScreen
@@ -12,12 +12,13 @@ import org.commcare.util.screen.Screen
  */
 class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
 
-    var persistentMenu: ArrayList<PeristentCommand> = ArrayList()
-    private var currentMenu: PeristentCommand? = null
+    var persistentMenu: ArrayList<PersistentCommand> = ArrayList()
+    private var currentMenu: PersistentCommand? = null
 
     fun addEntitySelection(input: String, entityText: String) {
         if (isPersistentMenuEnabled && !StringUtils.isEmpty(input) && !input.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
-            val command = PeristentCommand(input, entityText)
+            val command =
+                PersistentCommand(input, entityText)
             addPersistentCommand(command)
         }
     }
@@ -26,7 +27,10 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
         if (isPersistentMenuEnabled) {
             val options = menuScreen.getOptions()
             for (i in options.indices) {
-                val command = PeristentCommand(i.toString(), options[i])
+                val command = PersistentCommand(
+                    i.toString(),
+                    options[i]
+                )
                 addPersistentCommand(command)
             }
         }
@@ -54,7 +58,7 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
         }
     }
 
-    private fun addPersistentCommand(command: PeristentCommand) {
+    private fun addPersistentCommand(command: PersistentCommand) {
         // currentMenu!=null implies that we must have added items to persistent menu
         check(currentMenu == null || persistentMenu.size > 0)
         if (currentMenu == null) {

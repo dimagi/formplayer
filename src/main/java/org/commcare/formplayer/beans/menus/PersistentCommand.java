@@ -1,9 +1,5 @@
 package org.commcare.formplayer.beans.menus;
 
-import org.checkerframework.checker.units.qual.A;
-import org.commcare.modern.session.SessionWrapper;
-import org.commcare.suite.model.MenuDisplayable;
-
 import java.util.ArrayList;
 
 import lombok.EqualsAndHashCode;
@@ -12,19 +8,19 @@ import lombok.EqualsAndHashCode;
  * Model used to represent a persistent menu in FP HTTP API
  */
 @EqualsAndHashCode
-public class PeristentCommand {
+public class PersistentCommand {
 
     private String index;
     private String displayText;
-    private ArrayList<PeristentCommand> commands = new ArrayList<>();
+    private ArrayList<PersistentCommand> commands = new ArrayList<>();
 
     /**
      * serialization only
      */
-    public PeristentCommand() {
+    public PersistentCommand() {
     }
 
-    public PeristentCommand(String index, String displayText) {
+    public PersistentCommand(String index, String displayText) {
         this.index = index;
         this.displayText = displayText;
     }
@@ -37,11 +33,11 @@ public class PeristentCommand {
         return displayText;
     }
 
-    public ArrayList<PeristentCommand> getCommands() {
+    public ArrayList<PersistentCommand> getCommands() {
         return commands;
     }
 
-    public void addCommand(PeristentCommand command) {
+    public void addCommand(PersistentCommand command) {
         commands.add(command);
     }
 }

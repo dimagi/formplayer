@@ -4,24 +4,16 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-import org.commcare.formplayer.beans.menus.PeristentCommand;
+import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.services.BrowserValuesProvider;
-import org.commcare.formplayer.sqlitedb.SQLiteDB;
-import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
-import org.javarosa.core.services.PropertyManager;
-import org.javarosa.core.services.properties.Property;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.util.NestedServletException;
 
 import java.util.ArrayList;
@@ -169,12 +161,12 @@ public class EndpointLaunchTest extends BaseTestClass {
                 "caselist",
                 null,
                 CommandListResponseBean.class);
-        ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PeristentCommand("0", "Case List"));
-        expectedMenu.add(new PeristentCommand("1", "Parents"));
-        PeristentCommand parentMenu = expectedMenu.get(0);
-        parentMenu.addCommand(new PeristentCommand("0", "Add Parent"));
-        parentMenu.addCommand(new PeristentCommand("1", "Followup"));
+        ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
+        expectedMenu.add(new PersistentCommand("0", "Case List"));
+        expectedMenu.add(new PersistentCommand("1", "Parents"));
+        PersistentCommand parentMenu = expectedMenu.get(0);
+        parentMenu.addCommand(new PersistentCommand("0", "Add Parent"));
+        parentMenu.addCommand(new PersistentCommand("1", "Followup"));
         assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
 
         NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -191,8 +183,8 @@ public class EndpointLaunchTest extends BaseTestClass {
                 "followup",
                 endpointArgs,
                 NewFormResponse.class);
-        PeristentCommand followupMenu = parentMenu.getCommands().get(1);
-        followupMenu.addCommand(new PeristentCommand(caseSelection, "Batman Begins"));
+        PersistentCommand followupMenu = parentMenu.getCommands().get(1);
+        followupMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins"));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
         commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -200,13 +192,13 @@ public class EndpointLaunchTest extends BaseTestClass {
                 endpointArgs,
                 CommandListResponseBean.class);
         expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PeristentCommand("0", "Case List"));
-        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        expectedMenu.add(new PersistentCommand("0", "Case List"));
+        expectedMenu.add(new PersistentCommand("1", "Parents"));
         parentMenu = expectedMenu.get(1);
-        parentMenu.addCommand(new PeristentCommand(caseSelection, "Batman Begins"));
-        PeristentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
-        batmanBeginsMenu.addCommand(new PeristentCommand("0", "Add Child"));
-        batmanBeginsMenu.addCommand(new PeristentCommand("1", "Child Case List"));
+        parentMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins"));
+        PersistentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
+        batmanBeginsMenu.addCommand(new PersistentCommand("0", "Add Child"));
+        batmanBeginsMenu.addCommand(new PersistentCommand("1", "Child Case List"));
         assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -221,10 +213,10 @@ public class EndpointLaunchTest extends BaseTestClass {
                 "child_case_list",
                 endpointArgs,
                 NewFormResponse.class);
-        PeristentCommand childCaseListMenu = batmanBeginsMenu.getCommands().get(1);
-        childCaseListMenu.addCommand(new PeristentCommand(childCaseSelection, "The Dark Knight"));
-        PeristentCommand darkKnightMenu = childCaseListMenu.getCommands().get(0);
-        darkKnightMenu.addCommand(new PeristentCommand("0", "Update Child"));
+        PersistentCommand childCaseListMenu = batmanBeginsMenu.getCommands().get(1);
+        childCaseListMenu.addCommand(new PersistentCommand(childCaseSelection, "The Dark Knight"));
+        PersistentCommand darkKnightMenu = childCaseListMenu.getCommands().get(0);
+        darkKnightMenu.addCommand(new PersistentCommand("0", "Update Child"));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -242,9 +234,9 @@ public class EndpointLaunchTest extends BaseTestClass {
                 null,
                 NewFormResponse.class);
         // Verify that we only add root menu
-        ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PeristentCommand("0", "Case List"));
-        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
+        expectedMenu.add(new PersistentCommand("0", "Case List"));
+        expectedMenu.add(new PersistentCommand("1", "Parents"));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 }

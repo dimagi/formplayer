@@ -1,7 +1,7 @@
 package org.commcare.formplayer.tests
 
 import org.commcare.formplayer.beans.NewFormResponse
-import org.commcare.formplayer.beans.menus.PeristentCommand
+import org.commcare.formplayer.beans.menus.PersistentCommand
 import org.commcare.formplayer.beans.menus.QueryResponseBean
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock
 import org.commcare.formplayer.objects.QueryData
@@ -55,14 +55,34 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
 
             // Peristent Menu check
             val responseSelections = response.selections.asList()
-            val expectedMenu = java.util.ArrayList<PeristentCommand>()
-            expectedMenu.add(PeristentCommand("0", "Case List"))
-            expectedMenu.add(PeristentCommand("1", "Parent Case List"))
+            val expectedMenu = java.util.ArrayList<PersistentCommand>()
+            expectedMenu.add(
+                PersistentCommand(
+                    "0",
+                    "Case List"
+                )
+            )
+            expectedMenu.add(
+                PersistentCommand(
+                    "1",
+                    "Parent Case List"
+                )
+            )
             val parentCaseListMenu = expectedMenu[1]
-            parentCaseListMenu.addCommand(PeristentCommand(responseSelections.last(), "Batman Begins"))
+            parentCaseListMenu.addCommand(
+                PersistentCommand(
+                    responseSelections.last(),
+                    "Batman Begins"
+                )
+            )
             // add the auto-advanced menu
             val batmanBeginsMenu = parentCaseListMenu.commands[0]
-            batmanBeginsMenu.addCommand(PeristentCommand("0", "Nested Case List"))
+            batmanBeginsMenu.addCommand(
+                PersistentCommand(
+                    "0",
+                    "Nested Case List"
+                )
+            )
             assertEquals(expectedMenu, response.persistentMenu)
 
 
@@ -82,9 +102,19 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
 
             // Persistent Menu check
             val nestedCaseListMenu = batmanBeginsMenu.commands[0]
-            nestedCaseListMenu.addCommand(PeristentCommand(formResponse.selections.last(), "Batman Begins"))
+            nestedCaseListMenu.addCommand(
+                PersistentCommand(
+                    formResponse.selections.last(),
+                    "Batman Begins"
+                )
+            )
             val nestedBatmanbeginsMenu = nestedCaseListMenu.commands[0]
-            nestedBatmanbeginsMenu.addCommand(PeristentCommand("0", "Followup"));
+            nestedBatmanbeginsMenu.addCommand(
+                PersistentCommand(
+                    "0",
+                    "Followup"
+                )
+            );
             assertEquals(expectedMenu, formResponse.persistentMenu)
         }
     }
