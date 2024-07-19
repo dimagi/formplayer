@@ -147,9 +147,14 @@
   <entry>
     <form>http://openrosa.org/formdesigner/ACE30E84-F924-4597-AB75-842E9324F388</form>
     <command id="m0-f2">
-      <text>
-        <locale id="forms.m0f2"/>
-      </text>
+      <display>
+        <text>
+          <locale id="forms.m0f2"/>
+        </text>
+        <text form="image">
+          <locale id="forms.m0f2.icon"/>
+        </text>
+      </display>
     </command>
     <instance id="casedb" src="jr://instance/casedb"/>
     <instance id="commcaresession" src="jr://instance/session"/>
@@ -171,9 +176,14 @@
     </session>
   </entry>
   <menu id="m0">
-    <text>
-      <locale id="modules.m0"/>
-    </text>
+    <display>
+      <text>
+        <locale id="modules.m0"/>
+      </text>
+      <text form="image">
+        <locale id="modules.m0.icon"/>
+      </text>
+    </display>
     <command id="m0-f0"/>
     <command id="m0-f1"/>
     <command id="m0-f2"/>

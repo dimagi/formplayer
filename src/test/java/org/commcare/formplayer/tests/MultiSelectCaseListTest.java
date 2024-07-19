@@ -216,7 +216,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         String[] selections = null;
         CommandListResponseBean menuResponse = sessionNavigate(selections, APP, CommandListResponseBean.class);
         ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PeristentCommand("0", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PeristentCommand("0", "Case List", "jr://file/commcare/image/m0customicon_en.png", NavIconState.NEXT));
         expectedMenu.add(new PeristentCommand("1", "Case List", null, NavIconState.NEXT));
         expectedMenu.add(new PeristentCommand("2", "Menu with Auto Submit Form", null, NavIconState.NEXT));
         assertEquals(expectedMenu, menuResponse.getPersistentMenu());
@@ -226,7 +226,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         PeristentCommand firstMenu = expectedMenu.get(0);
         firstMenu.addCommand(new PeristentCommand("0","Registration Form", null, NavIconState.JUMP));
         firstMenu.addCommand(new PeristentCommand("1","Followup Form", null, NavIconState.JUMP));
-        firstMenu.addCommand(new PeristentCommand("2","Followup Form with AutoSelect Datum", null, NavIconState.NEXT));
+        firstMenu.addCommand(new PeristentCommand("2","Followup Form with AutoSelect Datum", "jr://file/commcare/image/m0f2customicon_en.png", NavIconState.NEXT));
         firstMenu.addCommand(new PeristentCommand("3","Followup Form with AutoSelect Datum", null, NavIconState.NEXT));
         assertEquals(expectedMenu, menuResponse.getPersistentMenu());
 
