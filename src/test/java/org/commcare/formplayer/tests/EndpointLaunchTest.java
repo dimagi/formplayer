@@ -244,8 +244,8 @@ public class EndpointLaunchTest extends BaseTestClass {
                 NewFormResponse.class);
         // Verify that we only add root menu
         ArrayList<PeristentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PeristentCommand("0", "Case List"));
-        expectedMenu.add(new PeristentCommand("1", "Parents"));
+        expectedMenu.add(new PeristentCommand("0", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PeristentCommand("1", "Parents", null, NavIconState.NEXT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 }
