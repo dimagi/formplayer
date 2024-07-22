@@ -57,6 +57,7 @@ public class PeristentCommand {
         commands.add(command);
     }
 
+    // Used to differentiate form vs module commands
     public NavIconState getNavigationState() {
         return navigationState;
     }
