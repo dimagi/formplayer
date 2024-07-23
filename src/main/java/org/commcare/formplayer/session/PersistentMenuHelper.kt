@@ -2,7 +2,7 @@ package org.commcare.formplayer.session
 
 import org.commcare.cases.util.StringUtils
 import org.commcare.formplayer.beans.menus.CommandUtils;
-import org.commcare.formplayer.beans.menus.PeristentCommand
+import org.commcare.formplayer.beans.menus.PersistentCommand
 import org.commcare.util.screen.EntityScreen
 import org.commcare.util.screen.MenuScreen
 import org.commcare.modern.session.SessionWrapper;
@@ -14,12 +14,13 @@ import org.commcare.util.screen.Screen
  */
 class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
 
-    var persistentMenu: ArrayList<PeristentCommand> = ArrayList()
-    private var currentMenu: PeristentCommand? = null
+    var persistentMenu: ArrayList<PersistentCommand> = ArrayList()
+    private var currentMenu: PersistentCommand? = null
 
     fun addEntitySelection(input: String, entityText: String) {
         if (isPersistentMenuEnabled && !StringUtils.isEmpty(input) && !input.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
-            val command = PeristentCommand(input, entityText)
+            val command =
+                PersistentCommand(input, entityText)
             addPersistentCommand(command)
         }
     }
@@ -31,7 +32,10 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
             for (i in options.indices) {
                 val imageUri = mChoices[i].getImageURI();
                 val navigationState = CommandUtils.getIconState(mChoices[i], sessionWrapper);
-                val command = PeristentCommand(i.toString(), options[i], imageUri, navigationState)
+                val command = PersistentCommand(
+                    i.toString(),
+                    options[i], imageUri, navigationState
+                )
                 addPersistentCommand(command)
             }
         }
@@ -59,7 +63,7 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
         }
     }
 
-    private fun addPersistentCommand(command: PeristentCommand) {
+    private fun addPersistentCommand(command: PersistentCommand) {
         // currentMenu!=null implies that we must have added items to persistent menu
         check(currentMenu == null || persistentMenu.size > 0)
         if (currentMenu == null) {

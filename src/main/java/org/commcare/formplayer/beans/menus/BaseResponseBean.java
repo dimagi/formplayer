@@ -29,7 +29,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private String smartLinkRedirect;
     private boolean dynamicSearch;
 
-    private ArrayList<PeristentCommand> persistentMenu;
+    private ArrayList<PersistentCommand> persistentMenu;
 
     private ResponseMetaData metaData;
 
@@ -144,11 +144,11 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         this.metaData = metaData;
     }
 
-    public ArrayList<PeristentCommand> getPersistentMenu() {
+    public ArrayList<PersistentCommand> getPersistentMenu() {
         return persistentMenu;
     }
 
-    public void setPersistentMenu(ArrayList<PeristentCommand> persistentMenu) {
+    public void setPersistentMenu(ArrayList<PersistentCommand> persistentMenu) {
         this.persistentMenu = persistentMenu;
     }
 

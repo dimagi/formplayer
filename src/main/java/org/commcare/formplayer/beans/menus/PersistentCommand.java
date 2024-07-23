@@ -2,7 +2,6 @@ package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import org.checkerframework.checker.units.qual.A;
 import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 
 import java.util.ArrayList;
@@ -14,21 +13,21 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PeristentCommand {
+public class PersistentCommand {
 
     private String index;
     private String displayText;
     private NavIconState navigationState;
     private String imageUri;
-    private ArrayList<PeristentCommand> commands = new ArrayList<>();
+    private ArrayList<PersistentCommand> commands = new ArrayList<>();
 
     /**
      * serialization only
      */
-    public PeristentCommand() {
+    public PersistentCommand() {
     }
 
-    public PeristentCommand(String index, String displayText,
+    public PersistentCommand(String index, String displayText,
         String imageUri, NavIconState navigationState) {
         this.index = index;
         this.displayText = displayText;
@@ -36,7 +35,7 @@ public class PeristentCommand {
         this.navigationState = navigationState;
     }
 
-    public PeristentCommand(String index, String displayText) {
+    public PersistentCommand(String index, String displayText) {
         this.index = index;
         this.displayText = displayText;
     }
@@ -49,11 +48,11 @@ public class PeristentCommand {
         return displayText;
     }
 
-    public ArrayList<PeristentCommand> getCommands() {
+    public ArrayList<PersistentCommand> getCommands() {
         return commands;
     }
 
-    public void addCommand(PeristentCommand command) {
+    public void addCommand(PersistentCommand command) {
         commands.add(command);
     }
 

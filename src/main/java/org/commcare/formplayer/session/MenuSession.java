@@ -7,7 +7,7 @@ import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALU
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.formplayer.beans.menus.PeristentCommand;
+import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -474,7 +474,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return session;
     }
 
-    public ArrayList<PeristentCommand> getPersistentMenu() {
+    public ArrayList<PersistentCommand> getPersistentMenu() {
         return persistentMenuHelper.getPersistentMenu();
     }
 }
