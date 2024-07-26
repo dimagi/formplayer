@@ -90,19 +90,12 @@ public class Constants {
     public static final String CCZ_LATEST_SAVED = "save";
 
     // Postgres tables
-    public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
-    // Token table generated from django rest framework
-    public static final String POSTGRES_AUTH_TOKEN_TABLE_NAME = "authtoken_token";
-    public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
     public static final String POSTGRES_VIRTUAL_DATA_INSTANCE_TABLE_NAME = "virtual_data_instance";
 
     public static final String POSTGRES_MEDIA_META_DATA_TABLE_NAME = "media_meta_data";
 
     public static final String SESSION_DETAILS_VIEW = "/hq/admin/session_details/";
-
-    // Couch databases
-    public static final String COUCH_USERS_DB = "__users";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
     public static final String COMMCARE_USER_SUFFIX = "commcarehq.org";

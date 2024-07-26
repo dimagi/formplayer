@@ -32,8 +32,9 @@ public class HqUserDetailsBean implements UserDetails {
     public HqUserDetailsBean() {
     }
 
-    public HqUserDetailsBean(String domain, String username) {
+    public HqUserDetailsBean(String sessionId, String domain, String username) {
         this(domain, new String[]{domain}, username, false, new String[]{}, new String[]{});
+        this.authToken = sessionId;
     }
 
     public HqUserDetailsBean(String domain, String[] domains, String username, boolean isSuperuser,

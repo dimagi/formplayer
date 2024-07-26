@@ -30,6 +30,7 @@ public class HqUserDetails {
     private boolean isSuperUser;
     private String[] enabledPreviews;
     private String[] enabledToggles;
+    private String authToken;
 
     public HqUserDetails(WithHqUser withUser) {
         String username = StringUtils.hasLength(withUser.username()) ? withUser.username()
@@ -42,9 +43,12 @@ public class HqUserDetails {
         this.isSuperUser = withUser.isSuperUser();
         this.enabledPreviews = withUser.enabledPreviews();
         this.enabledToggles = withUser.enabledToggles();
+        this.authToken = withUser.authToken();
     }
 
     public HqUserDetailsBean toBean() {
-        return new HqUserDetailsBean(domain, domains, username, isSuperUser, enabledToggles, enabledPreviews);
+        HqUserDetailsBean bean = new HqUserDetailsBean(domain, domains, username, isSuperUser, enabledToggles, enabledPreviews);
+        bean.setAuthToken(this.authToken);
+        return bean;
     }
 }

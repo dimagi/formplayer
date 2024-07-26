@@ -111,7 +111,7 @@ public class SessionAuthTests {
     private void mockValidAuth(String sessionId) {
         TokenMatcher matcher = new TokenMatcher(DOMAIN, USERNAME, sessionId);
         when(userDetailsService.loadUserDetails(argThat(matcher))).thenReturn(
-                new HqUserDetailsBean(DOMAIN, USERNAME)
+                new HqUserDetailsBean(sessionId, DOMAIN, USERNAME)
         );
     }
 

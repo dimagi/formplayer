@@ -63,8 +63,7 @@ public class DebuggerController extends AbstractBaseController {
     @UserRestore
     @ConfigureStorageFromSession
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
-            @RequestBody SessionRequestBean debuggerRequest,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+            @RequestBody SessionRequestBean debuggerRequest) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(serializableFormSession.getMenuSessionId());
         FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
@@ -92,7 +91,6 @@ public class DebuggerController extends AbstractBaseController {
     @AppInstall
     public MenuDebuggerContentResponseBean menuDebuggerContent(
             @RequestBody SessionNavigationBean debuggerMenuRequest,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
 
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(debuggerMenuRequest);
@@ -114,7 +112,6 @@ public class DebuggerController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
-                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                        HttpServletRequest request) throws Exception {
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(evaluateXPathRequestBean);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
@@ -144,8 +141,8 @@ public class DebuggerController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
-    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
-                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean)
+            throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
