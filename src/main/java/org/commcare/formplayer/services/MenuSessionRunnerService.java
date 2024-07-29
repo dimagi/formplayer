@@ -208,8 +208,9 @@ public class MenuSessionRunnerService {
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
-
-        menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+        if (storageFactory.getPropertyManager().isBreadcrumbsEnabled()) {
+            menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+        }
         menuResponseBean.setAppId(menuSession.getAppId());
         menuResponseBean.setAppVersion(
                 menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
@@ -676,7 +677,9 @@ public class MenuSessionRunnerService {
                     menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
             formResponseBean.setPersistentCaseTile(
                     getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
-            formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            if (storageFactory.getPropertyManager().isBreadcrumbsEnabled()) {
+                formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            }
             setPeristenMenuToBean(formResponseBean, menuSession.getPersistentMenu());
             // update datadog/sentry metrics
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
