@@ -27,14 +27,15 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
 
     fun addMenusToPeristentMenu(menuScreen: MenuScreen, sessionWrapper: SessionWrapper) {
         if (isPersistentMenuEnabled) {
-            val options = menuScreen.getOptions()
-        val mChoices = menuScreen.getMenuDisplayables()
-            for (i in options.indices) {
-                val imageUri = mChoices[i].getImageURI();
-                val navigationState = CommandUtils.getIconState(mChoices[i], sessionWrapper);
+            val mChoices = menuScreen.getMenuDisplayables()
+            for (i in mChoices.indices) {
+                val d = mChoices[i];
+                val option = d.getDisplayText(sessionWrapper.getEvaluationContextWithAccumulatedInstances(d.getCommandID(), d.getRawText()));
+                val imageUri = d.getImageURI();
+                val navigationState = CommandUtils.getIconState(d, sessionWrapper);
                 val command = PersistentCommand(
                     i.toString(),
-                    options[i], imageUri, navigationState
+                    option, imageUri, navigationState
                 )
                 addPersistentCommand(command)
             }
