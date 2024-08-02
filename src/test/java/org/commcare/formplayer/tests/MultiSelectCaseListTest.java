@@ -241,7 +241,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
         PersistentCommand firstSecondMenu = firstMenu.getCommands().get(1);
         String guid = formResponse.getSelections()[2];
-        firstSecondMenu.addCommand(new PersistentCommand(guid, "(2) 123, ..."));
+        firstSecondMenu.addCommand(new PersistentCommand(guid, "(2) 123, ...", null, null));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 }

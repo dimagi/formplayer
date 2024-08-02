@@ -35,11 +35,6 @@ public class PersistentCommand {
         this.navigationState = navigationState;
     }
 
-    public PersistentCommand(String index, String displayText) {
-        this.index = index;
-        this.displayText = displayText;
-    }
-
     public String getIndex() {
         return index;
     }

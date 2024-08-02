@@ -73,7 +73,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
             parentCaseListMenu.addCommand(
                 PersistentCommand(
                     responseSelections.last(),
-                    "Batman Begins"
+                    "Batman Begins", null, null
                 )
             )
             // add the auto-advanced menu
@@ -106,7 +106,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
             nestedCaseListMenu.addCommand(
                 PersistentCommand(
                     formResponse.selections.last(),
-                    "Batman Begins"
+                    "Batman Begins", null, null
                 )
             )
             val nestedBatmanbeginsMenu = nestedCaseListMenu.commands[0]
