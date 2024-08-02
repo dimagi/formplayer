@@ -889,6 +889,7 @@ public class BaseTestClass {
         sessionNavigationBean.setOffset(offset);
         sessionNavigationBean.setCasesPerPage(casesPerPage);
         sessionNavigationBean.setSelectedValues(selectedValues);
+        sessionNavigationBean.setWindowWidth("1796");
         return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
