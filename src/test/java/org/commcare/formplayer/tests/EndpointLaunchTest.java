@@ -185,7 +185,7 @@ public class EndpointLaunchTest extends BaseTestClass {
                 endpointArgs,
                 NewFormResponse.class);
         PersistentCommand followupMenu = parentMenu.getCommands().get(1);
-        followupMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins", null, null));
+        followupMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins", null, NavIconState.ENTITY_SELECT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
         commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -196,7 +196,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         expectedMenu.add(new PersistentCommand("0", "Case List", null, NavIconState.NEXT));
         expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
         parentMenu = expectedMenu.get(1);
-        parentMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins", null, null));
+        parentMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins", null, NavIconState.ENTITY_SELECT));
         PersistentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
         batmanBeginsMenu.addCommand(new PersistentCommand("0", "Add Child", null, NavIconState.JUMP));
         batmanBeginsMenu.addCommand(new PersistentCommand("1", "Child Case List", null, NavIconState.NEXT));
@@ -215,7 +215,7 @@ public class EndpointLaunchTest extends BaseTestClass {
                 endpointArgs,
                 NewFormResponse.class);
         PersistentCommand childCaseListMenu = batmanBeginsMenu.getCommands().get(1);
-        childCaseListMenu.addCommand(new PersistentCommand(childCaseSelection, "The Dark Knight", null, null));
+        childCaseListMenu.addCommand(new PersistentCommand(childCaseSelection, "The Dark Knight", null, NavIconState.ENTITY_SELECT));
         PersistentCommand darkKnightMenu = childCaseListMenu.getCommands().get(0);
         darkKnightMenu.addCommand(new PersistentCommand("0", "Update Child", null, NavIconState.JUMP));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());

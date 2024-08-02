@@ -20,7 +20,7 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
     fun addEntitySelection(input: String, entityText: String) {
         if (isPersistentMenuEnabled && !StringUtils.isEmpty(input) && !input.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
             val command =
-                PersistentCommand(input, entityText, null, null)
+                PersistentCommand(input, entityText, null, CommandUtils.NavIconState.ENTITY_SELECT)
             addPersistentCommand(command)
         }
     }

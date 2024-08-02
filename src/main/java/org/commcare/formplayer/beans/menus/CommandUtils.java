@@ -9,7 +9,7 @@ import org.commcare.suite.model.SessionDatum;
 public class CommandUtils {
 
     public enum NavIconState {
-        NEXT, JUMP
+        NEXT, JUMP, ENTITY_SELECT
     }
 
     public static NavIconState getIconState(MenuDisplayable menuDisplayable, CommCareSession session) {
