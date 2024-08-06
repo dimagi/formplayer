@@ -173,7 +173,7 @@ public class FormSubmissionHelper {
         Map<String, String> extras = new HashMap();
         extras.put(Constants.DOMAIN_TAG, domain);
 
-        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, commCareSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, commCareSession, null);
         return new FormSubmissionContext(
                 request,
                 isPrevalidated,

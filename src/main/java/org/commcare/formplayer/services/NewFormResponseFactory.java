@@ -157,7 +157,8 @@ public class NewFormResponseFactory {
                 storageFactory,
                 commCareSession,
                 formplayerRemoteInstanceFetcher,
-                formDefinitionService
+                formDefinitionService,
+                null
         );
     }
 
