@@ -258,13 +258,17 @@ public class MenuSession implements HereFunctionHandlerListener {
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
-            String username = session.getAsUser() != null ?
-                    StringUtils.getFullUsername(session.getAsUser(), session.getDomain()) : null;
-            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
-            syncScreen.init(sessionWrapper);
-            return syncScreen;
+            return getSyncScreen();
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
+    }
+
+    private Screen getSyncScreen() throws CommCareSessionException{
+        String username = session.getAsUser() != null ?
+        StringUtils.getFullUsername(session.getAsUser(), session.getDomain()) : null;
+        FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
+        syncScreen.init(sessionWrapper);
+        return syncScreen;
     }
 
     private void clearEntityScreenCache() {
