@@ -263,6 +263,22 @@ public class MenuSession implements HereFunctionHandlerListener {
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
     }
 
+    public Screen getNextScreenIfSyncScreen(boolean needsFullEntityScreen, EntityScreenContext entityScreenContext) throws CommCareSessionException {
+        String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
+        if (next == null) {
+            if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
+                sessionWrapper.stepBack();
+                return getNextScreenIfSyncScreen(needsFullEntityScreen, entityScreenContext);
+            }
+        }  else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
+            computeDatum();
+            return getNextScreenIfSyncScreen(needsFullEntityScreen, entityScreenContext);
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+            return getSyncScreen();
+        }
+        return null;
+    }
+
     private Screen getSyncScreen() throws CommCareSessionException{
         String username = session.getAsUser() != null ?
         StringUtils.getFullUsername(session.getAsUser(), session.getDomain()) : null;
