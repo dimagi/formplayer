@@ -28,6 +28,7 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MediaMetaDataService;
+import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
@@ -138,7 +139,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 changeLocaleBean.getSessionId());
-        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, changeLocaleBean.getWindowWidth());
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
         FormEntryResponseBean responseBean = formEntrySession.getCurrentJson();
         updateSession(formEntrySession);
@@ -197,7 +198,7 @@ public class FormController extends AbstractBaseController {
 
         FormSession formEntrySession = categoryTimingHelper.timed(
                 Constants.TimingCategories.INITIALIZE_SESSION,
-                () -> formSessionFactory.getFormSession(serializableFormSession)
+                () -> formSessionFactory.getFormSession(serializableFormSession, answerQuestionBean.getWindowWidth())
         );
 
         String fileId = null;
@@ -259,7 +260,7 @@ public class FormController extends AbstractBaseController {
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 newRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, newRepeatRequestBean.getWindowWidth());
         JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getRepeatIndex());
@@ -280,7 +281,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 deleteRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, deleteRepeatRequestBean.getWindowWidth());
         JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 deleteRepeatRequestBean.getRepeatIndex());
@@ -301,7 +302,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession, requestBean.getWindowWidth());
         formSession.stepToNextIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession);
@@ -318,7 +319,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession, requestBean.getWindowWidth());
         FormEntryNavigationResponseBean responseBean = formSession.getNextFormNavigation();
         updateSession(formSession);
         return responseBean;
@@ -334,7 +335,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession, requestBean.getWindowWidth());
         formSession.stepToPreviousIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession);
@@ -355,7 +356,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 requestBean.getSessionId());
-        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession, requestBean.getWindowWidth());
         return new GetInstanceResponseBean(formSession, false);
     }
 
@@ -370,7 +371,7 @@ public class FormController extends AbstractBaseController {
             throws Exception {
         org.commcare.formplayer.objects.SerializableFormSession serializableFormSession =
                 formSessionService.getSessionById(requestBean.getSessionId());
-        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession);
+        FormSession formSession = formSessionFactory.getFormSession(serializableFormSession, requestBean.getWindowWidth());
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession);
         return responseBean;
