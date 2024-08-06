@@ -62,7 +62,8 @@ class Installer(
                 bean.locale,
                 bean.oneQuestionPerScreen,
                 bean.restoreAs,
-                bean.preview
+                bean.preview,
+                bean.windowWidth
             )
             menuSessionRunnerService.getNextMenu(null, menuSession, null, EntityScreenContext()) as CommandListResponseBean
         }

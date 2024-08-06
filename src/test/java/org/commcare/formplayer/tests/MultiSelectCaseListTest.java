@@ -1,6 +1,9 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.junit.HasXpath.hasXpath;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -70,6 +73,20 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
         checkForSelectedEntitiesDatum(formRespUsingGuid.getSessionId(), selections[2]);
         checkForSelectedEntitiesInstance(formRespUsingGuid.getSessionId(), selectedValues);
+    }
+
+    @Test
+    public void testWindowWidthParam() throws Exception {
+        String[] selections = new String[]{"0", "1", "use_selected_values"};
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                "test-window-width",
+                NewFormResponse.class);
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(formResp.getSessionId(),
+                "instance('commcaresession')/session/context/window_width");
+        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assertThat(evaluateXpathResponseBean.getOutput(), hasXpath("/result", equalTo("test-window-width")));
     }
 
     @Test

@@ -814,6 +814,11 @@ public class BaseTestClass {
     }
 
     <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            Class<T> clazz) throws Exception {
+       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, clazz);
+    }
+
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,  String windowWidth,
             Class<T> clazz)
             throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
@@ -822,6 +827,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSelectedValues(selectedValues);
+        sessionNavigationBean.setWindowWidth(windowWidth);
         return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
