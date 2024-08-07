@@ -48,8 +48,8 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    sentryVersion = '7.10.0'
-    shedlockVersion = '5.13.0'
+    sentryVersion = '7.13.0'
+    shedlockVersion = '5.14.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -138,7 +138,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testImplementation group: 'org.mockito', name: 'mockito-core'
     testImplementation group: 'org.mockito', name: 'mockito-inline'
-    testImplementation "org.mockito.kotlin:mockito-kotlin:5.3.1"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:5.4.0"
     testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert'
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
 }

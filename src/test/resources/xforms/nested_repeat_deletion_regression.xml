@@ -1,0 +1,91 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>Survey</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/272D7E9C-C2E0-4FBF-BC90-2E330E4FEE9F" uiVersion="1" version="41" name="Survey">
+                    <repeat1 jr:template="">
+                        <new_unit>
+                            <unit_name/>
+                            <add_bed_info_group>
+                                <create_bed_repeat jr:template="">
+                                    <position/>
+                                    <create_bed>
+                                        <capacity_name/>
+                                        <bed_notes/>
+                                        <open_beds/>
+                                        <bed_description_display/>
+                                        <open_beds_display/>
+                                    </create_bed>
+                                </create_bed_repeat>
+                                <num_new_beds/>
+                            </add_bed_info_group>
+                        </new_unit>
+                    </repeat1>
+                </data>
+            </instance>
+            <instance src="jr://instance/session" id="commcaresession"/>
+            <bind nodeset="/data/repeat1"/>
+            <bind nodeset="/data/repeat1/new_unit"/>
+            <bind nodeset="/data/repeat1/new_unit/unit_name" type="xsd:string" required="true()"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/position"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed" relevant="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/position &lt;= /data/repeat1/new_unit/add_bed_info_group/num_new_beds"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/capacity_name" type="xsd:string" required="true()"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/bed_notes" type="xsd:string"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/open_beds" type="xsd:int" required="true()"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/bed_description_display" calculate="if(/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/bed_notes != '', /data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/bed_notes, 'No information available')"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/open_beds_display" calculate="concat(&quot;**&quot;, /data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/open_beds, &quot;**&quot;)"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/num_new_beds" calculate="count(/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat)"/>
+            <bind nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/position" calculate="position(..) + 1"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="repeat1-label">
+                        <value>unit</value>
+                    </text>
+                    <text id="repeat1/new_unit/unit_name-label">
+                        <value>Unit Name</value>
+                        <value form="markdown">Unit Name</value>
+                    </text>
+                    <text id="repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed-label">
+                        <value>New Bed Type #<output value="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/position"/>
+                        </value>
+                        <value form="markdown">New Bed Type #<output value="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/position"/>
+                        </value>
+                    </text>
+                    <text id="repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/capacity_name-label">
+                        <value>Bed Type Name</value>
+                        <value form="markdown">Bed Type Name</value>
+                    </text>
+                </translation>
+            </itext>
+        </model>
+        <vellum:hashtags>{"#user/first_name":null,"#user/last_name":null}</vellum:hashtags>
+        <vellum:hashtagTransforms>{"prefixes":{"#user/":"instance('casedb')/casedb/case[@case_type = 'commcare-user'][hq_user_id = instance('commcaresession')/session/context/userid]/"}}</vellum:hashtagTransforms>
+    </h:head>
+    <h:body>
+        <group>
+            <label ref="jr:itext('repeat1-label')"/>
+            <repeat nodeset="/data/repeat1">
+                <group ref="/data/repeat1/new_unit" appearance="group-collapse collapse-open">
+                    <input ref="/data/repeat1/new_unit/unit_name">
+                        <label ref="jr:itext('repeat1/new_unit/unit_name-label')"/>
+                    </input>
+                    <group ref="/data/repeat1/new_unit/add_bed_info_group" appearance="group-collapse collapse-open">
+                        <group>
+                            <repeat nodeset="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat">
+                                <group ref="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed" appearance="group-collapse collapse-open">
+                                    <label ref="jr:itext('repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed-label')"/>
+                                    <input ref="/data/repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/capacity_name">
+                                        <label ref="jr:itext('repeat1/new_unit/add_bed_info_group/create_bed_repeat/create_bed/capacity_name-label')"/>
+                                    </input>
+                                </group>
+                            </repeat>
+                        </group>
+                    </group>
+                </group>
+            </repeat>
+        </group>
+    </h:body>
+</h:html>
