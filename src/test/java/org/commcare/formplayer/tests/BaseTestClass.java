@@ -1030,7 +1030,7 @@ public class BaseTestClass {
         return mapper.readValue(jsonString, clazz);
     }
 
-    protected FormSession getFormSession(SerializableFormSession serializableFormSession)
+    protected FormSession getFormSession(SerializableFormSession serializableFormSession, String windowWidth)
             throws Exception {
         FormplayerRemoteInstanceFetcher remoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
                 menuSessionRunnerService.getCaseSearchHelper(),
@@ -1042,7 +1042,7 @@ public class BaseTestClass {
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
                 remoteInstanceFetcher,
                 formDefinitionService,
-                "1796"
+                windowWidth
         );
     }
 
