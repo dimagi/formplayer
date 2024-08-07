@@ -117,8 +117,10 @@ public class FormSubmissionHelper {
     private Integer maxAttachmentsPerForm;
 
     public SubmitResponseBean processAndSubmitForm(HttpServletRequest request, String sessionID,
-            String domain, boolean isPrevalidated, Map<String, Object> answers) throws Exception {
-        FormSubmissionContext context = getFormProcessingContext(request, sessionID, domain, isPrevalidated, answers);
+            String domain, boolean isPrevalidated, Map<String, Object> answers,
+            String windowWidth) throws Exception {
+        FormSubmissionContext context = getFormProcessingContext(request, sessionID, domain, isPrevalidated,
+                answers, windowWidth);
 
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
         Stream<ProcessingStep> processingSteps = Stream.of(
@@ -147,7 +149,7 @@ public class FormSubmissionHelper {
     }
 
     private FormSubmissionContext getFormProcessingContext(HttpServletRequest request, String sessionID, String domain,
-            boolean isPrevalidated, Map<String, Object> answers) throws Exception {
+            boolean isPrevalidated, Map<String, Object> answers, String windowWidth) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(sessionID);
 
         String menuSessionId = serializableFormSession.getMenuSessionId();
@@ -173,7 +175,7 @@ public class FormSubmissionHelper {
         Map<String, String> extras = new HashMap();
         extras.put(Constants.DOMAIN_TAG, domain);
 
-        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, commCareSession, null);
+        FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, commCareSession, windowWidth);
         return new FormSubmissionContext(
                 request,
                 isPrevalidated,
