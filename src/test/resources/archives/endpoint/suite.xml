@@ -552,7 +552,7 @@
     <text>
       <locale id="modules.m5"/>
     </text>
-    <command id="m5-f0"/>
+    <command id="m5-f0" relevant= "count(instance('results:inline')/results/case) > 0"/>
     <command id="m5-f1"/>
   </menu>
   <remote-request>
