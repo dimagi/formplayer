@@ -372,6 +372,30 @@
       </template>
     </field>
   </detail>
+  <detail id="m5_case_short">
+    <title>
+      <text>
+        <locale id="cchq.case"/>
+      </text>
+    </title>
+    <field>
+      <header>
+        <text>
+          <locale id="m5.case_short.case_name_1.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </template>
+      <sort type="string" order="1" direction="ascending">
+        <text>
+          <xpath function="case_name"/>
+        </text>
+      </sort>
+    </field>
+  </detail>
   <entry>
     <form>http://openrosa.org/formdesigner/64B9C6C2-5CBA-47FF-A2CE-FC79556B69A2</form>
     <command id="m0-f0">
@@ -440,6 +464,58 @@
       </create>
     </stack>
   </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/ADC2C242-4A17-400B-9491-F5DE8FF40DBD</form>
+    <post url="http://localhost:8000/a/test-1/phone/claim-case/">
+      <data key="case_id" ref="instance('commcaresession')/session/data/case_id"/>
+    </post>
+    <command id="m5-f0">
+      <text>
+        <locale id="forms.m5f0"/>
+      </text>
+    </command>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <instance id="results:inline" src="jr://instance/remote/results:inline"/>
+    <session>
+      <query url="http://localhost:8000/a/test-1/phone/search/343af03494944cf4affdf775964eba54/" storage-instance="results:inline" template="case" default_search="true" dynamic_search="false">
+        <data key="case_type" ref="'case'"/>
+        <prompt key="name">
+          <display>
+            <text>
+              <locale id="search_property.m5.name"/>
+            </text>
+          </display>
+        </prompt>
+      </query>
+      <datum id="case_id" nodeset="instance('results:inline')/results/case[@case_type='case'][@status='open'][not(commcare_is_related_case=true())]" value="./@case_id" detail-select="m5_case_short"/>
+    </session>
+  </entry>
+  <entry>
+    <form>http://openrosa.org/formdesigner/ADC2C242-4A17-400B-9491-F5DE8FF40DBD</form>
+    <post url="http://localhost:8000/a/test-1/phone/claim-case/">
+      <data key="case_id" ref="instance('commcaresession')/session/data/case_id"/>
+    </post>
+    <command id="m5-f1">
+      <text>
+        <locale id="forms.m5f1"/>
+      </text>
+    </command>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <instance id="results:inline" src="jr://instance/remote/results:inline"/>
+    <session>
+      <query url="http://localhost:8000/a/test-1/phone/search/343af03494944cf4affdf775964eba54/" storage-instance="results:inline" template="case" default_search="true" dynamic_search="false">
+        <data key="case_type" ref="'case'"/>
+        <prompt key="name">
+          <display>
+            <text>
+              <locale id="search_property.m5.name"/>
+            </text>
+          </display>
+        </prompt>
+      </query>
+      <datum id="case_id" nodeset="instance('results:inline')/results/case[@case_type='case'][@status='open'][not(commcare_is_related_case=true())]" value="./@case_id" detail-select="m5_case_short"/>
+    </session>
+  </entry>
   <menu id="m0">
     <text>
       <locale id="modules.m0"/>
@@ -471,6 +547,13 @@
     </text>
     <command id="m0-f1" relevant="1=2"/>
     <command id="m1-f0"/>
+  </menu>
+  <menu id="m5">
+    <text>
+      <locale id="modules.m5"/>
+    </text>
+    <command id="m5-f0"/>
+    <command id="m5-f1"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test-1/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/search_case_id]) = 0">
@@ -667,6 +750,19 @@
         <command value="'m4'" />
         <datum id="case_id" value="$case_id" />
         <command value="'m0-f1'" />
+      </push>
+    </stack>
+  </endpoint>
+  <endpoint id="inline_w_display_cond_case_list">
+    <argument id="case_id"/>
+    <stack>
+      <push>
+        <command value="'m5'"/>
+        <query id="results:inline" value="http://localhost:8000/a/test-1/phone/case_fixture/343af03494944cf4affdf775964eba54/">
+          <data key="case_type" ref="'case'"/>
+          <data key="case_id" ref="$case_id"/>
+        </query>
+        <datum id="case_id" value="$case_id"/>
       </push>
     </stack>
   </endpoint>
