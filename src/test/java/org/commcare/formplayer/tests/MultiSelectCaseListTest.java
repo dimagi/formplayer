@@ -19,6 +19,7 @@ import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
+import org.commcare.formplayer.junit.request.EvaluateXpathRequest;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.WithHqUser;
@@ -83,8 +84,12 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
                 "test-window-width",
                 NewFormResponse.class);
-        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(formResp.getSessionId(),
-                "instance('commcaresession')/session/context/window_width");
+        EvaluateXPathResponseBean evaluateXpathResponseBean = new EvaluateXpathRequest(mockDebuggerController,
+                formResp.getSessionId(), "instance('commcaresession')/session/context/window_width",
+                formSessionService, "test-window-width")
+                .request()
+                .bean();
+
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         assertThat(evaluateXpathResponseBean.getOutput(), hasXpath("/result", equalTo("test-window-width")));
     }
