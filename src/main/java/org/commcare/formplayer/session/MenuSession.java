@@ -78,6 +78,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     private ArrayList<String> selections = new ArrayList<>();
 
     private String currentBrowserLocation;
+    private String windowWidth;
     private boolean hereFunctionEvaluated;
 
     // Stores the entity screens created to manage state for the lifecycle of this request
@@ -95,7 +96,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.engine = engine;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
-                commCareSession, engine.getPlatform(), sandbox, instanceFetcher);
+                commCareSession, engine.getPlatform(), sandbox, instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
@@ -104,10 +105,11 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            FormplayerRemoteInstanceFetcher instanceFetcher)
+            FormplayerRemoteInstanceFetcher instanceFetcher, String windowWidth)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
+        this.windowWidth = windowWidth;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
         this.session = new SerializableMenuSession(
                 TableBuilder.scrubName(username),
@@ -126,14 +128,14 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, getWindowWidth());
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -352,7 +354,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
                 oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
-                instanceFetcher);
+                instanceFetcher, getWindowWidth());
     }
 
     public SessionWrapper getSessionWrapper() {
@@ -440,4 +442,11 @@ public class MenuSession implements HereFunctionHandlerListener {
         return session;
     }
 
+    public void setWindowWidth(String windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public String getWindowWidth() {
+        return windowWidth;
+    }
 }

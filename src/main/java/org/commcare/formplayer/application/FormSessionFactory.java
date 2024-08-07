@@ -39,14 +39,14 @@ public class FormSessionFactory {
     @Autowired
     private CommCareSessionFactory commCareSessionFactory;
 
-    public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
+    public FormSession getFormSession(SerializableFormSession serializableFormSession, String windowWidth) throws Exception {
         CommCareSession commCareSession = commCareSessionFactory.getCommCareSession(serializableFormSession.getMenuSessionId());
-        return getFormSession(serializableFormSession, commCareSession);
+        return getFormSession(serializableFormSession, commCareSession, windowWidth);
     }
 
     @NotNull
     public FormSession getFormSession(SerializableFormSession serializableFormSession,
-            @Nullable CommCareSession commCareSession) throws Exception {
+            @Nullable CommCareSession commCareSession, @Nullable String windowWidth) throws Exception {
         FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
                 runnerService.getCaseSearchHelper(),
                 virtualDataInstanceService);
@@ -56,7 +56,8 @@ public class FormSessionFactory {
                 storageFactory,
                 commCareSession,
                 formplayerRemoteInstanceFetcher,
-                formDefinitionService
+                formDefinitionService,
+                windowWidth
         );
     }
 }

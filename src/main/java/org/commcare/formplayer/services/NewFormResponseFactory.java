@@ -107,7 +107,8 @@ public class NewFormResponseFactory {
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
                 bean.getRestoreAsCaseId(),
                 null,
-                formplayerRemoteInstanceFetcher
+                formplayerRemoteInstanceFetcher,
+                bean.getWindowWidth()
         );
 
         NewFormResponse response = getResponse(formSession);
@@ -137,8 +138,8 @@ public class NewFormResponseFactory {
         return response;
     }
 
-    public NewFormResponse getResponse(SerializableFormSession session, CommCareSession commCareSession) throws Exception {
-        FormSession formSession = getFormSession(session, commCareSession);
+    public NewFormResponse getResponse(SerializableFormSession session, CommCareSession commCareSession, String windowWidth) throws Exception {
+        FormSession formSession = getFormSession(session, commCareSession, windowWidth);
         String formTreeJson = formSession.getFormTree().toString();
         return new NewFormResponse(
                 formTreeJson, formSession.getLanguages(), session.getTitle(),
@@ -147,7 +148,8 @@ public class NewFormResponseFactory {
         );
     }
 
-    public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
+    public FormSession getFormSession(SerializableFormSession serializableFormSession,
+            CommCareSession commCareSession, String windowWidth) throws Exception {
         FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher =
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService);
         return new FormSession(serializableFormSession,
@@ -156,7 +158,8 @@ public class NewFormResponseFactory {
                 storageFactory,
                 commCareSession,
                 formplayerRemoteInstanceFetcher,
-                formDefinitionService
+                formDefinitionService,
+                windowWidth
         );
     }
 
