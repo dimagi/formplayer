@@ -89,6 +89,7 @@ public class FormSession {
     private boolean shouldAutoSubmit;
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
+    private String windowWidth;
 
     public FormSession(SerializableFormSession session,
             RestoreFactory restoreFactory,
@@ -96,7 +97,8 @@ public class FormSession {
             FormplayerStorageFactory storageFactory,
             @Nullable CommCareSession commCareSession,
             RemoteInstanceFetcher instanceFetcher,
-            FormDefinitionService formDefinitionService) throws Exception {
+            FormDefinitionService formDefinitionService,
+            String windowWidth) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -105,6 +107,7 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
+        this.windowWidth = windowWidth;
 
         this.formDef = formDefinitionService.getFormDef(this.session);
 
@@ -124,7 +127,7 @@ public class FormSession {
         if (sessionFrame == null) {
             sessionFrame = createSessionFrame(session.getSessionData());
         }
-        initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
+        initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher, windowWidth);
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -146,7 +149,8 @@ public class FormSession {
             boolean inPromptMode,
             String caseId,
             @Nullable SessionFrame sessionFrame,
-            RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RemoteInstanceFetcher instanceFetcher,
+            String windowWidth) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
         this.session = new SerializableFormSession(
@@ -158,6 +162,7 @@ public class FormSession {
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
+        this.windowWidth = windowWidth;
         setupJavaRosaObjects();
         setupFunctionContext();
 
@@ -167,9 +172,9 @@ public class FormSession {
 
         if (instanceContent != null) {
             loadInstanceXml(this.formDef, instanceContent);
-            initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
+            initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher, windowWidth);
         } else {
-            initialize(true, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
+            initialize(true, storageFactory.getStorageManager(), sessionFrame, instanceFetcher, windowWidth);
         }
 
         if (oneQuestionPerScreen) {
@@ -254,13 +259,13 @@ public class FormSession {
 
     @Trace
     private void initialize(boolean newInstance, StorageManager storageManager,
-            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher)
+            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher, String windowWidth)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION,
                 storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(
-                platform, this.sandbox, sessionFrame, instanceFetcher);
+                platform, this.sandbox, sessionFrame, instanceFetcher, windowWidth);
 
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
@@ -444,6 +449,10 @@ public class FormSession {
 
     public String getMenuSessionId() {
         return session.getMenuSessionId();
+    }
+
+    public String getWindowWidth() {
+        return this.windowWidth;
     }
 
     public void setIsAtLastIndex(boolean isAtLastIndex) {

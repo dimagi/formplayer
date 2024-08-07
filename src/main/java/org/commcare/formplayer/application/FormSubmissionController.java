@@ -37,6 +37,6 @@ public class FormSubmissionController extends AbstractBaseController {
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
             HttpServletRequest request) throws Exception {
         return formSubmissionHelper.processAndSubmitForm(request, submitRequestBean.getSessionId(), submitRequestBean.getDomain(),
-                submitRequestBean.isPrevalidated(), submitRequestBean.getAnswers());
+                submitRequestBean.isPrevalidated(), submitRequestBean.getAnswers(), submitRequestBean.getWindowWidth());
     }
 }
