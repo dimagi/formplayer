@@ -12,6 +12,7 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     private String locale;
     private boolean oneQuestionPerScreen;
     private boolean preview;
+    private String appVersion;
 
     public String getPassword() {
         return password;
@@ -19,6 +20,14 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
     }
 
     @JsonGetter(value = "app_id")
@@ -34,7 +43,7 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     public String toString() {
         return "InstallRequestBean: [username=" + username + ", domain=" + domain + ", appId="
                 + appId +
-                ", oneQuestionPerScreen: " + oneQuestionPerScreen + "]";
+                ", oneQuestionPerScreen: " + oneQuestionPerScreen + ", appVersion:" + appVersion + "]";
     }
 
     public String getLocale() {
