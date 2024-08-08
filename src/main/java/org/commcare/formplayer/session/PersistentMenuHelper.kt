@@ -1,9 +1,11 @@
 package org.commcare.formplayer.session
 
 import org.commcare.cases.util.StringUtils
+import org.commcare.formplayer.beans.menus.CommandUtils;
 import org.commcare.formplayer.beans.menus.PersistentCommand
 import org.commcare.util.screen.EntityScreen
 import org.commcare.util.screen.MenuScreen
+import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.screen.MultiSelectEntityScreen
 import org.commcare.util.screen.Screen
 
@@ -18,18 +20,22 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
     fun addEntitySelection(input: String, entityText: String) {
         if (isPersistentMenuEnabled && !StringUtils.isEmpty(input) && !input.contentEquals(MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
             val command =
-                PersistentCommand(input, entityText)
+                PersistentCommand(input, entityText, null, CommandUtils.NavIconState.ENTITY_SELECT)
             addPersistentCommand(command)
         }
     }
 
-    fun addMenusToPeristentMenu(menuScreen: MenuScreen) {
+    fun addMenusToPeristentMenu(menuScreen: MenuScreen, sessionWrapper: SessionWrapper) {
         if (isPersistentMenuEnabled) {
-            val options = menuScreen.getOptions()
-            for (i in options.indices) {
+            val mChoices = menuScreen.getMenuDisplayables()
+            for (i in mChoices.indices) {
+                val choice = mChoices[i];
+                val option = choice.getDisplayText(sessionWrapper.getEvaluationContextWithAccumulatedInstances(choice.getCommandID(), choice.getRawText()));
+                val imageUri = choice.getImageURI();
+                val navigationState = CommandUtils.getIconState(choice, sessionWrapper);
                 val command = PersistentCommand(
                     i.toString(),
-                    options[i]
+                    option, imageUri, navigationState
                 )
                 addPersistentCommand(command)
             }
