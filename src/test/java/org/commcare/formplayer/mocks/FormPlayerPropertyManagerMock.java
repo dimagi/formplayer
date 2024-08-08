@@ -51,6 +51,11 @@ public class FormPlayerPropertyManagerMock extends FormplayerPropertyManager {
         return indexCaseSearchResults;
     }
 
+    @Override
+    public boolean isPersistentMenuEnabled() {
+        return true;
+    }
+
     // convenience method to set auto advance menu as true
     public static void mockAutoAdvanceMenu(FormplayerStorageFactory storageFactoryMock) {
         SQLiteDB db = storageFactoryMock.getSQLiteDB();

@@ -670,4 +670,12 @@
       </push>
     </stack>
   </endpoint>
+  <endpoint id="add_parent_not_respect_relevancy" respect-relevancy="false">
+    <stack>
+      <push>
+        <command value="'m0'"/>
+        <command value="'m0-f0'"/>
+      </push>
+    </stack>
+  </endpoint>
 </suite>

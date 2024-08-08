@@ -20,4 +20,6 @@ m1.case_short.case_commcare_project_2.header=Commcare Project
 m1.case_short.case_name_1.header=Names
 modules.m0=Register
 modules.m1=Followup
+modules.m2=Followup1
+modules.m3=Followup2
 search_property.m1.name=Name
