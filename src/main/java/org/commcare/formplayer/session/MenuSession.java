@@ -478,6 +478,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public ArrayList<PersistentCommand> getPersistentMenu() {
         return persistentMenuHelper.getPersistentMenu();
+    }
 
     public void setWindowWidth(String windowWidth) {
         this.windowWidth = windowWidth;
@@ -485,6 +486,5 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public String getWindowWidth() {
         return windowWidth;
-
     }
 }
