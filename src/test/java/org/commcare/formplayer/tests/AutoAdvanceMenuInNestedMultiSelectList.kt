@@ -3,6 +3,7 @@ package org.commcare.formplayer.tests
 import org.commcare.formplayer.beans.NewFormResponse
 import org.commcare.formplayer.beans.menus.PersistentCommand
 import org.commcare.formplayer.beans.menus.QueryResponseBean
+import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock
 import org.commcare.formplayer.objects.QueryData
 import org.commcare.formplayer.utils.MockRequestUtils
@@ -59,20 +60,20 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
             expectedMenu.add(
                 PersistentCommand(
                     "0",
-                    "Case List"
+                    "Case List", null, NavIconState.NEXT
                 )
             )
             expectedMenu.add(
                 PersistentCommand(
                     "1",
-                    "Parent Case List"
+                    "Parent Case List", null, NavIconState.NEXT
                 )
             )
             val parentCaseListMenu = expectedMenu[1]
             parentCaseListMenu.addCommand(
                 PersistentCommand(
                     responseSelections.last(),
-                    "Batman Begins"
+                    "Batman Begins", null, NavIconState.ENTITY_SELECT
                 )
             )
             // add the auto-advanced menu
@@ -80,7 +81,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
             batmanBeginsMenu.addCommand(
                 PersistentCommand(
                     "0",
-                    "Nested Case List"
+                    "Nested Case List", null, NavIconState.NEXT
                 )
             )
             assertEquals(expectedMenu, response.persistentMenu)
@@ -105,16 +106,18 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
             nestedCaseListMenu.addCommand(
                 PersistentCommand(
                     formResponse.selections.last(),
-                    "Batman Begins"
+                    "Batman Begins", null, NavIconState.ENTITY_SELECT
                 )
             )
             val nestedBatmanbeginsMenu = nestedCaseListMenu.commands[0]
             nestedBatmanbeginsMenu.addCommand(
                 PersistentCommand(
                     "0",
-                    "Followup"
+                    "Followup",
+                    null,
+                    NavIconState.JUMP
                 )
-            );
+            )
             assertEquals(expectedMenu, formResponse.persistentMenu)
         }
     }
