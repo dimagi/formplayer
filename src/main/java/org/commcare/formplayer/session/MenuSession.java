@@ -267,7 +267,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * Get next screen for the current request, based on the current state of the session,
      * but only initialize and return the screen if it is of type `FormplayerSyncScreen`.
      */
-    public Screen getNextScreenIfSyncScreen(boolean needsFullEntityScreen, EntityScreenContext entityScreenContext) throws CommCareSessionException {
+    public FormplayerSyncScreen getNextScreenIfSyncScreen(boolean needsFullEntityScreen, EntityScreenContext entityScreenContext) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
@@ -278,7 +278,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return null;
     }
 
-    private Screen getSyncScreen() throws CommCareSessionException{
+    private FormplayerSyncScreen getSyncScreen() throws CommCareSessionException{
         String username = session.getAsUser() != null ?
         StringUtils.getFullUsername(session.getAsUser(), session.getDomain()) : null;
         FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
