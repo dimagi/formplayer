@@ -269,12 +269,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      */
     public Screen getNextScreenIfSyncScreen(boolean needsFullEntityScreen, EntityScreenContext entityScreenContext) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
-        if (next == null) {
-            if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
-                sessionWrapper.stepBack();
-                return getNextScreenIfSyncScreen(needsFullEntityScreen, entityScreenContext);
-            }
-        }  else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
+        if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreenIfSyncScreen(needsFullEntityScreen, entityScreenContext);
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
