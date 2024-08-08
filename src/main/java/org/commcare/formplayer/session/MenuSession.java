@@ -263,6 +263,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
     }
 
+    /**
+     * Get next screen for the current request, based on the current state of the session,
+     * but only initialize and return the screen if it is of type `FormplayerSyncScreen`.
+     */
     public Screen getNextScreenIfSyncScreen(boolean needsFullEntityScreen, EntityScreenContext entityScreenContext) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
