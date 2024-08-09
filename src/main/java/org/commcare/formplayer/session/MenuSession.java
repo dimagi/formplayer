@@ -280,9 +280,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         return null;
     }
 
-    private FormplayerSyncScreen getSyncScreen() throws CommCareSessionException{
-        String username = session.getAsUser() != null ?
-        StringUtils.getFullUsername(session.getAsUser(), session.getDomain()) : null;
+    private FormplayerSyncScreen getSyncScreen() throws CommCareSessionException {
+        String username = session.getAsUser() != null
+                          ? StringUtils.getFullUsername(session.getAsUser(), session.getDomain())
+                          : null;
         FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
         syncScreen.init(sessionWrapper);
         return syncScreen;
