@@ -269,7 +269,9 @@ public class MenuSession implements HereFunctionHandlerListener {
      */
     public FormplayerSyncScreen getNextScreenIfSyncScreen(boolean needsFullEntityScreen, EntityScreenContext entityScreenContext) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
-        if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
+        if (next == null) {
+            return null;
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreenIfSyncScreen(needsFullEntityScreen, entityScreenContext);
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
