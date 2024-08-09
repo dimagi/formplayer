@@ -24,6 +24,18 @@
       <location authority="remote">./modules-2/forms-0.xml</location>
     </resource>
   </xform>
+  <xform>
+    <resource id="a92bcf46d1a64873bde013f4c786e92b" version="148" descriptor="Form: (Module Child Case List) - Update Child Health">
+      <location authority="local">./modules-5/forms-0.xml</location>
+      <location authority="remote">./modules-5/forms-0.xml</location>
+    </resource>
+  </xform>
+  <xform>
+    <resource id="e37bfc92d8a742b5aaf4c139b521d67c" version="148" descriptor="Form: (Module Child Case List) - Update Child Education">
+      <location authority="local">./modules-5/forms-1.xml</location>
+      <location authority="remote">./modules-5/forms-1.xml</location>
+    </resource>
+  </xform>
   <locale language="default">
     <resource id="app_default_strings" version="174" descriptor="Translations: Default Language">
       <location authority="local">./default/app_strings.txt</location>
@@ -465,7 +477,7 @@
     </stack>
   </entry>
   <entry>
-    <form>http://openrosa.org/formdesigner/ADC2C242-4A17-400B-9491-F5DE8FF40DBD</form>
+    <form>http://openrosa.org/formdesigner/EA8F9B1C-7D34-4A3F-8E5D-1F2A3B4C9D7ED</form>
     <post url="http://localhost:8000/a/test-1/phone/claim-case/">
       <data key="case_id" ref="instance('commcaresession')/session/data/case_id"/>
     </post>
@@ -491,7 +503,7 @@
     </session>
   </entry>
   <entry>
-    <form>http://openrosa.org/formdesigner/ADC2C242-4A17-400B-9491-F5DE8FF40DBD</form>
+    <form>http://openrosa.org/formdesigner/6C3F2B4A-9E8D-45C7-AF23-1D9B5F6A7C8E</form>
     <post url="http://localhost:8000/a/test-1/phone/claim-case/">
       <data key="case_id" ref="instance('commcaresession')/session/data/case_id"/>
     </post>
@@ -553,7 +565,7 @@
       <locale id="modules.m5"/>
     </text>
     <command id="m5-f0" relevant= "count(instance('results:inline')/results/case) > 0"/>
-    <command id="m5-f1"/>
+    <command id="m5-f1" relevant= "count(instance('results:inline')/results/case) < 0"/>
   </menu>
   <remote-request>
     <post url="http://localhost:8000/a/test-1/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/search_case_id]) = 0">

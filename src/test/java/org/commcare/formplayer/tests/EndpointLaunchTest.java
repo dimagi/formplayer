@@ -135,13 +135,12 @@ public class EndpointLaunchTest extends BaseTestClass {
         configureQueryMock();
         HashMap<String, String> endpointArgs = new HashMap<>();
         endpointArgs.put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6");
-        CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "inline_w_display_cond_case_list",
                 endpointArgs,
-                CommandListResponseBean.class);
-        assert commandListResponse.getCommands().length == 2;
-        assert commandListResponse.getCommands()[0].getDisplayText().contentEquals("Update Child Health");
-        assertArrayEquals(commandListResponse.getSelections(), new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"});
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Update Child Health");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"});
     }
 
     @Test
