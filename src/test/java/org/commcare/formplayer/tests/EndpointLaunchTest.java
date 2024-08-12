@@ -3,10 +3,14 @@ package org.commcare.formplayer.tests;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.services.BrowserValuesProvider;
+import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.Assertions;
@@ -15,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.util.NestedServletException;
+
+import com.google.common.collect.Multimap;
 
 import java.util.HashMap;
 
@@ -125,6 +131,20 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointsWithInlineCaseSearch() throws Exception {
+        configureQueryMock();
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "inline_w_display_cond_case_list",
+                endpointArgs,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Update Child Health");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"});
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
     public void testEndpointsRelevancy() throws Exception {
         // With respect-relevancy set to false, we can navigate to the hidden form
         HashMap<String, String> endpointArgs = new HashMap<>();
@@ -148,5 +168,11 @@ public class EndpointLaunchTest extends BaseTestClass {
                     endpointArgs,
                     NewFormResponse.class);
         });
+    }
+
+    private void configureQueryMock() {
+        when(webClientMock.postFormData(anyString(), any(Multimap.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(),
+                        "query_responses/case_claim_response.xml"));
     }
 }
