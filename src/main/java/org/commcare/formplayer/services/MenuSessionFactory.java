@@ -211,11 +211,12 @@ public class MenuSessionFactory {
                                     boolean oneQuestionPerScreen,
                                     String asUser,
                                     boolean preview,
-                                    String windowWidth) throws Exception {
+                                    String windowWidth,
+                                    String appVersion) throws Exception {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService), windowWidth,
-                storageFactory);
+                appVersion, storageFactory);
     }
 
     @Trace
@@ -248,7 +249,8 @@ public class MenuSessionFactory {
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),
                 bean.getPreview(),
-                bean.getWindowWidth()
+                bean.getWindowWidth(),
+                bean.getAppVersion()
         );
     }
 

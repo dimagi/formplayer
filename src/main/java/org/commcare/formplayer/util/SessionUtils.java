@@ -34,11 +34,15 @@ public class SessionUtils {
         }
     }
 
-    public static String resolveInstallReference(String appId, String host, String domain) {
+    public static String resolveInstallReference(String appId, String host, String domain, String appVersion) {
         if (appId == null || "".equals(appId)) {
             throw new RuntimeException("app_id required for install");
         }
-        return getReferenceToLatest(host, appId, domain);
+        if (appVersion != null) {
+            return getReferenceToVersion(host, appId, domain, appVersion);
+        } else {
+            return getReferenceToLatest(host, appId, domain);
+        }
     }
 
     /**
@@ -53,6 +57,21 @@ public class SessionUtils {
                 .addPathSegments("a/" + domain + "/apps/api/download_ccz/")
                 .addQueryParameter("app_id", appId)
                 .addQueryParameter("latest", Constants.CCZ_LATEST_SAVED);
+        return builder.toString();
+    }
+
+    /**
+     * Given a canonical app id this returns a URI that will return the specified build version CCZ from HQ
+     *
+     * @param appId The canonical id of the application of the CCZ needed
+     * @return An HQ URI to download the CCZ
+     */
+    private static String getReferenceToVersion(String host, String appId, String domain, String appVersion) {
+        HttpUrl.Builder builder;
+        builder = HttpUrl.parse(host).newBuilder()
+                .addPathSegments("a/" + domain + "/apps/api/download_ccz/")
+                .addQueryParameter("app_id", appId)
+                .addQueryParameter("version", appVersion);
         return builder.toString();
     }
 }

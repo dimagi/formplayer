@@ -112,12 +112,12 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            FormplayerRemoteInstanceFetcher instanceFetcher, String windowWidth, FormplayerStorageFactory storageFactory)
+            FormplayerRemoteInstanceFetcher instanceFetcher, String windowWidth, String appVersion, FormplayerStorageFactory storageFactory)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
         this.windowWidth = windowWidth;
-        String resolvedInstallReference = resolveInstallReference(appId, host, domain);
+        String resolvedInstallReference = resolveInstallReference(appId, host, domain, appVersion);
         this.session = new SerializableMenuSession(
                 TableBuilder.scrubName(username),
                 domain,

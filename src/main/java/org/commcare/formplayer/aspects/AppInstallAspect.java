@@ -51,12 +51,12 @@ public class AppInstallAspect {
                 .setCategory("app_info")
                 .record();
 
-        configureAppUrls(requestBean.getDomain(), requestBean.getAppId());
+        configureAppUrls(requestBean.getDomain(), requestBean.getAppId(), requestBean.getAppVersion());
     }
 
-    public void configureAppUrls(String domain, String appId) {
+    public void configureAppUrls(String domain, String appId, String appVersion) {
         Sentry.configureScope(scope -> {
-            scope.setExtra(Constants.APP_DOWNLOAD_URL_EXTRA, SessionUtils.resolveInstallReference(appId, host, domain));
+            scope.setExtra(Constants.APP_DOWNLOAD_URL_EXTRA, SessionUtils.resolveInstallReference(appId, host, domain, appVersion));
             scope.setExtra(Constants.APP_URL_EXTRA, getAppURL(domain, appId));
         });
     }
