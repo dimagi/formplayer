@@ -7,9 +7,9 @@ buildscript {
 plugins {
     id 'org.springframework.boot' version '2.7.3'
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
-    id "io.freefair.lombok" version "8.6"
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
-    id 'org.jetbrains.kotlin.plugin.spring' version '2.0.0'
+    id "io.freefair.lombok" version "8.7.1"
+    id 'org.jetbrains.kotlin.jvm' version '2.0.10'
+    id 'org.jetbrains.kotlin.plugin.spring' version '2.0.10'
 }
 
 springBoot {

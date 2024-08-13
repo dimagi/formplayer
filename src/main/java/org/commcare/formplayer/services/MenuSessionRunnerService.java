@@ -795,8 +795,8 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            Screen screen = menuSession.getNextScreen(false, new EntityScreenContext());
-            if (screen instanceof FormplayerSyncScreen) {
+            FormplayerSyncScreen screen = menuSession.getNextScreenIfSyncScreen(false, new EntityScreenContext());
+            if (screen != null) {
                 try {
                     screen.init(sessionWrapper);
                     doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
