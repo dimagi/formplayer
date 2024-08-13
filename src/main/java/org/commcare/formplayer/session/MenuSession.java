@@ -215,7 +215,7 @@ public class MenuSession implements HereFunctionHandlerListener {
              *  we don't want to show any hidden menus on the persistent menu and it's impossible
              *  for us to tell based on selection index whether a menu is visible or not. Therefore
              *  we are restricting to not showing anything on persistent menu except visible root menu options
-             *  if we are not respecing relevancy here.
+             *  if we are not respecting relevancy here.
              *
              *  To be able to more selectively show only visible menus in these cases, we will need to switch the
              *  current index based selections[] to contain menu ids instead of indexes.
