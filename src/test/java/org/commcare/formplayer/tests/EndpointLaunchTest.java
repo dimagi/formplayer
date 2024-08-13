@@ -183,6 +183,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
         expectedMenu.add(new PersistentCommand("0", "Case List"));
         expectedMenu.add(new PersistentCommand("1", "Parents"));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions"));
         PersistentCommand parentMenu = expectedMenu.get(0);
         parentMenu.addCommand(new PersistentCommand("0", "Add Parent"));
         parentMenu.addCommand(new PersistentCommand("1", "Followup"));
@@ -213,6 +214,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         expectedMenu = new ArrayList<>();
         expectedMenu.add(new PersistentCommand("0", "Case List"));
         expectedMenu.add(new PersistentCommand("1", "Parents"));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions"));
         parentMenu = expectedMenu.get(1);
         parentMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins"));
         PersistentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
@@ -256,6 +258,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
         expectedMenu.add(new PersistentCommand("0", "Case List"));
         expectedMenu.add(new PersistentCommand("1", "Parents"));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions"));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 
