@@ -208,8 +208,9 @@ public class MenuSessionRunnerService {
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
-
-        menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+        if (storageFactory.getPropertyManager().isBreadcrumbsEnabled()) {
+            menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+        }
         menuResponseBean.setAppId(menuSession.getAppId());
         menuResponseBean.setAppVersion(
                 menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
@@ -676,7 +677,9 @@ public class MenuSessionRunnerService {
                     menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
             formResponseBean.setPersistentCaseTile(
                     getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
-            formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            if (storageFactory.getPropertyManager().isBreadcrumbsEnabled()) {
+                formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            }
             setPeristenMenuToBean(formResponseBean, menuSession.getPersistentMenu());
             // update datadog/sentry metrics
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
@@ -792,8 +795,8 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            Screen screen = menuSession.getNextScreen(false, new EntityScreenContext());
-            if (screen instanceof FormplayerSyncScreen) {
+            FormplayerSyncScreen screen = menuSession.getNextScreenIfSyncScreen(false, new EntityScreenContext());
+            if (screen != null) {
                 try {
                     screen.init(sessionWrapper);
                     doPostAndSync(menuSession, (FormplayerSyncScreen)screen);

@@ -152,7 +152,7 @@ public class BaseTestClass {
 
     private MockMvc mockMenuController;
 
-    private MockMvc mockDebuggerController;
+    protected MockMvc mockDebuggerController;
 
     @Spy
     private StringRedisTemplate redisTemplate;
@@ -636,7 +636,7 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
-        return new EvaluateXpathRequest(mockDebuggerController, sessionId, xPath, formSessionService)
+        return new EvaluateXpathRequest(mockDebuggerController, sessionId, xPath, formSessionService, null)
                 .request()
                 .bean();
     }
@@ -676,7 +676,7 @@ public class BaseTestClass {
      */
     protected void checkXpath(String sessionId, String xpath, String expectedValue)
             throws Exception {
-        new EvaluateXpathRequest(mockDebuggerController, sessionId, xpath, formSessionService)
+        new EvaluateXpathRequest(mockDebuggerController, sessionId, xpath, formSessionService, null)
                 .request()
                 .andExpectAll(
                         jsonPath("status", equalTo(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)),
@@ -814,6 +814,11 @@ public class BaseTestClass {
     }
 
     <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            Class<T> clazz) throws Exception {
+       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, clazz);
+    }
+
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,  String windowWidth,
             Class<T> clazz)
             throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
@@ -822,6 +827,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSelectedValues(selectedValues);
+        sessionNavigationBean.setWindowWidth(windowWidth);
         return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
@@ -1024,7 +1030,7 @@ public class BaseTestClass {
         return mapper.readValue(jsonString, clazz);
     }
 
-    protected FormSession getFormSession(SerializableFormSession serializableFormSession)
+    protected FormSession getFormSession(SerializableFormSession serializableFormSession, String windowWidth)
             throws Exception {
         FormplayerRemoteInstanceFetcher remoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
                 menuSessionRunnerService.getCaseSearchHelper(),
@@ -1035,7 +1041,8 @@ public class BaseTestClass {
                 storageFactoryMock,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
                 remoteInstanceFetcher,
-                formDefinitionService
+                formDefinitionService,
+                windowWidth
         );
     }
 

@@ -82,6 +82,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     private PersistentMenuHelper persistentMenuHelper;
 
     private String currentBrowserLocation;
+    private String windowWidth;
     private boolean hereFunctionEvaluated;
 
     // Stores the entity screens created to manage state for the lifecycle of this request
@@ -99,7 +100,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.engine = engine;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
-                commCareSession, engine.getPlatform(), sandbox, instanceFetcher);
+                commCareSession, engine.getPlatform(), sandbox, instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         this.isPersistentMenuEnabled = isPersistentMenuEnabled;
@@ -109,10 +110,11 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            FormplayerRemoteInstanceFetcher instanceFetcher, boolean isPersistentMenuEnabled)
+            FormplayerRemoteInstanceFetcher instanceFetcher, String windowWidth, boolean isPersistentMenuEnabled)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
+        this.windowWidth = windowWidth;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
         this.session = new SerializableMenuSession(
                 TableBuilder.scrubName(username),
@@ -131,7 +133,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(locale);
         this.isPersistentMenuEnabled = isPersistentMenuEnabled;
         initializeBreadcrumbs();
@@ -139,7 +141,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
-                instanceFetcher);
+                instanceFetcher, getWindowWidth());
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -213,7 +215,7 @@ public class MenuSession implements HereFunctionHandlerListener {
              *  we don't want to show any hidden menus on the persistent menu and it's impossible
              *  for us to tell based on selection index whether a menu is visible or not. Therefore
              *  we are restricting to not showing anything on persistent menu except visible root menu options
-             *  if we are not respecing relevancy here.
+             *  if we are not respecting relevancy here.
              *
              *  To be able to more selectively show only visible menus in these cases, we will need to switch the
              *  current index based selections[] to contain menu ids instead of indexes.
@@ -292,13 +294,35 @@ public class MenuSession implements HereFunctionHandlerListener {
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
-            String username = session.getAsUser() != null ?
-                    StringUtils.getFullUsername(session.getAsUser(), session.getDomain()) : null;
-            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
-            syncScreen.init(sessionWrapper);
-            return syncScreen;
+            return getSyncScreen();
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
+    }
+
+    /**
+     * Get next screen for the current request, based on the current state of the session,
+     * but only initialize and return the screen if it is of type `FormplayerSyncScreen`.
+     */
+    public FormplayerSyncScreen getNextScreenIfSyncScreen(boolean needsFullEntityScreen, EntityScreenContext entityScreenContext) throws CommCareSessionException {
+        String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
+        if (next == null) {
+            return null;
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
+            computeDatum();
+            return getNextScreenIfSyncScreen(needsFullEntityScreen, entityScreenContext);
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+            return getSyncScreen();
+        }
+        return null;
+    }
+
+    private FormplayerSyncScreen getSyncScreen() throws CommCareSessionException {
+        String username = session.getAsUser() != null
+                          ? StringUtils.getFullUsername(session.getAsUser(), session.getDomain())
+                          : null;
+        FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
+        syncScreen.init(sessionWrapper);
+        return syncScreen;
     }
 
     private void clearEntityScreenCache() {
@@ -386,7 +410,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
                 oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
-                instanceFetcher);
+                instanceFetcher, getWindowWidth());
     }
 
     public SessionWrapper getSessionWrapper() {
@@ -476,5 +500,13 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public ArrayList<PersistentCommand> getPersistentMenu() {
         return persistentMenuHelper.getPersistentMenu();
+    }
+
+    public void setWindowWidth(String windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public String getWindowWidth() {
+        return windowWidth;
     }
 }

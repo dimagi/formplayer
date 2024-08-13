@@ -111,7 +111,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         // make sure that the instance in the form session is using the case template
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 formResponse.getSessionId());
-        FormSession formSession = getFormSession(serializableFormSession);
+        FormSession formSession = getFormSession(serializableFormSession, "test-window-width");
         EvaluationContext evaluationContext =
                 formSession.getFormEntryModel().getForm().getEvaluationContext();
         ExternalDataInstance registry = (ExternalDataInstance)evaluationContext.getInstance(

@@ -211,7 +211,7 @@ public class MenuController extends AbstractBaseController {
             if (formResponse.getShouldAutoSubmit()) {
                 return formSubmissionHelper.processAndSubmitForm(request, formResponse.getSessionId(),
                         sessionNavigationBean.getDomain(),
-                        true, new HashMap<>());
+                        true, new HashMap<>(), sessionNavigationBean.getWindowWidth());
             }
         }
         return null;

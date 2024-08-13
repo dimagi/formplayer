@@ -52,7 +52,7 @@ public class FormEntryTest extends BaseTestClass {
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(sessionId);
-        FormSession formSession = getFormSession(serializableFormSession);
+        FormSession formSession = getFormSession(serializableFormSession, "test-window-width");
         String output = formSession.getInstanceXml(true);
 
         assertTrue(output.contains("ben rudolph"));

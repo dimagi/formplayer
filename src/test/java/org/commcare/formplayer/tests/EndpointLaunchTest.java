@@ -4,12 +4,18 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+import com.google.common.collect.Multimap;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
+import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,6 +135,20 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointsWithInlineCaseSearch() throws Exception {
+        configureQueryMock();
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "inline_w_display_cond_case_list",
+                endpointArgs,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Update Child Health");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"});
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
     public void testEndpointsRelevancy() throws Exception {
         // With respect-relevancy set to false, we can navigate to the hidden form
         HashMap<String, String> endpointArgs = new HashMap<>();
@@ -154,7 +174,6 @@ public class EndpointLaunchTest extends BaseTestClass {
         });
     }
 
-
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
     public void testPeristentMenuForEndpointLaunch() throws Exception {
@@ -165,6 +184,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
         expectedMenu.add(new PersistentCommand("0", "Case List", null, NavIconState.NEXT));
         expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions", null, NavIconState.NEXT));
         PersistentCommand parentMenu = expectedMenu.get(0);
         parentMenu.addCommand(new PersistentCommand("0", "Add Parent", null, NavIconState.JUMP));
         parentMenu.addCommand(new PersistentCommand("1", "Followup", null, NavIconState.NEXT));
@@ -195,6 +215,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         expectedMenu = new ArrayList<>();
         expectedMenu.add(new PersistentCommand("0", "Case List", null, NavIconState.NEXT));
         expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions", null, NavIconState.NEXT));
         parentMenu = expectedMenu.get(1);
         parentMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins", null, NavIconState.ENTITY_SELECT));
         PersistentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
@@ -238,6 +259,13 @@ public class EndpointLaunchTest extends BaseTestClass {
         ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
         expectedMenu.add(new PersistentCommand("0", "Case List", null, NavIconState.NEXT));
         expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions", null, NavIconState.NEXT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
+    }
+
+    private void configureQueryMock() {
+        when(webClientMock.postFormData(anyString(), any(Multimap.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(),
+                        "query_responses/case_claim_response.xml"));
     }
 }

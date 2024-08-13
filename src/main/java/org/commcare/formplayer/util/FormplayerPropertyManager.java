@@ -24,6 +24,7 @@ public class FormplayerPropertyManager extends PropertyManager {
     public static final String INDEX_CASE_SEARCH_RESULTS = "cc-index-case-search-results";
 
     public static final String PERSISTENT_MENU = "cc-persistent-menu";
+    public static final String BREADCRUMBS_ENABLED = "cc-breadcrumbs-enabled";
 
     /**
      * Constructor for this PropertyManager
@@ -73,5 +74,9 @@ public class FormplayerPropertyManager extends PropertyManager {
 
     public boolean isPersistentMenuEnabled() {
         return doesPropertyMatch(PERSISTENT_MENU, NO, YES);
+    }
+
+    public boolean isBreadcrumbsEnabled() {
+        return doesPropertyMatch(BREADCRUMBS_ENABLED, YES, YES);
     }
 }
