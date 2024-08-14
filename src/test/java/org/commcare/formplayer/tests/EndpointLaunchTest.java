@@ -236,8 +236,6 @@ public class EndpointLaunchTest extends BaseTestClass {
                 NewFormResponse.class);
         PersistentCommand childCaseListMenu = batmanBeginsMenu.getCommands().get(1);
         childCaseListMenu.addCommand(new PersistentCommand(childCaseSelection, "The Dark Knight"));
-        PersistentCommand darkKnightMenu = childCaseListMenu.getCommands().get(0);
-        darkKnightMenu.addCommand(new PersistentCommand("0", "Update Child"));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,

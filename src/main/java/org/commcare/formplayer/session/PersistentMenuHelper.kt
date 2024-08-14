@@ -23,9 +23,14 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
         }
     }
 
-    fun addMenusToPeristentMenu(menuScreen: MenuScreen) {
+    fun addMenusToPeristentMenu(menuScreen: MenuScreen, isAutoAdvanceMenu: Boolean) {
         if (isPersistentMenuEnabled) {
             val options = menuScreen.getOptions()
+            if (options.size == 1 && isAutoAdvanceMenu) {
+                // we don't want to add auto-advanced menus
+                return
+            }
+
             for (i in options.indices) {
                 val command = PersistentCommand(
                     i.toString(),

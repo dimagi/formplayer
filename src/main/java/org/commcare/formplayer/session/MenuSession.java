@@ -71,6 +71,7 @@ import datadog.trace.api.Trace;
 public class MenuSession implements HereFunctionHandlerListener {
     private final SerializableMenuSession session;
     private final boolean isPersistentMenuEnabled;
+    private final boolean isAutoAdvanceMenu;
     private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
@@ -104,6 +105,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         this.isPersistentMenuEnabled = storageFactory.getPropertyManager().isPersistentMenuEnabled();
+        this.isAutoAdvanceMenu = storageFactory.getPropertyManager().isAutoAdvanceMenu();
         initializeBreadcrumbs();
     }
 
@@ -136,6 +138,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(locale);
         this.isPersistentMenuEnabled = storageFactory.getPropertyManager().isPersistentMenuEnabled();
+        this.isAutoAdvanceMenu = storageFactory.getPropertyManager().isAutoAdvanceMenu();
         initializeBreadcrumbs();
     }
 
@@ -241,18 +244,12 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param autoAdvanceMenu  Whether the menu navigation should be advanced if it can be.
      * @param respectRelevancy Whether to respect menu relevancy conditions while trying to auto-advance
      * @return true if the session was advanced
-     * @throws CommCareSessionException
      */
-    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu, boolean respectRelevancy)
-            throws CommCareSessionException {
+    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu, boolean respectRelevancy) {
         if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
             return false;
         }
-        boolean autoAdvanced =  ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper, respectRelevancy);
-        if (autoAdvanced) {
-            persistentMenuHelper.advanceCurrentMenuWithInput(screen, "0");
-        }
-        return autoAdvanced;
+        return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper, respectRelevancy);
     }
 
     /**
@@ -279,7 +276,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             // if we are not respecting relevancy, we only want to add root menu options to persistent menu
             if (persistentMenuHelper.getPersistentMenu().isEmpty() || entityScreenContext.isRespectRelevancy()) {
-                persistentMenuHelper.addMenusToPeristentMenu(menuScreen);
+                persistentMenuHelper.addMenusToPeristentMenu(menuScreen, isAutoAdvanceMenu);
             }
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
