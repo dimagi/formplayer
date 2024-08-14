@@ -13,6 +13,7 @@ import com.google.common.collect.Multimap;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.PersistentCommand;
+import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.WithHqUser;
@@ -175,18 +176,18 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
-    public void testPeristentMenuForEndpointLaunch() throws Exception {
+    public void testPersistentMenuForEndpointLaunch() throws Exception {
         CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "caselist",
                 null,
                 CommandListResponseBean.class);
         ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PersistentCommand("0", "Case List"));
-        expectedMenu.add(new PersistentCommand("1", "Parents"));
-        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions"));
+        expectedMenu.add(new PersistentCommand("0", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions", null, NavIconState.NEXT));
         PersistentCommand parentMenu = expectedMenu.get(0);
-        parentMenu.addCommand(new PersistentCommand("0", "Add Parent"));
-        parentMenu.addCommand(new PersistentCommand("1", "Followup"));
+        parentMenu.addCommand(new PersistentCommand("0", "Add Parent", null, NavIconState.JUMP));
+        parentMenu.addCommand(new PersistentCommand("1", "Followup", null, NavIconState.NEXT));
         assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
 
         NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -204,7 +205,7 @@ public class EndpointLaunchTest extends BaseTestClass {
                 endpointArgs,
                 NewFormResponse.class);
         PersistentCommand followupMenu = parentMenu.getCommands().get(1);
-        followupMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins"));
+        followupMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins", null, NavIconState.ENTITY_SELECT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
         commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -212,14 +213,14 @@ public class EndpointLaunchTest extends BaseTestClass {
                 endpointArgs,
                 CommandListResponseBean.class);
         expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PersistentCommand("0", "Case List"));
-        expectedMenu.add(new PersistentCommand("1", "Parents"));
-        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions"));
+        expectedMenu.add(new PersistentCommand("0", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions", null, NavIconState.NEXT));
         parentMenu = expectedMenu.get(1);
-        parentMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins"));
+        parentMenu.addCommand(new PersistentCommand(caseSelection, "Batman Begins", null, NavIconState.ENTITY_SELECT));
         PersistentCommand batmanBeginsMenu = parentMenu.getCommands().get(0);
-        batmanBeginsMenu.addCommand(new PersistentCommand("0", "Add Child"));
-        batmanBeginsMenu.addCommand(new PersistentCommand("1", "Child Case List"));
+        batmanBeginsMenu.addCommand(new PersistentCommand("0", "Add Child", null, NavIconState.JUMP));
+        batmanBeginsMenu.addCommand(new PersistentCommand("1", "Child Case List", null, NavIconState.NEXT));
         assertEquals(expectedMenu, commandListResponse.getPersistentMenu());
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -235,7 +236,7 @@ public class EndpointLaunchTest extends BaseTestClass {
                 endpointArgs,
                 NewFormResponse.class);
         PersistentCommand childCaseListMenu = batmanBeginsMenu.getCommands().get(1);
-        childCaseListMenu.addCommand(new PersistentCommand(childCaseSelection, "The Dark Knight"));
+        childCaseListMenu.addCommand(new PersistentCommand(childCaseSelection, "The Dark Knight", null, NavIconState.ENTITY_SELECT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -247,16 +248,16 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
-    public void testPeristentMenuForEndpointLaunchWithoutRespectRelevancy() throws Exception {
+    public void testPersistentMenuForEndpointLaunchWithoutRespectRelevancy() throws Exception {
         NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "add_parent_not_respect_relevancy",
                 null,
                 NewFormResponse.class);
         // Verify that we only add root menu
         ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PersistentCommand("0", "Case List"));
-        expectedMenu.add(new PersistentCommand("1", "Parents"));
-        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions"));
+        expectedMenu.add(new PersistentCommand("0", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions", null, NavIconState.NEXT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 

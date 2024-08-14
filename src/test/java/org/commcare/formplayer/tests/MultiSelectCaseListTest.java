@@ -17,6 +17,7 @@ import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
@@ -237,18 +238,18 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         String[] selections = null;
         CommandListResponseBean menuResponse = sessionNavigate(selections, APP, CommandListResponseBean.class);
         ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
-        expectedMenu.add(new PersistentCommand("0", "Case List"));
-        expectedMenu.add(new PersistentCommand("1", "Case List"));
-        expectedMenu.add(new PersistentCommand("2", "Menu with Auto Submit Form"));
+        expectedMenu.add(new PersistentCommand("0", "Case List", "jr://file/commcare/image/m0customicon_en.png", NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("1", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Menu with Auto Submit Form", null, NavIconState.NEXT));
         assertEquals(expectedMenu, menuResponse.getPersistentMenu());
 
         selections = new String[]{"0"};
         menuResponse = sessionNavigate(selections, APP, CommandListResponseBean.class);
         PersistentCommand firstMenu = expectedMenu.get(0);
-        firstMenu.addCommand(new PersistentCommand("0","Registration Form"));
-        firstMenu.addCommand(new PersistentCommand("1","Followup Form"));
-        firstMenu.addCommand(new PersistentCommand("2","Followup Form with AutoSelect Datum"));
-        firstMenu.addCommand(new PersistentCommand("3","Followup Form with AutoSelect Datum"));
+        firstMenu.addCommand(new PersistentCommand("0","Registration Form", null, NavIconState.JUMP));
+        firstMenu.addCommand(new PersistentCommand("1","Followup Form", null, NavIconState.JUMP));
+        firstMenu.addCommand(new PersistentCommand("2","Followup Form with AutoSelect Datum", "jr://file/commcare/image/m0f2customicon_en.png", NavIconState.NEXT));
+        firstMenu.addCommand(new PersistentCommand("3","Followup Form with AutoSelect Datum", null, NavIconState.NEXT));
         assertEquals(expectedMenu, menuResponse.getPersistentMenu());
 
         selections = new String[]{"0", "1"};
@@ -262,7 +263,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
         PersistentCommand firstSecondMenu = firstMenu.getCommands().get(1);
         String guid = formResponse.getSelections()[2];
-        firstSecondMenu.addCommand(new PersistentCommand(guid, "(2) 123, ..."));
+        firstSecondMenu.addCommand(new PersistentCommand(guid, "(2) 123, ...", null, NavIconState.ENTITY_SELECT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 }
