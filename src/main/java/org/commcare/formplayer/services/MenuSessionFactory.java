@@ -215,7 +215,7 @@ public class MenuSessionFactory {
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService), windowWidth,
-                storageFactory.getPropertyManager().isPersistentMenuEnabled());
+                storageFactory);
     }
 
     @Trace
@@ -223,7 +223,7 @@ public class MenuSessionFactory {
             CommCareSession commCareSession) throws Exception {
         return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService),
-                storageFactory.getPropertyManager().isPersistentMenuEnabled());
+                storageFactory);
     }
 
     @Trace

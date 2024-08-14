@@ -94,7 +94,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public MenuSession(SerializableMenuSession session,
             FormplayerConfigEngine engine, CommCareSession commCareSession, RestoreFactory restoreFactory,
-            FormplayerRemoteInstanceFetcher instanceFetcher, boolean isPersistentMenuEnabled) throws Exception {
+            FormplayerRemoteInstanceFetcher instanceFetcher, FormplayerStorageFactory storageFactory) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
         this.engine = engine;
@@ -103,14 +103,14 @@ public class MenuSession implements HereFunctionHandlerListener {
                 commCareSession, engine.getPlatform(), sandbox, instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
-        this.isPersistentMenuEnabled = isPersistentMenuEnabled;
+        this.isPersistentMenuEnabled = storageFactory.getPropertyManager().isPersistentMenuEnabled();
         initializeBreadcrumbs();
     }
 
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            FormplayerRemoteInstanceFetcher instanceFetcher, String windowWidth, boolean isPersistentMenuEnabled)
+            FormplayerRemoteInstanceFetcher instanceFetcher, String windowWidth, FormplayerStorageFactory storageFactory)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
@@ -135,7 +135,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox,
                 instanceFetcher, getWindowWidth());
         SessionUtils.setLocale(locale);
-        this.isPersistentMenuEnabled = isPersistentMenuEnabled;
+        this.isPersistentMenuEnabled = storageFactory.getPropertyManager().isPersistentMenuEnabled();
         initializeBreadcrumbs();
     }
 
