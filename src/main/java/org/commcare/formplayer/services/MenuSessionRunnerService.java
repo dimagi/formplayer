@@ -23,6 +23,7 @@ import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
+import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.exceptions.SyncRestoreException;
@@ -75,8 +76,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -207,14 +208,22 @@ public class MenuSessionRunnerService {
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
-
-        menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+        if (storageFactory.getPropertyManager().isBreadcrumbsEnabled()) {
+            menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+        }
         menuResponseBean.setAppId(menuSession.getAppId());
         menuResponseBean.setAppVersion(
                 menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(
                 getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
+        setPeristenMenuToBean(menuResponseBean, menuSession.getPersistentMenu());
         return menuResponseBean;
+    }
+
+    private void setPeristenMenuToBean(BaseResponseBean menuResponseBean, ArrayList<PersistentCommand> persistentMenu) {
+        if (storageFactory.getPropertyManager().isPersistentMenuEnabled()) {
+            menuResponseBean.setPersistentMenu(persistentMenu);
+        }
     }
 
     private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
@@ -226,7 +235,7 @@ public class MenuSessionRunnerService {
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections, QueryData queryData) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null, true);
+        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null);
     }
 
     /**
@@ -237,14 +246,13 @@ public class MenuSessionRunnerService {
      *                         An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
      *                         This would mean select the 0th menu, then the 2nd menu, then the case with the id
      *                         6c5d91e9-61a2-4264-97f3-5d68636ff316.
-     * @param respectRelevancy Whether to respect display conditions on a module or form while handling input
      */
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections,
             QueryData queryData,
             EntityScreenContext entityScreenContext,
-            String formSessionId, boolean respectRelevancy) throws Exception {
+            String formSessionId) throws Exception {
         NotificationMessage notificationMessage = null;
         boolean nonAppNav = formSessionId != null;
         Screen nextScreen = null;
@@ -260,13 +268,12 @@ public class MenuSessionRunnerService {
                 String selection = selections[i - 1];
 
                 boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
-                boolean isDetailScreen = entityScreenContext.getDetailSelection() != null;
 
                 // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full
                 // entity screen
                 boolean needsFullEntityScreen = i == selections.length;
                 boolean gotNextScreen = menuSession.handleInput(nextScreen, selection, needsFullEntityScreen, inputValidated,
-                        true, entityScreenContext, respectRelevancy);
+                        true, entityScreenContext);
                 if (!gotNextScreen) {
                     notificationMessage = new NotificationMessage(
                             "Overflowed selections with selection " + selection + " at index " + i,
@@ -276,7 +283,7 @@ public class MenuSessionRunnerService {
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
                 nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
-                        needsFullEntityScreen, entityScreenContext, respectRelevancy);
+                        needsFullEntityScreen, entityScreenContext);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                     // we've reached the end of this navigation path and no form in sight
@@ -286,7 +293,7 @@ public class MenuSessionRunnerService {
                         executeAndRebuildSession(menuSession);
                     } else {
                         // no more nav, we're done
-                        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession, entityScreenContext, respectRelevancy);
+                        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession, entityScreenContext);
                         if (postSyncResponse == null) {
                             // Return use to the app root
                             postSyncResponse = new BaseResponseBean(null,
@@ -353,8 +360,7 @@ public class MenuSessionRunnerService {
             String nextInput,
             QueryData queryData,
             boolean needsFullEntityScreen,
-            EntityScreenContext entityScreenContext,
-            boolean respectRelevancy) throws CommCareSessionException {
+            EntityScreenContext entityScreenContext) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
         Screen previousScreen;
@@ -400,7 +406,8 @@ public class MenuSessionRunnerService {
                         replay, skipCache
                 );
             } else if (nextScreen instanceof MenuScreen) {
-                sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu(), respectRelevancy);
+                sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu(),
+                        entityScreenContext.isRespectRelevancy());
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
                     doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
@@ -521,8 +528,7 @@ public class MenuSessionRunnerService {
     }
 
     @Trace
-    public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext,
-            boolean respectRelevancy)
+    public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext)
             throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             if (menuSession.getSmartLinkRedirect() != null) {
@@ -534,7 +540,7 @@ public class MenuSessionRunnerService {
             }
 
             Screen nextScreen = autoAdvanceSession(menuSession, "", new QueryData(),
-                    true, entityScreenContext, respectRelevancy
+                    true, entityScreenContext
             );
             BaseResponseBean response = getNextMenu(nextScreen, menuSession, null, entityScreenContext);
             response.setSelections(menuSession.getSelections());
@@ -671,7 +677,10 @@ public class MenuSessionRunnerService {
                     menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
             formResponseBean.setPersistentCaseTile(
                     getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
-            formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            if (storageFactory.getPropertyManager().isBreadcrumbsEnabled()) {
+                formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            }
+            setPeristenMenuToBean(formResponseBean, menuSession.getPersistentMenu());
             // update datadog/sentry metrics
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
             Sentry.setTag(Constants.MODULE_TAG, "form");
@@ -804,7 +813,7 @@ public class MenuSessionRunnerService {
         QueryData queryData = getQueryDataFromFrame(menuSession.getSessionWrapper().getFrame(), endpointSessionFrame);
         // reset session and play it back with derived selections
         menuSession.resetSession();
-        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null, respectRelevancy);
+        return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(respectRelevancy), null);
     }
 
     private Map<String, ExternalDataInstance> processEndpointArgumentsForVirualInstance(Endpoint endpoint,
