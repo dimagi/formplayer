@@ -9,12 +9,13 @@ import org.commcare.formplayer.sqlitedb.ApplicationDB;
  */
 public class DeleteApplicationDbsRequestBean extends AuthenticatedRequestBean {
     private String appId;
+    private String appVersion;
 
     public DeleteApplicationDbsRequestBean() {
     }
 
     public void clear() {
-        new ApplicationDB(domain, username, restoreAs, appId).deleteDatabaseFolder();
+        new ApplicationDB(domain, username, restoreAs, appId, appVersion).deleteDatabaseFolder();
     }
 
     @JsonGetter(value = "app_id")
@@ -27,9 +28,17 @@ public class DeleteApplicationDbsRequestBean extends AuthenticatedRequestBean {
         this.appId = appId;
     }
 
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+
     @Override
     public String toString() {
-        return "DeleteApplicationDbsRequestBean with appId=" + appId + ", parent " + super.toString();
+        return "DeleteApplicationDbsRequestBean with appId=" + appId + ", appVersion=" + appVersion + ", parent " + super.toString();
     }
 
 }

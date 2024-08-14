@@ -589,8 +589,8 @@ public class BaseTestClass {
         return new SyncDbRequest(mockUtilController, restoreFactoryMock).requestWithBean(syncDbRequestBean).bean();
     }
 
-    NotificationMessage deleteApplicationDbs() throws Exception {
-        String payload = FileUtils.getFile(this.getClass(), "requests/delete_db/delete_db.json");
+    NotificationMessage deleteApplicationDbs(String deleteDbJsonPath) throws Exception {
+        String payload = FileUtils.getFile(this.getClass(), deleteDbJsonPath);
         DeleteApplicationDbsRequestBean request = mapper.readValue(
                 payload,
                 DeleteApplicationDbsRequestBean.class

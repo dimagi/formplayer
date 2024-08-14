@@ -3,5 +3,6 @@
   "password": "updatetestpass",
   "domain": "updatetestdomain",
   "app_id": "updatetestappid",
-  "installReference": "archives/basic.ccz"
+  "installReference": "archives/basic.ccz",
+  "appVersion": null
 }

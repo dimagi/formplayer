@@ -46,7 +46,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
-        storageFactoryMock.configure("user", "domain", "app_id", "asUser");
+        storageFactoryMock.configure("user", "domain", "app_id", "asUser", "7");
         FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
     }
 

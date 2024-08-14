@@ -11,17 +11,23 @@ class ApplicationDBPath extends DBPath {
     private String username;
     private String asUsername;
     private String appId;
+    private String appVersion;
 
-    ApplicationDBPath(String domain, String username, String asUsername, String appId) {
+    ApplicationDBPath(String domain, String username, String asUsername, String appId, String appVersion) {
         this.domain = domain;
         this.username = username;
         this.asUsername = asUsername;
         this.appId = appId;
+        this.appVersion = appVersion;
     }
 
     @Override
     public String getDatabasePath() {
-        return DbUtils.getDbPathForUser(domain, username, asUsername) + File.separator + appId;
+        String path = DbUtils.getDbPathForUser(domain, username, asUsername) + File.separator + appId;
+        if (appVersion != null) {
+            path = path + "_" + appVersion;
+        }
+        return path;
     }
 
     @Override

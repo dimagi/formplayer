@@ -36,16 +36,29 @@ public class DeleteApplicationDbsTests extends BaseTestClass {
     @Test
     public void testDeleteApplicationDbsView() throws Exception {
         // Create application db by making an install request
-        SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid");
+        SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid", null);
         doInstall("requests/install/install.json");
 
         File file = new File(db.getDatabaseFileForDebugPurposes());
         assert file.exists();
 
-        NotificationMessage response = deleteApplicationDbs();
+        NotificationMessage response = deleteApplicationDbs("requests/delete_db/delete_db.json");
         assert !response.isError();
 
         file = new File(db.getDatabaseFileForDebugPurposes());
+        assert !file.exists();
+
+        // Test with app version in install
+        SQLiteDB db2 = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid", "7");
+        doInstall("requests/install/install_with_app_version.json");
+
+        file = new File(db2.getDatabaseFileForDebugPurposes());
+        assert file.exists();
+
+        response = deleteApplicationDbs("requests/delete_db/delete_db_with_app_version.json");
+        assert !response.isError();
+
+        file = new File(db2.getDatabaseFileForDebugPurposes());
         assert !file.exists();
     }
 
@@ -57,10 +70,10 @@ public class DeleteApplicationDbsTests extends BaseTestClass {
      */
     @Test
     public void testDeleteApplicationDbsWithNoDbView() throws Exception {
-        SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid");
+        SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid", null);
         assert !new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();
 
-        NotificationMessage response = deleteApplicationDbs();
+        NotificationMessage response = deleteApplicationDbs("requests/delete_db/delete_db.json");
         assert !response.isError();
 
         assert !new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();

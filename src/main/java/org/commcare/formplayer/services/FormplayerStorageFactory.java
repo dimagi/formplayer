@@ -49,7 +49,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
                 installRequestBean.getDomain(),
                 installRequestBean.getAppId(),
                 installRequestBean.getRestoreAs(),
-                installRequestBean.getRestoreAsCaseId()
+                installRequestBean.getRestoreAsCaseId(),
+                installRequestBean.getAppVersion()
         );
     }
 
@@ -67,22 +68,23 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         );
     }
 
-    public void configure(String username, String domain, String appId, String asUsername, String restoreAsCaseId) {
+    public void configure(String username, String domain, String appId, String asUsername, String restoreAsCaseId, String appVersion) {
         if (restoreAsCaseId != null) {
             configure(
                     UserUtils.getRestoreAsCaseIdUsername(restoreAsCaseId),
                     domain,
                     appId,
-                    null
+                    null,
+                    appVersion
             );
         }
         else {
-            configure(username, domain, appId, asUsername);
+            configure(username, domain, appId, asUsername, appVersion);
         }
     }
 
     @Trace
-    public void configure(String username, String domain, String appId, String asUsername) {
+    public void configure(String username, String domain, String appId, String asUsername, String appVersion) {
         if(username == null || domain == null || appId == null) {
             throw new RuntimeException(String.format("Cannot configure FormplayerStorageFactory with null arguments. " +
                     "username = %s, domain = %s, appId = %s", username, domain, appId));
@@ -92,7 +94,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
+        this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId, appVersion);
         this.sqLiteDB.closeConnection();
         this.propertyManager = new FormplayerPropertyManager(newStorage(PropertyManager.STORAGE_KEY, Property.class));
         storageManager = new StorageManager(this);

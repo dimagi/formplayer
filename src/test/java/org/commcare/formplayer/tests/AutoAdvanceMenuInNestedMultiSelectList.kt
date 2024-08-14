@@ -30,7 +30,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
     override fun setUp() {
         super.setUp()
         configureRestoreFactory("domain", "user")
-        storageFactoryMock.configure("user", "domain", "app_id", "asUser")
+        storageFactoryMock.configure("user", "domain", "app_id", "asUser", "7")
         cacheManager.getCache("case_search").clear()
         mockRequest = MockRequestUtils(webClientMock, restoreFactoryMock)
     }
