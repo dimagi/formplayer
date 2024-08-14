@@ -3,11 +3,8 @@ package org.commcare.formplayer.beans.menus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.session.CommCareSession;
-import org.commcare.suite.model.EntityDatum;
-import org.commcare.suite.model.Entry;
+import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 import org.commcare.suite.model.MenuDisplayable;
-import org.commcare.suite.model.SessionDatum;
 
 /**
  * Created by willpride on 4/13/16.
@@ -21,9 +18,6 @@ public class Command {
     private NavIconState navigationState;
     private String badgeText;
 
-    enum NavIconState {
-        NEXT, JUMP
-    }
 
     public NavIconState getNavigationState() {
         return navigationState;
@@ -45,21 +39,8 @@ public class Command {
                         menuDisplayable.getRawText())));
         this.setImageUri(menuDisplayable.getImageURI());
         this.setAudioUri(menuDisplayable.getAudioURI());
-        this.setNavigationState(getIconState(menuDisplayable, session));
+        this.setNavigationState(CommandUtils.getIconState(menuDisplayable, session));
         this.setBadgeText(badgeText);
-    }
-
-    private NavIconState getIconState(MenuDisplayable menuDisplayable, CommCareSession session) {
-        NavIconState iconChoice = NavIconState.NEXT;
-
-        //figure out some icons
-        if (menuDisplayable instanceof Entry) {
-            SessionDatum datum = session.getNeededDatum((Entry)menuDisplayable);
-            if (datum == null || !(datum instanceof EntityDatum)) {
-                iconChoice = NavIconState.JUMP;
-            }
-        }
-        return iconChoice;
     }
 
     public int getIndex() {
