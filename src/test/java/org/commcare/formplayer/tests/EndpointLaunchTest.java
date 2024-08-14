@@ -176,7 +176,7 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
-    public void testPeristentMenuForEndpointLaunch() throws Exception {
+    public void testPersistentMenuForEndpointLaunch() throws Exception {
         CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "caselist",
                 null,
@@ -248,7 +248,7 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
-    public void testPeristentMenuForEndpointLaunchWithoutRespectRelevancy() throws Exception {
+    public void testPersistentMenuForEndpointLaunchWithoutRespectRelevancy() throws Exception {
         NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "add_parent_not_respect_relevancy",
                 null,

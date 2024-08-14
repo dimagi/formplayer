@@ -276,7 +276,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             // if we are not respecting relevancy, we only want to add root menu options to persistent menu
             if (persistentMenuHelper.getPersistentMenu().isEmpty() || entityScreenContext.isRespectRelevancy()) {
-                persistentMenuHelper.addMenusToPeristentMenu(menuScreen, sessionWrapper, isAutoAdvanceMenu);
+                persistentMenuHelper.addMenusToPersistentMenu(menuScreen, sessionWrapper, isAutoAdvanceMenu);
             }
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {

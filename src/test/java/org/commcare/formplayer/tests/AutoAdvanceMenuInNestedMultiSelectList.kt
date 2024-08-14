@@ -54,7 +54,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
                 QueryResponseBean::class.java
             )
 
-            // Peristent Menu check, auto-advanced menus are not included in persistent menu
+            // Persistent Menu check, auto-advanced menus are not included in persistent menu
             val responseSelections = response.selections.asList()
             val expectedMenu = java.util.ArrayList<PersistentCommand>()
             expectedMenu.add(

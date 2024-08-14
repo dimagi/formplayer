@@ -25,7 +25,7 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
         }
     }
 
-    fun addMenusToPeristentMenu(menuScreen: MenuScreen, sessionWrapper: SessionWrapper, isAutoAdvanceMenu: Boolean) {
+    fun addMenusToPersistentMenu(menuScreen: MenuScreen, sessionWrapper: SessionWrapper, isAutoAdvanceMenu: Boolean) {
         if (isPersistentMenuEnabled) {
             val mChoices = menuScreen.getMenuDisplayables()
             if (mChoices.size == 1 && isAutoAdvanceMenu) {
@@ -60,7 +60,7 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
                 check(currentMenu != null) { "Current menu can't be null for Entity screen" }
                 check(currentMenu!!.commands.size <= 1) { "Current menu can't have more than one commands for Entity screen" }
 
-                // if it's the last input, we would not have yet added entity screen menu to peristent Menu, so just
+                // if it's the last input, we would not have yet added entity screen menu to persistent Menu, so just
                 // return current menu otherwise return the only command entry for entity screen
                 currentMenu = if (currentMenu!!.commands.size == 0) currentMenu else currentMenu!!.commands[0]
             }
