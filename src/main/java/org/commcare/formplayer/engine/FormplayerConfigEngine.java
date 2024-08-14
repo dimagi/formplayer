@@ -59,6 +59,10 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         return HttpUrl.parse(url).queryParameter("app_id");
     }
 
+    private String parseAppVersion(String url) {
+        return HttpUrl.parse(url).queryParameter("version");
+    }
+
     @Override
     public void initFromArchive(String archiveURL) throws InstallCancelledException,
             UnresolvedResourceException, UnfullfilledRequirementsException {
@@ -69,13 +73,19 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             UnresolvedResourceException, UnfullfilledRequirementsException {
         String fileName;
         String appId = null;
+        String appVersion = null;
         if (archiveURL.startsWith("http")) {
             appId = parseAppId(archiveURL);
+            appVersion = parseAppVersion(archiveURL);
             if (!preview) {
                 try {
-                    mArchiveRoot.derive("jr://archive/" + appId + "/");
-                    init("jr://archive/" + appId + "/profile.ccpr");
-                    log.info(String.format("Successfully re-used installation CCZ for appId %s", appId));
+                    String archiveIdentifier = appId;
+                    if (appVersion != null) {
+                        archiveIdentifier = appId + "_" + appVersion;
+                    }
+                    mArchiveRoot.derive("jr://archive/" + archiveIdentifier + "/");
+                    init("jr://archive/" + archiveIdentifier + "/profile.ccpr");
+                    log.info(String.format("Successfully re-used installation CCZ for appId %s", archiveIdentifier));
                     return;
                 } catch (InvalidReferenceException e) {
                     // Expected in many cases, pass
@@ -92,7 +102,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             log.error("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName, e);
             return;
         }
-        String archiveGUID = this.mArchiveRoot.addArchiveFile(zip, appId);
+        String archiveGUID = this.mArchiveRoot.addArchiveFile(zip, appId, appVersion);
         init("jr://archive/" + archiveGUID + "/profile.ccpr");
     }
 

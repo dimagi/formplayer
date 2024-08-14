@@ -21,8 +21,8 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
     private int MAX_RECENT = 5;
 
     @Override
-    public String addArchiveFile(ZipFile zip, String appId) {
-        String mGUID = super.addArchiveFile(zip, appId);
+    public String addArchiveFile(ZipFile zip, String appId, String appVersion) {
+        String mGUID = super.addArchiveFile(zip, appId, appVersion);
         redisTemplate.opsForValue().set(
                 String.format("formplayer:archive:%s", mGUID),
                 zip.getName()
