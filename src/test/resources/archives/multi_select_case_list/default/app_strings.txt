@@ -31,3 +31,5 @@ m0.case_long.case_name_1.header=Name
 m0.case_short.case_name_1.header=Name
 modules.m0=Case List
 usercase.missing_id=This form affects the user case, but no user case id was found. Please contact your supervisor.
+modules.m0.icon=jr://file/commcare/image/m0customicon_en.png
+forms.m0f2.icon=jr://file/commcare/image/m0f2customicon_en.png
