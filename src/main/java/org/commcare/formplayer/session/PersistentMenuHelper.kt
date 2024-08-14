@@ -25,9 +25,14 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
         }
     }
 
-    fun addMenusToPeristentMenu(menuScreen: MenuScreen, sessionWrapper: SessionWrapper) {
+    fun addMenusToPeristentMenu(menuScreen: MenuScreen, sessionWrapper: SessionWrapper, isAutoAdvanceMenu: Boolean) {
         if (isPersistentMenuEnabled) {
             val mChoices = menuScreen.getMenuDisplayables()
+            if (mChoices.size == 1 && isAutoAdvanceMenu) {
+                // we don't want to add auto-advanced menus
+                return
+            }
+
             for (i in mChoices.indices) {
                 val choice = mChoices[i];
                 val option = choice.getDisplayText(sessionWrapper.getEvaluationContextWithAccumulatedInstances(choice.getCommandID(), choice.getRawText()));

@@ -54,7 +54,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
                 QueryResponseBean::class.java
             )
 
-            // Peristent Menu check
+            // Peristent Menu check, auto-advanced menus are not included in persistent menu
             val responseSelections = response.selections.asList()
             val expectedMenu = java.util.ArrayList<PersistentCommand>()
             expectedMenu.add(
@@ -76,14 +76,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
                     "Batman Begins", null, NavIconState.ENTITY_SELECT
                 )
             )
-            // add the auto-advanced menu
             val batmanBeginsMenu = parentCaseListMenu.commands[0]
-            batmanBeginsMenu.addCommand(
-                PersistentCommand(
-                    "0",
-                    "Nested Case List", null, NavIconState.NEXT
-                )
-            )
             assertEquals(expectedMenu, response.persistentMenu)
 
 
@@ -102,20 +95,10 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
             assertEquals(formResponse.selections.size, 3)
 
             // Persistent Menu check
-            val nestedCaseListMenu = batmanBeginsMenu.commands[0]
-            nestedCaseListMenu.addCommand(
+            batmanBeginsMenu.addCommand(
                 PersistentCommand(
                     formResponse.selections.last(),
                     "Batman Begins", null, NavIconState.ENTITY_SELECT
-                )
-            )
-            val nestedBatmanbeginsMenu = nestedCaseListMenu.commands[0]
-            nestedBatmanbeginsMenu.addCommand(
-                PersistentCommand(
-                    "0",
-                    "Followup",
-                    null,
-                    NavIconState.JUMP
                 )
             )
             assertEquals(expectedMenu, formResponse.persistentMenu)
