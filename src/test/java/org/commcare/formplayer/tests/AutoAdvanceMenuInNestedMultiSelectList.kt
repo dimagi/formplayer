@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests
 
 import org.commcare.formplayer.beans.NewFormResponse
+import org.commcare.formplayer.beans.menus.PersistentCommand
 import org.commcare.formplayer.beans.menus.QueryResponseBean
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock
 import org.commcare.formplayer.objects.QueryData
@@ -51,10 +52,36 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
                 arrayOf("94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"),
                 QueryResponseBean::class.java
             )
-            val updatedSelections = ArrayList<String>()
-            updatedSelections.addAll(response.getSelections().asList())
-            updatedSelections.add(USE_SELECTED_VALUES)
 
+            // Peristent Menu check, auto-advanced menus are not included in persistent menu
+            val responseSelections = response.selections.asList()
+            val expectedMenu = java.util.ArrayList<PersistentCommand>()
+            expectedMenu.add(
+                PersistentCommand(
+                    "0",
+                    "Case List"
+                )
+            )
+            expectedMenu.add(
+                PersistentCommand(
+                    "1",
+                    "Parent Case List"
+                )
+            )
+            val parentCaseListMenu = expectedMenu[1]
+            parentCaseListMenu.addCommand(
+                PersistentCommand(
+                    responseSelections.last(),
+                    "Batman Begins"
+                )
+            )
+            val batmanBeginsMenu = parentCaseListMenu.commands[0]
+            assertEquals(expectedMenu, response.persistentMenu)
+
+
+            val updatedSelections = ArrayList<String>()
+            updatedSelections.addAll(responseSelections)
+            updatedSelections.add(USE_SELECTED_VALUES)
             val formResponse = sessionNavigateWithQuery(
                 updatedSelections.toTypedArray(),
                 APP_NAME,
@@ -65,6 +92,15 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
 
             // selections array at this point should be ["1", "guid1", "guid2"] without any auto-advanced menu indexes
             assertEquals(formResponse.selections.size, 3)
+
+            // Persistent Menu check
+            batmanBeginsMenu.addCommand(
+                PersistentCommand(
+                    formResponse.selections.last(),
+                    "Batman Begins"
+                )
+            )
+            assertEquals(expectedMenu, formResponse.persistentMenu)
         }
     }
 }
