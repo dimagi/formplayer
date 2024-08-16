@@ -45,7 +45,8 @@ public class FormSessionsPaginationTest {
                     "domain", "appId", "momo", "momo", "restoreAsCaseId",
                     "/a/domain/receiver", null, "More momo " + i, true, "en", false,
                     ImmutableMap.of("a", "1", "b", "2"),
-                    null
+                    null,
+                    "7"
             );
             formSessionService.saveSession(session);
         }

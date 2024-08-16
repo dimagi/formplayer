@@ -335,7 +335,7 @@ public class FormDefinitionServiceTest {
         @Bean
         public FormplayerStorageFactory storageFactory() {
             FormplayerStorageFactory storageFactory = new FormplayerStorageFactory();
-            storageFactory.configure("test", "test", "app_id", "");
+            storageFactory.configure("test", "test", "app_id", "", "7");
             storageFactory.registerFormDefStorage();
             return storageFactory;
         };

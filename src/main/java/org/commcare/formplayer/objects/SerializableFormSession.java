@@ -42,6 +42,9 @@ public class SerializableFormSession implements Serializable {
     @Column(name = "appid", updatable = false)
     private String appId;
 
+    @Column(name = "appversion", updatable = false)
+    private String appVersion;
+
     @Column(name = "caseid", updatable = false)
     private String restoreAsCaseId;
 
@@ -108,7 +111,8 @@ public class SerializableFormSession implements Serializable {
             String initLang,
             boolean inPromptMode,
             Map<String, String> sessionData,
-            Map<String, FunctionHandler[]> functionContext) {
+            Map<String, FunctionHandler[]> functionContext,
+            String appVersion) {
         this.domain = domain;
         this.asUser = asUser;
         this.appId = appId;
@@ -123,6 +127,7 @@ public class SerializableFormSession implements Serializable {
         this.functionContext = functionContext;
         this.inPromptMode = inPromptMode;
         this.currentIndex = "0";
+        this.appVersion = appVersion;
     }
 
     public void setSubmitStatus(SubmitStatus submitStatus) {

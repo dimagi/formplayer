@@ -150,13 +150,14 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
-            String windowWidth) throws Exception {
+            String windowWidth,
+            String appVersion) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
-                locale, inPromptMode, sessionData, functionContext
+                locale, inPromptMode, sessionData, functionContext, appVersion
         );
         this.session.setFormDefinition(serializableFormDefinition);
 

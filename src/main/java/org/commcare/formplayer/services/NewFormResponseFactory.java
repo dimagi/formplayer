@@ -72,7 +72,8 @@ public class NewFormResponseFactory {
                 bean.getDomain(),
                 bean.getSessionData().getAppId(),
                 bean.getRestoreAs(),
-                bean.getRestoreAsCaseId());
+                bean.getRestoreAsCaseId(),
+                bean.getSessionData().getAppVersion());
         storageFactory.registerFormDefStorage();
 
         FormDef formDef = parseFormDef(formXml);
@@ -108,7 +109,8 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId(),
                 null,
                 formplayerRemoteInstanceFetcher,
-                bean.getWindowWidth()
+                bean.getWindowWidth(),
+                bean.getSessionData().getAppVersion()
         );
 
         NewFormResponse response = getResponse(formSession);

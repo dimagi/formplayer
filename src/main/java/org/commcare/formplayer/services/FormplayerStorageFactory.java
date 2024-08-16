@@ -64,7 +64,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
                 formSession.getDomain(),
                 formSession.getAppId(),
                 formSession.getAsUser(),
-                formSession.getRestoreAsCaseId()
+                formSession.getRestoreAsCaseId(),
+                formSession.getAppVersion()
         );
     }
 

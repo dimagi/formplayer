@@ -400,14 +400,13 @@ public class MenuSession implements HereFunctionHandlerListener {
                 formDef
         );
         HashMap<String, String> sessionData = getSessionData();
-
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty(
                 "PostURL");
         return new FormSession(sandbox, serializableFormDefinition, formDef, session.getUsername(),
                 session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
                 oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
-                instanceFetcher, getWindowWidth());
+                instanceFetcher, getWindowWidth(), this.getAppVersion());
     }
 
     public SessionWrapper getSessionWrapper() {

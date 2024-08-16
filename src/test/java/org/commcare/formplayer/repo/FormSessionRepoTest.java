@@ -241,7 +241,8 @@ public class FormSessionRepoTest {
                 domain, "appId", "momo", asUser, "restoreAsCaseId",
                 "/a/domain/receiver", null, title, true, "en", false,
                 ImmutableMap.of("a", "1", "b", "2"),
-                ImmutableMap.of("count", functionHandlers)
+                ImmutableMap.of("count", functionHandlers),
+                "7"
         );
         session.setInstanceXml("xml");
         return session;
