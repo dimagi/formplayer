@@ -80,6 +80,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             if (!preview) {
                 try {
                     String archiveIdentifier = appId;
+                    // Conditional check is for backwards compatability. Once HQ changes are deployed to include
+                    // app version in URL, this can be removed.
                     if (appVersion != null) {
                         archiveIdentifier = appId + "_" + appVersion;
                     }

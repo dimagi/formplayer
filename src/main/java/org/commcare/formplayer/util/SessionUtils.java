@@ -38,6 +38,8 @@ public class SessionUtils {
         if (appId == null || "".equals(appId)) {
             throw new RuntimeException("app_id required for install");
         }
+        // Conditional check is for backwards compatability. Once HQ changes are deployed to include
+        // app version in URL, this can be removed.
         if (appVersion != null) {
             return getReferenceToVersion(host, appId, domain, appVersion);
         } else {

@@ -24,6 +24,8 @@ class ApplicationDBPath extends DBPath {
     @Override
     public String getDatabasePath() {
         String path = DbUtils.getDbPathForUser(domain, username, asUsername) + File.separator + appId;
+        // Conditional check is for backwards compatability. Once HQ changes are deployed to include
+        // app version in URL, this can be removed.
         if (appVersion != null) {
             path = path + "_" + appVersion;
         }
