@@ -46,7 +46,8 @@ public class AppInstallAspect {
                 .setData(
                         "appId", requestBean.getAppId(),
                         "domain", requestBean.getDomain(),
-                        "locale", requestBean.getLocale()
+                        "locale", requestBean.getLocale(),
+                        "appVersion", requestBean.getAppVersion()
                 )
                 .setCategory("app_info")
                 .record();
