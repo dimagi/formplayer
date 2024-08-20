@@ -25,6 +25,12 @@
                     <text id="question3/repeat_text-label">
                         <value>repeat_text</value>
                     </text>
+                    <text id="question3/add-caption-label">
+                        <value>Add Caption Label</value>
+                    </text>
+                    <text id="question3/add-empty-caption-label">
+                        <value>Add Empty Caption Label</value>
+                    </text>
                 </translation>
                 <translation lang="hin">
                     <text id="q_name-label">
@@ -47,6 +53,8 @@
         <group>
             <label ref="jr:itext('question3-label')"/>
             <repeat nodeset="/data/question3">
+                <jr:addCaption ref="jr:itext('question3/add-caption-label')" />
+                <jr:addEmptyCaption ref="jr:itext('question3/add-empty-caption-label')" />
                 <input ref="/data/question3/repeat_text">
                     <label ref="jr:itext('question3/repeat_text-label')"/>
                 </input>

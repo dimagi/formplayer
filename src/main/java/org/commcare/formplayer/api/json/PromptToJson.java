@@ -1,5 +1,6 @@
 package org.commcare.formplayer.api.json;
 
+import org.commcare.cases.util.StringUtils;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
@@ -131,8 +132,15 @@ public class PromptToJson {
     }
 
     private static String getRepeatAddText(FormEntryCaption prompt) {
+        boolean hasRepetitions = prompt.getNumRepetitions() > 0;
+        String addText = prompt.getRepeatText(hasRepetitions ? "add" : "add-empty");
+
+        if (!StringUtils.isEmpty(addText)) {
+            return addText;
+        }
+
         String promptText = prompt.getLongText();
-        if (prompt.getNumRepetitions() > 0) {
+        if (hasRepetitions) {
             try {
                 return Localization.get("repeat.dialog.add.another", promptText);
             } catch (NoLocalizedTextException e) {
