@@ -44,7 +44,7 @@ public class RepeatTests extends BaseTestClass {
         assert (tree.length == 2);
         QuestionBean dummyNode = tree[1];
         assertEquals("false", dummyNode.getExists());
-        assertEquals("Add a new question3", dummyNode.getAddChoice());
+        assertEquals("Add Empty Caption Label", dummyNode.getAddChoice());
         assertEquals("false", dummyNode.getExists());
         assertEquals(false, dummyNode.isDelete());
 
@@ -68,7 +68,7 @@ public class RepeatTests extends BaseTestClass {
         assertEquals("false", secondRepeat.getExists());
         assertEquals(false, secondRepeat.isDelete());
         assert (secondRepeat.getChildren().length == 0);
-        assertEquals("Add another question3", secondRepeat.getAddChoice());
+        assertEquals("Add Caption Label", secondRepeat.getAddChoice());
 
         // Add another repeat and verify the form tree accordingly
         newRepeatResponseBean = newRepeatRequest(sessionId, "1_1");
