@@ -133,26 +133,7 @@ public class PromptToJson {
 
     private static String getRepeatAddText(FormEntryCaption prompt) {
         boolean hasRepetitions = prompt.getNumRepetitions() > 0;
-        String addText = prompt.getRepeatText(hasRepetitions ? "add" : "add-empty");
-
-        if (!StringUtils.isEmpty(addText)) {
-            return addText;
-        }
-
-        String promptText = prompt.getLongText();
-        if (hasRepetitions) {
-            try {
-                return Localization.get("repeat.dialog.add.another", promptText);
-            } catch (NoLocalizedTextException e) {
-                return "Add another " + promptText;
-            }
-        } else {
-            try {
-                return Localization.get("repeat.dialog.add.new", promptText);
-            } catch (NoLocalizedTextException e) {
-                return "Add a new " + promptText;
-            }
-        }
+        return prompt.getRepeatText(hasRepetitions ? "add" : "add-empty");
     }
 
     private static void parseRepeatJuncture(FormEntryModel model, JSONObject obj, FormIndex ix) {
