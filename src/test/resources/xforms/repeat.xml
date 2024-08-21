@@ -9,6 +9,9 @@
                     <question3 jr:template="">
                         <repeat_text/>
                     </question3>
+                    <question4 jr:template="">
+                        <repeat_text/>
+                    </question4>
                     <orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><cc:location/></orx:meta></data>
             </instance><instance id="commcaresession" src="jr://instance/session"/>
             <bind nodeset="/data/q_name" type="xsd:string" required="true()"/>
@@ -30,6 +33,12 @@
                     </text>
                     <text id="question3/add-empty-caption-label">
                         <value>Add Empty Caption Label</value>
+                    </text>
+                    <text id="question4-label">
+                        <value>question4</value>
+                    </text>
+                    <text id="question4/repeat_text-label">
+                        <value>repeat_text</value>
                     </text>
                 </translation>
                 <translation lang="hin">
@@ -57,6 +66,14 @@
                 <jr:addEmptyCaption ref="jr:itext('question3/add-empty-caption-label')" />
                 <input ref="/data/question3/repeat_text">
                     <label ref="jr:itext('question3/repeat_text-label')"/>
+                </input>
+            </repeat>
+        </group>
+        <group>
+            <label ref="jr:itext('question4-label')"/>
+            <repeat nodeset="/data/question4">
+                <input ref="/data/question4/repeat_text">
+                    <label ref="jr:itext('question4/repeat_text-label')"/>
                 </input>
             </repeat>
         </group>
