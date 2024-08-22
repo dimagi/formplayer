@@ -41,10 +41,10 @@ public class RepeatTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
                 "xforms/repeat.xml");
         QuestionBean[] tree = newSessionResponse.getTree();
-        assert (tree.length == 2);
+        assert (tree.length == 3);
         QuestionBean dummyNode = tree[1];
         assertEquals("false", dummyNode.getExists());
-        assertEquals("Add a new question3", dummyNode.getAddChoice());
+        assertEquals("Add Empty Caption Label", dummyNode.getAddChoice());
         assertEquals("false", dummyNode.getExists());
         assertEquals(false, dummyNode.isDelete());
 
@@ -53,7 +53,7 @@ public class RepeatTests extends BaseTestClass {
 
         // Verify the repeat has been added to form tree correctly
         tree = newRepeatResponseBean.getTree();
-        assert (tree.length == 3);
+        assert (tree.length == 4);
         QuestionBean firstRepeat = tree[1];
         assertEquals("true", firstRepeat.getExists());
         assertEquals(true, firstRepeat.isDelete());
@@ -68,12 +68,12 @@ public class RepeatTests extends BaseTestClass {
         assertEquals("false", secondRepeat.getExists());
         assertEquals(false, secondRepeat.isDelete());
         assert (secondRepeat.getChildren().length == 0);
-        assertEquals("Add another question3", secondRepeat.getAddChoice());
+        assertEquals("Add Caption Label", secondRepeat.getAddChoice());
 
         // Add another repeat and verify the form tree accordingly
         newRepeatResponseBean = newRepeatRequest(sessionId, "1_1");
         tree = newRepeatResponseBean.getTree();
-        assert (tree.length == 4);
+        assert (tree.length == 5);
         secondRepeat = tree[2];
         assertEquals("true", secondRepeat.getExists());
         assert (secondRepeat.getChildren().length == 1);
@@ -94,7 +94,7 @@ public class RepeatTests extends BaseTestClass {
 
         // Verify that we deleted the repeat at right index
         tree = deleteRepeatResponseBean.getTree();
-        assert (tree.length == 4);
+        assert (tree.length == 5);
         firstRepeat = tree[1];
         secondRepeat = tree[2];
         thirdRepeat = tree[3];
@@ -106,7 +106,7 @@ public class RepeatTests extends BaseTestClass {
         // delete second repeat again from the new tree
         deleteRepeatResponseBean = deleteRepeatRequest(sessionId, "1_1,0");
         tree = deleteRepeatResponseBean.getTree();
-        assert (tree.length == 3);
+        assert (tree.length == 4);
         firstRepeat = tree[1];
         secondRepeat = tree[2];
         assertEquals(firstRepeat.getChildren()[0].getAnswer(),"repeat 1");
@@ -238,5 +238,19 @@ public class RepeatTests extends BaseTestClass {
         assertEquals(2, beds.length);
         assertEquals("bed 2", beds[0].getChildren()[0].getChildren()[0].getAnswer());
         assertEquals("false", beds[1].getExists());
+    }
+
+    @Test
+    public void testDefaultRepeatCaption() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
+                "xforms/repeat.xml");
+        QuestionBean[] tree = newSessionResponse.getTree();
+        assertEquals("Add a new question4", tree[2].getAddChoice());
+        String sessionId = newSessionResponse.getSessionId();
+        FormEntryResponseBean newRepeatResponseBean = newRepeatRequest(sessionId, "2_0");
+
+        // Verify the repeat has been added to form tree correctly
+        tree = newRepeatResponseBean.getTree();
+        assertEquals("Add another question4", tree[3].getAddChoice());
     }
 }
