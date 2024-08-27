@@ -349,6 +349,7 @@ public class MenuSessionRunnerService {
      * - auto advance menu
      *
      * @param menuSession
+     * @param currentScreen         Screen the current session state is pointing to if available, null otherwise
      * @param nextInput             The next input being processed or NO_SELECTION constant
      * @param queryData             Query data from the request
      * @param needsFullEntityScreen Whether the full entity screen is required
@@ -356,7 +357,7 @@ public class MenuSessionRunnerService {
      * @throws CommCareSessionException
      */
     private Screen autoAdvanceSession(
-            @Nullable Screen nextScreen,
+            @Nullable Screen currentScreen,
             MenuSession menuSession,
             String nextInput,
             QueryData queryData,
@@ -366,6 +367,7 @@ public class MenuSessionRunnerService {
         Screen previousScreen;
         int iterationCount = 0;
         int maxIterations = 50; // maximum plausible iterations
+        Screen nextScreen = currentScreen;
         do {
             sessionAdvanced = false;
             previousScreen = nextScreen;
