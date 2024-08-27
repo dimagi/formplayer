@@ -282,7 +282,7 @@ public class MenuSessionRunnerService {
                     break;
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
-                nextScreen = autoAdvanceSession(menuSession, nextInput, queryData,
+                nextScreen = autoAdvanceSession(null, menuSession, nextInput, queryData,
                         needsFullEntityScreen, entityScreenContext);
 
                 if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
@@ -349,6 +349,7 @@ public class MenuSessionRunnerService {
      * - auto advance menu
      *
      * @param menuSession
+     * @param currentScreen         Screen the current session state is pointing to if available, null otherwise
      * @param nextInput             The next input being processed or NO_SELECTION constant
      * @param queryData             Query data from the request
      * @param needsFullEntityScreen Whether the full entity screen is required
@@ -356,22 +357,26 @@ public class MenuSessionRunnerService {
      * @throws CommCareSessionException
      */
     private Screen autoAdvanceSession(
+            @Nullable Screen currentScreen,
             MenuSession menuSession,
             String nextInput,
             QueryData queryData,
             boolean needsFullEntityScreen,
             EntityScreenContext entityScreenContext) throws CommCareSessionException {
         boolean sessionAdvanced;
-        Screen nextScreen = null;
         Screen previousScreen;
         int iterationCount = 0;
         int maxIterations = 50; // maximum plausible iterations
+        Screen nextScreen = currentScreen;
         do {
             sessionAdvanced = false;
             previousScreen = nextScreen;
             iterationCount += 1;
 
-            nextScreen = menuSession.getNextScreen(needsFullEntityScreen, entityScreenContext);
+            // skips the call to to getNextScreen for first iteration if we already have nextScreen
+            if (iterationCount > 1 || nextScreen == null) {
+                nextScreen = menuSession.getNextScreen(needsFullEntityScreen, entityScreenContext);
+            }
             if (previousScreen != null) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
                 log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
@@ -530,16 +535,17 @@ public class MenuSessionRunnerService {
     @Trace
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext)
             throws Exception {
-        if (executeAndRebuildSession(menuSession)) {
-            if (menuSession.getSmartLinkRedirect() != null) {
-                BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(
-                        menuSession.getSmartLinkRedirect());
-                responseBean.setSmartLinkRedirect(urlBuilder.build().toString());
-                return responseBean;
-            }
-
-            Screen nextScreen = autoAdvanceSession(menuSession, "", new QueryData(),
+        Pair<Boolean, Screen> continueSessionAndCurrentScreen = executeAndRebuildSession(menuSession);
+        if (menuSession.getSmartLinkRedirect() != null) {
+            BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(
+                    menuSession.getSmartLinkRedirect());
+            responseBean.setSmartLinkRedirect(urlBuilder.build().toString());
+            return responseBean;
+        }
+        if (continueSessionAndCurrentScreen.first) {
+            Screen currentScreen = continueSessionAndCurrentScreen.second;
+            Screen nextScreen = autoAdvanceSession(currentScreen, menuSession, "", new QueryData(),
                     true, entityScreenContext
             );
             BaseResponseBean response = getNextMenu(nextScreen, menuSession, null, entityScreenContext);
@@ -549,8 +555,15 @@ public class MenuSessionRunnerService {
         return null;
     }
 
-    // Rebuild the session after executing any pending session stack
-    private boolean executeAndRebuildSession(MenuSession menuSession)
+
+    /**
+     * Rebuild the session after executing any pending session stack
+     * @param menuSession
+     * @return a pair of 1. Boolean denoting if we should advance session further and 2. current screen
+     * @throws CommCareSessionException
+     * @throws RemoteInstanceFetcher.RemoteInstanceException
+     */
+    private Pair<Boolean, Screen> executeAndRebuildSession(MenuSession menuSession)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         menuSession.getSessionWrapper().syncState();
         StackObserver observer = new StackObserver();
@@ -561,12 +574,12 @@ public class MenuSessionRunnerService {
             String smartLinkRedirect = menuSession.getSessionWrapper().getSmartLinkRedirect();
             if (smartLinkRedirect != null) {
                 menuSession.setSmartLinkRedirect(smartLinkRedirect);
-            } else {
-                menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
+                return new Pair<>(true, null);
             }
-            return true;
+            Screen screen = menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
+            return new Pair<>(true, screen);
         }
-        return false;
+        return new Pair<>(false, null);
     }
 
     private void clearVolatiles(SessionWrapper session, StackObserver observer) {

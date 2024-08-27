@@ -1,15 +1,19 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 @WebMvcTest
@@ -58,6 +62,10 @@ public class BasicEndOfFormTests extends BaseTestClass {
                 CommandListResponseBean.class);
         assert commandResponse.getCommands().length == 19;
         assert commandResponse.getTitle().equals("Basic Tests");
+
+        ArrayList<PersistentCommand> persistentMenu = commandResponse.getPersistentMenu();
+        assertEquals(19, persistentMenu.size());
+        assertEquals("End of Form Navigation", persistentMenu.get(15).getDisplayText());
     }
 
     @Test
@@ -73,6 +81,13 @@ public class BasicEndOfFormTests extends BaseTestClass {
                 EntityListResponse.class);
         assert entityResponse.getEntities().length == 3;
         assert entityResponse.getTitle().equals("Previous Screen");
+
+        ArrayList<PersistentCommand> persistentMenu = entityResponse.getPersistentMenu();
+        assertEquals(19, persistentMenu.size());
+        PersistentCommand eofMenu = persistentMenu.get(15);
+        assertEquals("End of Form Navigation", eofMenu.getDisplayText());
+        assertEquals(5, eofMenu.getCommands().size());
+        assertEquals("Previous Screen", eofMenu.getCommands().get(2).getDisplayText());
     }
 
     @Test
@@ -88,6 +103,13 @@ public class BasicEndOfFormTests extends BaseTestClass {
                 CommandListResponseBean.class);
         assert commandResponse.getCommands().length == 5;
         assert commandResponse.getTitle().equals("End of Form Navigation");
+
+        ArrayList<PersistentCommand> persistentMenu = commandResponse.getPersistentMenu();
+        assertEquals(19, persistentMenu.size());
+        PersistentCommand eofMenu = persistentMenu.get(15);
+        assertEquals("End of Form Navigation", eofMenu.getDisplayText());
+        assertEquals(5, eofMenu.getCommands().size());
+        assertEquals("Current Module", eofMenu.getCommands().get(3).getDisplayText());
     }
 
     @Test
@@ -100,5 +122,12 @@ public class BasicEndOfFormTests extends BaseTestClass {
                 NewFormResponse.class);
         assert formResponse.getTitle().equals("Home Screen");
         assert formResponse.getTree().length == 1;
+
+        ArrayList<PersistentCommand> persistentMenu = formResponse.getPersistentMenu();
+        assertEquals(19, persistentMenu.size());
+        PersistentCommand eofMenu = persistentMenu.get(15);
+        assertEquals("End of Form Navigation", eofMenu.getDisplayText());
+        assertEquals(5, eofMenu.getCommands().size());
+        assertEquals("Close Case", eofMenu.getCommands().get(4).getDisplayText());
     }
 }

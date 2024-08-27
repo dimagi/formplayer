@@ -73,9 +73,9 @@ public class MenuSessionFactory {
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
 
-    public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper)
+    public Screen rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
-        rebuildSessionFromFrame(menuSession, caseSearchHelper, true);
+        return rebuildSessionFromFrame(menuSession, caseSearchHelper, true);
     }
 
     /**
@@ -84,7 +84,7 @@ public class MenuSessionFactory {
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
      */
     @Trace
-    public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper,
+    public Screen rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper,
             boolean respectRelevancy)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
@@ -201,6 +201,7 @@ public class MenuSessionFactory {
                 screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
             }
         }
+        return screen;
     }
 
     @Trace
