@@ -813,7 +813,10 @@ public class MenuSessionRunnerService {
                 try {
                     screen.init(sessionWrapper);
                     doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
-                    executeAndRebuildSession(menuSession);
+                    Screen nextScreen = menuSession.getNextScreen(false, new EntityScreenContext());
+                    if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
+                        executeAndRebuildSession(menuSession);
+                    }
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
                 }

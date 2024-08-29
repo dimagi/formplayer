@@ -149,6 +149,20 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointsWithEndOfForm() throws Exception {
+        configureQueryMock();
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "inline_w_eof_form",
+                endpointArgs,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Update Child Health");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"});
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
     public void testEndpointsRelevancy() throws Exception {
         // With respect-relevancy set to false, we can navigate to the hidden form
         HashMap<String, String> endpointArgs = new HashMap<>();
