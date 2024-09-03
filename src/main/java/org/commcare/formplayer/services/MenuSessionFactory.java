@@ -9,8 +9,13 @@ import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.MenuSession;
+import org.commcare.formplayer.util.FormplayerDatadog;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.EntityDatum;
@@ -24,12 +29,15 @@ import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
+import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -37,6 +45,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.Vector;
@@ -54,6 +64,9 @@ public class MenuSessionFactory {
     private static final String NEXT_SCREEN = "NEXT_SCREEN";
 
     @Autowired
+    private WebClient webClient;
+
+    @Autowired
     private RestoreFactory restoreFactory;
 
     @Autowired
@@ -67,6 +80,9 @@ public class MenuSessionFactory {
 
     @Autowired
     private VirtualDataInstanceService virtualDataInstanceService;
+
+    @Autowired
+    private FormplayerDatadog datadog;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -192,6 +208,12 @@ public class MenuSessionFactory {
                         }
                     }
                 }
+            } else if (screen instanceof FormplayerSyncScreen){
+                try {
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
+                } catch (SyncRestoreException e) {
+                    throw new CommCareSessionException(e.getMessage(), e);
+                }
             }
             if (currentStep == null) {
                 break;
@@ -314,5 +336,31 @@ public class MenuSessionFactory {
         log.error(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
         neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString));
 
+    }
+
+    /**
+     * Execute the post request associated with the sync screen and perform a sync if necessary.
+     */
+    public void doPostAndSync(MenuSession menuSession, FormplayerSyncScreen screen) throws SyncRestoreException {
+        Boolean shouldSync;
+        try {
+            shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
+            screen.updateSessionOnSuccess();
+        } catch (RestClientResponseException e) {
+            throw new SyncRestoreException(
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
+        } catch (RestClientException e) {
+            throw new SyncRestoreException("Unknown error performing case claim", e);
+        }
+        if (shouldSync) {
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            Map<String, String> extraTags = new HashMap<>();
+            Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
+
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
+            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
+            restoreFactory.performTimedSync(false, true, false, extraTags);
+            menuSession.getSessionWrapper().clearVolatiles();
+        }
     }
 }
