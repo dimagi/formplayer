@@ -9,7 +9,9 @@ import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.Constants;
@@ -205,6 +207,12 @@ public class MenuSessionFactory {
                             throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
                         }
                     }
+                }
+            } else if (screen instanceof FormplayerSyncScreen){
+                try {
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
+                } catch (SyncRestoreException e) {
+                    throw new CommCareSessionException(e.getMessage(), e);
                 }
             }
             if (currentStep == null) {

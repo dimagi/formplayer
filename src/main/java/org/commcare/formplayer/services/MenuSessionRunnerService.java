@@ -782,19 +782,6 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
-            FormplayerSyncScreen screen = menuSession.getNextScreenIfSyncScreen(false, new EntityScreenContext());
-            if (screen != null) {
-                try {
-                    screen.init(sessionWrapper);
-                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
-                    Screen nextScreen = menuSession.getNextScreen(false, new EntityScreenContext());
-                    if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
-                        executeAndRebuildSession(menuSession);
-                    }
-                } catch (CommCareSessionException ccse) {
-                    throw new RuntimeException("Unable to claim case.");
-                }
-            }
         }
         boolean respectRelevancy = endpoint.isRespectRelevancy();
         SessionFrame endpointSessionFrame = new SessionFrame(menuSession.getSessionWrapper().getFrame());
