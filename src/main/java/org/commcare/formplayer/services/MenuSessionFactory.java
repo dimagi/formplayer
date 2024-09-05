@@ -2,7 +2,7 @@ package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-
+import static org.javarosa.core.model.Constants.EXTRA_POST_SUCCESS;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -342,10 +342,12 @@ public class MenuSessionFactory {
      * Execute the post request associated with the sync screen and perform a sync if necessary.
      */
     public void doPostAndSync(MenuSession menuSession, FormplayerSyncScreen screen) throws SyncRestoreException {
-        Boolean shouldSync;
+        boolean shouldSync = false;
         try {
-            shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
-            screen.updateSessionOnSuccess();
+            if (screen.getSessionSuccessStatus() == null) {
+                shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
+                screen.updateSessionOnSuccess();
+            }
         } catch (RestClientResponseException e) {
             throw new SyncRestoreException(
                     String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
