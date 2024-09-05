@@ -2,7 +2,6 @@ package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import static org.javarosa.core.model.Constants.EXTRA_POST_SUCCESS;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -80,6 +79,9 @@ public class MenuSessionFactory {
 
     @Autowired
     private VirtualDataInstanceService virtualDataInstanceService;
+
+    @Autowired
+    protected MenuSessionRunnerHelper menuSessionRunnerHelper;
 
     @Autowired
     private FormplayerDatadog datadog;
@@ -210,7 +212,7 @@ public class MenuSessionFactory {
                 }
             } else if (screen instanceof FormplayerSyncScreen){
                 try {
-                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
+                    menuSessionRunnerHelper.doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
                 } catch (SyncRestoreException e) {
                     throw new CommCareSessionException(e.getMessage(), e);
                 }
@@ -336,33 +338,5 @@ public class MenuSessionFactory {
         log.error(String.format("Could not get %s=%s from entity screen.\nNode set: %s\nReferences: \n[%s]",
         neededDatum.getDataId(), step.getValue(), nodeSetString, referencesString));
 
-    }
-
-    /**
-     * Execute the post request associated with the sync screen and perform a sync if necessary.
-     */
-    public void doPostAndSync(MenuSession menuSession, FormplayerSyncScreen screen) throws SyncRestoreException {
-        boolean shouldSync = false;
-        try {
-            if (screen.getSessionSuccessStatus() == null) {
-                shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
-                screen.updateSessionOnSuccess();
-            }
-        } catch (RestClientResponseException e) {
-            throw new SyncRestoreException(
-                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
-        } catch (RestClientException e) {
-            throw new SyncRestoreException("Unknown error performing case claim", e);
-        }
-        if (shouldSync) {
-            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
-            Map<String, String> extraTags = new HashMap<>();
-            Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
-
-            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
-            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
-            restoreFactory.performTimedSync(false, true, false, extraTags);
-            menuSession.getSessionWrapper().clearVolatiles();
-        }
     }
 }

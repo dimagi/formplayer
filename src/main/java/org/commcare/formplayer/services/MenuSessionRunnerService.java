@@ -124,6 +124,9 @@ public class MenuSessionRunnerService {
     protected MenuSessionFactory menuSessionFactory;
 
     @Autowired
+    protected MenuSessionRunnerHelper menuSessionRunnerHelper;
+
+    @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
 
     @Autowired
@@ -415,7 +418,7 @@ public class MenuSessionRunnerService {
                         entityScreenContext.isRespectRelevancy());
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
-                    menuSessionFactory.doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
+                    menuSessionRunnerHelper.doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
                 } catch (SyncRestoreException e) {
                     throw new CommCareSessionException(e.getMessage(), e);
                 }
