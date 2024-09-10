@@ -34,7 +34,7 @@ public class MenuSessionRunnerHelper {
     public void doPostAndSync(MenuSession menuSession, FormplayerSyncScreen screen) throws SyncRestoreException {
         boolean shouldSync = false;
         try {
-            if (screen.getSessionSuccessStatus() == null) {
+            if (screen.isPostAlreadyDone() == null) {
                 shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
                 screen.updateSessionOnSuccess();
             }
