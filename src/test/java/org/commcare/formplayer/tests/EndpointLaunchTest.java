@@ -22,9 +22,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.web.util.NestedServletException;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import jakarta.servlet.ServletException;
 
 /**
  * Do launch tests for very basic session endpoint definitions
@@ -51,7 +54,7 @@ public class EndpointLaunchTest extends BaseTestClass {
     @Test
     @WithHqUser(enabledToggles = {})
     public void testToggleOff() throws Exception {
-        assertThrows(NestedServletException.class, () -> {
+        assertThrows(ServletException.class, () -> {
             CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
                     "nope",
                     null,

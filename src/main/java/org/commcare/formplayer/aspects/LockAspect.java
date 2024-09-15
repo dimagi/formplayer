@@ -24,7 +24,7 @@ import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.UserUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
