@@ -501,11 +501,6 @@
       </query>
       <datum id="case_id" nodeset="instance('results:inline')/results/case[@case_type='case'][@status='open'][not(commcare_is_related_case=true())]" value="./@case_id" detail-select="m5_case_short"/>
     </session>
-    <stack>
-       <create>
-         <command value="'m4'"/>
-       </create>
-     </stack>
   </entry>
   <entry>
     <form>http://openrosa.org/formdesigner/6C3F2B4A-9E8D-45C7-AF23-1D9B5F6A7C8E</form>
@@ -790,21 +785,6 @@
           <data key="case_id" ref="$case_id"/>
         </query>
         <datum id="case_id" value="$case_id"/>
-      </push>
-    </stack>
-  </endpoint>
-
-  <endpoint id="inline_w_eof_form">
-    <argument id="case_id"/>
-    <stack>
-      <push>
-        <command value="'m5'"/>
-        <query id="results:inline" value="http://localhost:8000/a/test-1/phone/case_fixture/343af03494944cf4affdf775964eba54/">
-          <data key="case_type" ref="'case'"/>
-          <data key="case_id" ref="$case_id"/>
-        </query>
-        <datum id="case_id" value="$case_id"/>
-        <command value="'m5-f0'"/>
       </push>
     </stack>
   </endpoint>

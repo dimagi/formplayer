@@ -124,9 +124,6 @@ public class MenuSessionRunnerService {
     protected MenuSessionFactory menuSessionFactory;
 
     @Autowired
-    protected MenuSessionRunnerHelper menuSessionRunnerHelper;
-
-    @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
 
     @Autowired
@@ -418,7 +415,7 @@ public class MenuSessionRunnerService {
                         entityScreenContext.isRespectRelevancy());
             } else if (nextScreen instanceof FormplayerSyncScreen) {
                 try {
-                    menuSessionRunnerHelper.doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)nextScreen);
                 } catch (SyncRestoreException e) {
                     throw new CommCareSessionException(e.getMessage(), e);
                 }
@@ -474,6 +471,32 @@ public class MenuSessionRunnerService {
         Hashtable<String, String> queryDictionary = queryData == null ? null : queryData.getInputs(queryKey);
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
+        }
+    }
+
+    /**
+     * Execute the post request associated with the sync screen and perform a sync if necessary.
+     */
+    private void doPostAndSync(MenuSession menuSession, FormplayerSyncScreen screen) throws SyncRestoreException {
+        Boolean shouldSync;
+        try {
+            shouldSync = webClient.caseClaimPost(screen.getUrl(), screen.getQueryParams());
+            screen.updateSessionOnSuccess();
+        } catch (RestClientResponseException e) {
+            throw new SyncRestoreException(
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), e);
+        } catch (RestClientException e) {
+            throw new SyncRestoreException("Unknown error performing case claim", e);
+        }
+        if (shouldSync) {
+            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            Map<String, String> extraTags = new HashMap<>();
+            Map<String, String> requestScopedTagNameAndValueMap = datadog.getRequestScopedTagNameAndValue();
+
+            requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
+            extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
+            restoreFactory.performTimedSync(false, true, false, extraTags);
+            menuSession.getSessionWrapper().clearVolatiles();
         }
     }
 
@@ -785,6 +808,16 @@ public class MenuSessionRunnerService {
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
+            FormplayerSyncScreen screen = menuSession.getNextScreenIfSyncScreen(false, new EntityScreenContext());
+            if (screen != null) {
+                try {
+                    screen.init(sessionWrapper);
+                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
+                    executeAndRebuildSession(menuSession);
+                } catch (CommCareSessionException ccse) {
+                    throw new RuntimeException("Unable to claim case.");
+                }
+            }
         }
         boolean respectRelevancy = endpoint.isRespectRelevancy();
         SessionFrame endpointSessionFrame = new SessionFrame(menuSession.getSessionWrapper().getFrame());

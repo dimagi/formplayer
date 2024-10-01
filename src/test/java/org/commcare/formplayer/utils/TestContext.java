@@ -20,7 +20,6 @@ import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.MediaMetaDataService;
 import org.commcare.formplayer.services.MenuSessionFactory;
-import org.commcare.formplayer.services.MenuSessionRunnerHelper;
 import org.commcare.formplayer.services.MenuSessionRunnerService;
 import org.commcare.formplayer.services.MenuSessionService;
 import org.commcare.formplayer.services.NewFormResponseFactory;
@@ -234,10 +233,5 @@ public class TestContext {
     @Bean
     public CommCareSessionFactory commcareSessionFactory() {
         return Mockito.spy(CommCareSessionFactory.class);
-    }
-
-    @Bean
-    public MenuSessionRunnerHelper MenuSessionRunnerHelper() {
-        return Mockito.spy(MenuSessionRunnerHelper.class);
     }
 }

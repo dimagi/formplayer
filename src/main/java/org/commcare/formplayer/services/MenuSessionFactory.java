@@ -2,19 +2,15 @@ package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
-import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.MenuSession;
-import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.EntityDatum;
@@ -28,15 +24,12 @@ import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
-import org.commcare.util.screen.ScreenUtils;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestClientResponseException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -44,8 +37,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.Vector;
@@ -63,9 +54,6 @@ public class MenuSessionFactory {
     private static final String NEXT_SCREEN = "NEXT_SCREEN";
 
     @Autowired
-    private WebClient webClient;
-
-    @Autowired
     private RestoreFactory restoreFactory;
 
     @Autowired
@@ -79,12 +67,6 @@ public class MenuSessionFactory {
 
     @Autowired
     private VirtualDataInstanceService virtualDataInstanceService;
-
-    @Autowired
-    protected MenuSessionRunnerHelper menuSessionRunnerHelper;
-
-    @Autowired
-    private FormplayerDatadog datadog;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -209,12 +191,6 @@ public class MenuSessionFactory {
                             throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
                         }
                     }
-                }
-            } else if (screen instanceof FormplayerSyncScreen){
-                try {
-                    menuSessionRunnerHelper.doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
-                } catch (SyncRestoreException e) {
-                    throw new CommCareSessionException(e.getMessage(), e);
                 }
             }
             if (currentStep == null) {

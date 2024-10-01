@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import com.google.common.collect.ImmutableMultimap;
 
 import org.commcare.data.xml.VirtualInstances;
-import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
@@ -217,40 +216,6 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 NewFormResponse.class);
         // post should not be fired due to relevant condition evaluating to false
         verifyNoInteractions(webClientMock);
-    }
-
-    @Test
-    public void testNormalClaimWithPostInEntry() throws Exception {
-        ArrayList<String> selections = new ArrayList<>();
-        // It is relevant in the app set up that the selected menu contains a registration form
-        selections.add("3");  // select menu
-        selections.add("1");  // select form
-        selections.add("action 1");  // load case search
-
-        QueryData queryData = new QueryData();
-        queryData.setExecute("case_search.m1_results", true);
-        EntityListResponse entityListResponse;
-        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery("query_responses/case_claim_response.xml")) {
-            entityListResponse = sessionNavigateWithQuery(selections,
-                    APP_PATH,
-                    queryData,
-                    EntityListResponse.class);
-        }
-        assertEquals(1, entityListResponse.getEntities().length);
-        assertEquals("0156fa3e-093e-4136-b95c-01b13dae66c6",
-                entityListResponse.getEntities()[0].getId());
-
-        selections.add("0156fa3e-093e-4136-b95c-01b13dae66c6");
-        FormEntryResponseBean formEntryResponseBean;
-        try (
-                MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(true, 2);
-                MockRequestUtils.VerifiedMock ignoredRestoreMock = mockRequest.mockRestore("restores/caseclaim3.xml", 2);
-        ) {
-            formEntryResponseBean = sessionNavigateWithQuery(selections,
-                    APP_PATH,
-                    queryData,
-                    FormEntryResponseBean.class);
-        }
     }
 
     @Test
