@@ -37,7 +37,6 @@ m1.case_short.title=Cases
 modules.m0=Registration
 modules.m1=Follow Up
 modules.m2=Follow Up with Post
-modules.m3=Follow Up with Case Search and Post
 search_property.m1.name=Name
 search_property.m1.state=State
 search_property.m1.district=District
