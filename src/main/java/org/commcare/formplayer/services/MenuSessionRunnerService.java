@@ -805,15 +805,27 @@ public class MenuSessionRunnerService {
             throw new RuntimeException(
                     String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
         }
+
+        Vector<StackOperation> stackOperations = endpoint.getStackOperations();
+        int totalOps = stackOperations.size();
+
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
-        for (StackOperation op : endpoint.getStackOperations()) {
+        for (int i = 0; i < totalOps; i++) {
+            StackOperation op = stackOperations.get(i);
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
+
             FormplayerSyncScreen screen = menuSession.getNextScreenIfSyncScreen(false, new EntityScreenContext());
             if (screen != null) {
                 try {
                     screen.init(sessionWrapper);
-                    doPostAndSync(menuSession, (FormplayerSyncScreen)screen);
-                    executeAndRebuildSession(menuSession);
+                    doPostAndSync(menuSession, screen);
+
+                    // Run executeAndRebuildSession only if it's not the last operation. The assumption is that
+                    // last stack defined in the endpoint stack defintion is where we want to navigate to. So
+                    // we do not want to pop the next stack into execution.
+                    if (i < totalOps - 1) {
+                        executeAndRebuildSession(menuSession);
+                    }
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
                 }

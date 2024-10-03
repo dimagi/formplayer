@@ -16,6 +16,7 @@ import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,8 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     private final String APP_NAME = "endpoint";
 
+    private MockRequestUtils mockRequest;
+
     @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -41,6 +44,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         configureRestoreFactory("endpointdomain", "endpointusername");
         storageFactoryMock.configure("endpointusername", "endpointdomain", "app_id", "asUser");
         FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
+        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
     }
 
     @Override
@@ -141,6 +145,20 @@ public class EndpointLaunchTest extends BaseTestClass {
         endpointArgs.put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6");
         NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "inline_w_display_cond_case_list",
+                endpointArgs,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Update Child Health");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"});
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointsWithEndOfForm() throws Exception {
+        configureQueryMock();
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6");
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "inline_w_eof_form",
                 endpointArgs,
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Update Child Health");
@@ -259,6 +277,20 @@ public class EndpointLaunchTest extends BaseTestClass {
         expectedMenu.add(new PersistentCommand("1", "Parents", null, NavIconState.NEXT));
         expectedMenu.add(new PersistentCommand("2", "Case List With Display Conditions", null, NavIconState.NEXT));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointsWithSync() throws Exception {
+        mockRequest.mockPostandUpdateRestore("restores/caseclaim3.xml");
+        HashMap<String, String> endpointArgs = new HashMap<>();
+        endpointArgs.put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6"); // from case claim response
+
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+        "add_child",
+        endpointArgs,
+        NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Add Child");
     }
 
     private void configureQueryMock() {
