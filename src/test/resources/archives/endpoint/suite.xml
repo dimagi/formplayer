@@ -671,6 +671,22 @@
       </push>
     </stack>
   </remote-request>
+  <remote-request>
+    <post url="http://localhost:8000/a/test-1/phone/claim-case/" relevant="count(instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]) = 0">
+      <data key="case_id" ref="instance('commcaresession')/session/data/case_id"/>
+    </post>
+    <command id="claim_command.add_child.case_id">
+      <display>
+        <text/>
+      </display>
+    </command>
+    <instance id="casedb" src="jr://instance/casedb"/>
+    <instance id="commcaresession" src="jr://instance/session"/>
+    <session>
+      <datum id="case_id" function="instance('commcaresession')/session/data/case_id"/>
+    </session>
+    <stack/>
+  </remote-request>
   <endpoint id="caselist">
     <stack>
       <push>
@@ -708,6 +724,10 @@
   <endpoint id="add_child">
     <argument id="case_id"/>
     <stack>
+      <push>
+        <datum id="case_id" value="$case_id"/>
+        <command value="'claim_command.add_child.case_id'"/>
+      </push>
       <push>
         <command value="'m1'"/>
         <datum id="case_id" value="$case_id"/>

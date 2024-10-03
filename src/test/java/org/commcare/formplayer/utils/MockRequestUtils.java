@@ -12,6 +12,7 @@ import org.commcare.formplayer.junit.RestoreFactoryAnswer;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.web.client.WebClient;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.mockito.verification.VerificationMode;
 
 /**
@@ -40,6 +41,22 @@ public class MockRequestUtils {
 
         return () -> {
             verify(webClientMock, Mockito.times(times)).caseClaimPost(anyString(), any());
+        };
+    }
+
+    /**
+     * Mock the post request, verifies it happened, and updates the mocked restore.
+     */
+    public VerifiedMock mockPostandUpdateRestore(String restoreFile) {
+        Mockito.reset(webClientMock);
+        Answer<Boolean> answer = invocation -> {
+            mockRestore(restoreFile);
+            return true;
+        };
+        Mockito.doAnswer(answer).when(webClientMock).caseClaimPost(anyString(), any());
+
+        return () -> {
+            verify(webClientMock, Mockito.times(1)).caseClaimPost(anyString(), any());
         };
     }
 
