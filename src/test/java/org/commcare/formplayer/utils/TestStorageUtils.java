@@ -25,7 +25,7 @@ public class TestStorageUtils {
 
     private static EvaluationContext buildEvaluationContext(FormplayerInstanceInitializer iif) {
         ExternalDataInstance edi = new ExternalDataInstance(ExternalDataInstance.JR_CASE_DB_REFERENCE, "casedb");
-        DataInstance specializedDataInstance = edi.initialize(iif, "casedb");
+        DataInstance specializedDataInstance = edi.initialize(iif, "casedb", null);
 
         ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(
                 ExternalDataInstance.JR_LEDGER_DB_REFERENCE,
