@@ -16,6 +16,7 @@ import org.javarosa.core.model.instance.ConcreteInstanceRoot;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.services.locale.Localization;
 
 import java.util.Hashtable;
 
@@ -50,7 +51,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     }
 
     @Override
-    protected InstanceRoot setupSessionData(ExternalDataInstance instance) {
+    protected InstanceRoot setupSessionData(ExternalDataInstance instance, String locale) {
         if (this.mPlatform == null) {
             throw new RuntimeException("Cannot generate session instance with undeclared platform!");
         }
@@ -61,10 +62,16 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
         Hashtable<String, String> userProperties = u.getProperties();
 
+        String appLang = locale;
+        if (locale == null) {
+            String[] locales = Localization.getGlobalLocalizerAdvanced().getAvailableLocales();
+            appLang =  locales[locales.length-1];
+        }
+
         TreeElement root =
                 SessionInstanceBuilder.getSessionInstance(sessionWrapper.getFrame(), getDeviceId(),
                         getVersionString(), getCurrentDrift(), u.getUsername(), u.getUniqueId(),
-                        userProperties, getWindowWidth());
+                        userProperties, getWindowWidth(), appLang);
         root.setParent(instance.getBase());
         return new ConcreteInstanceRoot(root);
     }

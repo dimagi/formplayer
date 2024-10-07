@@ -79,6 +79,7 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getCasesPerPage(),
                     sessionNavigationBean.getSelectedValues(),
                     null,
+                    null,
                     isFuzzySearch);
             BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
@@ -110,6 +111,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
                 sessionNavigationBean.getSelectedValues(),
+                null,
                 detailSelection,
                 isFuzzySearch);
         BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(
@@ -165,6 +167,7 @@ public class MenuController extends AbstractBaseController {
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
+        String locale = sessionNavigationBean.getLocale();
         String[] selections = sessionNavigationBean.getSelections();
         if (selections == null) {
             selections = new String[0];
@@ -175,6 +178,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.getCasesPerPage(),
                 sessionNavigationBean.getSelectedValues(),
+                locale,
                 null,
                 storageFactory.getPropertyManager().isFuzzySearchEnabled());
         BaseResponseBean response = runnerService.advanceSessionWithSelections(
