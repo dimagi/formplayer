@@ -67,7 +67,12 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         String[] locales = Localization.getGlobalLocalizerAdvanced().getAvailableLocales();
         if (appLang == null || !Arrays.asList(locales).contains(appLang)) {
             // the ordering is always ['default', <true default slug>, <all other slugs in order they were added>]
-            appLang =  locales[1];
+            if (locales.length >= 2) {
+                appLang =  locales[1];
+            } else {
+                // to pass tests
+                appLang = locales[0];
+            }
         }
 
         TreeElement root =
