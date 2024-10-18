@@ -18,6 +18,7 @@ import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.locale.Localization;
 
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -63,9 +64,10 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         Hashtable<String, String> userProperties = u.getProperties();
 
         String appLang = locale;
-        if (locale == null) {
-            String[] locales = Localization.getGlobalLocalizerAdvanced().getAvailableLocales();
-            appLang =  locales[locales.length-1];
+        String[] locales = Localization.getGlobalLocalizerAdvanced().getAvailableLocales();
+        if (appLang == null || !Arrays.asList(locales).contains(appLang)) {
+            // the ordering is always ['default', <true default slug>, <all other slugs in order they were added>]
+            appLang =  locales[1];
         }
 
         TreeElement root =
