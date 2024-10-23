@@ -87,7 +87,7 @@ public class EntityDetailResponse {
             String title,
             boolean isFuzzySearchEnabled) {
         EntityScreenContext entityScreenContext = new EntityScreenContext(0, null, 0, Integer.MAX_VALUE, null,
-                null, null, isFuzzySearchEnabled);
+                null, isFuzzySearchEnabled);
         TreeReference[] refs = references.toArray(new TreeReference[references.size()]);
         List<Entity<TreeReference>> entityRefs = EntityScreenHelper.initEntities(ec, detail, entityScreenContext,
                 refs);
