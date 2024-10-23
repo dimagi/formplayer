@@ -91,7 +91,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
         EvaluateXPathResponseBean evaluateXpathResponseBean = new EvaluateXpathRequest(mockDebuggerController,
                 formResp.getSessionId(), "instance('commcaresession')/session/context/window_width",
-                formSessionService, "test-window-width", null)
+                formSessionService, "test-window-width")
                 .request()
                 .bean();
 
@@ -109,7 +109,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
         EvaluateXPathResponseBean evaluateXpathResponseBean = new EvaluateXpathRequest(mockDebuggerController,
                 formResp.getSessionId(), "instance('commcaresession')/session/context/applanguage",
-                formSessionService, null, "en")
+                formSessionService, null)
                 .request()
                 .bean();
 
