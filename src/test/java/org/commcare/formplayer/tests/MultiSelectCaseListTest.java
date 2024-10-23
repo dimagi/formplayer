@@ -87,7 +87,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         String[] selectedValues =
                 new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
         NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
-                "test-window-width", null,
+                "test-window-width",
                 NewFormResponse.class);
         EvaluateXPathResponseBean evaluateXpathResponseBean = new EvaluateXpathRequest(mockDebuggerController,
                 formResp.getSessionId(), "instance('commcaresession')/session/context/window_width",
@@ -97,24 +97,6 @@ public class MultiSelectCaseListTest extends BaseTestClass {
 
         assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         assertThat(evaluateXpathResponseBean.getOutput(), hasXpath("/result", equalTo("test-window-width")));
-    }
-
-    @Test
-    public void testLocaleParam() throws Exception {
-        String[] selections = new String[]{"0", "1", "use_selected_values"};
-        String[] selectedValues =
-                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
-        NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
-                null, "en",
-                NewFormResponse.class);
-        EvaluateXPathResponseBean evaluateXpathResponseBean = new EvaluateXpathRequest(mockDebuggerController,
-                formResp.getSessionId(), "instance('commcaresession')/session/context/applanguage",
-                formSessionService, null)
-                .request()
-                .bean();
-
-        assertEquals(evaluateXpathResponseBean.getStatus(), Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        assertThat(evaluateXpathResponseBean.getOutput(), hasXpath("/result", equalTo("en")));
     }
 
     @Test
