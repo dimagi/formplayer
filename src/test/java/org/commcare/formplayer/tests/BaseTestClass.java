@@ -636,7 +636,7 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
-        return new EvaluateXpathRequest(mockDebuggerController, sessionId, xPath, formSessionService, null)
+        return new EvaluateXpathRequest(mockDebuggerController, sessionId, xPath, formSessionService, null, null)
                 .request()
                 .bean();
     }
@@ -676,7 +676,7 @@ public class BaseTestClass {
      */
     protected void checkXpath(String sessionId, String xpath, String expectedValue)
             throws Exception {
-        new EvaluateXpathRequest(mockDebuggerController, sessionId, xpath, formSessionService, null)
+        new EvaluateXpathRequest(mockDebuggerController, sessionId, xpath, formSessionService, null, null)
                 .request()
                 .andExpectAll(
                         jsonPath("status", equalTo(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)),
@@ -815,10 +815,10 @@ public class BaseTestClass {
 
     <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
             Class<T> clazz) throws Exception {
-       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, clazz);
+       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, null, clazz);
     }
 
-    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,  String windowWidth,
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,  String windowWidth, String locale,
             Class<T> clazz)
             throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
@@ -828,6 +828,7 @@ public class BaseTestClass {
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSelectedValues(selectedValues);
         sessionNavigationBean.setWindowWidth(windowWidth);
+        sessionNavigationBean.setLocale(locale);
         return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
