@@ -28,6 +28,7 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
 
@@ -74,9 +75,16 @@ public class WebSecurityConfig {
         // configure auth filters
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(getSessionAuthFilter(authenticationManager), HmacAuthFilter.class);
+
+        // By setting the csrfRequestAttributeName to null, the CsrfToken must first be loaded to determine what
+        // attribute name to use. This causes the CsrfToken to be loaded on every request.
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
+
         http.csrf(it -> it
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringRequestMatchers(new RequestHeaderRequestMatcher(Constants.HMAC_HEADER))
+                .csrfTokenRequestHandler(requestHandler)
         );
         http.cors(Customizer.withDefaults());
         return http.build();
