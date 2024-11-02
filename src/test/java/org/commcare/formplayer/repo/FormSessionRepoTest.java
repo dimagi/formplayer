@@ -64,17 +64,19 @@ public class FormSessionRepoTest {
         formSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         SerializableFormSession loaded = JpaTestUtils.unwrapProxy(
-                formSessionRepo.getById(session.getId())
+                formSessionRepo.getReferenceById(session.getId())
         );
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated",
                 "version").isEqualTo(session);
         Instant dateCreated = loaded.getDateCreated();
         assertThat(dateCreated).isNotNull();
-        assertThat(loaded.getVersion()).isEqualTo(1);
+        assertThat(loaded.getVersion()).isEqualTo(0);
 
+        // Make a edit to trigger version update
+        loaded.setInitLang("newlang");
         formSessionRepo.saveAndFlush(loaded);
         assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
-        assertThat(loaded.getVersion()).isEqualTo(2);
+        assertThat(loaded.getVersion()).isEqualTo(1);
     }
 
     @Test
@@ -163,12 +165,15 @@ public class FormSessionRepoTest {
 
         // update field that should not get updated in the DB
         ReflectionTestUtils.setField(session, "domain", "newdomain");
+        // update field that should get updated in the DB
+        session.setInitLang("newlang");
         formSessionRepo.saveAndFlush(session);
         entityManager.refresh(session);
 
         // check that version is updated
         assertThat(session.getVersion()).isGreaterThan(version);
         assertThat(session.getDomain()).isEqualTo("domain");
+        assertThat(session.getInitLang()).isEqualTo("newlang");
     }
 
     @Test
