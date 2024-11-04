@@ -36,6 +36,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.engine.FunctionExtensions;
@@ -160,7 +161,7 @@ public class FormSession {
         this.commandId = commandId;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
-                postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
+                postUrl, menuSessionId, getLocalizedFormTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
         this.session.setFormDefinition(serializableFormDefinition);
@@ -186,6 +187,18 @@ public class FormSession {
             stepToNextIndex();
             session.setCurrentIndex(formController.getFormIndex().toString());
         }
+    }
+
+    private String getLocalizedFormTitle() {
+        return Localization.getWithDefault(getFormTitleLocaleKey(), formDef.getTitle());
+    }
+
+    private String getFormTitleLocaleKey() {
+        if (commandId != null && !commandId.equals("")) {
+            String preparedCommandId = commandId.replace("-", "");
+            return "forms." + preparedCommandId;
+        }
+        return "";
     }
 
     @Trace
