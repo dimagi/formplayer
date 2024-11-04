@@ -90,6 +90,7 @@ public class FormSession {
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
     private String windowWidth;
+    private String commandId;
 
     public FormSession(SerializableFormSession session,
             RestoreFactory restoreFactory,
@@ -108,7 +109,9 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
         this.windowWidth = windowWidth;
-
+        if (commCareSession != null) {
+            this.commandId = commCareSession.getCommand();
+        }
         this.formDef = formDefinitionService.getFormDef(this.session);
 
         loadInstanceXml(this.formDef, session.getInstanceXml());
@@ -150,9 +153,11 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
-            String windowWidth) throws Exception {
+            String windowWidth,
+            String commandId) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
+        this.commandId = commandId;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
