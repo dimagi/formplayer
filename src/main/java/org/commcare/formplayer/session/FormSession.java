@@ -5,6 +5,7 @@ import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -161,7 +162,7 @@ public class FormSession {
         this.commandId = commandId;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
-                postUrl, menuSessionId, getLocalizedFormTitle(), oneQuestionPerScreen,
+                postUrl, menuSessionId, getLocalizedFormTitle(locale), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
         this.session.setFormDefinition(serializableFormDefinition);
@@ -189,8 +190,14 @@ public class FormSession {
         }
     }
 
-    private String getLocalizedFormTitle() {
-        return Localization.getWithDefault(getFormTitleLocaleKey(), formDef.getTitle());
+    private String getLocalizedFormTitle(String locale) {
+        if (Localization.getCurrentLocale().equals(locale)) {
+            return Localization.getWithDefault(getFormTitleLocaleKey(), formDef.getTitle());
+        } else {
+            return StringUtils.defaultIfBlank(
+                    Localization.getGlobalLocalizerAdvanced().getText(getFormTitleLocaleKey(), locale),
+                    formDef.getTitle());
+        }
     }
 
     private String getFormTitleLocaleKey() {
