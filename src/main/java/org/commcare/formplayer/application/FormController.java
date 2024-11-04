@@ -141,6 +141,7 @@ public class FormController extends AbstractBaseController {
                 changeLocaleBean.getSessionId());
         FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, changeLocaleBean.getWindowWidth());
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
+        formEntrySession.updateFormTitle(changeLocaleBean.getLocale());
         FormEntryResponseBean responseBean = formEntrySession.getCurrentJson();
         updateSession(formEntrySession);
         responseBean.setTitle(serializableFormSession.getTitle());

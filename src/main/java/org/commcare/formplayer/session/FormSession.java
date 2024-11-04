@@ -190,6 +190,10 @@ public class FormSession {
         }
     }
 
+    public void updateFormTitle(String locale) {
+        session.setTitle(getLocalizedFormTitle(locale));
+    }
+
     private String getLocalizedFormTitle(String locale) {
         if (Localization.getCurrentLocale().equals(locale)) {
             return Localization.getWithDefault(getFormTitleLocaleKey(), formDef.getTitle());
