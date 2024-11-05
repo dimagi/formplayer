@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '3.2.5'
+    id 'org.springframework.boot' version '3.3.5'
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id "io.freefair.lombok" version "8.10.2"
     id 'org.jetbrains.kotlin.jvm' version '2.0.21'
@@ -69,7 +69,6 @@ configurations {
 }
 
 dependencies {
-
     //Versions managed by Spring Boot Dependency Management
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core'
