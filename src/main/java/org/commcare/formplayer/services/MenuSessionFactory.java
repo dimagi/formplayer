@@ -142,9 +142,10 @@ public class MenuSessionFactory {
                 }
 
                 if (currentStep != null && currentStep != NEXT_SCREEN && entityScreen.shouldBeSkipped()) {
-                    menuSession.handleInput(screen, currentStep, needsFullInit, true, false, entityScreenContext);
-                    screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
-                    continue;
+                    if (((EntityScreen)screen).autoSelectEntities(menuSession.getSessionWrapper())) {
+                        screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
+                        continue;
+                    }
                 }
                 if (currentStep == null && processedStepsCount != steps.size()) {
                     checkAndLogCaseIDMatchError(steps, processedSteps, neededDatum.getDataId());
