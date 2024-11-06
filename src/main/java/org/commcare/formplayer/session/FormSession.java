@@ -195,7 +195,9 @@ public class FormSession {
     }
 
     private String getLocalizedFormTitle(String locale) {
-        if (Localization.getCurrentLocale().equals(locale)) {
+        if (locale == null
+                || !Localization.getGlobalLocalizerAdvanced().hasLocale(locale)
+                || Localization.getCurrentLocale().equals(locale)) {
             return Localization.getWithDefault(getFormTitleLocaleKey(), formDef.getTitle());
         } else {
             return StringUtils.defaultIfBlank(
