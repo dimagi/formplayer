@@ -74,7 +74,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core'
     implementation group: 'commons-codec', name: 'commons-codec'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
-    implementation group: 'org.flywaydb', name: 'flyway-core'
+    implementation group: 'org.flywaydb', name: 'flyway-database-postgresql'
     implementation group: 'org.postgresql', name: 'postgresql'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
