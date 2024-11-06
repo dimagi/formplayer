@@ -43,7 +43,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         super.setUp();
         configureRestoreFactory("endpointdomain", "endpointusername");
         storageFactoryMock.configure("endpointusername", "endpointdomain", "app_id", "asUser");
-        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock, true);
         mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
     }
 
