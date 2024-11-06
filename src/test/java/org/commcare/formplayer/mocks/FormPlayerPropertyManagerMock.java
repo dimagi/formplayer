@@ -57,11 +57,11 @@ public class FormPlayerPropertyManagerMock extends FormplayerPropertyManager {
     }
 
     // convenience method to set auto advance menu as true
-    public static void mockAutoAdvanceMenu(FormplayerStorageFactory storageFactoryMock) {
+    public static void mockAutoAdvanceMenu(FormplayerStorageFactory storageFactoryMock, boolean enable) {
         SQLiteDB db = storageFactoryMock.getSQLiteDB();
         FormPlayerPropertyManagerMock propertyManagerMock = new FormPlayerPropertyManagerMock(
                 new SqlStorage(db, Property.class, PropertyManager.STORAGE_KEY));
-        propertyManagerMock.enableAutoAdvanceMenu(true);
+        propertyManagerMock.enableAutoAdvanceMenu(enable);
         when(storageFactoryMock.getPropertyManager()).thenReturn(propertyManagerMock);
     }
 }

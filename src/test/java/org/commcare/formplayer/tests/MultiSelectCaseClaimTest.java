@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -16,6 +17,7 @@ import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.WithHqUser;
@@ -200,18 +202,28 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
             // For auto-selection we should not add guid back to the selections.
             assertEquals(reponse.getSelections().length, 1);
             assertEquals(reponse.getSelections()[0], "2");
-
             assertEquals("Close", reponse.getCommands()[0].getDisplayText());
+
+            // Persistent Menu And Breadcrumbs should not contain the auto-selected entities
+            ArrayList<PersistentCommand> subMenu = reponse.getPersistentMenu().get(2).getCommands();
+            assertEquals(1, subMenu.size());
+            assertEquals("Close", subMenu.get(0).getDisplayText()); // directly contains the form instead of entity selection
+            assertEquals(ImmutableList.of("Case Claim", "Follow Up"),
+                    Arrays.stream(reponse.getBreadcrumbs()).toList());
         }
 
-        ArrayList<String> updatedSelections = new ArrayList<>();
-        updatedSelections.addAll(Arrays.asList(reponse.getSelections()));
+        ArrayList<String> updatedSelections = new ArrayList<>(Arrays.asList(reponse.getSelections()));
         updatedSelections.add("0");
 
-        sessionNavigateWithQuery(updatedSelections.toArray(new String[0]),
+        NewFormResponse formResponse = sessionNavigateWithQuery(updatedSelections.toArray(new String[0]),
                 APP_NAME,
                 null,
-                FormEntryResponseBean.class);
+                NewFormResponse.class);
+        ArrayList<PersistentCommand> subMenu = formResponse.getPersistentMenu().get(2).getCommands();
+        assertEquals(1, subMenu.size());
+        assertEquals("Close", subMenu.get(0).getDisplayText());
+        assertEquals(ImmutableList.of("Case Claim", "Follow Up", "Close"),
+                Arrays.stream(formResponse.getBreadcrumbs()).toList());
     }
 
     @Test
@@ -235,7 +247,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
     @Test
     public void testAutoAdvanceMenuWithCaseSearch() throws Exception {
-        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock, true);
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
                 "query_responses/case_search_multi_select_response.xml")) {
             EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"1"},

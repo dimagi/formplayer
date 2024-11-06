@@ -70,10 +70,17 @@ class PersistentMenuHelper(val isPersistentMenuEnabled: Boolean) {
     private fun addPersistentCommand(command: PersistentCommand) {
         // currentMenu!=null implies that we must have added items to persistent menu
         check(currentMenu == null || persistentMenu.size > 0)
-        if (currentMenu == null) {
-            persistentMenu.add(command)
-        } else {
-            currentMenu!!.addCommand(command)
+        if (isCommandNotPresent(command)) {
+            if (currentMenu == null) {
+                persistentMenu.add(command)
+            } else {
+                currentMenu!!.addCommand(command)
+            }
         }
+    }
+
+    private fun isCommandNotPresent(command: PersistentCommand): Boolean {
+        val currentCommands = if (currentMenu == null) persistentMenu else currentMenu!!.commands
+        return currentCommands.firstOrNull { persistentCommand -> persistentCommand.index == command.index } == null
     }
 }
