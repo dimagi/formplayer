@@ -275,20 +275,34 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         expectedMenu.add(new PersistentCommand("1", "Case List", null, NavIconState.NEXT));
         expectedMenu.add(new PersistentCommand("2", "Menu with Auto Submit Form", null, NavIconState.NEXT));
         expectedMenu.add(new PersistentCommand("3", "Single Form Auto Select", null, NavIconState.NEXT));
+        PersistentCommand firstMenu = expectedMenu.get(0);
+        firstMenu.addCommand(new PersistentCommand("0","Registration Form", null, NavIconState.JUMP));
+        firstMenu.addCommand(new PersistentCommand("1","Followup Form", null, NavIconState.JUMP));
+        firstMenu.addCommand(new PersistentCommand("2","Followup Form with AutoSelect Datum", "jr://file/commcare/image/m0f2customicon_en.png", NavIconState.NEXT));
+        firstMenu.addCommand(new PersistentCommand("3","Followup Form with AutoSelect Datum", null, NavIconState.NEXT));
+        String[] selections = new String[]{"0", "2"};
+        NewFormResponse formResponse = sessionNavigate(selections, APP, NewFormResponse.class);
+        assertEquals(expectedMenu, formResponse.getPersistentMenu());
+    }
+
+    @Test
+    public void testPersistentMenuWithAutoAdvance() throws Exception {
+        ArrayList<PersistentCommand> expectedMenu = new ArrayList<>();
+        expectedMenu.add(new PersistentCommand("0", "Case List", "jr://file/commcare/image/m0customicon_en.png", NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("1", "Case List", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("2", "Menu with Auto Submit Form", null, NavIconState.NEXT));
+        expectedMenu.add(new PersistentCommand("3", "Single Form Auto Select", null, NavIconState.NEXT));
 
         // Auto-Advance in a Auto Select Case List
         String[] selections = new String[]{"3"};
         NewFormResponse formResponse = sessionNavigate(selections, APP, NewFormResponse.class);
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
 
-
-        PersistentCommand firstMenu = expectedMenu.get(0);
-        firstMenu.addCommand(new PersistentCommand("0","Registration Form", null, NavIconState.JUMP));
-        firstMenu.addCommand(new PersistentCommand("1","Followup Form", null, NavIconState.JUMP));
-        firstMenu.addCommand(new PersistentCommand("2","Followup Form with AutoSelect Datum", "jr://file/commcare/image/m0f2customicon_en.png", NavIconState.NEXT));
-        firstMenu.addCommand(new PersistentCommand("3","Followup Form with AutoSelect Datum", null, NavIconState.NEXT));
-        selections = new String[]{"0", "2"};
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock, false);
+        selections = new String[]{"3", "0"};
         formResponse = sessionNavigate(selections, APP, NewFormResponse.class);
+        expectedMenu.get(3).addCommand(new PersistentCommand("0", "Followup Form with AutoSelect Datum",
+                "jr://file/commcare/image/m0f2customicon_en.png", NavIconState.JUMP));
         assertEquals(expectedMenu, formResponse.getPersistentMenu());
     }
 }
