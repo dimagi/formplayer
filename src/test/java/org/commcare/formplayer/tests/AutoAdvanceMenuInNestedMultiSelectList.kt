@@ -41,7 +41,7 @@ class AutoAdvanceMenuInNestedMultiSelectList : BaseTestClass() {
 
     @Test
     fun testAutoAdvanceMenuInNestedMultiSelectList() {
-        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock)
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock, true)
         mockRequest.mockQuery(
             "query_responses/case_search_multi_select_response.xml", 2
         ).use {
