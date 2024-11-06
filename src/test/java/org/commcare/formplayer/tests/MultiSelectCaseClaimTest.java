@@ -241,7 +241,7 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
 
     @Test
     public void testAutoAdvanceMenuWithCaseSearch() throws Exception {
-        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock);
+        FormPlayerPropertyManagerMock.mockAutoAdvanceMenu(storageFactoryMock, true);
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
                 "query_responses/case_search_multi_select_response.xml")) {
             EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"1"},
