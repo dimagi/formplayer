@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import static com.fasterxml.jackson.core.JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION;
+
 import static org.commcare.formplayer.junit.HasXpath.hasXpath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,7 +11,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -133,7 +134,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import jakarta.servlet.http.Cookie;
-
 import lombok.extern.apachecommons.CommonsLog;
 
 /**
@@ -286,6 +286,7 @@ public class BaseTestClass {
         setupRestoreFactoryMock();
         setupSubmitServiceMock();
         mapper = new ObjectMapper();
+        mapper.enable(INCLUDE_SOURCE_IN_LOCATION);
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
         mockMenuSessionService();
