@@ -403,11 +403,12 @@ public class MenuSession implements HereFunctionHandlerListener {
 
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty(
                 "PostURL");
+
         return new FormSession(sandbox, serializableFormDefinition, formDef, session.getUsername(),
                 session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
                 oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
-                instanceFetcher, getWindowWidth(), sessionWrapper.getCommand());
+                instanceFetcher, getWindowWidth(), sessionWrapper.getCurrentEntry().getText().getArgument());
     }
 
     public SessionWrapper getSessionWrapper() {

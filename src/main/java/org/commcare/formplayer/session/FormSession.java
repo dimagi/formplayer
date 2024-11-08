@@ -92,7 +92,7 @@ public class FormSession {
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
     private String windowWidth;
-    private String commandId;
+    private String formTitleLocaleKey = "";
 
     public FormSession(SerializableFormSession session,
             RestoreFactory restoreFactory,
@@ -111,8 +111,8 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
         this.windowWidth = windowWidth;
-        if (commCareSession != null) {
-            this.commandId = commCareSession.getCommand();
+        if (commCareSession != null && commCareSession.getCurrentEntry() != null) {
+            this.formTitleLocaleKey = commCareSession.getCurrentEntry().getText().getArgument();
         }
         this.formDef = formDefinitionService.getFormDef(this.session);
 
@@ -156,10 +156,10 @@ public class FormSession {
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
             String windowWidth,
-            String commandId) throws Exception {
+            String formTitleLocaleKey) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
-        this.commandId = commandId;
+        this.formTitleLocaleKey = formTitleLocaleKey;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, getLocalizedFormTitle(locale), oneQuestionPerScreen,
@@ -207,9 +207,8 @@ public class FormSession {
     }
 
     private String getFormTitleLocaleKey() {
-        if (commandId != null && !commandId.equals("")) {
-            String preparedCommandId = commandId.replace("-", "");
-            return "forms." + preparedCommandId;
+        if (formTitleLocaleKey != null) {
+            return formTitleLocaleKey;
         }
         return "";
     }
