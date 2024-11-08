@@ -665,6 +665,7 @@ public class FormSession {
     public void changeLocale(String locale) {
         session.setInitLang(locale);
         formEntryController.setLanguage(locale);
+        updateFormTitle(locale);
     }
 
     public SerializableFormSession getSerializableSession() {
