@@ -276,7 +276,6 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
             assertEquals(formResponse.getSelections().length, 2);
         }
     }
-
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
     public void testMultiSelectEndpoint_ValidSelection() throws Exception {

@@ -188,6 +188,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
                     // auto-launch takes preference over auto-select
+                    System.out.println("calling autoSelectEntities from handleInput");
                     if (screen.shouldBeSkipped() && !autoLaunch &&
                             entityScreen.autoSelectEntities(sessionWrapper)) {
                         return handleInput(screen, input, true, inputValidated, allowAutoLaunch, entityScreenContext);
@@ -278,19 +279,24 @@ public class MenuSession implements HereFunctionHandlerListener {
             if (persistentMenuHelper.getPersistentMenu().isEmpty() || entityScreenContext.isRespectRelevancy()) {
                 persistentMenuHelper.addMenusToPersistentMenu(menuScreen, sessionWrapper, isAutoAdvanceMenu);
             }
+            System.out.println("in getNextScreen: MenuScreen" + menuScreen);
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
             EntityScreen entityScreen = getEntityScreenForSession(needsFullEntityScreen, entityScreenContext);
+            System.out.println("in getNextScreen: EntityScreen" + entityScreen);
             return entityScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
+            System.out.println("in getNextScreen: STATE_DATUM_COMPUTED");
             return getNextScreen(needsFullEntityScreen, entityScreenContext);
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
             QueryScreen queryScreen = new FormplayerQueryScreen(
                     this.instanceFetcher.getVirtualDataInstanceStorage());
             queryScreen.init(sessionWrapper);
+            System.out.println("in getNextScreen: QueryScreen" + queryScreen);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+            System.out.println("in getNextScreen: SyncScreen");
             return getSyncScreen();
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());

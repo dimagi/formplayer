@@ -184,6 +184,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
+                System.out.println("calling autoSelectEntities from getNextMenu");
                 if (((EntityScreen)nextScreen).autoSelectEntities(menuSession.getSessionWrapper())) {
                     datadog.addRequestScopedTag(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, Constants.TAG_VALUE_TRUE);
                     return getNextMenu(null, menuSession, queryData, entityScreenContext);
@@ -256,6 +257,7 @@ public class MenuSessionRunnerService {
         NotificationMessage notificationMessage = null;
         boolean nonAppNav = formSessionId != null;
         Screen nextScreen = null;
+        System.out.println("in advanceSessionWithSelections, selections: " + Arrays.toString(selections));
         try {
             if (nonAppNav && selections.length > 0) {
                 // User has navigated with a session ID. This means they have navigated 'back' or via
@@ -272,6 +274,7 @@ public class MenuSessionRunnerService {
                 // i == selections.length => Response is Entity Screen or Entity Detail screen and we need full
                 // entity screen
                 boolean needsFullEntityScreen = i == selections.length;
+                System.out.println("calling handleInput from advanceSessionWithSelections");
                 boolean gotNextScreen = menuSession.handleInput(nextScreen, selection, needsFullEntityScreen, inputValidated,
                         true, entityScreenContext);
                 if (!gotNextScreen) {
@@ -282,6 +285,7 @@ public class MenuSessionRunnerService {
                     break;
                 }
                 String nextInput = i == selections.length ? NO_SELECTION : selections[i];
+                System.out.println("calling autoAdvanceSession from advanceSessionWithSelections");
                 nextScreen = autoAdvanceSession(null, menuSession, nextInput, queryData,
                         needsFullEntityScreen, entityScreenContext);
 
@@ -375,6 +379,8 @@ public class MenuSessionRunnerService {
 
             // skips the call to to getNextScreen for first iteration if we already have nextScreen
             if (iterationCount > 1 || nextScreen == null) {
+                System.out.println("calling getNextScreen from autoAdvanceSession");
+                
                 nextScreen = menuSession.getNextScreen(needsFullEntityScreen, entityScreenContext);
             }
             if (previousScreen != null) {
@@ -383,15 +389,17 @@ public class MenuSessionRunnerService {
             }
 
             if (nextScreen instanceof EntityScreen) {
+                System.out.println("in autoAdvanceSession, nextScreen is EntityScreen" + nextScreen);
                 // Advance the session in case auto launch is set
                 sessionAdvanced = ((EntityScreen)nextScreen).evalAndExecuteAutoLaunchAction(nextInput,
                         menuSession.getSessionWrapper());
-
+                System.out.println("in autoAdvanceSession, sessionAdvanced after evalAndExecuteAutoLaunchAction: " + sessionAdvanced);
                 // Auto select if we have not advanced as part of auto launch
                 // avoiding unnecessary screen init by skipping the original screen
                 if (!sessionAdvanced && iterationCount != 0) {
                     nextScreen.init(menuSession.getSessionWrapper());
                     if (nextScreen.shouldBeSkipped()) {
+                        System.out.println("calling autoSelectEntities from autoAdvanceSession");
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());
                         if (sessionAdvanced) {
