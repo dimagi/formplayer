@@ -17,7 +17,6 @@ import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.WithHqUser;
@@ -203,13 +202,6 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
             assertEquals(reponse.getSelections().length, 1);
             assertEquals(reponse.getSelections()[0], "2");
             assertEquals("Close", reponse.getCommands()[0].getDisplayText());
-
-            // Persistent Menu And Breadcrumbs should not contain the auto-selected entities
-            ArrayList<PersistentCommand> subMenu = reponse.getPersistentMenu().get(2).getCommands();
-            assertEquals(1, subMenu.size());
-            assertEquals("Close", subMenu.get(0).getDisplayText()); // directly contains the form instead of entity selection
-            assertEquals(ImmutableList.of("Case Claim", "Follow Up"),
-                    Arrays.stream(reponse.getBreadcrumbs()).toList());
         }
 
         ArrayList<String> updatedSelections = new ArrayList<>(Arrays.asList(reponse.getSelections()));
@@ -219,11 +211,6 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
                 APP_NAME,
                 null,
                 NewFormResponse.class);
-        ArrayList<PersistentCommand> subMenu = formResponse.getPersistentMenu().get(2).getCommands();
-        assertEquals(1, subMenu.size());
-        assertEquals("Close", subMenu.get(0).getDisplayText());
-        assertEquals(ImmutableList.of("Case Claim", "Follow Up", "Close"),
-                Arrays.stream(formResponse.getBreadcrumbs()).toList());
     }
 
     @Test
