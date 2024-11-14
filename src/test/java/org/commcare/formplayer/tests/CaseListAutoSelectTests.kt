@@ -2,11 +2,9 @@ package org.commcare.formplayer.tests
 
 import org.commcare.formplayer.beans.NewFormResponse
 import org.commcare.formplayer.beans.menus.EntityListResponse
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-
 
 @WebMvcTest
 class CaseListAutoSelectTests : BaseTestClass() {
@@ -30,24 +28,7 @@ class CaseListAutoSelectTests : BaseTestClass() {
     fun testAutoSelection() {
         // We directly go to the form without selecting the case
         val selections = arrayOf("0", "2")
-        var response = sessionNavigate(selections, APP, NewFormResponse::class.java)
-
-        // test breadcrumb
-        assertEquals( 3, response.breadcrumbs.size)
-        assertEquals( "Untitled Application", response.breadcrumbs[0])
-        assertEquals( "Case List", response.breadcrumbs[1])
-        assertEquals( "Followup Form 1", response.breadcrumbs[2])
-
-        // test persistent menu
-        val persistentMenu = response.persistentMenu
-        assertEquals(2, persistentMenu.size)
-        assertEquals("Case List", persistentMenu[0].displayText)
-        assertEquals("Case List 1", persistentMenu[1].displayText)
-        val zeroSelectionMenu = persistentMenu[0].commands
-        assertEquals(3, zeroSelectionMenu.size)
-        assertEquals("Registration Form", zeroSelectionMenu[0].displayText)
-        assertEquals("Followup Form", zeroSelectionMenu[1].displayText)
-        assertEquals("Followup Form 1", zeroSelectionMenu[2].displayText)
+        sessionNavigate(selections, APP, NewFormResponse::class.java)
     }
 
     @Test

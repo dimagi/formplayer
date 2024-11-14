@@ -199,11 +199,6 @@
     <text>Menu with Auto Submit Form</text>
     <command id="m0-auto-submit-form"/>
   </menu>
-  <menu id="single-form-auto-select-menu">
-    <text>Single Form Auto Select</text>
-    <command id="m0-f2"/>
-    <command id="m0-f3" relevant="false()"/>
-  </menu>
   <endpoint id="case_list">
     <argument id="selected_cases" instance-id="selected_cases" instance-src="jr://instance/selected-entities"/>
     <stack>
