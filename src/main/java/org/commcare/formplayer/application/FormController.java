@@ -2,6 +2,7 @@ package org.commcare.formplayer.application;
 
 import static org.commcare.formplayer.util.Constants.PART_ANSWER;
 import static org.commcare.formplayer.util.Constants.PART_FILE;
+import static org.commcare.formplayer.util.Constants.SESSION_PREFERRED_LANGUAGE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,6 +56,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 import io.sentry.Sentry;
 
@@ -135,8 +138,11 @@ public class FormController extends AbstractBaseController {
     @UserRestore
     @ConfigureStorageFromSession
     public FormEntryResponseBean changeLocale(@RequestBody ChangeLocaleRequestBean changeLocaleBean,
-            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
+                   @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
+                   HttpServletResponse response)
             throws Exception {
+        response.addCookie(new Cookie(SESSION_PREFERRED_LANGUAGE,changeLocaleBean.getLocale()));
+
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 changeLocaleBean.getSessionId());
         FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, changeLocaleBean.getWindowWidth());

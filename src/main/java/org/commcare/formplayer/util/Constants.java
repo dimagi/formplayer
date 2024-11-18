@@ -200,4 +200,6 @@ public class Constants {
     public static final String TOGGLE_INCLUDE_STATE_HASH = "FORMPLAYER_INCLUDE_STATE_HASH";
 
     public static final String AUTHORITY_COMMCARE = "COMMCARE";
+
+    public static final String SESSION_PREFERRED_LANGUAGE = "session_preferred_lang";
 }

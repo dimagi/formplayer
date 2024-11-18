@@ -1,5 +1,6 @@
 package org.commcare.formplayer.application;
 
+import static org.commcare.formplayer.util.Constants.SESSION_PREFERRED_LANGUAGE;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import org.apache.commons.logging.Log;
@@ -36,7 +37,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -163,8 +166,14 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-            HttpServletRequest request) throws Exception {
+                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                        @CookieValue(value = SESSION_PREFERRED_LANGUAGE, required = false) String sessionPrefLang,
+                        HttpServletRequest request,
+                        HttpServletResponse response) throws Exception {
+
+        if (sessionPrefLang == null || !sessionPrefLang.equals(sessionNavigationBean.getLocale())) {
+            response.addCookie(new Cookie(SESSION_PREFERRED_LANGUAGE, sessionNavigationBean.getLocale()));
+        }
         String[] selections = sessionNavigationBean.getSelections();
         if (selections == null) {
             selections = new String[0];
