@@ -118,9 +118,7 @@
   <entry>
     <form>http://openrosa.org/formdesigner/99F89DA7-E568-4952-9BAF-717263F2C5DD</form>
     <command id="m0-f2">
-      <text>
-        <locale id="forms.m0f1"/>
-      </text>
+      <text>Followup Form 1</text>
     </command>
     <instance id="casedb" src="jr://instance/casedb"/>
     <session>
@@ -148,9 +146,7 @@
     <command id="m0-f2"/>
   </menu>
   <menu id="m1">
-    <text>
-      <locale id="modules.m0"/>
-    </text>
+    <text>Case List 1</text>
     <command id="m0-f3"/>
   </menu>
 </suite>
