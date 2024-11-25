@@ -49,7 +49,7 @@ repositories {
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     sentryVersion = '7.18.0'
-    shedlockVersion = '5.16.0'
+    shedlockVersion = '6.0.1'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
