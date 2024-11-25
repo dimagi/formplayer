@@ -201,5 +201,5 @@ public class Constants {
 
     public static final String AUTHORITY_COMMCARE = "COMMCARE";
 
-    public static final String SESSION_PREFERRED_LANGUAGE = "session_preferred_lang";
+    public static final String FORMPLAYER_SESSION_LANGUAGE = "formplayer_session_lang";
 }

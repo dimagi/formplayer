@@ -2,7 +2,7 @@ package org.commcare.formplayer.application;
 
 import static org.commcare.formplayer.util.Constants.PART_ANSWER;
 import static org.commcare.formplayer.util.Constants.PART_FILE;
-import static org.commcare.formplayer.util.Constants.SESSION_PREFERRED_LANGUAGE;
+import static org.commcare.formplayer.util.Constants.FORMPLAYER_SESSION_LANGUAGE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -141,7 +141,7 @@ public class FormController extends AbstractBaseController {
                    @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
                    HttpServletResponse response)
             throws Exception {
-        response.addCookie(new Cookie(SESSION_PREFERRED_LANGUAGE,changeLocaleBean.getLocale()));
+        response.addCookie(new Cookie(FORMPLAYER_SESSION_LANGUAGE, changeLocaleBean.getLocale()));
 
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 changeLocaleBean.getSessionId());
