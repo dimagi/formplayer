@@ -224,6 +224,10 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         assertEquals("Close", subMenu.get(0).getDisplayText());
         assertEquals(ImmutableList.of("Case Claim", "Follow Up", "Close"),
                 Arrays.stream(formResponse.getBreadcrumbs()).toList());
+        String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18",
+                "0156fa3e-093e-4136-b95c-01b13dae66c7",
+                "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        checkForSelectedEntitiesInstance(formResponse.getSessionId(), selectedValues);
     }
 
     @Test
