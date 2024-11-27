@@ -21,6 +21,10 @@
     <property key="jr_openrosa_api" value="1.0" force="true"/>
     
     <property key="heartbeat-url" value="http://localhost:8000/a/shubham/phone/heartbeat/6e7eb8d05a214872b5ed416a1e5fe313/?build_profile_id=" force="true"/>
+
+
+    <property key="cc-persistent-menu" value="yes" force="true"/>
+    <property key="cc-auto-advance-menu" value="yes" force="true"/>
     
 
     <!-- Properties configured on CommCare HQ 1.0 -->

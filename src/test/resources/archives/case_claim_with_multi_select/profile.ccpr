@@ -72,7 +72,7 @@
 
     <!-- end -->
 
-
+    <property key="cc-persistent-menu" value="yes" force="true"/>
 
     <features>
         <checkoff active="true"/>
