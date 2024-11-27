@@ -59,12 +59,16 @@ public class LocalizationTests extends BaseTestClass {
 
         assert newFormResponse.getTree().length == 2;
 
+        assert newFormResponse.getTitle().equals("English Form 1");
+
         assert newFormResponse.getTree()[0].getCaption().equals("I'm English");
 
         assert newFormResponse.getTree()[1].getCaption().equals("English rules");
 
         FormEntryResponseBean formResponse = this.changeLanguage("es",
                 newFormResponse.getSessionId());
+
+        assert formResponse.getTitle().equals("Spanish Form 1");
 
         assert formResponse.getTree()[0].getCaption().equals("I'm Spanish");
 
@@ -85,6 +89,8 @@ public class LocalizationTests extends BaseTestClass {
 
         assert newFormResponse.getTree().length == 2;
 
+        assert newFormResponse.getTitle().equals("English Form 1");
+
         assert newFormResponse.getTree()[0].getCaption().equals("I'm English");
 
         assert newFormResponse.getTree()[1].getCaption().equals("English rules");
@@ -93,6 +99,8 @@ public class LocalizationTests extends BaseTestClass {
                 this.sessionNavigate(new String[]{"0", "0"}, "langs", "es", NewFormResponse.class);
 
         assert newFormResponseSpanish.getTree().length == 2;
+
+        assert newFormResponseSpanish.getTitle().equals("Spanish Form 1");
 
         assert newFormResponseSpanish.getTree()[0].getCaption().equals("I'm Spanish");
 
