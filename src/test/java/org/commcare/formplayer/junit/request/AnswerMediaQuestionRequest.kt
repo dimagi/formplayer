@@ -13,7 +13,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import javax.servlet.http.Cookie
+import jakarta.servlet.http.Cookie
 
 /**
  * Request class for making a mock request that answers a media form question.
