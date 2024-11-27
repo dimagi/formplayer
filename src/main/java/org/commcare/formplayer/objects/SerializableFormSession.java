@@ -51,7 +51,7 @@ public class SerializableFormSession implements Serializable {
     @Column(name = "menu_session_id", updatable = false)
     private String menuSessionId;
 
-    @Column(updatable = false)
+    @Setter
     private String title;
 
     @Column(name = "onequestionperscreen", updatable = false)
