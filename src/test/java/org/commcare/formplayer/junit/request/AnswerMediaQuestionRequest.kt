@@ -49,7 +49,6 @@ class AnswerMediaQuestionRequest(
             multipart("/" + Constants.URL_ANSWER_MEDIA_QUESTION)
                 .file(file)
                 .part(answer)
-                .cookie(Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user("user"))
         ).andExpect(MockMvcResultMatchers.status().isOk)

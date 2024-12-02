@@ -581,6 +581,7 @@ public class FormSession {
                 FormEntryResponseBean.class);
         if (!session.isInPromptMode() || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(
                 response.getStatus())) {
+            response.setSessionId(session.getId());
             return response;
         }
         return getNextFormNavigation();
@@ -597,6 +598,7 @@ public class FormSession {
         responseBean.setTitle(session.getTitle());
         responseBean.setCurrentIndex(session.getCurrentIndex());
         responseBean.setEvent(responseBean.getTree()[0]);
+        responseBean.setSessionId(session.getId());
         return responseBean;
     }
 
@@ -620,6 +622,7 @@ public class FormSession {
         responseBean.setInstanceXml(null);
         responseBean.setTree(null);
         responseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        responseBean.setSessionId(session.getId());
         if (nextEvent == FormEntryController.EVENT_END_OF_FORM) {
             String output = submitGetXml();
             responseBean.getEvent().setOutput(output);

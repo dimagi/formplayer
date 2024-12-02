@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.commons.logging.LogFactory
 import org.assertj.core.api.Assertions
-import org.commcare.formplayer.auth.DjangoAuth
 import org.commcare.formplayer.beans.InstallRequestBean
 import org.commcare.formplayer.beans.menus.CommandListResponseBean
 import org.commcare.formplayer.services.FormplayerStorageFactory
@@ -50,7 +49,7 @@ class Installer(
         )
         val bean = refAndBean.second
         storageFactory.configure(bean)
-        restoreFactory.configure(bean, DjangoAuth("key"))
+        restoreFactory.configure(bean)
         if (bean.isMustRestore) {
             restoreFactory.performTimedSync()
         }
