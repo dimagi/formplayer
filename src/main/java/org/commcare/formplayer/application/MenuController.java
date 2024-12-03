@@ -36,7 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
