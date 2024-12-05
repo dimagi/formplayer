@@ -654,6 +654,7 @@ public class FormSession {
     public void changeLocale(String locale) {
         session.setInitLang(locale);
         formEntryController.setLanguage(locale);
+        Localization.setLocale(locale);
         updateFormTitle();
     }
 
