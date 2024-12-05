@@ -349,7 +349,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                     queryData,
                     NewFormResponse.class);
         }
-        assertEquals("Close", formResponse.getTitle());
+        assertEquals("Close again", formResponse.getTitle());
 
         ExternalDataInstanceSource source = getInstanceSourceFromSession(
                 formResponse.getSessionId(), VirtualInstances.getRemoteReference("results"));

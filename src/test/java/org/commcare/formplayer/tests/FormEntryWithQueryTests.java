@@ -152,7 +152,7 @@ public class FormEntryWithQueryTests extends BaseTestClass {
                 CommandListResponseBean.class);
 
         assertEquals(1, menuResponse.getCommands().length);
-        assertEquals("Dedupe Form", menuResponse.getCommands()[0].getDisplayText());
+        assertEquals("Followup Form", menuResponse.getCommands()[0].getDisplayText());
 
         // verify the second query block to fetch the remote case was executed as well as the 3rd
         // query block

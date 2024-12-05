@@ -108,7 +108,8 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId(),
                 null,
                 formplayerRemoteInstanceFetcher,
-                bean.getWindowWidth()
+                bean.getWindowWidth(),
+                null
         );
 
         NewFormResponse response = getResponse(formSession);
