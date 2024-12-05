@@ -28,6 +28,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
+import org.commcare.suite.model.Text;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
@@ -92,7 +93,7 @@ public class FormSession {
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
     private String windowWidth;
-    private String commandId;
+    private Text formTitleText;
 
     public FormSession(SerializableFormSession session,
             RestoreFactory restoreFactory,
@@ -111,8 +112,8 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
         this.windowWidth = windowWidth;
-        if (commCareSession != null) {
-            this.commandId = commCareSession.getCommand();
+        if (commCareSession != null && commCareSession.getCurrentEntry() != null) {
+            this.formTitleText = commCareSession.getCurrentEntry().getText();
         }
         this.formDef = formDefinitionService.getFormDef(this.session);
 
@@ -156,13 +157,13 @@ public class FormSession {
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
             String windowWidth,
-            String commandId) throws Exception {
+            Text formTitleText) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
-        this.commandId = commandId;
+        this.formTitleText = formTitleText;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
-                postUrl, menuSessionId, getLocalizedFormTitle(locale), oneQuestionPerScreen,
+                postUrl, menuSessionId, getLocalizedFormTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
         this.session.setFormDefinition(serializableFormDefinition);
@@ -190,28 +191,16 @@ public class FormSession {
         }
     }
 
-    public void updateFormTitle(String locale) {
-        session.setTitle(getLocalizedFormTitle(locale));
+    public void updateFormTitle() {
+        session.setTitle(getLocalizedFormTitle());
     }
 
-    private String getLocalizedFormTitle(String locale) {
-        if (locale == null
-                || !Localization.getGlobalLocalizerAdvanced().hasLocale(locale)
-                || Localization.getCurrentLocale().equals(locale)) {
-            return Localization.getWithDefault(getFormTitleLocaleKey(), formDef.getTitle());
+    private String getLocalizedFormTitle() {
+        if (formTitleText == null) {
+            return formDef.getTitle();
         } else {
-            return StringUtils.defaultIfBlank(
-                    Localization.getGlobalLocalizerAdvanced().getText(getFormTitleLocaleKey(), locale),
-                    formDef.getTitle());
+            return formTitleText.evaluate();
         }
-    }
-
-    private String getFormTitleLocaleKey() {
-        if (commandId != null && !commandId.equals("")) {
-            String preparedCommandId = commandId.replace("-", "");
-            return "forms." + preparedCommandId;
-        }
-        return "";
     }
 
     @Trace
@@ -665,7 +654,7 @@ public class FormSession {
     public void changeLocale(String locale) {
         session.setInitLang(locale);
         formEntryController.setLanguage(locale);
-        updateFormTitle(locale);
+        updateFormTitle();
     }
 
     public SerializableFormSession getSerializableSession() {

@@ -407,7 +407,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
                 oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
-                instanceFetcher, getWindowWidth(), sessionWrapper.getCommand());
+                instanceFetcher, getWindowWidth(), sessionWrapper.getCurrentEntry().getText());
     }
 
     public SessionWrapper getSessionWrapper() {
