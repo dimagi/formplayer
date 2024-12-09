@@ -54,7 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import io.sentry.Sentry;
 

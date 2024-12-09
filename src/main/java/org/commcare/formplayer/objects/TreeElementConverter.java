@@ -4,8 +4,8 @@ import org.commcare.formplayer.util.SerializationUtil;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.util.externalizable.ExtUtil;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 /**
  * Serialization converter for {@link TreeElement}

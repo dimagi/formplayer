@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.ApplicationDB;

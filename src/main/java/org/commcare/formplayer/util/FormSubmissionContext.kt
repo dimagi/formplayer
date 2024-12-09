@@ -7,7 +7,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine
 import org.commcare.formplayer.objects.SerializableMenuSession
 import org.commcare.formplayer.session.FormSession
 import org.commcare.session.CommCareSession
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 class FormSubmissionContext(val httpRequest: HttpServletRequest,
                             val isPrevalidated: Boolean,
