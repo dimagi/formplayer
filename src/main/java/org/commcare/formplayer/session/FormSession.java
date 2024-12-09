@@ -5,6 +5,7 @@ import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -27,6 +28,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
+import org.commcare.suite.model.Text;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
@@ -36,6 +38,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.engine.FunctionExtensions;
@@ -90,6 +93,7 @@ public class FormSession {
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
     private String windowWidth;
+    private Text formTitleText;
 
     public FormSession(SerializableFormSession session,
             RestoreFactory restoreFactory,
@@ -108,7 +112,9 @@ public class FormSession {
 
         this.sandbox = restoreFactory.getSandbox();
         this.windowWidth = windowWidth;
-
+        if (commCareSession != null && commCareSession.getCurrentEntry() != null) {
+            this.formTitleText = commCareSession.getCurrentEntry().getText();
+        }
         this.formDef = formDefinitionService.getFormDef(this.session);
 
         loadInstanceXml(this.formDef, session.getInstanceXml());
@@ -150,12 +156,14 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
-            String windowWidth) throws Exception {
+            String windowWidth,
+            Text formTitleText) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
+        this.formTitleText = formTitleText;
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
-                postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
+                postUrl, menuSessionId, getLocalizedFormTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
         this.session.setFormDefinition(serializableFormDefinition);
@@ -180,6 +188,18 @@ public class FormSession {
         if (oneQuestionPerScreen) {
             stepToNextIndex();
             session.setCurrentIndex(formController.getFormIndex().toString());
+        }
+    }
+
+    public void updateFormTitle() {
+        session.setTitle(getLocalizedFormTitle());
+    }
+
+    private String getLocalizedFormTitle() {
+        if (formTitleText == null) {
+            return formDef.getTitle();
+        } else {
+            return formTitleText.evaluate();
         }
     }
 
@@ -634,6 +654,8 @@ public class FormSession {
     public void changeLocale(String locale) {
         session.setInitLang(locale);
         formEntryController.setLanguage(locale);
+        Localization.setLocale(locale);
+        updateFormTitle();
     }
 
     public SerializableFormSession getSerializableSession() {
