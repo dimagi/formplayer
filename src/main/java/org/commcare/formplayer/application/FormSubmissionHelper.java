@@ -63,11 +63,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
 
 import datadog.trace.api.Trace;
 import io.sentry.Sentry;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class FormSubmissionHelper {

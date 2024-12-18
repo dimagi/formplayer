@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.7.3'
+    id 'org.springframework.boot' version '3.3.5'
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id "io.freefair.lombok" version "8.11"
     id 'org.jetbrains.kotlin.jvm' version '2.1.0'
@@ -69,13 +69,12 @@ configurations {
 }
 
 dependencies {
-
     //Versions managed by Spring Boot Dependency Management
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core'
     implementation group: 'commons-codec', name: 'commons-codec'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
-    implementation group: 'org.flywaydb', name: 'flyway-core'
+    implementation group: 'org.flywaydb', name: 'flyway-database-postgresql'
     implementation group: 'org.postgresql', name: 'postgresql'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
@@ -110,7 +109,7 @@ dependencies {
     //Unmanaged Dependencies
     implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '1.31.2'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '4.4.3'
-    implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
+    implementation group: 'io.sentry', name: 'sentry-spring-boot-starter-jakarta', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
     implementation group: 'commons-io', name: 'commons-io', version: '2.18.0'
     implementation group: 'org.json', name: 'json', version: '20231013'
@@ -137,7 +136,6 @@ dependencies {
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path-assert'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testImplementation group: 'org.mockito', name: 'mockito-core'
-    testImplementation group: 'org.mockito', name: 'mockito-inline'
     testImplementation "org.mockito.kotlin:mockito-kotlin:5.4.0"
     testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert'
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'

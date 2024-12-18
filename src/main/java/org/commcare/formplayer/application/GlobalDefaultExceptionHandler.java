@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.apachecommons.CommonsLog;
 
 @ControllerAdvice
@@ -134,7 +134,7 @@ public class GlobalDefaultExceptionHandler {
         } else if (exception instanceof DataAccessException) {
             message = "An issue prevented us from processing your action, please try again";
         } else if (exception instanceof ResponseStatusException) {
-            int statusCode = ((ResponseStatusException)exception).getRawStatusCode();
+            int statusCode = ((ResponseStatusException)exception).getStatusCode().value();
             return new ExceptionResponseBean(message, req.getRequestURL().toString(), statusCode);
         }
         return new ExceptionResponseBean(message, req.getRequestURL().toString());

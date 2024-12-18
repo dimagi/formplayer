@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.StringReader;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
