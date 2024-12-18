@@ -146,6 +146,7 @@ public class MenuSessionFactory {
                     screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                     continue;
                 }
+
                 if (currentStep == null && processedStepsCount != steps.size()) {
                     checkAndLogCaseIDMatchError(steps, processedSteps, neededDatum.getDataId());
                 }

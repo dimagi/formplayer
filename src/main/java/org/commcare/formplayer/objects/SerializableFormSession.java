@@ -6,7 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class SerializableFormSession implements Serializable {
     @Column(name = "menu_session_id", updatable = false)
     private String menuSessionId;
 
-    @Column(updatable = false)
+    @Setter
     private String title;
 
     @Column(name = "onequestionperscreen", updatable = false)

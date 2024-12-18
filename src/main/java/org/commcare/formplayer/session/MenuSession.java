@@ -184,7 +184,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 boolean autoLaunch = entityScreen.getAutoLaunchAction() != null && allowAutoLaunch;
-                addBreadcrumb = !autoLaunch;
+                addBreadcrumb = !(autoLaunch || entityScreen.shouldBeSkipped());
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
                     // auto-launch takes preference over auto-select
@@ -224,11 +224,13 @@ public class MenuSession implements HereFunctionHandlerListener {
              *  current index based selections[] to contain menu ids instead of indexes.
               */
             if (entityScreenContext.isRespectRelevancy()) {
-                if (screen instanceof EntityScreen) {
+                if (screen instanceof EntityScreen && !screen.shouldBeSkipped()) {
                     String breadcrumb = screen.getBreadcrumb(input, sandbox, getSessionWrapper());
                     persistentMenuHelper.addEntitySelection(persistentMenuId, breadcrumb);
+                    persistentMenuHelper.advanceCurrentMenuWithInput(screen, persistentMenuId);
+                } else if (screen instanceof MenuScreen) {
+                    persistentMenuHelper.advanceCurrentMenuWithInput(screen, persistentMenuId);
                 }
-                persistentMenuHelper.advanceCurrentMenuWithInput(screen, persistentMenuId);
             }
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
@@ -407,7 +409,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 session.getDomain(), sessionData, postUrl, session.getLocale(), session.getId(), null,
                 oneQuestionPerScreen, session.getAsUser(), session.getAppId(), null, formSendCalloutHandler,
                 storageFactory, false, null, new SessionFrame(sessionWrapper.getFrame()),
-                instanceFetcher, getWindowWidth());
+                instanceFetcher, getWindowWidth(), sessionWrapper.getCurrentEntry().getText());
     }
 
     public SessionWrapper getSessionWrapper() {
