@@ -18,15 +18,18 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.firewall.HttpFirewall;
-import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
 
 @Configuration
@@ -53,10 +56,12 @@ public class WebSecurityConfig {
                 .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
 
                 // not auth required
-                .antMatchers("/serverup", "/favicon.ico").permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/serverup")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
 
                 // validate form auth
-                .antMatchers("/validate_form").access(getFormValidationAuthManager())
+                .requestMatchers(new AntPathRequestMatcher("/validate_form")).access(
+                        getFormValidationAuthManager())
 
                 // full auth required for all other requests
                 .anyRequest().authenticated()
@@ -70,11 +75,18 @@ public class WebSecurityConfig {
         // configure auth filters
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(getSessionAuthFilter(authenticationManager), HmacAuthFilter.class);
-        http.csrf()
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers(new RequestHeaderRequestMatcher(Constants.HMAC_HEADER));
-        http.cors();
 
+        // By setting the csrfRequestAttributeName to null, the CsrfToken must first be loaded to determine what
+        // attribute name to use. This causes the CsrfToken to be loaded on every request.
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
+
+        http.csrf(it -> it
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringRequestMatchers(new RequestHeaderRequestMatcher(Constants.HMAC_HEADER))
+                .csrfTokenRequestHandler(requestHandler)
+        );
+        http.cors(Customizer.withDefaults());
         return http.build();
     }
 
@@ -111,11 +123,13 @@ public class WebSecurityConfig {
     }
 
     private void disableDefaults(HttpSecurity http) throws Exception {
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.requestCache().disable();  // only needed for login workflow
-        http.logout().disable();
-        http.formLogin().disable();
-        http.httpBasic().disable();
+        http.sessionManagement((sessions) -> sessions
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        );
+        http.requestCache(RequestCacheConfigurer::disable); // only needed for login workflow
+        http.logout(AbstractHttpConfigurer::disable);
+        http.formLogin(AbstractHttpConfigurer::disable);
+        http.httpBasic(AbstractHttpConfigurer::disable);
     }
 
     public CommCareSessionAuthFilter getSessionAuthFilter(AuthenticationManager authenticationManager) throws Exception {
