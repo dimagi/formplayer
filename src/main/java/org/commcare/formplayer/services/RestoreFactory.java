@@ -24,6 +24,7 @@ import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
+import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
@@ -57,9 +58,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.sql.SQLException;
@@ -69,6 +72,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.Iterator;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -157,6 +163,7 @@ public class RestoreFactory {
     private boolean hasRestored;
     private String caseId;
     private boolean configured = false;
+    private boolean hasLocationChanged = false;
 
     public void configure(String domain, String caseId, HqAuth auth) {
         this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
@@ -217,14 +224,14 @@ public class RestoreFactory {
         }
         UserSqlSandbox sandbox;
         try {
-            sandbox = restoreUser(skipFixtures);
+            sandbox = restoreUser(skipFixtures, shouldPurge);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().value() == 412) {
                 return handle412Sync(shouldPurge, skipFixtures);
             }
             throw e;
         }
-        if (shouldPurge && sandbox != null) {
+        if (sandbox != null && (shouldPurge || hasLocationChanged)) {
             try {
                 SimpleTimer purgeTimer = new SimpleTimer();
                 purgeTimer.start();
@@ -273,12 +280,12 @@ public class RestoreFactory {
             return getSqlSandbox();
         } else {
             getSQLiteDB().createDatabaseFolder();
-            return performTimedSync(true, false, false);
+            return performTimedSync(false, false, false);
         }
     }
 
     @Trace
-    private UserSqlSandbox restoreUser(boolean skipFixtures) throws SyncRestoreException {
+    private UserSqlSandbox restoreUser(boolean skipFixtures, boolean shouldPurge) throws SyncRestoreException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         // create extras to send to category timing helper
@@ -292,6 +299,37 @@ public class RestoreFactory {
                 UserSqlSandbox sandbox = getSqlSandbox();
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 InputStream restoreStream = getRestoreXml(skipFixtures);
+                if (!shouldPurge) {
+                    // Extracting current location ids
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getRestoreXml(skipFixtures)));
+                    String regex = Pattern.quote("<data key=\"commcare_location_ids\">") + "(.*?)" + Pattern.quote("</data>");
+                    Pattern pattern = Pattern.compile(regex);
+                    String restoreLocations = "";
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        Matcher matcher = pattern.matcher(line);
+                        if (matcher.find()) {
+                            restoreLocations = matcher.group(1);
+                            break;
+                        }
+                    }
+                    bufferedReader.close();
+
+                    // Getting location info from user sandbox before its updated
+                    String sandboxLocations = "";
+                    SqlStorage<User> userStorage = sandbox.getUserStorage();
+                    Iterator userIterator = userStorage.iterator();
+                    while (userIterator.hasNext()) {
+                        User uUser = (User)userIterator.next();
+                        if (uUser.getProperty("commcare_project").equals(domain)) {
+                            sandboxLocations = uUser.getProperty("commcare_location_ids");
+                            break;
+                        }
+                    }
+                    if (!sandboxLocations.isEmpty() && !sandboxLocations.equals(restoreLocations)) {
+                        hasLocationChanged = true;
+                    }
+                }
 
                 SimpleTimer parseTimer = new SimpleTimer();
                 parseTimer.start();
