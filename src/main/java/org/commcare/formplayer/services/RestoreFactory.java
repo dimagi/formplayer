@@ -60,6 +60,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -300,8 +301,12 @@ public class RestoreFactory {
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 InputStream restoreStream = getRestoreXml(skipFixtures);
                 if (!shouldPurge) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    restoreStream.transferTo(outputStream);
+                    InputStream streamClone = new ByteArrayInputStream(outputStream.toByteArray());
+
                     // Extracting current location ids
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getRestoreXml(skipFixtures)));
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(streamClone));
                     String regex = Pattern.quote("<data key=\"commcare_location_ids\">") + "(.*?)" + Pattern.quote("</data>");
                     Pattern pattern = Pattern.compile(regex);
                     String restoreLocations = "";
@@ -329,6 +334,7 @@ public class RestoreFactory {
                     if (!sandboxLocations.isEmpty() && !sandboxLocations.equals(restoreLocations)) {
                         hasLocationChanged = true;
                     }
+                    restoreStream = new ByteArrayInputStream(outputStream.toByteArray());
                 }
 
                 SimpleTimer parseTimer = new SimpleTimer();
