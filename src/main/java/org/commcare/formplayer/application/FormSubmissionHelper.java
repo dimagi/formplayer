@@ -268,7 +268,7 @@ public class FormSubmissionHelper {
         } catch (HttpClientErrorException e) {
             return getErrorResponse(
                     context.getHttpRequest(), Constants.SUBMIT_RESPONSE_ERROR,
-                    String.format("Form submission failed with error response: %s", e.getResponseBodyAsString()),
+                    String.format("Form submission failed with error response: %s", e.getMessage()),
                     e);
         } finally {
             // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
