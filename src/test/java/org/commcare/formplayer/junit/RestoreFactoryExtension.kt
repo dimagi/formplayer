@@ -110,6 +110,6 @@ class RestoreFactoryExtension(
 
     private fun mockGetRestoreXml() {
         val answer = RestoreFactoryAnswer(restorePath)
-        doAnswer(answer).`when`(restoreFactory).getRestoreXml(anyBoolean())
+        doAnswer(answer).`when`(restoreFactory).getRestoreXml()
     }
 }

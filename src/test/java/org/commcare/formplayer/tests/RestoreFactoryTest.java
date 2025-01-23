@@ -163,7 +163,7 @@ public class RestoreFactoryTest {
     public void testGetUserRestoreUrl() {
         assertEquals(
                 BASE_URL + "?version=2.0&device_id=WebAppsLogin",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -176,7 +176,7 @@ public class RestoreFactoryTest {
                         + ".commcarehq.org"
                         +
                         "&as=asUser%40domain1.commcarehq.org",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -189,7 +189,7 @@ public class RestoreFactoryTest {
                         + "%40domain1.commcarehq.org"
                         +
                         "&as=asUser%2Btest-encoding%40domain1.commcarehq.org",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -201,7 +201,7 @@ public class RestoreFactoryTest {
                 BASE_URL + "?version=2.0" +
                         "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser" +
                         "&as=asUser%40restore-domain.commcarehq.org",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -214,7 +214,7 @@ public class RestoreFactoryTest {
                     BASE_URL + "?version=2.0" +
                             "&device_id=WebAppsLogin" +
                             "&state=ccsh%3A123",
-                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+                    restoreFactorySpy.getUserRestoreUrl().toString()
             );
         }
     }
@@ -226,7 +226,7 @@ public class RestoreFactoryTest {
             assertEquals(
                     BASE_URL + "?version=2.0" +
                             "&device_id=WebAppsLogin",
-                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+                    restoreFactorySpy.getUserRestoreUrl().toString()
             );
         }
     }
@@ -238,7 +238,7 @@ public class RestoreFactoryTest {
             mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("");
             assertEquals(
                     BASE_URL + "?version=2.0&device_id=WebAppsLogin",
-                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+                    restoreFactorySpy.getUserRestoreUrl().toString()
             );
         }
     }
