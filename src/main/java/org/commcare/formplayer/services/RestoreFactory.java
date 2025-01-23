@@ -338,7 +338,7 @@ public class RestoreFactory {
                             break;
                         }
                     }
-                    if (!oldSandboxLocations.equals(newSandboxLocations)) {
+                    if (!oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations)) {
                         hasLocationChanged = true;
                     }
                 }
