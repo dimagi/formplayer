@@ -197,7 +197,7 @@ public class RestoreFactory {
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public UserSqlSandbox performTimedSync() throws SyncRestoreException {
-        return performTimedSync(true, false, false);
+        return performTimedSync(true, false);
     }
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean isResponseTo412)
             throws SyncRestoreException {
@@ -273,7 +273,7 @@ public class RestoreFactory {
             return getSqlSandbox();
         } else {
             getSQLiteDB().createDatabaseFolder();
-            return performTimedSync(false, false, false);
+            return performTimedSync(false, false);
         }
     }
 

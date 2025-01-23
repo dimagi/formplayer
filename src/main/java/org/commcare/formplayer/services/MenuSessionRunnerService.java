@@ -495,7 +495,7 @@ public class MenuSessionRunnerService {
 
             requestScopedTagNameAndValueMap.computeIfPresent(Constants.REQUEST_INCLUDES_AUTOSELECT_TAG, extraTags::put);
             extraTags.put(Constants.MODULE_NAME_TAG, moduleName);
-            restoreFactory.performTimedSync(false, true, false, extraTags);
+            restoreFactory.performTimedSync(false, true, extraTags);
             menuSession.getSessionWrapper().clearVolatiles();
         }
     }
