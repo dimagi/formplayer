@@ -332,12 +332,13 @@ public class RestoreFactory {
                     Iterator userIterator = userStorage.iterator();
                     while (userIterator.hasNext()) {
                         User uUser = (User)userIterator.next();
-                        if (uUser.getProperty("commcare_project").equals(domain)) {
+                        String userDomain = uUser.getProperty("commcare_project");
+                        if (userDomain != null && userDomain.equals(domain)) {
                             newSandboxLocations = uUser.getProperty("commcare_location_ids");
                             break;
                         }
                     }
-                    if (!oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations)) {
+                    if (oldSandboxLocations.equals(newSandboxLocations)) {
                         hasLocationChanged = true;
                     }
                 }
