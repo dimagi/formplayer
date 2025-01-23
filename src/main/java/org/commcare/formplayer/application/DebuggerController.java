@@ -33,8 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controller class for all routes pertaining to the CloudCare Debugger

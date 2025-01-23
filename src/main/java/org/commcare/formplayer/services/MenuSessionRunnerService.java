@@ -83,7 +83,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import datadog.trace.api.Trace;
 import io.sentry.Sentry;
