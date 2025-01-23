@@ -58,12 +58,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.sql.SQLException;
@@ -74,8 +71,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.Iterator;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -300,41 +295,17 @@ public class RestoreFactory {
                 UserSqlSandbox sandbox = getSqlSandbox();
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 InputStream restoreStream = getRestoreXml(skipFixtures);
+                String oldSandboxLocations = "";
                 if (!shouldPurge) {
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    restoreStream.transferTo(outputStream);
-                    InputStream streamClone = new ByteArrayInputStream(outputStream.toByteArray());
-
-                    // Extracting current location ids
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(streamClone));
-                    String regex = Pattern.quote("<data key=\"commcare_location_ids\">") + "(.*?)" + Pattern.quote("</data>");
-                    Pattern pattern = Pattern.compile(regex);
-                    String restoreLocations = "";
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        Matcher matcher = pattern.matcher(line);
-                        if (matcher.find()) {
-                            restoreLocations = matcher.group(1);
-                            break;
-                        }
-                    }
-                    bufferedReader.close();
-
-                    // Getting location info from user sandbox before its updated
-                    String sandboxLocations = "";
                     SqlStorage<User> userStorage = sandbox.getUserStorage();
                     Iterator userIterator = userStorage.iterator();
                     while (userIterator.hasNext()) {
                         User uUser = (User)userIterator.next();
                         if (uUser.getProperty("commcare_project").equals(domain)) {
-                            sandboxLocations = uUser.getProperty("commcare_location_ids");
+                            oldSandboxLocations = uUser.getProperty("commcare_location_ids");
                             break;
                         }
                     }
-                    if (!sandboxLocations.isEmpty() && !sandboxLocations.equals(restoreLocations)) {
-                        hasLocationChanged = true;
-                    }
-                    restoreStream = new ByteArrayInputStream(outputStream.toByteArray());
                 }
 
                 SimpleTimer parseTimer = new SimpleTimer();
@@ -354,6 +325,23 @@ public class RestoreFactory {
                         extras
                 );
                 sandbox.writeSyncToken();
+
+                if (!shouldPurge) {
+                    String newSandboxLocations = "";
+                    SqlStorage<User> userStorage = sandbox.getUserStorage();
+                    Iterator userIterator = userStorage.iterator();
+                    while (userIterator.hasNext()) {
+                        User uUser = (User)userIterator.next();
+                        if (uUser.getProperty("commcare_project").equals(domain)) {
+                            newSandboxLocations = uUser.getProperty("commcare_location_ids");
+                            break;
+                        }
+                    }
+                    if (!oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations)) {
+                        hasLocationChanged = true;
+                    }
+                }
+
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
                 if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
