@@ -294,7 +294,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         // When we sync afterwards, include new case and case-claim
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
         CommandListResponseBean commandResponse = sessionNavigateWithQuery(
                 new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
@@ -545,7 +545,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         // When we sync afterwards, include new case and case-claim
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
         NewFormResponse formResponse = sessionNavigateWithQuery(
                 new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6", "0"},
@@ -727,7 +727,7 @@ public class CaseClaimTests extends BaseTestClass {
         configureQueryMockOwned();
         configureSyncMock();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim.xml");
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("name", "Burt");

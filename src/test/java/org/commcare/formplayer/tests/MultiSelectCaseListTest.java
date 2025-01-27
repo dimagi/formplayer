@@ -189,7 +189,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
     @Test
     public void testAutoSelectionWithMultiSelectCaseList_NoCaseSelection() throws Exception {
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/nocases.xml");
-        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
         // Since there are no cases to select we see the empty case list
         String[] selections = new String[]{"0", "2"};

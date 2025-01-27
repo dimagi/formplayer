@@ -71,10 +71,10 @@ public class MockRequestUtils {
     public VerifiedMock mockRestore(String restoreFile, int times) {
         Mockito.reset(restoreFactoryMock);
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(restoreFile);
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
         return () -> {
-            verify(restoreFactoryMock, Mockito.times(times)).getRestoreXml(anyBoolean());
+            verify(restoreFactoryMock, Mockito.times(times)).getRestoreXml();
         };
     }
 
