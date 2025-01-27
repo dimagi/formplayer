@@ -24,7 +24,6 @@ import org.commcare.formplayer.exceptions.SyncRestoreException;
 import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
-import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
@@ -70,7 +69,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.Iterator;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
@@ -239,6 +237,7 @@ public class RestoreFactory {
                         null,
                         extraTags
                 );
+                hasLocationChanged = false;
             } catch (InvalidCaseGraphException e) {
                 FormplayerSentry.captureException(e, SentryLevel.WARNING);
                 // if we have not already, do a fresh sync to try and resolve state
@@ -297,15 +296,7 @@ public class RestoreFactory {
                 InputStream restoreStream = getRestoreXml(skipFixtures);
                 String oldSandboxLocations = "";
                 if (!shouldPurge) {
-                    SqlStorage<User> userStorage = sandbox.getUserStorage();
-                    Iterator userIterator = userStorage.iterator();
-                    while (userIterator.hasNext()) {
-                        User uUser = (User)userIterator.next();
-                        if (uUser.getProperty("commcare_project").equals(domain)) {
-                            oldSandboxLocations = uUser.getProperty("commcare_location_ids");
-                            break;
-                        }
-                    }
+                    oldSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
                 }
 
                 SimpleTimer parseTimer = new SimpleTimer();
@@ -327,22 +318,11 @@ public class RestoreFactory {
                 sandbox.writeSyncToken();
 
                 if (!shouldPurge) {
-                    String newSandboxLocations = "";
-                    SqlStorage<User> userStorage = sandbox.getUserStorage();
-                    Iterator userIterator = userStorage.iterator();
-                    while (userIterator.hasNext()) {
-                        User uUser = (User)userIterator.next();
-                        String userDomain = uUser.getProperty("commcare_project");
-                        if (userDomain != null && userDomain.equals(domain)) {
-                            newSandboxLocations = uUser.getProperty("commcare_location_ids");
-                            break;
-                        }
-                    }
+                    String newSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
                     if (!oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations)) {
                         hasLocationChanged = true;
                     }
                 }
-
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
                 if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
