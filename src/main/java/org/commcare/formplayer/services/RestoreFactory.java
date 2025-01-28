@@ -237,7 +237,6 @@ public class RestoreFactory {
                         null,
                         extraTags
                 );
-                hasLocationChanged = false;
             } catch (InvalidCaseGraphException e) {
                 FormplayerSentry.captureException(e, SentryLevel.WARNING);
                 // if we have not already, do a fresh sync to try and resolve state
@@ -321,6 +320,8 @@ public class RestoreFactory {
                     String newSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
                     if (!oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations)) {
                         hasLocationChanged = true;
+                    } else {
+                        hasLocationChanged = false;
                     }
                 }
                 return sandbox;
@@ -372,6 +373,10 @@ public class RestoreFactory {
 
     public SQLiteDB getSQLiteDB() {
         return sqLiteDB;
+    }
+
+    public boolean getHasLocationChanged() {
+        return hasLocationChanged;
     }
 
     public String getWrappedUsername() {

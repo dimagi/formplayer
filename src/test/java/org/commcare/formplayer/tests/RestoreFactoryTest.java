@@ -14,10 +14,14 @@ import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
+import org.commcare.formplayer.junit.RestoreFactoryAnswer;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.util.UserUtils;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -51,7 +55,7 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 @WebMvcTest
 @ContextConfiguration(classes = {TestContext.class, CacheConfiguration.class})
-public class RestoreFactoryTest {
+public class RestoreFactoryTest extends BaseTestClass {
 
     private static final String BASE_URL = "http://localhost:8000/a/restore-domain/phone/restore/";
     private String username = "restore-dude";
@@ -309,6 +313,23 @@ public class RestoreFactoryTest {
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
         );
+    }
+
+    @Test
+    public void testChecksForLocationChanges() throws Exception {
+        RestoreFactoryAnswer beforeChange = new RestoreFactoryAnswer("restores/location_update1.xml");
+        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml(false);
+
+        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        Assertions.assertFalse(restoreFactoryMock.getHasLocationChanged());
+        Assertions.assertEquals("test_location_id1", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
+
+        RestoreFactoryAnswer afterChange = new RestoreFactoryAnswer("restores/location_update2.xml");
+        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml(false);
+
+        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        Assertions.assertTrue(restoreFactoryMock.getHasLocationChanged());
+        Assertions.assertEquals("test_location_id2", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
 
     private void validateHeaders(HttpHeaders headers,
