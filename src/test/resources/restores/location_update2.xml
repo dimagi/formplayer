@@ -15,8 +15,8 @@
             <data key="commcare_project">restore-domain</data>
             <data key="commcare_last_name"/>
             <data key="commcare_phone_number"/>
-            <data key="commcare_location_id">test_location_id2</data>
-            <data key="commcare_location_ids">test_location_id2</data>
+            <data key="commcare_location_id">testLocationId2</data>
+            <data key="commcare_location_ids">testLocationId2</data>
             <data key="commcare_first_name"/>
         </user_data>
     </Registration>

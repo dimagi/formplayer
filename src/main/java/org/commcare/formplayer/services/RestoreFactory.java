@@ -318,11 +318,7 @@ public class RestoreFactory {
 
                 if (!shouldPurge) {
                     String newSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
-                    if (!oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations)) {
-                        hasLocationChanged = true;
-                    } else {
-                        hasLocationChanged = false;
-                    }
+                    hasLocationChanged = !oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations);
                 }
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {

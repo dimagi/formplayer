@@ -24,8 +24,8 @@ public class UserUtilsTests {
 
     @Test
     public void testGetUserLocations() {
-        String test_loc_id = "test_location_id";
-        String test_domain = "test_domain";
+        String test_loc_id = "testLocationId";
+        String test_domain = "testDomain";
         User user = new User("test_user", "password_hash", "test_uuid");
         user.setProperty("commcare_location_ids", test_loc_id);
         user.setProperty("commcare_project", test_domain);

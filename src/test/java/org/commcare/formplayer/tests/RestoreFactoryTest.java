@@ -322,14 +322,14 @@ public class RestoreFactoryTest extends BaseTestClass {
 
         UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false, false);
         Assertions.assertFalse(restoreFactoryMock.getHasLocationChanged());
-        Assertions.assertEquals("test_location_id1", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
+        Assertions.assertEquals("testLocationId1", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
 
         RestoreFactoryAnswer afterChange = new RestoreFactoryAnswer("restores/location_update2.xml");
         Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml(false);
 
         UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
         Assertions.assertTrue(restoreFactoryMock.getHasLocationChanged());
-        Assertions.assertEquals("test_location_id2", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
+        Assertions.assertEquals("testLocationId2", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
 
     private void validateHeaders(HttpHeaders headers,
