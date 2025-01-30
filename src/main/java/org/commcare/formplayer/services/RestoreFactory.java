@@ -64,6 +64,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -316,9 +317,13 @@ public class RestoreFactory {
                 );
                 sandbox.writeSyncToken();
 
-                if (!shouldPurge) {
+                if (!shouldPurge && !oldSandboxLocations.isEmpty()) {
                     String newSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
-                    hasLocationChanged = !oldSandboxLocations.isEmpty() && !oldSandboxLocations.equals(newSandboxLocations);
+                    String[] oldArray = oldSandboxLocations.split(" ");
+                    String[] newArray = newSandboxLocations.split(" ");
+                    Arrays.sort(oldArray);
+                    Arrays.sort(newArray);
+                    hasLocationChanged = !Arrays.equals(oldArray, newArray);
                 }
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {

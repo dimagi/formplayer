@@ -24,15 +24,15 @@ public class UserUtilsTests {
 
     @Test
     public void testGetUserLocations() {
-        String test_loc_id = "testLocationId";
-        String test_domain = "testDomain";
+        String testLocationId = "testLocationId";
+        String testDomain = "testDomain";
         User user = new User("test_user", "password_hash", "test_uuid");
-        user.setProperty("commcare_location_ids", test_loc_id);
-        user.setProperty("commcare_project", test_domain);
+        user.setProperty("commcare_location_ids", testLocationId);
+        user.setProperty("commcare_project", testDomain);
 
         UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
         SqlStorage<User> userStorage = sandbox.getUserStorage();
         userStorage.write(user);
-        assertEquals(test_loc_id, UserUtils.getUserLocationsByDomain(test_domain, sandbox));
+        assertEquals(testLocationId, UserUtils.getUserLocationsByDomain(testDomain, sandbox));
     }
 }

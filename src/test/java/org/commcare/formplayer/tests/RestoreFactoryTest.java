@@ -78,6 +78,7 @@ public class RestoreFactoryTest extends BaseTestClass {
     public void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         Mockito.reset(restoreFactorySpy);
+        Mockito.reset(restoreFactoryMock);
         AuthenticatedRequestBean requestBean = new AuthenticatedRequestBean();
         requestBean.setRestoreAs(asUsername);
         requestBean.setUsername(username);
@@ -330,6 +331,22 @@ public class RestoreFactoryTest extends BaseTestClass {
         UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
         Assertions.assertTrue(restoreFactoryMock.getHasLocationChanged());
         Assertions.assertEquals("testLocationId2", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
+    }
+
+    @Test
+    public void testSameLocationsDoesntFlagChange() throws Exception {
+        RestoreFactoryAnswer beforeChange = new RestoreFactoryAnswer("restores/location_update3.xml");
+        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml(false);
+
+        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        Assertions.assertEquals("testLocationId1 testLocationId2", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
+
+        RestoreFactoryAnswer afterChange = new RestoreFactoryAnswer("restores/location_update4.xml");
+        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml(false);
+
+        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        Assertions.assertFalse(restoreFactoryMock.getHasLocationChanged());
+        Assertions.assertEquals("testLocationId2 testLocationId1", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
 
     private void validateHeaders(HttpHeaders headers,
