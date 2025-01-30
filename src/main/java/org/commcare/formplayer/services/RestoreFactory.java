@@ -64,6 +64,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -157,6 +158,7 @@ public class RestoreFactory {
     private boolean hasRestored;
     private String caseId;
     private boolean configured = false;
+    private boolean hasLocationChanged = false;
 
     public void configure(String domain, String caseId, HqAuth auth) {
         this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
@@ -217,14 +219,14 @@ public class RestoreFactory {
         }
         UserSqlSandbox sandbox;
         try {
-            sandbox = restoreUser(skipFixtures);
+            sandbox = restoreUser(skipFixtures, shouldPurge);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().value() == 412) {
                 return handle412Sync(shouldPurge, skipFixtures);
             }
             throw e;
         }
-        if (shouldPurge && sandbox != null) {
+        if (sandbox != null && (shouldPurge || hasLocationChanged)) {
             try {
                 SimpleTimer purgeTimer = new SimpleTimer();
                 purgeTimer.start();
@@ -278,7 +280,7 @@ public class RestoreFactory {
     }
 
     @Trace
-    private UserSqlSandbox restoreUser(boolean skipFixtures) throws SyncRestoreException {
+    private UserSqlSandbox restoreUser(boolean skipFixtures, boolean shouldPurge) throws SyncRestoreException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         // create extras to send to category timing helper
@@ -292,6 +294,10 @@ public class RestoreFactory {
                 UserSqlSandbox sandbox = getSqlSandbox();
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 InputStream restoreStream = getRestoreXml(skipFixtures);
+                String oldSandboxLocations = "";
+                if (!shouldPurge) {
+                    oldSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
+                }
 
                 SimpleTimer parseTimer = new SimpleTimer();
                 parseTimer.start();
@@ -310,6 +316,15 @@ public class RestoreFactory {
                         extras
                 );
                 sandbox.writeSyncToken();
+
+                if (!shouldPurge && !oldSandboxLocations.isEmpty()) {
+                    String newSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
+                    String[] oldArray = oldSandboxLocations.split(" ");
+                    String[] newArray = newSandboxLocations.split(" ");
+                    Arrays.sort(oldArray);
+                    Arrays.sort(newArray);
+                    hasLocationChanged = !Arrays.equals(oldArray, newArray);
+                }
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
                 if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
@@ -359,6 +374,10 @@ public class RestoreFactory {
 
     public SQLiteDB getSQLiteDB() {
         return sqLiteDB;
+    }
+
+    public boolean getHasLocationChanged() {
+        return hasLocationChanged;
     }
 
     public String getWrappedUsername() {

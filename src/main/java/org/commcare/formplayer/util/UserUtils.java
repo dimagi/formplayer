@@ -1,5 +1,11 @@
 package org.commcare.formplayer.util;
 
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.javarosa.core.model.User;
+
+import java.util.Iterator;
+
 /**
  * Utility methods for dealing with users
  */
@@ -25,5 +31,18 @@ public class UserUtils {
         } else {
             return username;
         }
+    }
+
+    public static String getUserLocationsByDomain(String domain, UserSqlSandbox sandbox) {
+        SqlStorage<User> userStorage = sandbox.getUserStorage();
+        Iterator userIterator = userStorage.iterator();
+        while (userIterator.hasNext()) {
+            User uUser = (User)userIterator.next();
+            String userDomain = uUser.getProperty("commcare_project");
+            if (userDomain != null && userDomain.equals(domain)) {
+                return uUser.getProperty("commcare_location_ids");
+            }
+        }
+        return "";
     }
 }
