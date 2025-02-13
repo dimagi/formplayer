@@ -317,7 +317,7 @@ public class RestoreFactory {
                 );
                 sandbox.writeSyncToken();
 
-                if (!shouldPurge && !oldSandboxLocations.isEmpty()) {
+                if (!shouldPurge && oldSandboxLocations != null && !oldSandboxLocations.isEmpty()) {
                     String newSandboxLocations = UserUtils.getUserLocationsByDomain(domain, sandbox);
                     String[] oldArray = oldSandboxLocations.split(" ");
                     String[] newArray = newSandboxLocations.split(" ");
