@@ -91,8 +91,8 @@ public class MenuSessionFactory {
     public Screen rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper,
             boolean respectRelevancy)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
-//        boolean keepAPMTraces = (boolean)menuSession.getMetaSessionContext().get("keepAPMTraces");
-//        FormplayerDatadog.handleKeepDropAPMTraces(keepAPMTraces);
+        boolean keepAPMTraces = (boolean)menuSession.getMetaSessionContext().get("keepAPMTraces");
+        FormplayerDatadog.handleKeepDropAPMTraces(keepAPMTraces);
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         List<StackFrameStep> processedSteps = new ArrayList<>();
         menuSession.resetSession();
@@ -224,6 +224,7 @@ public class MenuSessionFactory {
         HashMap metaSessionContext = new HashMap();
         metaSessionContext.put("windowWidth", windowWidth);
         metaSessionContext.put("keepAPMTraces", keepAPMTraces);
+        FormplayerDatadog.handleKeepDropAPMTraces(keepAPMTraces);
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService), metaSessionContext, storageFactory);
@@ -232,13 +233,16 @@ public class MenuSessionFactory {
     @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession, FormplayerConfigEngine engine,
             CommCareSession commCareSession) throws Exception {
-        return new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
+        MenuSession menuSession =  new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService),
                 storageFactory);
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get("keepAPMTraces"));
+        return menuSession;
     }
 
     @Trace
     public MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
+        FormplayerDatadog.handleKeepDropAPMTraces(sessionNavigationBean.getKeepAPMTraces());
         MenuSession menuSession = performInstall(sessionNavigationBean);
         menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
         menuSession.setMetaSessionContext(sessionNavigationBean.getWindowWidth(), sessionNavigationBean.getKeepAPMTraces());
@@ -250,7 +254,7 @@ public class MenuSessionFactory {
         if (bean.getAppId() == null || bean.getAppId().isEmpty()) {
             throw new RuntimeException("App_id must not be null.");
         }
-
+        FormplayerDatadog.handleKeepDropAPMTraces(bean.getKeepAPMTraces());
         return buildSession(
                 bean.getUsername(),
                 bean.getDomain(),
