@@ -319,16 +319,16 @@ public class RestoreFactoryTest extends BaseTestClass {
     @Test
     public void testChecksForLocationChanges() throws Exception {
         RestoreFactoryAnswer beforeChange = new RestoreFactoryAnswer("restores/location_update1.xml");
-        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertFalse(restoreFactoryMock.getHasLocationChanged());
         Assertions.assertEquals("testLocationId1", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
 
         RestoreFactoryAnswer afterChange = new RestoreFactoryAnswer("restores/location_update2.xml");
-        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertTrue(restoreFactoryMock.getHasLocationChanged());
         Assertions.assertEquals("testLocationId2", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
@@ -336,15 +336,15 @@ public class RestoreFactoryTest extends BaseTestClass {
     @Test
     public void testSameLocationsDoesntFlagChange() throws Exception {
         RestoreFactoryAnswer beforeChange = new RestoreFactoryAnswer("restores/location_update3.xml");
-        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertEquals("testLocationId1 testLocationId2", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
 
         RestoreFactoryAnswer afterChange = new RestoreFactoryAnswer("restores/location_update4.xml");
-        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertFalse(restoreFactoryMock.getHasLocationChanged());
         Assertions.assertEquals("testLocationId2 testLocationId1", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
