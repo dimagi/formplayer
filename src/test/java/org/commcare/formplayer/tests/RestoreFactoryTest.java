@@ -168,7 +168,7 @@ public class RestoreFactoryTest extends BaseTestClass {
     public void testGetUserRestoreUrl() {
         assertEquals(
                 BASE_URL + "?version=2.0&device_id=WebAppsLogin",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -181,7 +181,7 @@ public class RestoreFactoryTest extends BaseTestClass {
                         + ".commcarehq.org"
                         +
                         "&as=asUser%40domain1.commcarehq.org",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -194,7 +194,7 @@ public class RestoreFactoryTest extends BaseTestClass {
                         + "%40domain1.commcarehq.org"
                         +
                         "&as=asUser%2Btest-encoding%40domain1.commcarehq.org",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -206,7 +206,7 @@ public class RestoreFactoryTest extends BaseTestClass {
                 BASE_URL + "?version=2.0" +
                         "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser" +
                         "&as=asUser%40restore-domain.commcarehq.org",
-                restoreFactorySpy.getUserRestoreUrl(false).toString()
+                restoreFactorySpy.getUserRestoreUrl().toString()
         );
     }
 
@@ -219,7 +219,7 @@ public class RestoreFactoryTest extends BaseTestClass {
                     BASE_URL + "?version=2.0" +
                             "&device_id=WebAppsLogin" +
                             "&state=ccsh%3A123",
-                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+                    restoreFactorySpy.getUserRestoreUrl().toString()
             );
         }
     }
@@ -231,7 +231,7 @@ public class RestoreFactoryTest extends BaseTestClass {
             assertEquals(
                     BASE_URL + "?version=2.0" +
                             "&device_id=WebAppsLogin",
-                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+                    restoreFactorySpy.getUserRestoreUrl().toString()
             );
         }
     }
@@ -243,7 +243,7 @@ public class RestoreFactoryTest extends BaseTestClass {
             mockUtils.when(() -> CaseDBUtils.computeCaseDbHash(any())).thenReturn("");
             assertEquals(
                     BASE_URL + "?version=2.0&device_id=WebAppsLogin",
-                    restoreFactorySpy.getUserRestoreUrl(false).toString()
+                    restoreFactorySpy.getUserRestoreUrl().toString()
             );
         }
     }
@@ -319,16 +319,16 @@ public class RestoreFactoryTest extends BaseTestClass {
     @Test
     public void testChecksForLocationChanges() throws Exception {
         RestoreFactoryAnswer beforeChange = new RestoreFactoryAnswer("restores/location_update1.xml");
-        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertFalse(restoreFactoryMock.getHasLocationChanged());
         Assertions.assertEquals("testLocationId1", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
 
         RestoreFactoryAnswer afterChange = new RestoreFactoryAnswer("restores/location_update2.xml");
-        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertTrue(restoreFactoryMock.getHasLocationChanged());
         Assertions.assertEquals("testLocationId2", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
@@ -336,15 +336,15 @@ public class RestoreFactoryTest extends BaseTestClass {
     @Test
     public void testSameLocationsDoesntFlagChange() throws Exception {
         RestoreFactoryAnswer beforeChange = new RestoreFactoryAnswer("restores/location_update3.xml");
-        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(beforeChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox beforeSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertEquals("testLocationId1 testLocationId2", UserUtils.getUserLocationsByDomain(domain, beforeSandbox));
 
         RestoreFactoryAnswer afterChange = new RestoreFactoryAnswer("restores/location_update4.xml");
-        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml(false);
+        Mockito.doAnswer(afterChange).when(restoreFactoryMock).getRestoreXml();
 
-        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false, false);
+        UserSqlSandbox afterSandbox = restoreFactoryMock.performTimedSync(false, false);
         Assertions.assertFalse(restoreFactoryMock.getHasLocationChanged());
         Assertions.assertEquals("testLocationId2 testLocationId1", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
