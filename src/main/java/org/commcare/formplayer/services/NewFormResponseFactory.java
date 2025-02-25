@@ -88,7 +88,7 @@ public class NewFormResponseFactory {
         FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
                 caseSearchHelper,
                 virtualDataInstanceService);
-        HashMap metaSessionContext = new HashMap();
+        HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
         metaSessionContext.put("windowWidth", bean.getWindowWidth());
         metaSessionContext.put("keepAPMTraces", bean.getKeepAPMTraces());
         FormSession formSession = new FormSession(
@@ -157,7 +157,7 @@ public class NewFormResponseFactory {
             CommCareSession commCareSession, String windowWidth, boolean keepAPMTraces) throws Exception {
         FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher =
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService);
-        HashMap metaSessionContext = new HashMap();
+        HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
         metaSessionContext.put("windowWidth", windowWidth);
         metaSessionContext.put("keepAPMTraces", keepAPMTraces);
         return new FormSession(serializableFormSession,

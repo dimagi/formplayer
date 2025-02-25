@@ -83,7 +83,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     private PersistentMenuHelper persistentMenuHelper;
 
     private String currentBrowserLocation;
-    HashMap metaSessionContext;
+    HashMap<String, Object> metaSessionContext;
     private boolean hereFunctionEvaluated;
 
     // Stores the entity screens created to manage state for the lifecycle of this request
@@ -112,7 +112,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
             InstallService installService, RestoreFactory restoreFactory, String host,
             boolean oneQuestionPerScreen, String asUser, boolean preview,
-            FormplayerRemoteInstanceFetcher instanceFetcher, HashMap metaSessionContext,
+            FormplayerRemoteInstanceFetcher instanceFetcher, HashMap<String, Object> metaSessionContext,
             FormplayerStorageFactory storageFactory)
             throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
@@ -509,7 +509,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.metaSessionContext.put("keepAPMTraces", keepAPMTraces);
     }
 
-    public HashMap getMetaSessionContext() {
+    public HashMap<String, Object> getMetaSessionContext() {
         return metaSessionContext;
     }
 }

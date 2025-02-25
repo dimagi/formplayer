@@ -94,7 +94,7 @@ public class FormSession {
     private boolean shouldAutoSubmit;
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
-    private HashMap metaSessionContext;
+    private HashMap<String, Object> metaSessionContext;
     private Text formTitleText;
 
     public FormSession(SerializableFormSession session,
@@ -104,7 +104,7 @@ public class FormSession {
             @Nullable CommCareSession commCareSession,
             RemoteInstanceFetcher instanceFetcher,
             FormDefinitionService formDefinitionService,
-            HashMap metaSessionContext) throws Exception {
+            HashMap<String, Object> metaSessionContext) throws Exception {
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
         //so suppress continuous syncs. Eventually this should likely go into the bean connector
@@ -157,7 +157,7 @@ public class FormSession {
             String caseId,
             @Nullable SessionFrame sessionFrame,
             RemoteInstanceFetcher instanceFetcher,
-            HashMap metaSessionContext,
+            HashMap<String, Object> metaSessionContext,
             Text formTitleText) throws Exception {
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
         this.formDef = formDef;
@@ -280,7 +280,7 @@ public class FormSession {
 
     @Trace
     private void initialize(boolean newInstance, StorageManager storageManager,
-            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher, HashMap metaSessionContext)
+            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher, HashMap<String, Object> metaSessionContext)
             throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION,
@@ -476,7 +476,7 @@ public class FormSession {
         return (String)metaSessionContext.get("windowWidth");
     }
 
-    public HashMap getMetaSessionContext() {
+    public HashMap<String, Object> getMetaSessionContext() {
         return this.metaSessionContext;
     }
 

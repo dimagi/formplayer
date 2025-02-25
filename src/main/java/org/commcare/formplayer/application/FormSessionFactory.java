@@ -52,7 +52,7 @@ public class FormSessionFactory {
         FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
                 runnerService.getCaseSearchHelper(),
                 virtualDataInstanceService);
-        HashMap metaSessionContext = new HashMap();
+        HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
         metaSessionContext.put("windowWidth", windowWidth);
         metaSessionContext.put("keepAPMTraces", keepAPMTraces);
         return new FormSession(serializableFormSession,

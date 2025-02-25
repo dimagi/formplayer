@@ -221,7 +221,7 @@ public class MenuSessionFactory {
                                     boolean preview,
                                     String windowWidth,
                                     boolean keepAPMTraces) throws Exception {
-        HashMap metaSessionContext = new HashMap();
+        HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
         metaSessionContext.put("windowWidth", windowWidth);
         metaSessionContext.put("keepAPMTraces", keepAPMTraces);
         FormplayerDatadog.handleKeepDropAPMTraces(keepAPMTraces);
