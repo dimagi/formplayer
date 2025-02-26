@@ -816,7 +816,7 @@ public class BaseTestClass {
 
     <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
             Class<T> clazz) throws Exception {
-       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, clazz);
+       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, false, clazz);
     }
 
     <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
