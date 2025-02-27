@@ -200,4 +200,8 @@ public class Constants {
     public static final String TOGGLE_INCLUDE_STATE_HASH = "FORMPLAYER_INCLUDE_STATE_HASH";
 
     public static final String AUTHORITY_COMMCARE = "COMMCARE";
+
+    // metaSessionContext keys
+    public static final String WINDOW_WIDTH = "windowWidth";
+    public static final String KEEP_APM_TRACES = "keepAPMTraces";
 }
