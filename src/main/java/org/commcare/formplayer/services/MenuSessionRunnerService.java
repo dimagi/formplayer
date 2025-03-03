@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import static org.commcare.formplayer.util.CaseSearchNavigationUtils.getQueryDataFromFrame;
 import static org.commcare.formplayer.util.CaseSearchNavigationUtils.mergeQueryParamsWithQueryExtras;
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
 import static org.javarosa.core.model.instance.ExternalDataInstance.JR_SELECTED_ENTITIES_REFERENCE;
@@ -151,7 +152,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean getNextMenu(@Nullable Screen nextScreen, MenuSession menuSession,
             QueryData queryData,
             EntityScreenContext entityScreenContext) throws Exception {
-
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES));
         if (nextScreen == null) {
             nextScreen = menuSession.getNextScreen(true, entityScreenContext);
         }
@@ -235,6 +236,7 @@ public class MenuSessionRunnerService {
     @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
             String[] selections, QueryData queryData) throws Exception {
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES));
         return advanceSessionWithSelections(menuSession, selections, queryData, new EntityScreenContext(), null);
     }
 
@@ -253,6 +255,7 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             EntityScreenContext entityScreenContext,
             String formSessionId) throws Exception {
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES));
         NotificationMessage notificationMessage = null;
         boolean nonAppNav = formSessionId != null;
         Screen nextScreen = null;
@@ -510,6 +513,8 @@ public class MenuSessionRunnerService {
     private boolean doQuery(FormplayerQueryScreen screen,
             boolean isDefaultSearch, boolean skipCache, Multimap<String, String> caseSearchMetricTags,
             Multimap<String, String> queryExtras) throws CommCareSessionException {
+        SessionWrapper sessionWrapper = screen.getSession();
+        FormplayerDatadog.handleKeepDropAPMTraces(sessionWrapper.getKeepDropAPMTraces());
         // Only search when there are no errors in input or we are doing a default search
         if (isDefaultSearch || screen.getErrors().isEmpty()) {
             try {
@@ -535,6 +540,7 @@ public class MenuSessionRunnerService {
     @Trace
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession, EntityScreenContext entityScreenContext)
             throws Exception {
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES));
         Pair<Boolean, Screen> continueSessionAndCurrentScreen = executeAndRebuildSession(menuSession);
         if (menuSession.getSmartLinkRedirect() != null) {
             BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
@@ -681,6 +687,7 @@ public class MenuSessionRunnerService {
 
     @Trace
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES));
         if (menuSession.getSessionWrapper().getForm() != null) {
             SimpleTimer formEntryTimer = new SimpleTimer();
             formEntryTimer.start();
@@ -731,6 +738,7 @@ public class MenuSessionRunnerService {
 
     @Trace
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES));
         menuSessionService.saveSession(menuSession.serialize());
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory,
                 formDefinitionService);
