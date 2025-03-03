@@ -70,7 +70,7 @@ public class NewFormResponseFactory {
         }
         // Don't purge when restoring as a case
         boolean shouldPurge = bean.getRestoreAsCaseId() == null;
-        UserSqlSandbox sandbox = restoreFactory.performTimedSync(shouldPurge, false, false);
+        UserSqlSandbox sandbox = restoreFactory.performTimedSync(shouldPurge, false);
 
         storageFactory.configure(bean.getUsername(),
                 bean.getDomain(),

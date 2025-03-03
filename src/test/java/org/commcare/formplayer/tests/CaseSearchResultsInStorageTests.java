@@ -157,7 +157,7 @@ public class CaseSearchResultsInStorageTests {
 
             // When we sync afterwards, include new case and case-claim
             RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
-            Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+            Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
             CommandListResponseBean response = navigate(
                     new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
