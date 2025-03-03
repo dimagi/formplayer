@@ -33,6 +33,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.xmlpull.v1.XmlPullParserException;
 
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -91,7 +94,7 @@ public class MenuSessionFactory {
     public Screen rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper,
             boolean respectRelevancy)
             throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
-        boolean keepAPMTraces = (boolean)menuSession.getMetaSessionContext().get("keepAPMTraces");
+        boolean keepAPMTraces = (boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES);
         FormplayerDatadog.handleKeepDropAPMTraces(keepAPMTraces);
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         List<StackFrameStep> processedSteps = new ArrayList<>();
@@ -222,8 +225,8 @@ public class MenuSessionFactory {
                                     String windowWidth,
                                     boolean keepAPMTraces) throws Exception {
         HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
-        metaSessionContext.put("windowWidth", windowWidth);
-        metaSessionContext.put("keepAPMTraces", keepAPMTraces);
+        metaSessionContext.put(WINDOW_WIDTH, windowWidth);
+        metaSessionContext.put(KEEP_APM_TRACES, keepAPMTraces);
         FormplayerDatadog.handleKeepDropAPMTraces(keepAPMTraces);
         return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
@@ -236,7 +239,7 @@ public class MenuSessionFactory {
         MenuSession menuSession =  new MenuSession(serializableMenuSession, engine, commCareSession, restoreFactory,
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService),
                 storageFactory);
-        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get("keepAPMTraces"));
+        FormplayerDatadog.handleKeepDropAPMTraces((boolean)menuSession.getMetaSessionContext().get(KEEP_APM_TRACES));
         return menuSession;
     }
 

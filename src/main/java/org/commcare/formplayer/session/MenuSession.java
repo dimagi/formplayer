@@ -1,5 +1,7 @@
 package org.commcare.formplayer.session;
 
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
 import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
 import static org.commcare.session.SessionFrame.isEntitySelectionDatum;
 import static org.commcare.util.screen.MultiSelectEntityScreen.USE_SELECTED_VALUES;
@@ -505,8 +507,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public void setMetaSessionContext(String windowWidth, boolean keepAPMTraces) {
-        this.metaSessionContext.put("windowWidth", windowWidth);
-        this.metaSessionContext.put("keepAPMTraces", keepAPMTraces);
+        this.metaSessionContext.put(WINDOW_WIDTH, windowWidth);
+        this.metaSessionContext.put(KEEP_APM_TRACES, keepAPMTraces);
     }
 
     public HashMap<String, Object> getMetaSessionContext() {

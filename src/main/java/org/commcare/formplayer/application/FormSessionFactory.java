@@ -15,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
+
 import java.util.HashMap;
 
 @Component
@@ -53,8 +56,8 @@ public class FormSessionFactory {
                 runnerService.getCaseSearchHelper(),
                 virtualDataInstanceService);
         HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
-        metaSessionContext.put("windowWidth", windowWidth);
-        metaSessionContext.put("keepAPMTraces", keepAPMTraces);
+        metaSessionContext.put(WINDOW_WIDTH, windowWidth);
+        metaSessionContext.put(KEEP_APM_TRACES, keepAPMTraces);
         return new FormSession(serializableFormSession,
                 restoreFactory,
                 formSendCalloutHandler,

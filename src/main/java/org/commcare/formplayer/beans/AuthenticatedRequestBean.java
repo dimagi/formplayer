@@ -1,5 +1,8 @@
 package org.commcare.formplayer.beans;
 
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
@@ -102,22 +105,22 @@ public class AuthenticatedRequestBean {
         this.restoreAsCaseId = restoreAsCaseId;
     }
 
-    @JsonGetter(value = "windowWidth")
+    @JsonGetter(value = WINDOW_WIDTH)
     public String getWindowWidth() {
         return windowWidth;
     }
 
-    @JsonSetter(value = "windowWidth")
+    @JsonSetter(value = WINDOW_WIDTH)
     public void setWindowWidth(String windowWidth) {
         this.windowWidth = windowWidth;
     }
 
-    @JsonGetter(value = "keepAPMTraces")
+    @JsonGetter(value = KEEP_APM_TRACES)
     public boolean getKeepAPMTraces() {
         return keepAPMTraces;
     }
 
-    @JsonSetter(value = "keepAPMTraces")
+    @JsonSetter(value = KEEP_APM_TRACES)
     public void setKeepAPMTraces(boolean keepAPMTraces) {
         this.keepAPMTraces = keepAPMTraces;
     }

@@ -1,5 +1,8 @@
 package org.commcare.formplayer.services;
 
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
+
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NewSessionRequestBean;
@@ -89,8 +92,8 @@ public class NewFormResponseFactory {
                 caseSearchHelper,
                 virtualDataInstanceService);
         HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
-        metaSessionContext.put("windowWidth", bean.getWindowWidth());
-        metaSessionContext.put("keepAPMTraces", bean.getKeepAPMTraces());
+        metaSessionContext.put(WINDOW_WIDTH, bean.getWindowWidth());
+        metaSessionContext.put(KEEP_APM_TRACES, bean.getKeepAPMTraces());
         FormSession formSession = new FormSession(
                 sandbox,
                 serializableFormDefinition,
@@ -158,8 +161,8 @@ public class NewFormResponseFactory {
         FormplayerRemoteInstanceFetcher formplayerRemoteInstanceFetcher =
                 new FormplayerRemoteInstanceFetcher(caseSearchHelper, virtualDataInstanceService);
         HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
-        metaSessionContext.put("windowWidth", windowWidth);
-        metaSessionContext.put("keepAPMTraces", keepAPMTraces);
+        metaSessionContext.put(WINDOW_WIDTH, windowWidth);
+        metaSessionContext.put(KEEP_APM_TRACES, keepAPMTraces);
         return new FormSession(serializableFormSession,
                 restoreFactory,
                 formSendCalloutHandler,

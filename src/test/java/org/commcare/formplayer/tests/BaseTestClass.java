@@ -3,6 +3,8 @@ package org.commcare.formplayer.tests;
 import static com.fasterxml.jackson.core.JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION;
 
 import static org.commcare.formplayer.junit.HasXpath.hasXpath;
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -1038,8 +1040,8 @@ public class BaseTestClass {
                 menuSessionRunnerService.getCaseSearchHelper(),
                 virtualDataInstanceService);
         HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
-        metaSessionContext.put("windowWidth", windowWidth);
-        metaSessionContext.put("keepAPMTraces", keepAPMTraces);
+        metaSessionContext.put(WINDOW_WIDTH, windowWidth);
+        metaSessionContext.put(KEEP_APM_TRACES, keepAPMTraces);
         return new FormSession(serializableFormSession,
                 restoreFactoryMock,
                 formSendCalloutHandlerMock,

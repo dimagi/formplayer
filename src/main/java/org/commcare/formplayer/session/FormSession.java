@@ -1,5 +1,7 @@
 package org.commcare.formplayer.session;
 
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
 import static org.commcare.session.SessionFrame.STATE_DATUM_COMPUTED;
 import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
 
@@ -473,7 +475,7 @@ public class FormSession {
     }
 
     public String getWindowWidth() {
-        return (String)metaSessionContext.get("windowWidth");
+        return (String)metaSessionContext.get(WINDOW_WIDTH);
     }
 
     public HashMap<String, Object> getMetaSessionContext() {
@@ -481,7 +483,7 @@ public class FormSession {
     }
 
     public boolean getKeepAPMTraces() {
-        return (boolean)metaSessionContext.get("keepAPMTraces");
+        return (boolean)metaSessionContext.get(KEEP_APM_TRACES);
     }
 
     public void setIsAtLastIndex(boolean isAtLastIndex) {
