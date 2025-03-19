@@ -198,9 +198,9 @@ class MediaCaptureTest {
     fun testImageCapture_FileWithInvalidExtensionErrors() {
         val formResponse = startImageCaptureForm()
         val exception = assertThrows<java.lang.Exception> {
-            saveImage(formResponse, "media/invalid_extension.txt", "invalid_extension.txt")
+            saveImage(formResponse, "media/invalid_extension.ttf", "invalid_extension.ttf")
         }
-        val expectedErr = Localization.get("form.attachment.invalid.error", "invalid_extension.txt")
+        val expectedErr = Localization.get("form.attachment.invalid.error", "invalid_extension.ttf")
         assertEquals(
             expectedErr,
             exception.cause!!.message,
