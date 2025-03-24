@@ -18,6 +18,12 @@ object MediaValidator {
         "jpeg",
         "png",
         "pdf",
+        "docx",
+        "xlsx",
+        "txt",
+        "html",
+        "rtf",
+        "msg",
         "3gpp",
         "3gp",
         "3ga",
@@ -35,7 +41,7 @@ object MediaValidator {
         "qcp",
         "ogg"
     )
-    private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application/pdf", "audio", "video")
+    private val SUPPORTED_MIME_TYPES = ImmutableList.of("image", "application", "text", "msg", "audio", "video")
 
 
     @JvmStatic
