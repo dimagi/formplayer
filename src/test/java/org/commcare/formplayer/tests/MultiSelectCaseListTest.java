@@ -87,8 +87,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         String[] selectedValues =
                 new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
         NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
-                "test-window-width",
-                NewFormResponse.class);
+                "test-window-width", false, NewFormResponse.class);
         EvaluateXPathResponseBean evaluateXpathResponseBean = new EvaluateXpathRequest(mockDebuggerController,
                 formResp.getSessionId(), "instance('commcaresession')/session/context/window_width",
                 formSessionService, "test-window-width")

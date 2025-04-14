@@ -3,6 +3,8 @@ package org.commcare.formplayer.tests;
 import static com.fasterxml.jackson.core.JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION;
 
 import static org.commcare.formplayer.junit.HasXpath.hasXpath;
+import static org.commcare.formplayer.util.Constants.KEEP_APM_TRACES;
+import static org.commcare.formplayer.util.Constants.WINDOW_WIDTH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -816,11 +818,11 @@ public class BaseTestClass {
 
     <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
             Class<T> clazz) throws Exception {
-       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, clazz);
+       return sessionNavigateWithSelectedValues(selections, testName, selectedValues, null, false, clazz);
     }
 
-    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,  String windowWidth,
-            Class<T> clazz)
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            String windowWidth, boolean keepAPMTraces, Class<T> clazz)
             throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
@@ -829,6 +831,7 @@ public class BaseTestClass {
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSelectedValues(selectedValues);
         sessionNavigationBean.setWindowWidth(windowWidth);
+        sessionNavigationBean.setKeepAPMTraces(keepAPMTraces);
         return generateMockQueryWithInstallReference(Installer.getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
@@ -1031,11 +1034,14 @@ public class BaseTestClass {
         return mapper.readValue(jsonString, clazz);
     }
 
-    protected FormSession getFormSession(SerializableFormSession serializableFormSession, String windowWidth)
+    protected FormSession getFormSession(SerializableFormSession serializableFormSession, String windowWidth, boolean keepAPMTraces)
             throws Exception {
         FormplayerRemoteInstanceFetcher remoteInstanceFetcher = new FormplayerRemoteInstanceFetcher(
                 menuSessionRunnerService.getCaseSearchHelper(),
                 virtualDataInstanceService);
+        HashMap<String, Object> metaSessionContext = new HashMap<String, Object>();
+        metaSessionContext.put(WINDOW_WIDTH, windowWidth);
+        metaSessionContext.put(KEEP_APM_TRACES, keepAPMTraces);
         return new FormSession(serializableFormSession,
                 restoreFactoryMock,
                 formSendCalloutHandlerMock,
@@ -1043,7 +1049,7 @@ public class BaseTestClass {
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
                 remoteInstanceFetcher,
                 formDefinitionService,
-                windowWidth
+                metaSessionContext
         );
     }
 
