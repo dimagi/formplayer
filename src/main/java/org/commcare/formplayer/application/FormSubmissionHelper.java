@@ -119,8 +119,16 @@ public class FormSubmissionHelper {
     public SubmitResponseBean processAndSubmitForm(HttpServletRequest request, String sessionID,
             String domain, boolean isPrevalidated, Map<String, Object> answers,
             String windowWidth) throws Exception {
-        FormSubmissionContext context = getFormProcessingContext(request, sessionID, domain, isPrevalidated,
-                answers, windowWidth);
+        Map<String, String> extras = new HashMap();
+        extras.put(Constants.DOMAIN_TAG, domain);
+        FormSubmissionContext context = categoryTimingHelper.timed(
+                Constants.TimingCategories.CREATE_FORM_CONTEXT,
+                () -> {
+                    return getFormProcessingContext(request, sessionID, domain, isPrevalidated,
+                    answers, windowWidth);
+                },
+                extras
+        );
 
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
         Stream<ProcessingStep> processingSteps = Stream.of(
@@ -390,15 +398,21 @@ public class FormSubmissionHelper {
     }
 
     private SubmitResponseBean updateVolatility(FormSubmissionContext context) {
-        FormVolatilityRecord volatilityRecord = context.getFormEntrySession().getSessionVolatilityRecord();
-        if (volatilityCache != null && volatilityRecord != null) {
-            FormVolatilityRecord existingRecord = volatilityCache.get(volatilityRecord.getKey());
-            if (existingRecord != null && existingRecord.matchesUser(context.getFormEntrySession())) {
-                volatilityRecord = existingRecord;
-            }
-            volatilityRecord.updateFormSubmitted(context.getFormEntrySession());
-            volatilityRecord.write(volatilityCache);
-        }
+        categoryTimingHelper.timed(
+                Constants.TimingCategories.UPDATE_VOLATILITY,
+                () -> {
+                    FormVolatilityRecord volatilityRecord = context.getFormEntrySession().getSessionVolatilityRecord();
+                    if (volatilityCache != null && volatilityRecord != null) {
+                        FormVolatilityRecord existingRecord = volatilityCache.get(volatilityRecord.getKey());
+                        if (existingRecord != null && existingRecord.matchesUser(context.getFormEntrySession())) {
+                            volatilityRecord = existingRecord;
+                        }
+                        volatilityRecord.updateFormSubmitted(context.getFormEntrySession());
+                        volatilityRecord.write(volatilityCache);
+                    }
+                },
+                context.getMetricsTags()
+        );
         return context.success();
     }
 
