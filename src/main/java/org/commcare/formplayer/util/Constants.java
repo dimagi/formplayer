@@ -161,6 +161,8 @@ public class Constants {
         public static final String VALIDATE_ANSWERS = "validate_answers";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
         public static final String FORM_ENTRY = "form_entry";
+        public static final String UPDATE_VOLATILITY = "update_volatility";
+        public static final String CREATE_FORM_CONTEXT = "create_form_context";
 
         public static final String GET_SESSION = "get_session";
         public static final String INITIALIZE_SESSION = "initialize_session";
