@@ -252,6 +252,8 @@ public class FormSubmissionHelper {
     }
 
     private SubmitResponseBean processFormXml(FormSubmissionContext context) throws Exception {
+        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.PROCESS_FORM_XML);
+        timer.start();
         try {
             restoreFactory.setAutoCommit(false);
             processXmlInner(context);
@@ -284,6 +286,7 @@ public class FormSubmissionHelper {
                 // rollback sets autoCommit back to `true`
                 restoreFactory.rollback();
             }
+            timer.end().record();
         }
         return context.success();
     }
