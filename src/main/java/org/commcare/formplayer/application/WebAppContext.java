@@ -13,6 +13,7 @@ import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.aspects.LoggingAspect;
 import org.commcare.formplayer.aspects.MetricsAspect;
 import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
+import org.commcare.formplayer.aspects.TagTracingDisabledAspect;
 import org.commcare.formplayer.aspects.UserRestoreAspect;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
@@ -200,6 +201,11 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public ConfigureStorageFromSessionAspect configureStorageAspect() {
         return new ConfigureStorageFromSessionAspect();
+    }
+
+    @Bean
+    public TagTracingDisabledAspect tagTracingDisabledAspect() {
+        return new TagTracingDisabledAspect();
     }
 
     @Bean
