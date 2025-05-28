@@ -10,13 +10,11 @@ public class DatadogTraceInterceptor implements TraceInterceptor {
 
     @Override
     public Collection<? extends MutableSpan> onTraceComplete(Collection<? extends MutableSpan> trace) {
-        boolean shouldKeepTrace = false;
         if (!trace.isEmpty()) {
             MutableSpan firstSpan = trace.iterator().next();
             MutableSpan localRootSpan = firstSpan.getLocalRootSpan();
             Object apmEnabledTag = localRootSpan.getTag("feature_flag.apm_enabled");
-            shouldKeepTrace = apmEnabledTag != null && (Boolean) apmEnabledTag;
-            if (shouldKeepTrace) {
+            if (apmEnabledTag instanceof Boolean && (Boolean) apmEnabledTag) {
                 return trace;
             }
         }
