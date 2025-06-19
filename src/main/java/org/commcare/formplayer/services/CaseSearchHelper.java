@@ -65,6 +65,18 @@ public class CaseSearchHelper {
     private FormplayerStorageFactory storageFactory;
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
+    public IStorageUtilityIndexed<Case> getCaseSearchStorage(ExternalDataInstanceSource source)
+            throws InvalidStructureException {
+        Multimap<String, String> requestData = source.getRequestData();
+        String cacheKey = getCacheKey(source.getSourceUri(), requestData);
+
+        CaseSearchDB caseSearchDb = initCaseSearchDB();
+        String caseSearchTableName = evalCaseSearchTableName(cacheKey);
+        UserSqlSandbox caseSearchSandbox = new CaseSearchSqlSandbox(caseSearchTableName, caseSearchDb);
+        IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
+        return caseSearchStorage;
+    }
+
     public AbstractTreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source,
             boolean skipCache)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,

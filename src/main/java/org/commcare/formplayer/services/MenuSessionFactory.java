@@ -184,6 +184,7 @@ public class MenuSessionFactory {
                                 false
                             );
                             queryScreen.updateSession(searchDataInstance);
+                            queryScreen.setCaseSearchStorage(caseSearchHelper.getCaseSearchStorage(searchDataInstance.getSource()));
                             screen = menuSession.getNextScreen(needsFullInit, entityScreenContext);
                             currentStep = NEXT_SCREEN;
                             break;

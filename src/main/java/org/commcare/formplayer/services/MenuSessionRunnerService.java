@@ -523,6 +523,7 @@ public class MenuSessionRunnerService {
                         queryParams,
                         skipCache);
                 screen.updateSession(searchDataInstance);
+                screen.setCaseSearchStorage(caseSearchHelper.getCaseSearchStorage(searchDataInstance.getSource()));
                 return true;
             } catch (InvalidStructureException | IOException
                      | XmlPullParserException | UnfullfilledRequirementsException e) {
