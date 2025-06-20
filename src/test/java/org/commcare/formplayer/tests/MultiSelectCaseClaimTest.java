@@ -128,6 +128,68 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
     }
 
+
+    @Test
+    public void testCaseClaimWithMultiSelectList_inline() throws Exception {
+        // default search is on so we should skip to search results directly
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml", 2)) {
+            EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"4", "action 0"},
+                    APP_NAME,
+                    null,
+                    EntityListResponse.class);
+            assertTrue(entityResp.isMultiSelect());
+            System.out.println("entityResp breadcrumbs: " + Arrays.toString(entityResp.getBreadcrumbs()));
+
+        }
+        String[] selectedValues =
+                new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0156fa3e-093e-4136-b95c-01b13dae66c7",
+                        "0156fa3e-093e-4136-b95c-01b13dae66c8"};
+        String[] selections = new String[]{"4", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+
+        CommandListResponseBean commandResponse;
+        commandResponse = sessionNavigateWithQuery(selections,
+                APP_NAME,
+                null,
+                selectedValues,
+                CommandListResponseBean.class);
+        System.out.println("commandResponse breadcrumbs: " + Arrays.toString(commandResponse.getBreadcrumbs()));
+        // try (
+        //         MockRequestUtils.VerifiedMock ignoredPostMock = mockRequest.mockPost(false);
+        // ) {
+        //     commandResponse = sessionNavigateWithQuery(selections,
+        //             APP_NAME,
+        //             null,
+        //             selectedValues,
+        //             CommandListResponseBean.class);
+        // }
+
+        // // `use_selected_values' should be replaced in returned selections
+        // Assertions.assertNotEquals(selections, commandResponse.getSelections());
+
+
+        // // Verify case claim request
+        // verify(webClientMock, times(1)).caseClaimPost(urlCaptor.capture(), requestDataCaptor.capture());
+        // assertEquals("http://localhost:8000/a/test/phone/claim-case/", urlCaptor.getAllValues().get(0));
+        // MultiValueMap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
+
+        // // cases that are owned should not be in the claim request
+        // List<String> casesToBeClaimed = Arrays.asList("0156fa3e-093e-4136-b95c-01b13dae66c7",
+        //         "0156fa3e-093e-4136-b95c-01b13dae66c8");
+        // assertEquals(requestData.get("case_id"), casesToBeClaimed);
+
+        // // Open a form and check the selected_values instance is correctly loaded
+        // String guid = commandResponse.getSelections()[1];
+        // selections = new String[]{"0", guid, "0"};
+        // NewFormResponse newFormResponse = sessionNavigateWithQuery(selections,
+        //         APP_NAME,
+        //         null,
+        //         null,
+        //         NewFormResponse.class);
+        // checkForSelectedEntitiesDatum(newFormResponse.getSessionId(), guid);
+        // checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
+    }
+
     @Test
     public void testNoCaseClaimRequestWhenAllCasesOwned() throws Exception {
         String[] selectedValues = new String[]{"94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"};
