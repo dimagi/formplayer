@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,7 +32,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.FileSystemUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,7 +67,8 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
         cacheManager.getCache("case_search").clear();
-        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
+        mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);;
+        FileSystemUtils.deleteRecursively(new File("tmp_dbs"));
     }
 
     @Override
@@ -126,6 +130,38 @@ public class MultiSelectCaseClaimTest extends BaseTestClass {
                 NewFormResponse.class);
         checkForSelectedEntitiesDatum(newFormResponse.getSessionId(), guid);
         checkForSelectedEntitiesInstance(newFormResponse.getSessionId(), selectedValues);
+    }
+
+
+    @Test
+    public void testBreadcrumbCaseClaimWithMultiSelectListWithInlineCaseSearch() throws Exception {
+        FormPlayerPropertyManagerMock.mockIndexCaseSearchResults(storageFactoryMock, true);
+        // default search is on so we should skip to search results directly
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_search_multi_select_response.xml", 2)) {
+            EntityListResponse entityResp = sessionNavigateWithQuery(new String[]{"4", "action 0"},
+                    APP_NAME,
+                    null,
+                    EntityListResponse.class);
+            assertTrue(entityResp.isMultiSelect());
+
+        }
+
+        // Selecting a case that not in restore
+        String[] selectedValues =
+                new String[]{"83f2e030-c6f9-49e0-bc3f-5e0cdbf10c16"};
+        String[] selections = new String[]{"4", MultiSelectEntityScreen.USE_SELECTED_VALUES};
+
+        CommandListResponseBean commandResponse;
+        commandResponse = sessionNavigateWithQuery(selections,
+                APP_NAME,
+                null,
+                selectedValues,
+                CommandListResponseBean.class);
+        assertArrayEquals(
+                new String[]{"Case Claim", "Follow Up", "The Fellowship of the Ring"},
+                commandResponse.getBreadcrumbs()
+            );
     }
 
     @Test

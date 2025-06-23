@@ -107,15 +107,7 @@ public class CaseSearchResultsInStorageTests {
         cacheManager.getCache("case_search").clear();
         mockRequest = new MockRequestUtils(webClientMock, restoreFactoryMock);
         FileSystemUtils.deleteRecursively(new File("tmp_dbs"));
-        enableIndexCaseSearchResults();
-    }
-
-    private void enableIndexCaseSearchResults() {
-        SQLiteDB db = storageFactoryMock.getSQLiteDB();
-        FormPlayerPropertyManagerMock propertyManagerMock = new FormPlayerPropertyManagerMock(
-                new SqlStorage(db, Property.class, PropertyManager.STORAGE_KEY));
-        propertyManagerMock.enableIndexCaseSearchResults(true);
-        when(storageFactoryMock.getPropertyManager()).thenReturn(propertyManagerMock);
+        FormPlayerPropertyManagerMock.mockIndexCaseSearchResults(storageFactoryMock, true);
     }
 
     @Test
