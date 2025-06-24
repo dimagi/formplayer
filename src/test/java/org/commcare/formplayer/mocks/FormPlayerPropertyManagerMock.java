@@ -64,4 +64,12 @@ public class FormPlayerPropertyManagerMock extends FormplayerPropertyManager {
         propertyManagerMock.enableAutoAdvanceMenu(enable);
         when(storageFactoryMock.getPropertyManager()).thenReturn(propertyManagerMock);
     }
+
+    public static void mockIndexCaseSearchResults(FormplayerStorageFactory storageFactoryMock, boolean enable) {
+        SQLiteDB db = storageFactoryMock.getSQLiteDB();
+        FormPlayerPropertyManagerMock propertyManagerMock = new FormPlayerPropertyManagerMock(
+                new SqlStorage(db, Property.class, PropertyManager.STORAGE_KEY));
+        propertyManagerMock.enableIndexCaseSearchResults(enable);
+        when(storageFactoryMock.getPropertyManager()).thenReturn(propertyManagerMock);
+    }
 }
