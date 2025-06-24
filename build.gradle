@@ -9,7 +9,7 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id "io.freefair.lombok" version "8.14"
     id 'org.jetbrains.kotlin.jvm' version '2.1.21'
-    id 'org.jetbrains.kotlin.plugin.spring' version '2.1.21'
+    id 'org.jetbrains.kotlin.plugin.spring' version '2.2.0'
 }
 
 springBoot {
