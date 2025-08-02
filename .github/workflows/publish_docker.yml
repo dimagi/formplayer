@@ -18,9 +18,11 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
-      - uses: gradle/gradle-build-action@v2
-        with:
-          arguments: bootJar
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build with Gradle
+        run: ./gradlew bootJar
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
