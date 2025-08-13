@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '3.3.5'
+    id 'org.springframework.boot' version '3.5.4'
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id "io.freefair.lombok" version "8.14"
     id 'org.jetbrains.kotlin.jvm' version '2.2.0'
