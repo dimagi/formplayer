@@ -1,6 +1,7 @@
 package org.commcare.formplayer.application;
 
 import org.apache.catalina.connector.ClientAbortException;
+import org.commcare.core.interfaces.WithHtmlMessage;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.exceptions.ExceptionResponseBean;
@@ -66,6 +67,9 @@ public class GlobalDefaultExceptionHandler {
             message = "The case sharing settings for your user are incorrect. " +
                     "This user must be in exactly one case sharing group. " +
                     "Please contact your supervisor.";
+        }
+        if (exception instanceof WithHtmlMessage) {
+            return new ExceptionResponseBean(message, request.getRequestURL().toString(), Constants.ERROR_TYPE_HTML);
         }
         return new ExceptionResponseBean(message, request.getRequestURL().toString());
     }
