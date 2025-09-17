@@ -1,7 +1,6 @@
 package org.commcare.formplayer.application;
 
 import org.apache.catalina.connector.ClientAbortException;
-import org.commcare.core.interfaces.WithHtmlMessage;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.exceptions.ExceptionResponseBean;
@@ -35,9 +34,14 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.apachecommons.CommonsLog;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @ControllerAdvice
 @CommonsLog
 public class GlobalDefaultExceptionHandler {
+
+    private static final Pattern FIXTURE_PATTERN = Pattern.compile("jr\\:\\/\\/fixture\\/([^\\/:]+)\\:([^\\/:]+)");
 
     @Autowired
     private FormplayerDatadog datadog;
@@ -63,15 +67,26 @@ public class GlobalDefaultExceptionHandler {
 
     private ExceptionResponseBean getPrettyExceptionResponse(Exception exception, HttpServletRequest request) {
         String message = exception.getMessage();
+        String type = Constants.ERROR_TYPE_TEXT;
         if (exception instanceof XPathTypeMismatchException && message.contains("instance(groups)")) {
             message = "The case sharing settings for your user are incorrect. " +
                     "This user must be in exactly one case sharing group. " +
                     "Please contact your supervisor.";
         }
-        if (exception instanceof WithHtmlMessage) {
-            return new ExceptionResponseBean(message, request.getRequestURL().toString(), Constants.ERROR_TYPE_HTML);
+        if (exception instanceof CommCareInstanceInitializer.FixtureInitializationException fixtureEx) {
+            Matcher matcher = FIXTURE_PATTERN.matcher(fixtureEx.reference);
+            if (matcher.find() && matcher.group(1).equals("item-list")) {
+                message =
+                        """
+                        Unable to load lookup table: %s (%s)<br>
+                        Please go to Home → Settings → 'Clear user data' and then 'Sync user data'.<br>
+                        If the issue persists please contact CommCare Support.
+                        """.formatted(matcher.group(2), fixtureEx.reference);
+                type = Constants.ERROR_TYPE_HTML;
+            }
+
         }
-        return new ExceptionResponseBean(message, request.getRequestURL().toString());
+        return new ExceptionResponseBean(message, request.getRequestURL().toString(), type);
     }
 
     /**
