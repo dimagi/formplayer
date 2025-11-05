@@ -1,14 +1,12 @@
 package org.commcare.formplayer.beans.debugger;
 
-import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
-
 import java.util.HashSet;
 import java.util.List;
 
 /**
  * Response for the debugger tab
  */
-public class MenuDebuggerContentResponseBean extends LocationRelevantResponseBean {
+public class MenuDebuggerContentResponseBean {
     private String appId;
     private AutoCompletableItem[] autoCompletableItems;
     private XPathQueryItem[] recentXPathQueries;

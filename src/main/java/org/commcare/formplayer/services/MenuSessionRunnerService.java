@@ -35,7 +35,6 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
@@ -229,7 +228,7 @@ public class MenuSessionRunnerService {
     private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
         EvaluationContext ec = nextScreen.getEvalContext();
         ec.addFunctionHandler(
-                new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
+                new ScreenUtils.HereDummyFunc(-23.56, -46.66));
     }
 
     @Trace

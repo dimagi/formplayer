@@ -14,7 +14,6 @@ import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
-import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.ResponseMetaDataTracker;
@@ -93,7 +92,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
-            return setLocationNeeds(detail, menuSession);
+            return detail;
         }
 
         String[] selections = sessionNavigationBean.getSelections();
@@ -130,7 +129,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            return setLocationNeeds(new EntityDetailListResponse(detail), menuSession);
+            return new EntityDetailListResponse(detail);
         }
         EntityScreen entityScreen = (EntityScreen)currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
@@ -140,14 +139,11 @@ public class MenuController extends AbstractBaseController {
         }
 
         restoreFactory.cacheSessionSelections(selections);
-        return setLocationNeeds(
-                new EntityDetailListResponse(entityScreen,
-                        menuSession.getEvalContextWithHereFuncHandler(),
-                        reference,
-                        storageFactory.getPropertyManager().isFuzzySearchEnabled(),
-                        sessionNavigationBean.getIsShortDetail()),
-                menuSession
-        );
+        return new EntityDetailListResponse(entityScreen,
+                    menuSession.getEvalContextWithHereFuncHandler(),
+                    reference,
+                    storageFactory.getPropertyManager().isFuzzySearchEnabled(),
+                    sessionNavigationBean.getIsShortDetail());
     }
 
     /**
@@ -193,7 +189,7 @@ public class MenuController extends AbstractBaseController {
             return formSubmissionResponse;
         } else {
             notificationLogger.logNotification(response.getNotification(), request);
-            return setLocationNeeds(response, menuSession);
+            return response;
         }
     }
 
@@ -215,13 +211,6 @@ public class MenuController extends AbstractBaseController {
             }
         }
         return null;
-    }
-
-    private static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean,
-            MenuSession menuSession) {
-        responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
-        responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
-        return responseBean;
     }
 
     @RequestMapping(value = Constants.URL_GET_ENDPOINT, method = RequestMethod.POST)
@@ -246,7 +235,7 @@ public class MenuController extends AbstractBaseController {
             return formSubmissionResponse;
         } else {
             notificationLogger.logNotification(response.getNotification(), request);
-            return setLocationNeeds(response, menuSession);
+            return response;
         }
     }
 }

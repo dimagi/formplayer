@@ -1,6 +1,5 @@
 package org.commcare.formplayer.beans;
 
-import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
@@ -25,7 +24,7 @@ import io.sentry.SentryLevel;
 /**
  * Created by willpride on 1/20/16.
  */
-public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
+public class EvaluateXPathResponseBean {
     private String output;
     private String status;
     private String contentType;

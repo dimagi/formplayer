@@ -232,7 +232,6 @@ public class MenuSessionFactory {
     @Trace
     public MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession = performInstall(sessionNavigationBean);
-        menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
         menuSession.setWindowWidth(sessionNavigationBean.getWindowWidth());
         return menuSession;
     }

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 /**
  * Created by willpride on 1/4/17.
  */
-public class EntityDetailListResponse extends LocationRelevantResponseBean {
+public class EntityDetailListResponse {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;

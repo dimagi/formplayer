@@ -17,7 +17,7 @@ import org.javarosa.core.services.locale.Localization;
  * end should redirect to the app home NOTE: clearSession causes all other displayables to be
  * disregarded
  */
-public class BaseResponseBean extends LocationRelevantResponseBean {
+public class BaseResponseBean {
     protected NotificationMessage notification;
     protected String title;
     protected boolean clearSession;

@@ -19,7 +19,6 @@ import org.commcare.formplayer.services.FormplayerRemoteInstanceFetcher;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.formplayer.util.StringUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
@@ -68,7 +67,7 @@ import datadog.trace.api.Trace;
  *
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
-public class MenuSession implements HereFunctionHandlerListener {
+public class MenuSession {
     private final SerializableMenuSession session;
     private final boolean isPersistentMenuEnabled;
     private final boolean isAutoAdvanceMenu;
@@ -460,35 +459,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         smartLinkRedirect = url;
     }
 
-    public void setCurrentBrowserLocation(String location) {
-        this.currentBrowserLocation = location;
-    }
-
-    public String getCurrentBrowserLocation() {
-        return this.currentBrowserLocation;
-    }
-
-    @Override
-    public void onEvalLocationChanged() {
-    }
-
-    @Override
-    public void onHereFunctionEvaluated() {
-        this.hereFunctionEvaluated = true;
-    }
-
-    public boolean locationRequestNeeded() {
-        return this.hereFunctionEvaluated && this.currentBrowserLocation == null;
-    }
-
-    public boolean hereFunctionEvaluated() {
-        return this.hereFunctionEvaluated;
-    }
-
     @Trace
     public EvaluationContext getEvalContextWithHereFuncHandler() {
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(this, currentBrowserLocation));
+        ec.addFunctionHandler(new ScreenUtils.HereDummyFunc(-23.56, -46.66));
         return ec;
     }
 
