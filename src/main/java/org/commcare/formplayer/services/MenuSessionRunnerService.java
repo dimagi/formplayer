@@ -188,7 +188,6 @@ public class MenuSessionRunnerService {
                     return getNextMenu(null, menuSession, queryData, entityScreenContext);
                 }
             }
-            addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse((EntityScreen)nextScreen);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
@@ -223,12 +222,6 @@ public class MenuSessionRunnerService {
         if (storageFactory.getPropertyManager().isPersistentMenuEnabled()) {
             menuResponseBean.setPersistentMenu(persistentMenu);
         }
-    }
-
-    private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
-        EvaluationContext ec = nextScreen.getEvalContext();
-        ec.addFunctionHandler(
-                new ScreenUtils.HereDummyFunc(-23.56, -46.66));
     }
 
     @Trace
@@ -649,11 +642,11 @@ public class MenuSessionRunnerService {
 
         EvaluationContext ec;
         if (inline) {
-            ec = menuSession.getEvalContextWithHereFuncHandler();
+            ec = menuSession.getSessionWrapper().getEvaluationContext();
             return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference,
                     isFuzzySearchEnabled);
         } else {
-            ec = new EvaluationContext(menuSession.getEvalContextWithHereFuncHandler(), reference);
+            ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
             detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);
@@ -722,9 +715,9 @@ public class MenuSessionRunnerService {
 
     private String getAssertionFailure(MenuSession menuSession) {
         Text text = menuSession.getSessionWrapper().getCurrentEntry().getAssertions().getAssertionFailure(
-                menuSession.getEvalContextWithHereFuncHandler());
+                menuSession.getSessionWrapper().getEvaluationContext());
         if (text != null) {
-            return text.evaluate(menuSession.getEvalContextWithHereFuncHandler());
+            return text.evaluate(menuSession.getSessionWrapper().getEvaluationContext());
         }
         return null;
     }

@@ -140,7 +140,7 @@ public class MenuController extends AbstractBaseController {
 
         restoreFactory.cacheSessionSelections(selections);
         return new EntityDetailListResponse(entityScreen,
-                    menuSession.getEvalContextWithHereFuncHandler(),
+                    menuSession.getSessionWrapper().getEvaluationContext(),
                     reference,
                     storageFactory.getPropertyManager().isFuzzySearchEnabled(),
                     sessionNavigationBean.getIsShortDetail());

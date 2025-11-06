@@ -459,13 +459,6 @@ public class MenuSession {
         smartLinkRedirect = url;
     }
 
-    @Trace
-    public EvaluationContext getEvalContextWithHereFuncHandler() {
-        EvaluationContext ec = sessionWrapper.getEvaluationContext();
-        ec.addFunctionHandler(new ScreenUtils.HereDummyFunc(-23.56, -46.66));
-        return ec;
-    }
-
     public SerializableMenuSession serialize() {
         session.setCommcareSession(SessionSerializer.serialize(sessionWrapper));
         return session;
