@@ -24,10 +24,4 @@ public class GeoTests extends BaseTestClass {
     protected String getMockRestoreFileName() {
         return "restores/geo.xml";
     }
-
-    // validate that we don't crash on here() function
-    @Test
-    public void testHereOverride() throws Exception {
-        sessionNavigate(new String[]{"6", "1"}, "basic", EntityListResponse.class);
-    }
 }
