@@ -82,6 +82,8 @@ public class CaseSearchHelper {
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
             IOException {
 
+        skipCache = true;
+
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
 
