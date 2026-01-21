@@ -10,12 +10,14 @@ import org.commcare.cases.model.Case;
 import org.commcare.core.parse.CaseInstanceXmlTransactionParserFactory;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
+import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.util.screen.ScreenUtils;
@@ -46,6 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 @CacheConfig(cacheNames = "case_search")
@@ -170,15 +173,17 @@ public class CaseSearchHelper {
 
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
         if (skipCache) {
-            log.info("Skipping cache check for case search results");
+            log.info(String.format("Skipping cache check for case search results. Key: %s", cacheKey));
         } else {
             TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
             if (cachedRoot != null) {
-                log.info(String.format("Using cached case search results for %s", url));
+                log.info(String.format("Cache HIT for case search: url=%s, key=%s", url, cacheKey));
                 // Deep copy to avoid concurrency issues
                 TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot),
                         TreeElement.class);
                 return copyOfRoot;
+            } else {
+                log.info(String.format("Cache MISS for case search: url=%s, key=%s", url, cacheKey));
             }
         }
         return null;
@@ -229,6 +234,28 @@ public class CaseSearchHelper {
         if (restoreFactory.getAsUsername() != null) {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
+        
+        // Include user authorization context in cache key to prevent superusers and domain members
+        // from sharing cached case search results, as they may have different access permissions
+        Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
+        if (userDetails.isPresent()) {
+            HqUserDetailsBean user = userDetails.get();
+            String domain = restoreFactory.getDomain();
+            String username = restoreFactory.getScrubbedUsername();
+            
+            // Include superuser status
+            boolean isSuperUser = user.isSuperUser();
+            builder.append("_superuser=").append(isSuperUser);
+            
+            // Include domain membership status (superusers can access any domain, members must be authorized)
+            boolean isDomainMember = user.isAuthorized(domain, username);
+            builder.append("_member=").append(isDomainMember);
+            
+            log.debug(String.format(
+                "Case search cache key includes auth context: domain=%s, user=%s, isSuperUser=%s, isDomainMember=%s",
+                domain, username, isSuperUser, isDomainMember));
+        }
+        
         builder.append("_").append(uri);
         Map<String, Collection<String>> sortedQueryParams = new TreeMap<>(queryParams.asMap());
         for (String key : sortedQueryParams.keySet()) {
@@ -239,7 +266,9 @@ public class CaseSearchHelper {
                 builder.append("=").append(value);
             }
         }
-        return builder.toString();
+        String cacheKey = builder.toString();
+        log.debug(String.format("Generated case search cache key: %s", cacheKey));
+        return cacheKey;
     }
 
     public void clearCache() {
