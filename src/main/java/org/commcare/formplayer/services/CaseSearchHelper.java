@@ -87,7 +87,7 @@ public class CaseSearchHelper {
 
 
         skipCache = true;
-//        System.out.println("getExternalRoot");
+        FormplayerSentry.captureException(new Exception("getExternalRoot"), SentryLevel.WARNING);
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
