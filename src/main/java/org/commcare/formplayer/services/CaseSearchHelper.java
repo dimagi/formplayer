@@ -27,6 +27,7 @@ import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.InstanceBase;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.utils.TreeUtilities;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.MD5;
 import org.javarosa.core.util.externalizable.ExtUtil;
@@ -109,26 +110,20 @@ public class CaseSearchHelper {
             String responseString = webClient.postFormData(url, requestData);
             if (responseString != null) {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
+                validateCaseTypesInResponse(responseBytes, instanceId, requestCaseTypes, url, requestData);
                 ByteArrayInputStream responeStream = new ByteArrayInputStream(responseBytes);
                 if (shouldParseIntoCaseSearchStorage(source.useCaseTemplate())) {
                     parseIntoCaseSearchStorage(caseSearchDb, caseSearchSandbox, caseSearchStorage, responeStream,
                             caseSearchIndexTable);
+                    // Validate case types after parsing into storage
+                    validateCaseTypesInStorage(caseSearchStorage, requestCaseTypes, url, requestData);
                 } else {
                     TreeElement root = TreeUtilities.xmlStreamToTreeElement(responeStream, instanceId);
                     if (root != null) {
                         cache.put(cacheKey, root);
                     }
+                    // Validate case types in TreeElement
 
-                    for (int i = 0; i < root.getNumChildren(); i++) {
-                        TreeElement child = root.getChildAt(i);
-                        String attributeValue = child.getAttributeValue(null, "case_type");
-
-                        if (attributeValue != null && !requestCaseTypes.contains(attributeValue)) {
-                            Exception e = new Exception("Returned case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + attributeValue + "\n" +
-                                    "Url: " + url + " request data: " + requestData.toString());
-                            FormplayerSentry.captureException(e, SentryLevel.WARNING);
-                        }
-                    }
                     return root;
                 }
             }
@@ -185,6 +180,48 @@ public class CaseSearchHelper {
 
     private boolean shouldParseIntoCaseSearchStorage(boolean useCaseTemplate) {
         return useCaseTemplate && storageFactory.getPropertyManager().isIndexCaseSearchResults();
+    }
+
+    private void validateCaseTypesInResponse(byte[] responseBytes, String instanceId, Collection<String> requestCaseTypes,
+                                             String url, Multimap<String, String> requestData) throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,IOException {
+
+        ByteArrayInputStream responseStream = new ByteArrayInputStream(responseBytes);
+        TreeElement root = TreeUtilities.xmlStreamToTreeElement(responseStream, instanceId);
+
+        if (root == null) {
+            return;
+        }
+        for (int i = 0; i < root.getNumChildren(); i++) {
+            TreeElement child = root.getChildAt(i);
+            String attributeValue = child.getAttributeValue(null, "case_type");
+
+            if (attributeValue != null && !requestCaseTypes.contains(attributeValue)) {
+                Exception e = new Exception("Response case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + attributeValue + "\n" +
+                        "Url: " + url + " request data: " + requestData.toString());
+                FormplayerSentry.captureException(e, SentryLevel.WARNING);
+            }
+        }
+    }
+
+    private void validateCaseTypesInStorage(IStorageUtilityIndexed<Case> caseSearchStorage,
+                                            Collection<String> requestCaseTypes, String url, Multimap<String, String> requestData) {
+        if (requestCaseTypes == null || requestCaseTypes.isEmpty()) {
+            return;
+        }
+        try {
+            org.javarosa.core.services.storage.IStorageIterator<Case> iterator = caseSearchStorage.iterate();
+            while (iterator.hasMore()) {
+                Case caseObj = iterator.nextRecord();
+                String caseType = caseObj.getTypeId();
+                if (caseType != null && !requestCaseTypes.contains(caseType)) {
+                    Exception e = new Exception("Storage case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + caseType + "\n" +
+                            "Url: " + url + " request data: " + requestData.toString());
+                    FormplayerSentry.captureException(e, SentryLevel.WARNING);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error validating case types from storage", e);
+        }
     }
 
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
