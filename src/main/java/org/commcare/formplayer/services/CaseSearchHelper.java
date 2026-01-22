@@ -3,6 +3,7 @@ package org.commcare.formplayer.services;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import io.sentry.SentryLevel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
@@ -16,6 +17,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.util.screen.ScreenUtils;
@@ -82,7 +84,10 @@ public class CaseSearchHelper {
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
             IOException {
 
+
+
         skipCache = true;
+//        System.out.println("getExternalRoot");
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
@@ -100,6 +105,7 @@ public class CaseSearchHelper {
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         if (skipCache || !caseSearchStorage.isStorageExists()) {
+            Collection<String> requestCaseTypes = requestData.get("case_type");
             String responseString = webClient.postFormData(url, requestData);
             if (responseString != null) {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
@@ -111,6 +117,17 @@ public class CaseSearchHelper {
                     TreeElement root = TreeUtilities.xmlStreamToTreeElement(responeStream, instanceId);
                     if (root != null) {
                         cache.put(cacheKey, root);
+                    }
+
+                    for (int i = 0; i < root.getNumChildren(); i++) {
+                        TreeElement child = root.getChildAt(i);
+                        String attributeValue = child.getAttributeValue(null, "case_type");
+
+                        if (attributeValue != null && !requestCaseTypes.contains(attributeValue)) {
+                            Exception e = new Exception("Returned case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + attributeValue + "\n" +
+                                    "Url: " + url + " request data: " + requestData.toString());
+                            FormplayerSentry.captureException(e, SentryLevel.WARNING);
+                        }
                     }
                     return root;
                 }
