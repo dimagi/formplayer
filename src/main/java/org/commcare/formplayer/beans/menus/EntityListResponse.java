@@ -2,6 +2,8 @@ package org.commcare.formplayer.beans.menus;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.entity.Entity;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
@@ -42,6 +44,8 @@ import datadog.trace.api.Trace;
  * Created by willpride on 4/13/16.
  */
 public class EntityListResponse extends MenuBean {
+    private static final Log log = LogFactory.getLog(EntityListResponse.class);
+
     private EntityBean[] entities;
     private DisplayElement[] actions;
     private String redoLast;
@@ -168,10 +172,25 @@ public class EntityListResponse extends MenuBean {
     public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
             EntityDatum neededDatum) {
+        log.error(String.format("=== processEntitiesForCaseList: Processing %d entities ===", entityList.size()));
+        
         List<EntityBean> entities = new ArrayList<>();
+        int entityIndex = 0;
         for (Entity<TreeReference> entity : entityList) {
-            entities.add(toEntityBean(entity, ec, neededDatum));
+            EntityBean bean = toEntityBean(entity, ec, neededDatum);
+            entities.add(bean);
+            
+            // Log first few and last entity
+            if (entityIndex < 3 || entityIndex == entityList.size() - 1) {
+                log.error(String.format("EntityBean %d: id=%s, data[0]=%s", 
+                    entityIndex, 
+                    bean.getId(),
+                    bean.getData() != null && bean.getData().length > 0 ? bean.getData()[0] : "none"));
+            }
+            entityIndex++;
         }
+        
+        log.error(String.format("=== Completed: Created %d EntityBeans ===", entities.size()));
         return entities;
     }
 
@@ -239,9 +258,21 @@ public class EntityListResponse extends MenuBean {
         Object[] entityData = entity.getData();
         Object[] data = new Object[entityData.length];
         String id = getEntityId(entity.getElement(), neededDatum, ec);
+        
+        // Log entity conversion details
+        log.error(String.format("toEntityBean: ref=%s, id=%s, rawData[0]=%s", 
+            entity.getElement().toString(),
+            id,
+            entityData.length > 0 ? entityData[0] : "none"));
+        
         EntityBean entityBean = new EntityBean(id);
         for (int i = 0; i < entityData.length; i++) {
             data[i] = processData(entityData[i]);
+            // Log if data changes during processing
+            if (i == 0 && !String.valueOf(entityData[i]).equals(String.valueOf(data[i]))) {
+                log.error(String.format("  Data[0] changed during processing: %s -> %s", 
+                    entityData[i], data[i]));
+            }
         }
         entityBean.setData(data);
         entityBean.setGroupKey(entity.getGroupKey());
