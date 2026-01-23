@@ -88,7 +88,10 @@ public class CaseSearchHelper {
 
 
         skipCache = true;
-        FormplayerSentry.captureException(new Exception("getExternalRoot"), SentryLevel.WARNING);
+        FormplayerSentry.captureException(new Exception("getExternalRoot skipCache: " + skipCache), SentryLevel.WARNING);
+        log.info("Info getExternalRoot skipCache: " + skipCache);
+        log.warn("Warn getExternalRoot skipCache: " + skipCache);
+        log.error("Error getExternalRoot skipCache: " + skipCache);
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
@@ -107,6 +110,7 @@ public class CaseSearchHelper {
         FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         if (skipCache || !caseSearchStorage.isStorageExists()) {
             Collection<String> requestCaseTypes = requestData.get("case_type");
+            log.info(String.format("Case search validation - requestCaseTypes: %s, requestData: %s", requestCaseTypes, requestData));
             String responseString = webClient.postFormData(url, requestData);
             if (responseString != null) {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
@@ -185,40 +189,62 @@ public class CaseSearchHelper {
     private void validateCaseTypesInResponse(byte[] responseBytes, String instanceId, Collection<String> requestCaseTypes,
                                              String url, Multimap<String, String> requestData) throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,IOException {
 
+        log.info(String.format("validateCaseTypesInResponse called - requestCaseTypes: %s, responseLength: %d", requestCaseTypes, responseBytes.length));
+        
+        if (requestCaseTypes == null || requestCaseTypes.isEmpty()) {
+            log.warn("No case_type in request data - skipping validation");
+            return;
+        }
+        
         ByteArrayInputStream responseStream = new ByteArrayInputStream(responseBytes);
         TreeElement root = TreeUtilities.xmlStreamToTreeElement(responseStream, instanceId);
 
         if (root == null) {
+            log.warn("Root element is null - cannot validate");
             return;
         }
+        
+        log.info(String.format("Root element has %d children", root.getNumChildren()));
+        
         for (int i = 0; i < root.getNumChildren(); i++) {
             TreeElement child = root.getChildAt(i);
             String attributeValue = child.getAttributeValue(null, "case_type");
+            log.info(String.format("Child %d: name=%s, case_type=%s", i, child.getName(), attributeValue));
 
             if (attributeValue != null && !requestCaseTypes.contains(attributeValue)) {
                 Exception e = new Exception("Response case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + attributeValue + "\n" +
                         "Url: " + url + " request data: " + requestData.toString());
                 FormplayerSentry.captureException(e, SentryLevel.WARNING);
+                log.error("CASE TYPE MISMATCH DETECTED!", e);
             }
         }
     }
 
     private void validateCaseTypesInStorage(IStorageUtilityIndexed<Case> caseSearchStorage,
                                             Collection<String> requestCaseTypes, String url, Multimap<String, String> requestData) {
+        log.info(String.format("validateCaseTypesInStorage called - requestCaseTypes: %s", requestCaseTypes));
+        
         if (requestCaseTypes == null || requestCaseTypes.isEmpty()) {
+            log.warn("No case_type in request data - skipping storage validation");
             return;
         }
         try {
-            org.javarosa.core.services.storage.IStorageIterator<Case> iterator = caseSearchStorage.iterate();
+            IStorageIterator<Case> iterator = caseSearchStorage.iterate();
+            int caseCount = 0;
             while (iterator.hasMore()) {
                 Case caseObj = iterator.nextRecord();
+                caseCount++;
                 String caseType = caseObj.getTypeId();
+                log.info(String.format("Storage case %d: id=%s, type=%s", caseCount, caseObj.getCaseId(), caseType));
+                
                 if (caseType != null && !requestCaseTypes.contains(caseType)) {
                     Exception e = new Exception("Storage case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + caseType + "\n" +
                             "Url: " + url + " request data: " + requestData.toString());
                     FormplayerSentry.captureException(e, SentryLevel.WARNING);
+                    log.error("STORAGE CASE TYPE MISMATCH DETECTED!", e);
                 }
             }
+            log.info(String.format("Validated %d cases from storage", caseCount));
         } catch (Exception e) {
             log.error("Error validating case types from storage", e);
         }
