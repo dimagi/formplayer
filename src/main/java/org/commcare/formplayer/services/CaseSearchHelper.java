@@ -206,7 +206,7 @@ public class CaseSearchHelper {
         for (int i = 0; i < root.getNumChildren(); i++) {
             TreeElement child = root.getChildAt(i);
             String attributeValue = child.getAttributeValue(null, "case_type");
-            log.error(String.format("Child %d: name=%s, case_type=%s", i, child.getName(), attributeValue));
+//            log.error(String.format("Child %d: name=%s, case_type=%s", i, child.getName(), attributeValue));
 
             if (attributeValue != null && !requestCaseTypes.contains(attributeValue)) {
                 log.error("Response case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + attributeValue + "\n" +
@@ -230,7 +230,7 @@ public class CaseSearchHelper {
                 Case caseObj = iterator.nextRecord();
                 caseCount++;
                 String caseType = caseObj.getTypeId();
-                log.error(String.format("Storage case %d: id=%s, type=%s", caseCount, caseObj.getCaseId(), caseType));
+//                log.error(String.format("Storage case %d: id=%s, type=%s", caseCount, caseObj.getCaseId(), caseType));
                 
                 if (caseType != null && !requestCaseTypes.contains(caseType)) {
                     Exception e = new Exception();
