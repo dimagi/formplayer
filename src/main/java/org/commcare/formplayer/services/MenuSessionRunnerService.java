@@ -303,7 +303,7 @@ public class MenuSessionRunnerService {
                                             NotificationMessage.Tag.sync),
                                     true);
                         }
-                        log.error("USH-6370_2: advanceSessionWithSelections: postSyncResponse");
+//                        log.error("USH-6370_2: advanceSessionWithSelections: postSyncResponse");
                         return postSyncResponse;
                     }
                 } else {
@@ -337,13 +337,13 @@ public class MenuSessionRunnerService {
             }
             log.info("Returning menu: " + nextResponse);
             nextResponse.setSelections(menuSession.getSelections());
-            log.error("USH-6370_2: advanceSessionWithSelections: nextResponse");
+//            log.error("USH-6370_2: advanceSessionWithSelections: nextResponse");
             return nextResponse;
         } else {
             if (notificationMessage == null) {
                 notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
             }
-            log.error("USH-6370_2: advanceSessionWithSelections: BaseResponseBean");
+//            log.error("USH-6370_2: advanceSessionWithSelections: BaseResponseBean");
             return new BaseResponseBean(null, notificationMessage, true);
         }
     }

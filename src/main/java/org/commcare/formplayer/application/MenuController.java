@@ -199,22 +199,35 @@ public class MenuController extends AbstractBaseController {
     }
 
     public static void logCaseTypeColumnIfPresent(BaseResponseBean response, String label, Log log) {
-        log.error("USH-6370_1: Checking at '" + label + "'");
+
         if (response instanceof EntityListResponse entityListResponse &&
                 entityListResponse.getEntities().length > 0 &&
                 entityListResponse.getHeaders().length > 0 &&
                 entityListResponse.getHeaders()[0].equals("Case Type")
         ) {
+            StringBuilder sb = new StringBuilder("USH-6370 Checking at '" + label + "' ");
+
             Set<String> caseTypes = new HashSet<>();
             for (EntityBean entity : entityListResponse.getEntities()) {
                 caseTypes.add(entity.getData()[0].toString());
             }
             if (caseTypes.size() > 1) {
+                sb.append("mismatch");
+                sb.append("\nExpected all 'Case Type's to be the same at '")
+                        .append(label)
+                        .append("'. Got: ")
+                        .append(caseTypes);
                 log.error("USH-6370_1: Expected all 'Case Type's to be the same at '" + label + "'. Got: " + caseTypes);
                 for (EntityBean entity : entityListResponse.getEntities()) {
-                    log.error("USH-6370_2: " + entity.getId() + ": " + entity.getData()[0].toString());
+                    sb.append("\n")
+                            .append(entity.getId())
+                            .append(": ")
+                            .append(entity.getData()[0].toString());
                 }
+            } else {
+                sb.append("ok");
             }
+            log.error(sb.toString());
         }
     }
 

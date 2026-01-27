@@ -87,8 +87,8 @@ public class CaseSearchHelper {
 
 
 
-        skipCache = true;
-        log.error("Error getExternalRoot skipCache: " + skipCache);
+//        skipCache = true;
+//        log.error("Error getExternalRoot skipCache: " + skipCache);
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
@@ -106,18 +106,18 @@ public class CaseSearchHelper {
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         if (skipCache || !caseSearchStorage.isStorageExists()) {
-            Collection<String> requestCaseTypes = requestData.get("case_type");
-            log.error(String.format("Case search validation - requestCaseTypes: %s, requestData: %s", requestCaseTypes, requestData));
+//            Collection<String> requestCaseTypes = requestData.get("case_type");
+//            log.error(String.format("Case search validation - requestCaseTypes: %s, requestData: %s", requestCaseTypes, requestData));
             String responseString = webClient.postFormData(url, requestData);
             if (responseString != null) {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
-                validateCaseTypesInResponse(responseBytes, instanceId, requestCaseTypes, url, requestData);
+//                validateCaseTypesInResponse(responseBytes, instanceId, requestCaseTypes, url, requestData);
                 ByteArrayInputStream responeStream = new ByteArrayInputStream(responseBytes);
                 if (shouldParseIntoCaseSearchStorage(source.useCaseTemplate())) {
                     parseIntoCaseSearchStorage(caseSearchDb, caseSearchSandbox, caseSearchStorage, responeStream,
                             caseSearchIndexTable);
                     // Validate case types after parsing into storage
-                    validateCaseTypesInStorage(caseSearchStorage, requestCaseTypes, url, requestData);
+//                    validateCaseTypesInStorage(caseSearchStorage, requestCaseTypes, url, requestData);
                 } else {
                     TreeElement root = TreeUtilities.xmlStreamToTreeElement(responeStream, instanceId);
                     if (root != null) {
