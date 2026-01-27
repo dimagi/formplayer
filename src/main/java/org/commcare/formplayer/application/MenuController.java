@@ -195,6 +195,9 @@ public class MenuController extends AbstractBaseController {
             }
             if (caseTypes.size() > 1) {
                 log.error("Expected all 'Case Type's to be the same. Got: " + caseTypes);
+                for (EntityBean entity : entityListResponse.getEntities()) {
+                    log.error(entity.getId() + ": " + entity.getData()[0].toString());
+                }
             }
         }
 
