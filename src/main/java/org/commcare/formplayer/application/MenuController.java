@@ -184,22 +184,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getFormSessionId()
         );
 
-        if (response instanceof EntityListResponse entityListResponse &&
-                entityListResponse.getEntities().length > 0 &&
-                entityListResponse.getHeaders().length > 0 &&
-                entityListResponse.getHeaders()[0].equals("Case Type")
-        ) {
-            Set<String> caseTypes = new HashSet<>();
-            for (EntityBean entity : entityListResponse.getEntities()) {
-                caseTypes.add(entity.getData()[0].toString());
-            }
-            if (caseTypes.size() > 1) {
-                log.error("Expected all 'Case Type's to be the same. Got: " + caseTypes);
-                for (EntityBean entity : entityListResponse.getEntities()) {
-                    log.error(entity.getId() + ": " + entity.getData()[0].toString());
-                }
-            }
-        }
+        logCaseTypeColumnIfPresent(response, "controller", log);
 
         setResponseMetaData(response);
 
@@ -210,6 +195,26 @@ public class MenuController extends AbstractBaseController {
         } else {
             notificationLogger.logNotification(response.getNotification(), request);
             return setLocationNeeds(response, menuSession);
+        }
+    }
+
+    public static void logCaseTypeColumnIfPresent(BaseResponseBean response, String label, Log log) {
+        log.error("Checking at '" + label + "'");
+        if (response instanceof EntityListResponse entityListResponse &&
+                entityListResponse.getEntities().length > 0 &&
+                entityListResponse.getHeaders().length > 0 &&
+                entityListResponse.getHeaders()[0].equals("Case Type")
+        ) {
+            Set<String> caseTypes = new HashSet<>();
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                caseTypes.add(entity.getData()[0].toString());
+            }
+            if (caseTypes.size() > 0) {
+                log.error("Expected all 'Case Type's to be the same at '" + label + "'. Got: " + caseTypes);
+                for (EntityBean entity : entityListResponse.getEntities()) {
+                    log.error(entity.getId() + ": " + entity.getData()[0].toString());
+                }
+            }
         }
     }
 
