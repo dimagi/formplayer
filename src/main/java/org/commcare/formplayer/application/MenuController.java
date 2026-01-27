@@ -199,7 +199,7 @@ public class MenuController extends AbstractBaseController {
     }
 
     public static void logCaseTypeColumnIfPresent(BaseResponseBean response, String label, Log log) {
-        log.error("Checking at '" + label + "'");
+        log.error("USH-6370_1: Checking at '" + label + "'");
         if (response instanceof EntityListResponse entityListResponse &&
                 entityListResponse.getEntities().length > 0 &&
                 entityListResponse.getHeaders().length > 0 &&
@@ -210,9 +210,9 @@ public class MenuController extends AbstractBaseController {
                 caseTypes.add(entity.getData()[0].toString());
             }
             if (caseTypes.size() > 1) {
-                log.error("Expected all 'Case Type's to be the same at '" + label + "'. Got: " + caseTypes);
+                log.error("USH-6370_1: Expected all 'Case Type's to be the same at '" + label + "'. Got: " + caseTypes);
                 for (EntityBean entity : entityListResponse.getEntities()) {
-                    log.error(entity.getId() + ": " + entity.getData()[0].toString());
+                    log.error("USH-6370_2: " + entity.getId() + ": " + entity.getData()[0].toString());
                 }
             }
         }
