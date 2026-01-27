@@ -11,10 +11,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.ResponseMetaData;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
-import org.commcare.formplayer.beans.menus.BaseResponseBean;
-import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
-import org.commcare.formplayer.beans.menus.EntityDetailResponse;
-import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
+import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.ResponseMetaDataTracker;
@@ -35,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -184,6 +183,20 @@ public class MenuController extends AbstractBaseController {
                 entityScreenContext,
                 sessionNavigationBean.getFormSessionId()
         );
+
+        if (response instanceof EntityListResponse entityListResponse &&
+                entityListResponse.getEntities().length > 0 &&
+                entityListResponse.getHeaders().length > 0 &&
+                entityListResponse.getHeaders()[0].equals("Case Type")
+        ) {
+            Set<String> caseTypes = new HashSet<>();
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                caseTypes.add(entity.getData()[0].toString());
+            }
+            if (caseTypes.size() > 1) {
+                log.error("Expected all 'Case Type's to be the same. Got: " + caseTypes);
+            }
+        }
 
         setResponseMetaData(response);
 
