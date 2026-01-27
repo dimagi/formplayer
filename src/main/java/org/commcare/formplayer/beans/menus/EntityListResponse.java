@@ -83,7 +83,7 @@ public class EntityListResponse extends MenuBean {
         // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
-            StringBuilder sb = new StringBuilder("USH-6370 EntityListResponse() ");
+            StringBuilder sb = new StringBuilder("USH-6370 Checking at 'EntityListResponse()' ");
             EntityListSubscreen entityListScreen = ((EntityListSubscreen) nextScreen.getCurrentScreen());
             Vector<Action> entityListActions = entityListScreen.getActions();
             this.actions = processActions(nextScreen.getSession(), entityListActions);
@@ -190,25 +190,22 @@ public class EntityListResponse extends MenuBean {
     public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
             EntityDatum neededDatum) {
-//        log.error(String.format("=== processEntitiesForCaseList: Processing %d entities ===", entityList.size()));
+        StringBuilder sb = new StringBuilder("USH-6370 Checking at 'processEntitiesForCaseList' ");
         
         List<EntityBean> entities = new ArrayList<>();
-//        int entityIndex = 0;
+        StringBuilder innerSb = new StringBuilder();
         for (Entity<TreeReference> entity : entityList) {
-            EntityBean bean = toEntityBean(entity, ec, neededDatum);
+            EntityBean bean = toEntityBean(entity, ec, neededDatum, innerSb);
             entities.add(bean);
-//
-//            // Log first few and last entity
-//            if (entityIndex < 3 || entityIndex == entityList.size() - 1) {
-//                log.error(String.format("EntityBean %d: id=%s, data[0]=%s",
-//                    entityIndex,
-//                    bean.getId(),
-//                    bean.getData() != null && bean.getData().length > 0 ? bean.getData()[0] : "none"));
-//            }
-//            entityIndex++;
+        }
+        if (innerSb.isEmpty()) {
+            sb.append("ok");
+        } else {
+            sb.append("missmatch")
+                    .append(innerSb);
         }
         
-//        log.error(String.format("=== Completed: Created %d EntityBeans ===", entities.size()));
+        log.error(sb.toString());
         return entities;
     }
 
@@ -272,7 +269,7 @@ public class EntityListResponse extends MenuBean {
     // Converts the Given Entity to EntityBean
     @Trace
     private static EntityBean toEntityBean(Entity<TreeReference> entity,
-            EvaluationContext ec, EntityDatum neededDatum) {
+            EvaluationContext ec, EntityDatum neededDatum, StringBuilder sb) {
         Object[] entityData = entity.getData();
         Object[] data = new Object[entityData.length];
         String id = getEntityId(entity.getElement(), neededDatum, ec);
@@ -282,16 +279,19 @@ public class EntityListResponse extends MenuBean {
 //            entity.getElement().toString(),
 //            id,
 //            entityData.length > 0 ? entityData[0] : "none"));
-        
+
+
         EntityBean entityBean = new EntityBean(id);
         for (int i = 0; i < entityData.length; i++) {
             data[i] = processData(entityData[i]);
-//            // Log if data changes during processing
-//            if (i == 0 && !String.valueOf(entityData[i]).equals(String.valueOf(data[i]))) {
-//                log.error(String.format("  Data[0] changed during processing: %s -> %s",
-//                    entityData[i], data[i]));
-//            }
+            if (i == 0 && !String.valueOf(entityData[i]).equals(String.valueOf(data[i]))) {
+                sb.append("\n").append(id)
+                        .append(" Data[").append(i).append("] changed during processing: ")
+                        .append(entityData[i]).append(" -> ").append(data[i]);
+            }
         }
+
+
         entityBean.setData(data);
         entityBean.setGroupKey(entity.getGroupKey());
         entityBean.setAltText(entity.getAltText());

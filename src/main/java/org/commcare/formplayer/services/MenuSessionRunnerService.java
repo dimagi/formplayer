@@ -192,7 +192,7 @@ public class MenuSessionRunnerService {
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse((EntityScreen)nextScreen);
-            MenuController.logCaseTypeColumnIfPresent(menuResponseBean, "getNextMenu", log);
+//            MenuController.logCaseTypeColumnIfPresent(menuResponseBean, "getNextMenu", log);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
             // using getBestTitle to eliminate risk of showing private information
@@ -328,7 +328,7 @@ public class MenuSessionRunnerService {
                 queryData,
                 entityScreenContext
         );
-        MenuController.logCaseTypeColumnIfPresent(nextResponse, "advanceSessionWithSelections", log);
+//        MenuController.logCaseTypeColumnIfPresent(nextResponse, "advanceSessionWithSelections", log);
         restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
         if (nextResponse != null) {
