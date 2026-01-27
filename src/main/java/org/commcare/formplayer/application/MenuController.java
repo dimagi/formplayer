@@ -217,7 +217,7 @@ public class MenuController extends AbstractBaseController {
                         .append(label)
                         .append("'. Got: ")
                         .append(caseTypes);
-                log.error("USH-6370_1: Expected all 'Case Type's to be the same at '" + label + "'. Got: " + caseTypes);
+
                 for (EntityBean entity : entityListResponse.getEntities()) {
                     sb.append("\n")
                             .append(entity.getId())

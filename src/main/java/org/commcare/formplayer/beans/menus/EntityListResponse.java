@@ -31,11 +31,7 @@ import org.javarosa.core.util.NoLocalizedTextException;
 import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Predicate;
 
 import datadog.trace.api.Trace;
@@ -87,7 +83,8 @@ public class EntityListResponse extends MenuBean {
         // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
-            EntityListSubscreen entityListScreen = ((EntityListSubscreen)nextScreen.getCurrentScreen());
+            StringBuilder sb = new StringBuilder("USH-6370 EntityListResponse() ");
+            EntityListSubscreen entityListScreen = ((EntityListSubscreen) nextScreen.getCurrentScreen());
             Vector<Action> entityListActions = entityListScreen.getActions();
             this.actions = processActions(nextScreen.getSession(), entityListActions);
             this.redoLast = processRedoLast(entityListActions);
@@ -102,10 +99,29 @@ public class EntityListResponse extends MenuBean {
                     offset);
             EvaluationContext ec = nextScreen.getEvalContext();
             SessionWrapper session = nextScreen.getSession();
-            EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
+            EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
+
+            Set<String> caseTypes = new HashSet<>();
+            for (EntityBean entity : entities) {
+                caseTypes.add(entity.getData()[0].toString());
+            }
+            if (caseTypes.size() > 1) {
+                sb.append("mismatch");
+                sb.append("\nExpected all 'Case Type's to be the same at 'processEntitiesForCaseList'. Got: ")
+                        .append(caseTypes);
+                for (EntityBean entity : entities) {
+                    sb.append("\n")
+                            .append(entity.getId())
+                            .append(": ")
+                            .append(entity.getData()[0].toString());
+                }
+            } else {
+                sb.append("ok");
+            }
+
             setNoItemsText(getNoItemsTextLocaleString(detail));
             setSelectText(getSelectTextLocaleString(detail));
             hasDetails = nextScreen.getLongDetail() != null;
@@ -121,7 +137,7 @@ public class EntityListResponse extends MenuBean {
             this.sortIndices = detail.getOrderedFieldIndicesForSorting();
             isMultiSelect = nextScreen instanceof MultiSelectEntityScreen;
             if (isMultiSelect) {
-                maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
+                maxSelectValue = ((MultiSelectEntityScreen) nextScreen).getMaxSelectValue();
             }
             if (detail.getGroup() != null) {
                 groupHeaderRows = detail.getGroup().getHeaderRows();
@@ -129,11 +145,13 @@ public class EntityListResponse extends MenuBean {
 
             QueryScreen queryScreen = nextScreen.getQueryScreen();
             if (queryScreen != null) {
+                sb.append("\nqueryScreen");
                 setQueryKey(queryScreen.getQueryKey());
                 if (FeatureFlagChecker.isToggleEnabled(TOGGLE_SPLIT_SCREEN_CASE_SEARCH)) {
                     queryResponse = new QueryResponseBean(queryScreen);
                 }
             }
+            log.error(sb.toString());
         }
     }
 
