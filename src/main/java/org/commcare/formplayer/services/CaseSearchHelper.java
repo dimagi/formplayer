@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import io.sentry.SentryLevel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.entity.Entity;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.CaseInstanceXmlTransactionParserFactory;
@@ -21,11 +22,7 @@ import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.util.screen.ScreenUtils;
-import org.javarosa.core.model.instance.AbstractTreeElement;
-import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.core.model.instance.ExternalDataInstanceSource;
-import org.javarosa.core.model.instance.InstanceBase;
-import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.model.instance.*;
 import org.javarosa.core.model.instance.utils.TreeUtilities;
 import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -46,10 +43,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @CacheConfig(cacheNames = "case_search")
 @Component
@@ -85,9 +79,7 @@ public class CaseSearchHelper {
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,
             IOException {
 
-
-
-//        skipCache = true;
+        skipCache = true;
 //        log.error("Error getExternalRoot skipCache: " + skipCache);
 
         Multimap<String, String> requestData = source.getRequestData();
@@ -106,24 +98,21 @@ public class CaseSearchHelper {
         IStorageUtilityIndexed<Case> caseSearchStorage = caseSearchSandbox.getCaseStorage();
         FormplayerCaseIndexTable caseSearchIndexTable = getCaseIndexTable(caseSearchSandbox, caseSearchTableName);
         if (skipCache || !caseSearchStorage.isStorageExists()) {
-//            Collection<String> requestCaseTypes = requestData.get("case_type");
-//            log.error(String.format("Case search validation - requestCaseTypes: %s, requestData: %s", requestCaseTypes, requestData));
+            Collection<String> requestCaseTypes = requestData.get("case_type");
             String responseString = webClient.postFormData(url, requestData);
             if (responseString != null) {
                 byte[] responseBytes = responseString.getBytes(StandardCharsets.UTF_8);
-//                validateCaseTypesInResponse(responseBytes, instanceId, requestCaseTypes, url, requestData);
+                validateCaseTypesInResponse(responseBytes, instanceId, requestCaseTypes);
                 ByteArrayInputStream responeStream = new ByteArrayInputStream(responseBytes);
                 if (shouldParseIntoCaseSearchStorage(source.useCaseTemplate())) {
                     parseIntoCaseSearchStorage(caseSearchDb, caseSearchSandbox, caseSearchStorage, responeStream,
                             caseSearchIndexTable);
-                    // Validate case types after parsing into storage
-//                    validateCaseTypesInStorage(caseSearchStorage, requestCaseTypes, url, requestData);
+                    validateCaseTypesInStorage(caseSearchStorage, requestCaseTypes, url, requestData);
                 } else {
                     TreeElement root = TreeUtilities.xmlStreamToTreeElement(responeStream, instanceId);
                     if (root != null) {
                         cache.put(cacheKey, root);
                     }
-                    // Validate case types in TreeElement
 
                     return root;
                 }
@@ -183,66 +172,79 @@ public class CaseSearchHelper {
         return useCaseTemplate && storageFactory.getPropertyManager().isIndexCaseSearchResults();
     }
 
-    private void validateCaseTypesInResponse(byte[] responseBytes, String instanceId, Collection<String> requestCaseTypes,
-                                             String url, Multimap<String, String> requestData) throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,IOException {
+    private void validateCaseTypesInResponse(byte[] responseBytes, String instanceId, Collection<String> requestCaseTypes) throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException,IOException {
 
-        log.error(String.format("validateCaseTypesInResponse called - requestCaseTypes: %s, responseLength: %d", requestCaseTypes, responseBytes.length));
+        StringBuilder sb = new StringBuilder("USH-6370 Checking in 'validateCaseTypesInResponse' ");
         
         if (requestCaseTypes == null || requestCaseTypes.isEmpty()) {
-            log.error("No case_type in request data - skipping validation");
-            return;
-        }
-        
-        ByteArrayInputStream responseStream = new ByteArrayInputStream(responseBytes);
-        TreeElement root = TreeUtilities.xmlStreamToTreeElement(responseStream, instanceId);
+            sb.append("No case_type in request data - skipping validation");
+        } else {
+            ByteArrayInputStream responseStream = new ByteArrayInputStream(responseBytes);
+            TreeElement root = TreeUtilities.xmlStreamToTreeElement(responseStream, instanceId);
 
-        if (root == null) {
-            log.error("Root element is null - cannot validate");
-            return;
-        }
-        
-        log.error(String.format("Root element has %d children", root.getNumChildren()));
-        
-        for (int i = 0; i < root.getNumChildren(); i++) {
-            TreeElement child = root.getChildAt(i);
-            String attributeValue = child.getAttributeValue(null, "case_type");
-//            log.error(String.format("Child %d: name=%s, case_type=%s", i, child.getName(), attributeValue));
-
-            if (attributeValue != null && !requestCaseTypes.contains(attributeValue)) {
-                log.error("Response case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + attributeValue + "\n" +
-                        "Url: " + url + " request data: " + requestData.toString());
+            if (root == null) {
+                sb.append("Root element is null - cannot validate");
+                return;
+            } else {
+                Set<String> caseTypes = new HashSet<>();
+                for (int i = 0; i < root.getNumChildren(); i++) {
+                    TreeElement child = root.getChildAt(i);
+                    caseTypes.add(child.getAttributeValue(null, "case_type"));
+                }
+                if (caseTypes.stream().anyMatch(type -> !requestCaseTypes.contains(type))) {
+                    sb.append("mismatch requested: ")
+                            .append(requestCaseTypes)
+                            .append(" got: ")
+                            .append(caseTypes);
+                    for (int i = 0; i < root.getNumChildren(); i++) {
+                        TreeElement child = root.getChildAt(i);
+                        String caseType = child.getAttributeValue(null, "case_type");
+                        String caseId = child.getAttributeValue(null, "case_id");
+                        sb.append("\n")
+                                .append(caseId)
+                                .append(": ")
+                                .append(caseType);
+                    }
+                } else {
+                    sb.append("ok");
+                }
             }
         }
+
+        log.error(sb.toString());
+
     }
 
     private void validateCaseTypesInStorage(IStorageUtilityIndexed<Case> caseSearchStorage,
                                             Collection<String> requestCaseTypes, String url, Multimap<String, String> requestData) {
-        log.error(String.format("validateCaseTypesInStorage called - requestCaseTypes: %s", requestCaseTypes));
-        
+
+        StringBuilder sb = new StringBuilder("USH-6370 Checking in 'validateCaseTypesInStorage' ");
         if (requestCaseTypes == null || requestCaseTypes.isEmpty()) {
-            log.error("No case_type in request data - skipping storage validation");
-            return;
-        }
-        try {
-            IStorageIterator<Case> iterator = caseSearchStorage.iterate();
-            int caseCount = 0;
-            while (iterator.hasMore()) {
-                Case caseObj = iterator.nextRecord();
-                caseCount++;
-                String caseType = caseObj.getTypeId();
-//                log.error(String.format("Storage case %d: id=%s, type=%s", caseCount, caseObj.getCaseId(), caseType));
-                
-                if (caseType != null && !requestCaseTypes.contains(caseType)) {
-                    Exception e = new Exception();
-                    FormplayerSentry.captureException(e, SentryLevel.WARNING);
-                    log.error("Storage case type did not match request. Expected: " + requestCaseTypes.toString() + " Got: " + caseType + "\n" +
-                            "Url: " + url + " request data: " + requestData.toString());
+            sb.append("No case_type in request data - skipping validation");
+        } else {
+            try {
+                Set<String> caseTypes = new HashSet<>();
+                IStorageIterator<Case> iterator = caseSearchStorage.iterate();
+                int caseCount = 0;
+                while (iterator.hasMore()) {
+                    Case caseObj = iterator.nextRecord();
+                    caseCount++;
+                    String caseType = caseObj.getTypeId();
+                    caseTypes.add(caseType);
                 }
+                if (caseTypes.stream().anyMatch(type -> !requestCaseTypes.contains(type))) {
+                    sb.append("mismatch requested: ")
+                            .append(requestCaseTypes)
+                            .append(" got: ")
+                            .append(caseTypes);
+                } else {
+                    sb.append("ok");
+                }
+            } catch (Exception e) {
+                sb.append("Error validating case types from storage");
             }
-            log.error(String.format("Validated %d cases from storage", caseCount));
-        } catch (Exception e) {
-            log.error("Error validating case types from storage", e);
         }
+        log.error(sb.toString());
     }
 
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {

@@ -96,7 +96,7 @@ public class EntityListResponse extends MenuBean {
             }
             if (caseTypes.size() > 1) {
                 sb1.append("mismatch");
-                sb1.append("\nExpected all 'Case Type's to be the same at 'processEntitiesForCaseList'. Got: ")
+                sb1.append("\nExpected all 'Case Type's to be the same at. Got: ")
                         .append(caseTypes);
             } else {
                 sb1.append("ok");
@@ -115,7 +115,7 @@ public class EntityListResponse extends MenuBean {
             }
             if (caseTypes.size() > 1) {
                 sb2.append("mismatch");
-                sb2.append("\nExpected all 'Case Type's to be the same at 'processEntitiesForCaseList'. Got: ")
+                sb2.append("\nExpected all 'Case Type's to be the same. Got: ")
                         .append(caseTypes);
             } else {
                 sb2.append("ok");
@@ -134,7 +134,7 @@ public class EntityListResponse extends MenuBean {
             StringBuilder sb = new StringBuilder("USH-6370 Checking at 'processEntitiesForCaseList' ");
             if (caseTypes.size() > 1) {
                 sb.append("mismatch");
-                sb.append("\nExpected all 'Case Type's to be the same at 'processEntitiesForCaseList'. Got: ")
+                sb.append("\nExpected all 'Case Type's to be the same. Got: ")
                         .append(caseTypes);
                 for (EntityBean entity : entities) {
                     sb.append("\n")
@@ -218,7 +218,7 @@ public class EntityListResponse extends MenuBean {
     public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
             EntityDatum neededDatum) {
-        StringBuilder sb = new StringBuilder("USH-6370 Checking at 'processEntitiesForCaseList' ");
+        StringBuilder sb = new StringBuilder("USH-6370 Checking in 'processEntitiesForCaseList' ");
         
         List<EntityBean> entities = new ArrayList<>();
         StringBuilder innerSb = new StringBuilder();
