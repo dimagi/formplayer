@@ -196,17 +196,18 @@ public class CaseSearchHelper {
                             .append(requestCaseTypes)
                             .append(" got: ")
                             .append(caseTypes);
-                    for (int i = 0; i < root.getNumChildren(); i++) {
-                        TreeElement child = root.getChildAt(i);
-                        String caseType = child.getAttributeValue(null, "case_type");
-                        String caseId = child.getAttributeValue(null, "case_id");
-                        sb.append("\n")
-                                .append(caseId)
-                                .append(": ")
-                                .append(caseType);
-                    }
+
                 } else {
                     sb.append("ok");
+                }
+                for (int i = 0; i < root.getNumChildren(); i++) {
+                    TreeElement child = root.getChildAt(i);
+                    String caseType = child.getAttributeValue(null, "case_type");
+                    String caseId = child.getAttributeValue(null, "case_id");
+                    sb.append("\n")
+                            .append(caseId)
+                            .append(": ")
+                            .append(caseType);
                 }
             }
         }
@@ -225,10 +226,8 @@ public class CaseSearchHelper {
             try {
                 Set<String> caseTypes = new HashSet<>();
                 IStorageIterator<Case> iterator = caseSearchStorage.iterate();
-                int caseCount = 0;
                 while (iterator.hasMore()) {
                     Case caseObj = iterator.nextRecord();
-                    caseCount++;
                     String caseType = caseObj.getTypeId();
                     caseTypes.add(caseType);
                 }
