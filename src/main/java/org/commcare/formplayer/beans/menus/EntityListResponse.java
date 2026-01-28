@@ -83,13 +83,24 @@ public class EntityListResponse extends MenuBean {
         // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
-            StringBuilder sb = new StringBuilder("USH-6370 Checking at 'EntityListResponse()' ");
             EntityListSubscreen entityListScreen = ((EntityListSubscreen) nextScreen.getCurrentScreen());
             Vector<Action> entityListActions = entityListScreen.getActions();
             this.actions = processActions(nextScreen.getSession(), entityListActions);
             this.redoLast = processRedoLast(entityListActions);
 
             List<Entity<TreeReference>> entityList = entityListScreen.getEntities();
+            StringBuilder sb1 = new StringBuilder("USH-6370 Checking at 'entityListScreen.getEntities' ");
+            Set<String> caseTypes = new HashSet<>();
+            for (Entity<TreeReference> e: entityList) {
+                caseTypes.add(e.getData()[0].toString());
+            }
+            if (caseTypes.size() > 1) {
+                sb1.append("mismatch");
+                sb1.append("\nExpected all 'Case Type's to be the same at 'processEntitiesForCaseList'. Got: ")
+                        .append(caseTypes);
+            } else {
+                sb1.append("ok");
+            }
             EntityScreenContext entityScreenContext = nextScreen.getEntityScreenContext();
             int casesPerPage = entityScreenContext.getCasesPerPage();
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
@@ -97,6 +108,18 @@ public class EntityListResponse extends MenuBean {
             Detail detail = nextScreen.getShortDetail();
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
+            StringBuilder sb2 = new StringBuilder("USH-6370 Checking at 'paginateEntities' ");
+            caseTypes = new HashSet<>();
+            for (Entity<TreeReference> e: entityList) {
+                caseTypes.add(e.getData()[0].toString());
+            }
+            if (caseTypes.size() > 1) {
+                sb2.append("mismatch");
+                sb2.append("\nExpected all 'Case Type's to be the same at 'processEntitiesForCaseList'. Got: ")
+                        .append(caseTypes);
+            } else {
+                sb2.append("ok");
+            }
             EvaluationContext ec = nextScreen.getEvalContext();
             SessionWrapper session = nextScreen.getSession();
             EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
@@ -104,10 +127,11 @@ public class EntityListResponse extends MenuBean {
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
 
-            Set<String> caseTypes = new HashSet<>();
+            caseTypes = new HashSet<>();
             for (EntityBean entity : entities) {
                 caseTypes.add(entity.getData()[0].toString());
             }
+            StringBuilder sb = new StringBuilder("USH-6370 Checking at 'processEntitiesForCaseList' ");
             if (caseTypes.size() > 1) {
                 sb.append("mismatch");
                 sb.append("\nExpected all 'Case Type's to be the same at 'processEntitiesForCaseList'. Got: ")
@@ -151,7 +175,11 @@ public class EntityListResponse extends MenuBean {
                     queryResponse = new QueryResponseBean(queryScreen);
                 }
             }
-            log.error(sb.toString());
+            if (this.headers.length > 0 && this.headers[0].equals("Case Type")) {
+                log.error(sb1.toString());
+                log.error(sb2.toString());
+                log.error(sb.toString());
+            }
         }
     }
 
