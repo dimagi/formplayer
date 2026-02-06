@@ -396,7 +396,9 @@ public class MenuSessionRunnerService {
                 // Auto select if we have not advanced as part of auto launch
                 // avoiding unnecessary screen init by skipping the original screen
                 if (!sessionAdvanced && iterationCount != 0) {
-                    nextScreen.init(menuSession.getSessionWrapper());
+                    StringBuilder sb = new StringBuilder();
+                    nextScreen.init(menuSession.getSessionWrapper(), sb);
+                    log.error(sb.toString());
                     if (nextScreen.shouldBeSkipped()) {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());
