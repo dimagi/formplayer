@@ -217,15 +217,14 @@ public class MenuController extends AbstractBaseController {
                         .append(label)
                         .append("'. Got: ")
                         .append(caseTypes);
-
-                for (EntityBean entity : entityListResponse.getEntities()) {
-                    sb.append("\n")
-                            .append(entity.getId())
-                            .append(": ")
-                            .append(entity.getData()[0].toString());
-                }
             } else {
                 sb.append("ok");
+            }
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                sb.append("\n")
+                        .append(entity.getId())
+                        .append(": ")
+                        .append(entity.getData()[0].toString());
             }
             log.error(sb.toString());
         }
