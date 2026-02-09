@@ -2,6 +2,8 @@ package org.commcare.formplayer.beans.menus;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.entity.Entity;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
@@ -29,11 +31,7 @@ import org.javarosa.core.util.NoLocalizedTextException;
 import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Predicate;
 
 import datadog.trace.api.Trace;
@@ -42,6 +40,8 @@ import datadog.trace.api.Trace;
  * Created by willpride on 4/13/16.
  */
 public class EntityListResponse extends MenuBean {
+    private static final Log log = LogFactory.getLog(EntityListResponse.class);
+
     private EntityBean[] entities;
     private DisplayElement[] actions;
     private String redoLast;
@@ -83,12 +83,24 @@ public class EntityListResponse extends MenuBean {
         // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
-            EntityListSubscreen entityListScreen = ((EntityListSubscreen)nextScreen.getCurrentScreen());
+            EntityListSubscreen entityListScreen = ((EntityListSubscreen) nextScreen.getCurrentScreen());
             Vector<Action> entityListActions = entityListScreen.getActions();
             this.actions = processActions(nextScreen.getSession(), entityListActions);
             this.redoLast = processRedoLast(entityListActions);
 
             List<Entity<TreeReference>> entityList = entityListScreen.getEntities();
+            StringBuilder sb1 = new StringBuilder("USH-6370 Checking at 'entityListScreen.getEntities' ");
+            Set<String> caseTypes = new HashSet<>();
+            for (Entity<TreeReference> e: entityList) {
+                caseTypes.add(e.getData()[0].toString());
+            }
+            if (caseTypes.size() > 1) {
+                sb1.append("mismatch");
+                sb1.append("\nExpected all 'Case Type's to be the same at. Got: ")
+                        .append(caseTypes);
+            } else {
+                sb1.append("ok");
+            }
             EntityScreenContext entityScreenContext = nextScreen.getEntityScreenContext();
             int casesPerPage = entityScreenContext.getCasesPerPage();
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
@@ -96,12 +108,44 @@ public class EntityListResponse extends MenuBean {
             Detail detail = nextScreen.getShortDetail();
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
+//            StringBuilder sb2 = new StringBuilder("USH-6370 Checking at 'paginateEntities' ");
+//            caseTypes = new HashSet<>();
+//            for (Entity<TreeReference> e: entityList) {
+//                caseTypes.add(e.getData()[0].toString());
+//            }
+//            if (caseTypes.size() > 1) {
+//                sb2.append("mismatch");
+//                sb2.append("\nExpected all 'Case Type's to be the same. Got: ")
+//                        .append(caseTypes);
+//            } else {
+//                sb2.append("ok");
+//            }
             EvaluationContext ec = nextScreen.getEvalContext();
             SessionWrapper session = nextScreen.getSession();
-            EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
+            EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
+
+//            caseTypes = new HashSet<>();
+//            for (EntityBean entity : entities) {
+//                caseTypes.add(entity.getData()[0].toString());
+//            }
+//            StringBuilder sb = new StringBuilder("USH-6370 Checking at 'processEntitiesForCaseList' ");
+//            if (caseTypes.size() > 1) {
+//                sb.append("mismatch");
+//                sb.append("\nExpected all 'Case Type's to be the same. Got: ")
+//                        .append(caseTypes);
+//                for (EntityBean entity : entities) {
+//                    sb.append("\n")
+//                            .append(entity.getId())
+//                            .append(": ")
+//                            .append(entity.getData()[0].toString());
+//                }
+//            } else {
+//                sb.append("ok");
+//            }
+
             setNoItemsText(getNoItemsTextLocaleString(detail));
             setSelectText(getSelectTextLocaleString(detail));
             hasDetails = nextScreen.getLongDetail() != null;
@@ -117,7 +161,7 @@ public class EntityListResponse extends MenuBean {
             this.sortIndices = detail.getOrderedFieldIndicesForSorting();
             isMultiSelect = nextScreen instanceof MultiSelectEntityScreen;
             if (isMultiSelect) {
-                maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
+                maxSelectValue = ((MultiSelectEntityScreen) nextScreen).getMaxSelectValue();
             }
             if (detail.getGroup() != null) {
                 groupHeaderRows = detail.getGroup().getHeaderRows();
@@ -125,10 +169,16 @@ public class EntityListResponse extends MenuBean {
 
             QueryScreen queryScreen = nextScreen.getQueryScreen();
             if (queryScreen != null) {
+//                sb.append("\nqueryScreen");
                 setQueryKey(queryScreen.getQueryKey());
                 if (FeatureFlagChecker.isToggleEnabled(TOGGLE_SPLIT_SCREEN_CASE_SEARCH)) {
                     queryResponse = new QueryResponseBean(queryScreen);
                 }
+            }
+            if (this.headers.length > 0 && this.headers[0].equals("Case Type")) {
+                log.error(sb1.toString());
+//                log.error(sb2.toString());
+//                log.error(sb.toString());
             }
         }
     }
@@ -168,10 +218,22 @@ public class EntityListResponse extends MenuBean {
     public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
             EntityDatum neededDatum) {
+        StringBuilder sb = new StringBuilder("USH-6370 Checking in 'processEntitiesForCaseList' ");
+        
         List<EntityBean> entities = new ArrayList<>();
+        StringBuilder innerSb = new StringBuilder();
         for (Entity<TreeReference> entity : entityList) {
-            entities.add(toEntityBean(entity, ec, neededDatum));
+            EntityBean bean = toEntityBean(entity, ec, neededDatum, innerSb);
+            entities.add(bean);
         }
+        if (innerSb.isEmpty()) {
+            sb.append("ok");
+        } else {
+            sb.append("missmatch")
+                    .append(innerSb);
+        }
+        
+        log.error(sb.toString());
         return entities;
     }
 
@@ -235,14 +297,29 @@ public class EntityListResponse extends MenuBean {
     // Converts the Given Entity to EntityBean
     @Trace
     private static EntityBean toEntityBean(Entity<TreeReference> entity,
-            EvaluationContext ec, EntityDatum neededDatum) {
+            EvaluationContext ec, EntityDatum neededDatum, StringBuilder sb) {
         Object[] entityData = entity.getData();
         Object[] data = new Object[entityData.length];
         String id = getEntityId(entity.getElement(), neededDatum, ec);
+        
+        // Log entity conversion details
+//        log.error(String.format("toEntityBean: ref=%s, id=%s, rawData[0]=%s",
+//            entity.getElement().toString(),
+//            id,
+//            entityData.length > 0 ? entityData[0] : "none"));
+
+
         EntityBean entityBean = new EntityBean(id);
         for (int i = 0; i < entityData.length; i++) {
             data[i] = processData(entityData[i]);
+            if (i == 0 && !String.valueOf(entityData[i]).equals(String.valueOf(data[i]))) {
+                sb.append("\n").append(id)
+                        .append(" Data[").append(i).append("] changed during processing: ")
+                        .append(entityData[i]).append(" -> ").append(data[i]);
+            }
         }
+
+
         entityBean.setData(data);
         entityBean.setGroupKey(entity.getGroupKey());
         entityBean.setAltText(entity.getAltText());
