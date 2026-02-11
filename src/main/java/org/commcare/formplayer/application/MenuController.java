@@ -11,10 +11,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.ResponseMetaData;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
-import org.commcare.formplayer.beans.menus.BaseResponseBean;
-import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
-import org.commcare.formplayer.beans.menus.EntityDetailResponse;
-import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
+import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.MenuSessionFactory;
 import org.commcare.formplayer.services.ResponseMetaDataTracker;
@@ -185,6 +182,10 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getFormSessionId()
         );
 
+        String domain = sessionNavigationBean.getDomain();
+        if (domain != null && domain.startsWith("co-carecoordination")) {
+            log4Hashes(response);
+        }
         setResponseMetaData(response);
 
         SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
@@ -194,6 +195,24 @@ public class MenuController extends AbstractBaseController {
         } else {
             notificationLogger.logNotification(response.getNotification(), request);
             return setLocationNeeds(response, menuSession);
+        }
+    }
+
+    private void log4Hashes(BaseResponseBean response) {
+
+        if (response instanceof EntityListResponse entityListResponse &&
+                entityListResponse.getEntities().length > 0 &&
+                entityListResponse.getHeaders().length > 0
+        ) {
+            int fourHashCount = 0;
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                if (entity.getData().length > 0 && entity.getData()[0].toString().equals("####")) {
+                    fourHashCount++;
+                }
+            }
+            if (fourHashCount > 0) {
+                log.error("USH-6370 response with " + fourHashCount + " leading #### in first column");
+            }
         }
     }
 
