@@ -607,6 +607,32 @@ public class SqlStorage<T extends Persistable>
     }
 
 
+    @Override
+    public Vector<Integer> getBulkIdsForIndex(String indexName, Collection<String> matchingValues) {
+        Vector<Integer> ids = new Vector<>();
+        String fieldName = TableBuilder.scrubName(indexName);
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(matchingValues, "?");
+        try {
+            for (Pair<String, String[]> querySet : whereParamList) {
+                try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
+                        connectionHandler.getConnection(),
+                        tableName,
+                        fieldName + " IN " + querySet.first,
+                        querySet.second)) {
+
+                    try (ResultSet resultSet = selectStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            ids.add(resultSet.getInt(DatabaseHelper.ID_COL));
+                        }
+                    }
+                }
+            }
+            return ids;
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
     /**
      * Retrieves a set of the models in storage based on a list of values matching one if the
      * indexes of this storage
