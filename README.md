@@ -159,14 +159,11 @@ For PRs that just modify code in the Formplayer repo, submit a PR to Formplayer 
 
 #### Contributing changes to commcare
 
-Formplayer also has a dependency on the commcare-core repository. The commcare-core `master` branch is not
-stable and Formplayer uses a different branch. The submodule repo `libs/commcare` should always be pointing to
-the `formplayer` branch.
+Formplayer depends on the commcare-core repository via the `libs/commcare` submodule, which tracks the `master` branch. Cross-repo CI automatically tests formplayer against commcare-core PRs, so no manual cross-testing is needed.
 
-#### Updating the CommCare version
+#### Updating the CommCare Version
 
-When updating Formplayer to have a new release of a CommCare version (e.g. 2.34 to 2.35), a PR should be opened from the `commcare_X.Y` branch into
-the `formplayer` branch. Once QA has been finished, merge the PR and update the Formplayer submodule.
+When updating Formplayer to a new CommCare version (e.g. 2.34 to 2.35), open a PR from the `commcare_X.Y` branch into `master` on commcare-core. Once QA has finished, merge the PR and update the Formplayer submodule.
 
 ### IntelliJ Code Style Settings
 
