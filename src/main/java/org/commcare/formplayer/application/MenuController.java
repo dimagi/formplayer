@@ -184,7 +184,7 @@ public class MenuController extends AbstractBaseController {
 
         String domain = sessionNavigationBean.getDomain();
         if (domain != null && domain.startsWith("co-carecoordination")) {
-            log4Hashes(response);
+            logUSH6370(response);
         }
         setResponseMetaData(response);
 
@@ -198,21 +198,22 @@ public class MenuController extends AbstractBaseController {
         }
     }
 
-    private void log4Hashes(BaseResponseBean response) {
+    private void logUSH6370(BaseResponseBean response) {
 
         if (response instanceof EntityListResponse entityListResponse &&
                 entityListResponse.getEntities().length > 0 &&
                 entityListResponse.getHeaders().length > 0
         ) {
-            int fourHashCount = 0;
+            int blankEntities = 0;
             for (EntityBean entity : entityListResponse.getEntities()) {
                 Object[] data = entity.getData();
-                if (data.length > 0 && data[0] != null && data[0].toString().equals("####")) {
-                    fourHashCount++;
+                // An easy signal for missing data is the first column having only formatting, no data
+                if (data.length > 0 && data[0] != null && data[0].toString().equals("****")) {
+                    blankEntities++;
                 }
             }
-            if (fourHashCount > 0) {
-                log.error("USH-6370 response with " + fourHashCount + " leading #### in first column");
+            if (blankEntities > 0) {
+                log.error("USH-6370 response with " + blankEntities + " leading **** in first column");
             }
         }
     }
