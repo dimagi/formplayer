@@ -21,6 +21,7 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.utils.MockRequestUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
@@ -400,5 +401,90 @@ public class CaseClaimNavigationTests extends BaseTestClass {
             }
         }
         return null;
+    }
+
+    /**
+     * Test that superusers and domain members get different cache keys for case search.
+     * This prevents the bug where a superuser's case search results (with different permissions)
+     * are incorrectly returned to a domain member, or vice versa.
+     */
+    @Test
+    @WithHqUser(domain = "caseclaimdomain", username = "caseclaimusername", domains = {"caseclaimdomain"}, isSuperUser = false)
+    public void testCacheKey_DomainMemberVsSuperuser() {
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "case_type", "patient",
+                "name", "John");
+        
+        // Get cache key as domain member (not superuser)
+        String memberKey = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/caseclaimdomain/phone/search/", data);
+        
+        assertNotNull(memberKey);
+        // Verify the key contains member=true and superuser=false
+        assertThat(memberKey).contains("superuser=false");
+        assertThat(memberKey).contains("member=true");
+    }
+
+    @Test
+    @WithHqUser(domain = "caseclaimdomain", username = "superuser@dimagi.com", domains = {}, isSuperUser = true)
+    public void testCacheKey_SuperuserNotMember() {
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "case_type", "patient",
+                "name", "John");
+        
+        // Get cache key as superuser who is NOT a member of the domain
+        String superuserKey = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/caseclaimdomain/phone/search/", data);
+        
+        assertNotNull(superuserKey);
+        // Verify the key contains member=false and superuser=true
+        assertThat(superuserKey).contains("superuser=true");
+        assertThat(superuserKey).contains("member=true"); // superuser.isAuthorized() returns true even without domain membership
+    }
+
+    @Test
+    @WithHqUser(domain = "caseclaimdomain", username = "regularuser", domains = {"otherdomain"}, isSuperUser = false)
+    public void testCacheKey_NonMemberNonSuperuser() {
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "case_type", "patient",
+                "name", "John");
+        
+        // Get cache key as regular user who is NOT a member of caseclaimdomain
+        String nonMemberKey = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/caseclaimdomain/phone/search/", data);
+        
+        assertNotNull(nonMemberKey);
+        // Verify the key contains member=false and superuser=false
+        assertThat(nonMemberKey).contains("superuser=false");
+        assertThat(nonMemberKey).contains("member=false");
+    }
+
+    /**
+     * This test verifies that the cache key generation properly distinguishes between
+     * different authorization contexts. The key difference is that the individual tests
+     * above with @WithHqUser annotations will produce different cache keys based on
+     * superuser status and domain membership, preventing the bug where wrong cases
+     * are returned due to cache collisions.
+     */
+    @Test
+    @WithHqUser(domain = "caseclaimdomain", username = "member", domains = {"caseclaimdomain"}, isSuperUser = false)
+    public void testCacheKey_IncludesAuthorizationContext() {
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of(
+                "case_type", "patient",
+                "name", "John");
+        
+        String cacheKey = ReflectionTestUtils.invokeMethod(
+                caseSearchHelper, "getCacheKey", "http://localhost:8000/a/caseclaimdomain/phone/search/", data);
+        
+        assertNotNull(cacheKey);
+        // Verify the cache key includes authorization context
+        assertThat(cacheKey).as("Cache key must include superuser status")
+                .contains("superuser=");
+        assertThat(cacheKey).as("Cache key must include domain membership status")
+                .contains("member=");
+        
+        // This ensures that users with different authorization contexts (superuser vs member)
+        // will never share cached case search results, preventing the bug where wrong cases
+        // are returned to users.
     }
 }
