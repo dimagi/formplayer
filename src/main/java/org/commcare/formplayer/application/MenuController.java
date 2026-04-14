@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -182,10 +184,12 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getFormSessionId()
         );
 
-        String domain = sessionNavigationBean.getDomain();
-        if (domain != null && domain.startsWith("co-carecoordination")) {
-            logUSH6370(response);
-        }
+//        String domain = sessionNavigationBean.getDomain();
+//        if (domain != null && domain.startsWith("co-carecoordination")) {
+//            logUSH6370(response);
+//        }
+
+        logCaseTypeColumnIfPresent(response, "controller", log);
         setResponseMetaData(response);
 
         SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
@@ -215,6 +219,38 @@ public class MenuController extends AbstractBaseController {
             if (blankEntities > 0) {
                 log.error("USH-6370 response with " + blankEntities + " leading **** in first column");
             }
+        }
+    }
+
+    public static void logCaseTypeColumnIfPresent(BaseResponseBean response, String label, Log log) {
+
+        if (response instanceof EntityListResponse entityListResponse &&
+                entityListResponse.getEntities().length > 0 &&
+                entityListResponse.getHeaders().length > 0 &&
+                entityListResponse.getHeaders()[0].equals("Case Type")
+        ) {
+            StringBuilder sb = new StringBuilder("USH-6370 Checking at '" + label + "' ");
+
+            Set<String> caseTypes = new HashSet<>();
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                caseTypes.add(entity.getData()[0].toString());
+            }
+            if (caseTypes.size() > 1) {
+                sb.append("mismatch");
+                sb.append("\nExpected all 'Case Type's to be the same at '")
+                        .append(label)
+                        .append("'. Got: ")
+                        .append(caseTypes);
+            } else {
+                sb.append("ok");
+            }
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                sb.append("\n")
+                        .append(entity.getId())
+                        .append(": ")
+                        .append(entity.getData()[0].toString());
+            }
+            log.error(sb.toString());
         }
     }
 
