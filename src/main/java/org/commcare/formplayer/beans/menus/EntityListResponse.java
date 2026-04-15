@@ -148,8 +148,9 @@ public class EntityListResponse extends MenuBean {
             if (this.headers.length > 0 && this.headers[0].equals("Case Type")) {
                 log.error(buildEvalContextInventory(nextScreen).toString());
                 log.error(sb1.toString());
-                log.error(sb2.toString());
-                log.error(sb3.toString());
+                // Silenced to reduce Sentry volume — sb2/sb3 confirmed to track sb1 in prior runs.
+                // log.error(sb2.toString());
+                // log.error(sb3.toString());
             }
         }
     }

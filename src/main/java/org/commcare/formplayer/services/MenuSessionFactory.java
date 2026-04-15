@@ -121,7 +121,8 @@ public class MenuSessionFactory {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 StringBuilder sb = new StringBuilder();
                 entityScreen.initReferences(menuSession.getSessionWrapper(), sb);
-                log.error(sb.toString());
+                // Silenced to reduce Sentry volume — dumps 200+ case IDs per call.
+                // log.error(sb.toString());
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {

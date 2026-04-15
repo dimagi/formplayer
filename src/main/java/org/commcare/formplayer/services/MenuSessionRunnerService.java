@@ -398,7 +398,8 @@ public class MenuSessionRunnerService {
                 if (!sessionAdvanced && iterationCount != 0) {
                     StringBuilder sb = new StringBuilder();
                     nextScreen.init(menuSession.getSessionWrapper(), sb);
-                    log.error(sb.toString());
+                    // Silenced to reduce Sentry volume — dumps 200+ case IDs per call.
+                    // log.error(sb.toString());
                     if (nextScreen.shouldBeSkipped()) {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());

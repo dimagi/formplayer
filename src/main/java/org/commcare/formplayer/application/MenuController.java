@@ -189,7 +189,8 @@ public class MenuController extends AbstractBaseController {
 //            logUSH6370(response);
 //        }
 
-        logCaseTypeColumnIfPresent(response, "controller", log);
+        // Silenced to reduce Sentry volume — redundant with EntityListResponse sb1 in prior runs.
+        // logCaseTypeColumnIfPresent(response, "controller", log);
         setResponseMetaData(response);
 
         SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,

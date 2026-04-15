@@ -211,7 +211,8 @@ public class CaseSearchHelper {
             }
         }
 
-        log.error(sb.toString());
+        // Silenced to reduce Sentry volume — consistently 'ok' in prior runs.
+        // log.error(sb.toString());
 
     }
 
@@ -242,7 +243,8 @@ public class CaseSearchHelper {
                 sb.append("Error validating case types from storage");
             }
         }
-        log.error(sb.toString());
+        // Silenced to reduce Sentry volume — consistently 'ok' in prior runs.
+        // log.error(sb.toString());
     }
 
     private TreeElement getCachedRoot(Cache cache, String cacheKey, String url, boolean skipCache) {
