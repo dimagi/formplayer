@@ -19,6 +19,7 @@ import org.commcare.suite.model.EndpointAction;
 import org.commcare.suite.model.EndpointArgument;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.Style;
+import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
@@ -240,14 +241,67 @@ public class EntityListResponse extends MenuBean {
                 }
                 sb.append(" rootClass=").append(root.getClass().getSimpleName())
                         .append(" rootName=").append(root.getName());
+                if (root instanceof CaseInstanceTreeElement) {
+                    sb.append(" storageCacheName=")
+                            .append(((CaseInstanceTreeElement) root).getStorageCacheName());
+                }
                 // Full scan the results instance (the one we care about); sample casedb.
                 boolean shallow = "casedb".equals(id);
                 summarizeCaseContainer(sb, "    root", root, 5, !shallow);
             }
+            // Cross-reference: if results has non-capacity cases, compare the same
+            // positions in casedb. If case_ids match, RecordObjectCache collision
+            // (shared 'casedb' cache key across instances) is confirmed.
+            appendCacheCollisionProbe(sb, ec);
         } catch (Exception e) {
             sb.append("\nERROR during inventory: ").append(e);
         }
         return sb;
+    }
+
+    private static void appendCacheCollisionProbe(StringBuilder sb, EvaluationContext ec) {
+        DataInstance resultsInst = ec.getInstance("results");
+        DataInstance casedbInst = ec.getInstance("casedb");
+        if (resultsInst == null || casedbInst == null) {
+            return;
+        }
+        AbstractTreeElement resultsRoot = resultsInst.getRoot();
+        AbstractTreeElement casedbRoot = casedbInst.getRoot();
+        if (resultsRoot == null || casedbRoot == null) {
+            return;
+        }
+        int resultsKids = resultsRoot.getNumChildren();
+        int casedbKids = casedbRoot.getNumChildren();
+        if (resultsKids == 0 || casedbKids == 0) {
+            return;
+        }
+        // Find up to 3 positions in results where case_type != capacity and pos < casedbKids
+        sb.append("\n  cacheCollisionProbe:");
+        int samples = 0;
+        for (int j = 0; j < resultsKids && samples < 3; j++) {
+            AbstractTreeElement rKid = resultsRoot.getChildAt(j);
+            String rType = String.valueOf(rKid.getAttributeValue(null, "case_type"));
+            if ("capacity".equals(rType)) {
+                continue;
+            }
+            String rId = String.valueOf(rKid.getAttributeValue(null, "case_id"));
+            String cId = null;
+            String cType = null;
+            if (j < casedbKids) {
+                AbstractTreeElement cKid = casedbRoot.getChildAt(j);
+                cId = String.valueOf(cKid.getAttributeValue(null, "case_id"));
+                cType = String.valueOf(cKid.getAttributeValue(null, "case_type"));
+            }
+            boolean sameId = cId != null && cId.equals(rId);
+            sb.append("\n    pos=").append(j)
+                    .append(" results(id=").append(rId).append(", type=").append(rType).append(")")
+                    .append(" casedb(id=").append(cId).append(", type=").append(cType).append(")")
+                    .append(" match=").append(sameId);
+            samples++;
+        }
+        if (samples == 0) {
+            sb.append(" (no non-capacity positions found in results — cache clean this run)");
+        }
     }
 
     /**
