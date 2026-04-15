@@ -86,11 +86,14 @@ def run_test():
                 bad_query |= bad
                 print('💥' if bad else '✅', end='')
                 case_types.append(entity['data'][CASE_TYPE_INDEX])
-            # if bad_query:
-            #     break
 
             print('')
             print('    ', Counter(case_types))
+
+            if bad_query:
+                bad_queries += 1
+                print(f"\n💥 Hit the bug on iteration {i}. Stopping.")
+                break
 
             case_id = random.choice([e['id'] for e in data['entities']])
             INFORMATION_PAYLOAD['selections'] = ["0", case_id]
