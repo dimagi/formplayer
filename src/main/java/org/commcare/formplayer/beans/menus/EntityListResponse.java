@@ -89,18 +89,9 @@ public class EntityListResponse extends MenuBean {
             this.redoLast = processRedoLast(entityListActions);
 
             List<Entity<TreeReference>> entityList = entityListScreen.getEntities();
-            StringBuilder sb1 = new StringBuilder("USH-6370 Checking at 'entityListScreen.getEntities' ");
-            Set<String> caseTypes = new HashSet<>();
-            for (Entity<TreeReference> e: entityList) {
-                caseTypes.add(e.getData()[0].toString());
-            }
-            if (caseTypes.size() > 1) {
-                sb1.append("mismatch");
-                sb1.append("\nExpected all 'Case Type's to be the same at. Got: ")
-                        .append(caseTypes);
-            } else {
-                sb1.append("ok");
-            }
+            StringBuilder sb1 = buildCaseTypeCheckFromEntities(
+                    "entityListScreen.getEntities", entityList);
+
             EntityScreenContext entityScreenContext = nextScreen.getEntityScreenContext();
             int casesPerPage = entityScreenContext.getCasesPerPage();
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
@@ -108,18 +99,9 @@ public class EntityListResponse extends MenuBean {
             Detail detail = nextScreen.getShortDetail();
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
-//            StringBuilder sb2 = new StringBuilder("USH-6370 Checking at 'paginateEntities' ");
-//            caseTypes = new HashSet<>();
-//            for (Entity<TreeReference> e: entityList) {
-//                caseTypes.add(e.getData()[0].toString());
-//            }
-//            if (caseTypes.size() > 1) {
-//                sb2.append("mismatch");
-//                sb2.append("\nExpected all 'Case Type's to be the same. Got: ")
-//                        .append(caseTypes);
-//            } else {
-//                sb2.append("ok");
-//            }
+            StringBuilder sb2 = buildCaseTypeCheckFromEntities(
+                    "paginateEntities", entitesForPage);
+
             EvaluationContext ec = nextScreen.getEvalContext();
             SessionWrapper session = nextScreen.getSession();
             EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
@@ -127,24 +109,8 @@ public class EntityListResponse extends MenuBean {
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
 
-//            caseTypes = new HashSet<>();
-//            for (EntityBean entity : entities) {
-//                caseTypes.add(entity.getData()[0].toString());
-//            }
-//            StringBuilder sb = new StringBuilder("USH-6370 Checking at 'processEntitiesForCaseList' ");
-//            if (caseTypes.size() > 1) {
-//                sb.append("mismatch");
-//                sb.append("\nExpected all 'Case Type's to be the same. Got: ")
-//                        .append(caseTypes);
-//                for (EntityBean entity : entities) {
-//                    sb.append("\n")
-//                            .append(entity.getId())
-//                            .append(": ")
-//                            .append(entity.getData()[0].toString());
-//                }
-//            } else {
-//                sb.append("ok");
-//            }
+            StringBuilder sb3 = buildCaseTypeCheckFromBeans(
+                    "processEntitiesForCaseList", entities);
 
             setNoItemsText(getNoItemsTextLocaleString(detail));
             setSelectText(getSelectTextLocaleString(detail));
@@ -177,8 +143,8 @@ public class EntityListResponse extends MenuBean {
             }
             if (this.headers.length > 0 && this.headers[0].equals("Case Type")) {
                 log.error(sb1.toString());
-//                log.error(sb2.toString());
-//                log.error(sb.toString());
+                log.error(sb2.toString());
+                log.error(sb3.toString());
             }
         }
     }
@@ -218,23 +184,67 @@ public class EntityListResponse extends MenuBean {
     public static List<EntityBean> processEntitiesForCaseList(List<Entity<TreeReference>> entityList,
             EvaluationContext ec,
             EntityDatum neededDatum) {
-        StringBuilder sb = new StringBuilder("USH-6370 Checking in 'processEntitiesForCaseList' ");
-        
         List<EntityBean> entities = new ArrayList<>();
-        StringBuilder innerSb = new StringBuilder();
         for (Entity<TreeReference> entity : entityList) {
-            EntityBean bean = toEntityBean(entity, ec, neededDatum, innerSb);
+            EntityBean bean = toEntityBean(entity, ec, neededDatum);
             entities.add(bean);
         }
-        if (innerSb.isEmpty()) {
-            sb.append("ok");
-        } else {
-            sb.append("missmatch")
-                    .append(innerSb);
-        }
-        
-        log.error(sb.toString());
         return entities;
+    }
+
+    private static StringBuilder buildCaseTypeCheckFromEntities(String label,
+            List<Entity<TreeReference>> entityList) {
+        StringBuilder sb = new StringBuilder("USH-6370 Checking at '").append(label).append("' ");
+        Set<String> caseTypes = new HashSet<>();
+        for (Entity<TreeReference> e : entityList) {
+            Object[] data = e.getData();
+            if (data != null && data.length > 0 && data[0] != null) {
+                caseTypes.add(data[0].toString());
+            }
+        }
+        if (caseTypes.size() > 1) {
+            sb.append("mismatch")
+                    .append("\nExpected all 'Case Type's to be the same. Got: ")
+                    .append(caseTypes);
+            for (Entity<TreeReference> e : entityList) {
+                Object[] data = e.getData();
+                sb.append("\n")
+                        .append(e.getElement() == null ? "" : e.getElement().toString())
+                        .append(": ")
+                        .append(data != null && data.length > 0 && data[0] != null
+                                ? data[0].toString() : "null");
+            }
+        } else {
+            sb.append("ok");
+        }
+        return sb;
+    }
+
+    private static StringBuilder buildCaseTypeCheckFromBeans(String label, EntityBean[] entities) {
+        StringBuilder sb = new StringBuilder("USH-6370 Checking at '").append(label).append("' ");
+        Set<String> caseTypes = new HashSet<>();
+        for (EntityBean entity : entities) {
+            Object[] data = entity.getData();
+            if (data != null && data.length > 0 && data[0] != null) {
+                caseTypes.add(data[0].toString());
+            }
+        }
+        if (caseTypes.size() > 1) {
+            sb.append("mismatch")
+                    .append("\nExpected all 'Case Type's to be the same. Got: ")
+                    .append(caseTypes);
+            for (EntityBean entity : entities) {
+                Object[] data = entity.getData();
+                sb.append("\n")
+                        .append(entity.getId())
+                        .append(": ")
+                        .append(data != null && data.length > 0 && data[0] != null
+                                ? data[0].toString() : "null");
+            }
+        } else {
+            sb.append("ok");
+        }
+        return sb;
     }
 
     private List<Entity<TreeReference>> paginateEntities(
@@ -297,29 +307,14 @@ public class EntityListResponse extends MenuBean {
     // Converts the Given Entity to EntityBean
     @Trace
     private static EntityBean toEntityBean(Entity<TreeReference> entity,
-            EvaluationContext ec, EntityDatum neededDatum, StringBuilder sb) {
+            EvaluationContext ec, EntityDatum neededDatum) {
         Object[] entityData = entity.getData();
         Object[] data = new Object[entityData.length];
         String id = getEntityId(entity.getElement(), neededDatum, ec);
-        
-        // Log entity conversion details
-//        log.error(String.format("toEntityBean: ref=%s, id=%s, rawData[0]=%s",
-//            entity.getElement().toString(),
-//            id,
-//            entityData.length > 0 ? entityData[0] : "none"));
-
-
         EntityBean entityBean = new EntityBean(id);
         for (int i = 0; i < entityData.length; i++) {
             data[i] = processData(entityData[i]);
-            if (i == 0 && !String.valueOf(entityData[i]).equals(String.valueOf(data[i]))) {
-                sb.append("\n").append(id)
-                        .append(" Data[").append(i).append("] changed during processing: ")
-                        .append(entityData[i]).append(" -> ").append(data[i]);
-            }
         }
-
-
         entityBean.setData(data);
         entityBean.setGroupKey(entity.getGroupKey());
         entityBean.setAltText(entity.getAltText());
