@@ -123,3 +123,31 @@ storageCount=<N> caseTypes=[...]
   cache-key collision (mechanism 2) is confirmed.
 - If two concurrent requests log the same table + same key but with
   different case counts/types in quick succession, mechanism 1.
+
+## Possible root cause
+
+Walking through the code:
+
+1. CaseChildElement.cache() calls parent.getElement(recordId, context) to get case data (libs/commcare/.../CaseChildElement.java:100)
+2. StorageInstanceTreeElement.getElement() checks a RecordObjectCache keyed by getStorageCacheName() + recordId (StorageInstanceTreeElement.java:285-314)
+3. CaseInstanceTreeElement.getStorageCacheName() always returns "casedb" (hard-coded to MODEL_NAME) — regardless of which storage the instance wraps (CaseInstanceTreeElement.java:145-147)
+
+The collision: The user's casedb instance AND the results (case-search) instance are BOTH CaseInstanceTreeElement, BOTH return "casedb" from getStorageCacheName(). They share cache keys in
+the RecordObjectCache.
+
+What this causes:
+- When the real casedb instance bulkReads records (say, recordId=42), the cache stores ("casedb", 42) → someCase — pulled from the user's case table
+- When the results instance later asks getElement(42), it hits the cache and gets the casedb's case, NOT its own search-table case
+- The two storages are different SQLite tables with independent recordId spaces, but the cache doesn't know that
+
+Why getExternalRoot snapshot saw all-capacity:
+- My storage.iterate() hits the SqlStorage directly, bypassing RecordObjectCache
+- So it reports the actual table content: 1189 capacity cases
+
+Why the inventory / entity list saw 5 types:
+- CaseChildElement.cache() goes through getElement(recordId, context) → hits RecordObjectCache → returns polluted (casedb) data
+- The user's casedb has 5 case types, so the polluted results reflect that
+
+The fix (commcare-core):
+CaseInstanceTreeElement.getStorageCacheName() must return a key that's unique per storage, not the generic "casedb". Simplest: include the table name or storage identity in the key. E.g.,
+return something like "casedb:" + storage.tableName or base it on the instance's getReference().
