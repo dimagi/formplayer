@@ -121,10 +121,31 @@ public class CaseSearchHelper {
         if (caseSearchStorage.isStorageExists()) {
             // return root as CaseInstanceTreeElement
             InstanceBase instanceBase = new InstanceBase(instanceId);
+            logStorageSnapshotBeforeReturn(caseSearchTableName, cacheKey, caseSearchStorage);
             return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable);
         }
 
         throw new IOException("No response from server for case search query");
+    }
+
+    private void logStorageSnapshotBeforeReturn(String caseSearchTableName, String cacheKey,
+            IStorageUtilityIndexed<Case> caseSearchStorage) {
+        try {
+            Set<String> caseTypes = new LinkedHashSet<>();
+            int count = 0;
+            IStorageIterator<Case> iter = caseSearchStorage.iterate();
+            while (iter.hasMore()) {
+                Case c = iter.nextRecord();
+                caseTypes.add(c.getTypeId());
+                count++;
+            }
+            log.error("USH-6370 getExternalRoot returning tree: table=" + caseSearchTableName
+                    + " cacheKeyHash=" + Integer.toHexString(cacheKey.hashCode())
+                    + " storageCount=" + count
+                    + " caseTypes=" + caseTypes);
+        } catch (Exception e) {
+            log.error("USH-6370 getExternalRoot snapshot error: " + e);
+        }
     }
 
     private FormplayerCaseIndexTable getCaseIndexTable(ConnectionHandler caseSearchSandbox,

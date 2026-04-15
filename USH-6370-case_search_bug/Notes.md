@@ -65,3 +65,61 @@ data instance is being merged with the regular casedb. Worth checking:
   carry a stale data instance reference?
 - Whether `FormplayerRemoteInstanceFetcher` returns the fresh instance
   even when `skipCache=true` is in effect.
+
+### Findings from sentry_4 (EvalContext inventory, after logging fix)
+
+On a confirmed failure iteration, the `results` `DataInstance` bound to
+the `EntityScreen` holds **1189 cases of 4 types** (`capacity`, `unit`,
+`provider`, `clinic`) — even though HQ returned only 184 capacity cases
+and `validateCaseTypesInStorage` said "ok" earlier in the same request.
+
+| Instance              | class            | ref                                | rootName | children | caseTypes (sampled)                      |
+|-----------------------|------------------|------------------------------------|----------|----------|------------------------------------------|
+| `casedb`              | CaseDataInstance | jr://instance/casedb               | casedb   | 380      | [commcare-case-claim] (5)                |
+| **`results`**         | CaseDataInstance | jr://instance/remote/results       | casedb   | **1189** | **[capacity, unit, provider, clinic]** (50) |
+| `search-input:results`| ExternalDataInstance | jr://instance/search-input/results | input  | 0        | —                                        |
+| `commcaresession`     | ExternalDataInstance | jr://instance/session          | session  | 3        | —                                        |
+
+Source URI on `results` is correct (points at the case search endpoint
+for this app). Both `casedb` and `results` are backed by
+`CaseInstanceTreeElement` (SQLite). So the `results` instance is wired
+to a SQLite table that contains 1189 cases from multiple case types,
+not just the 184 capacity cases this request wrote and validated.
+
+### New hypothesis (post sentry_4)
+
+Between `validateCaseTypesInStorage` (run right after
+`parseIntoCaseSearchStorage` writes the HQ response) and the moment the
+`CaseInstanceTreeElement` is iterated by the entity screen, the SQLite
+table backing the `results` instance has accumulated extra rows.
+
+Likely mechanisms:
+1. **Concurrent request pollution** — multiple requests share the same
+   `formplayer_case_<hash>` table and race: A's `removeAll()` +
+   `parseIntoSandbox` overlaps with B's, or A reads after B has written
+   different data into the same table.
+2. **Cache-key collision** — two logically-different searches produce
+   the same `cacheKey` → same `caseSearchTableName`. Different search
+   queries (different case_types) would pile up in one table.
+3. **`removeAll()` not clearing** — the per-table `removeAll()` leaves
+   rows, so each request adds to a growing set.
+
+1189 cases / 184 per request ≈ 6 requests of accumulated data, which is
+consistent with either mechanism.
+
+### Added logging (commit TBD)
+
+`CaseSearchHelper.getExternalRoot` now logs just before returning the
+`CaseInstanceTreeElement` to the caller:
+
+```
+USH-6370 getExternalRoot returning tree: table=<hash> cacheKeyHash=<hex>
+storageCount=<N> caseTypes=[...]
+```
+
+- If `storageCount` != the count validated a few lines earlier in the
+  same call, the write/read gap is where the pollution enters.
+- If two requests log the **same** `table` but **different** `cacheKeyHash`,
+  cache-key collision (mechanism 2) is confirmed.
+- If two concurrent requests log the same table + same key but with
+  different case counts/types in quick succession, mechanism 1.
