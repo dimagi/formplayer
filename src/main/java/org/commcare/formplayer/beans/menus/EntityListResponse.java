@@ -26,6 +26,10 @@ import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.AbstractTreeElement;
+import org.javarosa.core.model.instance.DataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.NoLocalizedTextException;
 import org.springframework.web.util.UriBuilder;
@@ -142,6 +146,7 @@ public class EntityListResponse extends MenuBean {
                 }
             }
             if (this.headers.length > 0 && this.headers[0].equals("Case Type")) {
+                log.error(buildEvalContextInventory(nextScreen).toString());
                 log.error(sb1.toString());
                 log.error(sb2.toString());
                 log.error(sb3.toString());
@@ -190,6 +195,79 @@ public class EntityListResponse extends MenuBean {
             entities.add(bean);
         }
         return entities;
+    }
+
+    private static StringBuilder buildEvalContextInventory(EntityScreen nextScreen) {
+        StringBuilder sb = new StringBuilder("USH-6370 EvalContext inventory ");
+        try {
+            EvaluationContext ec = nextScreen.getEvalContext();
+            SessionWrapper session = nextScreen.getSession();
+            EntityDatum datum = null;
+            try {
+                datum = (EntityDatum) session.getNeededDatum();
+            } catch (Exception ignore) {
+                // leave null
+            }
+            if (datum != null) {
+                TreeReference nodeset = datum.getNodeset();
+                sb.append("\ndatumId=").append(datum.getDataId())
+                        .append(" nodeset=").append(nodeset == null ? "null" : nodeset.toString())
+                        .append(" shortDetail=").append(datum.getShortDetail());
+            }
+            List<String> instanceIds = ec.getInstanceIds();
+            sb.append("\ninstances=").append(instanceIds);
+            for (String id : instanceIds) {
+                DataInstance inst = ec.getInstance(id);
+                if (inst == null) {
+                    sb.append("\n  ").append(id).append(" -> null");
+                    continue;
+                }
+                sb.append("\n  ").append(id)
+                        .append(" class=").append(inst.getClass().getSimpleName())
+                        .append(" instanceId=").append(inst.getInstanceId());
+                if (inst instanceof ExternalDataInstance) {
+                    ExternalDataInstance ext = (ExternalDataInstance) inst;
+                    sb.append(" ref=").append(ext.getReference());
+                    ExternalDataInstanceSource src = ext.getSource();
+                    sb.append(" sourceUri=").append(src == null ? "null" : src.getSourceUri());
+                    sb.append(" useCaseTemplate=").append(ext.useCaseTemplate());
+                }
+                AbstractTreeElement root = inst.getRoot();
+                if (root == null) {
+                    sb.append(" root=null");
+                    continue;
+                }
+                sb.append(" rootClass=").append(root.getClass().getSimpleName());
+                // Walk: root usually has a single child 'casedb'/'results', and that has 'case' children
+                int rootKids = root.getNumChildren();
+                sb.append(" rootChildren=").append(rootKids);
+                for (int i = 0; i < rootKids; i++) {
+                    AbstractTreeElement child = root.getChildAt(i);
+                    int grandKids = child.getNumChildren();
+                    sb.append("\n    ").append(child.getName())
+                            .append(" class=").append(child.getClass().getSimpleName())
+                            .append(" children=").append(grandKids);
+                    // For case instances, sample case_type across children
+                    if (grandKids > 0 && "case".equals(child.getChildAt(0).getName())) {
+                        int sampleCap = Math.min(grandKids, 500);
+                        Set<String> caseTypes = new LinkedHashSet<>();
+                        for (int j = 0; j < sampleCap; j++) {
+                            AbstractTreeElement caseNode = child.getChildAt(j);
+                            caseTypes.add(String.valueOf(
+                                    caseNode.getAttributeValue(null, "case_type")));
+                        }
+                        sb.append(" caseTypes=").append(caseTypes);
+                        if (sampleCap < grandKids) {
+                            sb.append(" (sampled first ").append(sampleCap)
+                                    .append(" of ").append(grandKids).append(")");
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            sb.append("\nERROR during inventory: ").append(e);
+        }
+        return sb;
     }
 
     private static StringBuilder buildCaseTypeCheckFromEntities(String label,
