@@ -240,9 +240,9 @@ public class EntityListResponse extends MenuBean {
                 }
                 sb.append(" rootClass=").append(root.getClass().getSimpleName())
                         .append(" rootName=").append(root.getName());
-                // Full casedb is huge and not the bug focus; only summarize it.
+                // Full scan the results instance (the one we care about); sample casedb.
                 boolean shallow = "casedb".equals(id);
-                summarizeCaseContainer(sb, "    root", root, shallow ? 5 : 50);
+                summarizeCaseContainer(sb, "    root", root, 5, !shallow);
             }
         } catch (Exception e) {
             sb.append("\nERROR during inventory: ").append(e);
@@ -254,9 +254,11 @@ public class EntityListResponse extends MenuBean {
      * Describes a tree element that may be a container of cases. Handles both shapes:
      * - Root is directly a case container (e.g., CaseInstanceTreeElement): iterate root's children
      * - Root wraps a container (e.g., <results><case/></results>): recurse into first child
+     *
+     * fullScan=true iterates all children and emits a case_type histogram. fullScan=false caps.
      */
     private static void summarizeCaseContainer(StringBuilder sb, String indent,
-            AbstractTreeElement node, int sampleCap) {
+            AbstractTreeElement node, int sampleCap, boolean fullScan) {
         int kids = node.getNumChildren();
         sb.append("\n").append(indent)
                 .append(" name=").append(node.getName())
@@ -267,19 +269,29 @@ public class EntityListResponse extends MenuBean {
         }
         AbstractTreeElement first = node.getChildAt(0);
         if ("case".equals(first.getName())) {
-            int cap = Math.min(kids, sampleCap);
-            Set<String> caseTypes = new LinkedHashSet<>();
-            for (int j = 0; j < cap; j++) {
-                AbstractTreeElement caseNode = node.getChildAt(j);
-                caseTypes.add(String.valueOf(caseNode.getAttributeValue(null, "case_type")));
-            }
-            sb.append(" caseTypes=").append(caseTypes);
-            if (cap < kids) {
-                sb.append(" (sampled first ").append(cap).append(" of ").append(kids).append(")");
+            if (fullScan) {
+                Map<String, Integer> histogram = new LinkedHashMap<>();
+                for (int j = 0; j < kids; j++) {
+                    AbstractTreeElement caseNode = node.getChildAt(j);
+                    String t = String.valueOf(caseNode.getAttributeValue(null, "case_type"));
+                    histogram.merge(t, 1, Integer::sum);
+                }
+                sb.append(" caseTypes=").append(histogram);
+            } else {
+                int cap = Math.min(kids, sampleCap);
+                Set<String> caseTypes = new LinkedHashSet<>();
+                for (int j = 0; j < cap; j++) {
+                    AbstractTreeElement caseNode = node.getChildAt(j);
+                    caseTypes.add(String.valueOf(caseNode.getAttributeValue(null, "case_type")));
+                }
+                sb.append(" caseTypes=").append(caseTypes);
+                if (cap < kids) {
+                    sb.append(" (sampled first ").append(cap).append(" of ").append(kids).append(")");
+                }
             }
         } else if (kids == 1) {
             // Single wrapper child — recurse one level
-            summarizeCaseContainer(sb, indent + "  ", first, sampleCap);
+            summarizeCaseContainer(sb, indent + "  ", first, sampleCap, fullScan);
         }
     }
 
