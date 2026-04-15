@@ -238,37 +238,49 @@ public class EntityListResponse extends MenuBean {
                     sb.append(" root=null");
                     continue;
                 }
-                sb.append(" rootClass=").append(root.getClass().getSimpleName());
-                // Walk: root usually has a single child 'casedb'/'results', and that has 'case' children
-                int rootKids = root.getNumChildren();
-                sb.append(" rootChildren=").append(rootKids);
-                for (int i = 0; i < rootKids; i++) {
-                    AbstractTreeElement child = root.getChildAt(i);
-                    int grandKids = child.getNumChildren();
-                    sb.append("\n    ").append(child.getName())
-                            .append(" class=").append(child.getClass().getSimpleName())
-                            .append(" children=").append(grandKids);
-                    // For case instances, sample case_type across children
-                    if (grandKids > 0 && "case".equals(child.getChildAt(0).getName())) {
-                        int sampleCap = Math.min(grandKids, 500);
-                        Set<String> caseTypes = new LinkedHashSet<>();
-                        for (int j = 0; j < sampleCap; j++) {
-                            AbstractTreeElement caseNode = child.getChildAt(j);
-                            caseTypes.add(String.valueOf(
-                                    caseNode.getAttributeValue(null, "case_type")));
-                        }
-                        sb.append(" caseTypes=").append(caseTypes);
-                        if (sampleCap < grandKids) {
-                            sb.append(" (sampled first ").append(sampleCap)
-                                    .append(" of ").append(grandKids).append(")");
-                        }
-                    }
-                }
+                sb.append(" rootClass=").append(root.getClass().getSimpleName())
+                        .append(" rootName=").append(root.getName());
+                // Full casedb is huge and not the bug focus; only summarize it.
+                boolean shallow = "casedb".equals(id);
+                summarizeCaseContainer(sb, "    root", root, shallow ? 5 : 50);
             }
         } catch (Exception e) {
             sb.append("\nERROR during inventory: ").append(e);
         }
         return sb;
+    }
+
+    /**
+     * Describes a tree element that may be a container of cases. Handles both shapes:
+     * - Root is directly a case container (e.g., CaseInstanceTreeElement): iterate root's children
+     * - Root wraps a container (e.g., <results><case/></results>): recurse into first child
+     */
+    private static void summarizeCaseContainer(StringBuilder sb, String indent,
+            AbstractTreeElement node, int sampleCap) {
+        int kids = node.getNumChildren();
+        sb.append("\n").append(indent)
+                .append(" name=").append(node.getName())
+                .append(" class=").append(node.getClass().getSimpleName())
+                .append(" children=").append(kids);
+        if (kids == 0) {
+            return;
+        }
+        AbstractTreeElement first = node.getChildAt(0);
+        if ("case".equals(first.getName())) {
+            int cap = Math.min(kids, sampleCap);
+            Set<String> caseTypes = new LinkedHashSet<>();
+            for (int j = 0; j < cap; j++) {
+                AbstractTreeElement caseNode = node.getChildAt(j);
+                caseTypes.add(String.valueOf(caseNode.getAttributeValue(null, "case_type")));
+            }
+            sb.append(" caseTypes=").append(caseTypes);
+            if (cap < kids) {
+                sb.append(" (sampled first ").append(cap).append(" of ").append(kids).append(")");
+            }
+        } else if (kids == 1) {
+            // Single wrapper child — recurse one level
+            summarizeCaseContainer(sb, indent + "  ", first, sampleCap);
+        }
     }
 
     private static StringBuilder buildCaseTypeCheckFromEntities(String label,
