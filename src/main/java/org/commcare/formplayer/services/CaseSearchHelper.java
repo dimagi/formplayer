@@ -118,7 +118,7 @@ public class CaseSearchHelper {
         if (caseSearchStorage.isStorageExists()) {
             // return root as CaseInstanceTreeElement
             InstanceBase instanceBase = new InstanceBase(instanceId);
-            return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable);
+            return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable, caseSearchTableName);
         }
 
         throw new IOException("No response from server for case search query");
