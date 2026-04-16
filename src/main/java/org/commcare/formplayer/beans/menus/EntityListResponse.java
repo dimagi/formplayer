@@ -20,6 +20,7 @@ import org.commcare.suite.model.EndpointArgument;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.Style;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
+import org.commcare.cases.instance.StorageInstanceTreeElement;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
@@ -253,6 +254,12 @@ public class EntityListResponse extends MenuBean {
             // positions in casedb. If case_ids match, RecordObjectCache collision
             // (shared 'casedb' cache key across instances) is confirmed.
             appendCacheCollisionProbe(sb, ec);
+            // RecordObjectCache bulk-load / first-hit events captured during this
+            // request by StorageInstanceTreeElement.USH6370_DIAGNOSTIC_LOG.
+            StringBuilder diagLog = StorageInstanceTreeElement.USH6370_DIAGNOSTIC_LOG.get();
+            if (diagLog != null && diagLog.length() > 0) {
+                sb.append("\n  recordObjectCacheEvents:").append(diagLog);
+            }
         } catch (Exception e) {
             sb.append("\nERROR during inventory: ").append(e);
         }
