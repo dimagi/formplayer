@@ -1,0 +1,20 @@
+Trace
+—
+a2c1823b10f54cb0925a37824050b9e6
+
+Warning
+—
+Reported timezone America/Chicago generated tz name Central Standard Time with offset -18000000 which is different than reported offset -21600000 BrowserValuesProvider$TzDiscrepancyException BrowserValuesProvider.java checkTzDiscrepancy POST /navigate_menu
+
+Error
+—
+USH-6370 getExternalRoot returning tree: table=CCCase_d388317282c6e8e53cc16941c0c3a48c cacheKeyHash=e80590f4 storageCount=1189 caseTypes=[capacity] POST /navigate_menu
+
+Error
+—
+USH-6370 EvalContext inventory datumId=search_case_id nodeset=instance(results)/results/case[@case_type = 'capacity'][not(commcare_is_related_case = true())] shortDetail=m0_search_short instances=[casedb, results, search-input:results, commcaresession] casedb class=CaseDataInstance instanceId=casedb ref=jr://instance/casedb sourceUri=null useCaseTemplate=true rootClass=CaseInstanceTreeElement rootName=casedb storageCacheName=casedb root name=casedb class=CaseInstanceTreeElement children=455 caseTypes=[commcare-case-claim] (sampled first 5 of 455) results class=CaseDataInstance instanceId=results ref=jr://instance/remote/results sourceUri=https://staging.commcarehq.org/a/co-carecoordination-test/phone/search/f49bfa2f43854db4ab124e9dcdba1978/ useCaseTemplate=true rootClass=CaseInstanceTreeElement rootName=casedb storageCacheName=casedb root name=casedb class=CaseInstanceTreeElement children=1189 caseTypes={capacity=1189} search-input:results class=ExternalDataInstance instanceId=search-input:results ref=jr://instance/search-input/results sourceUri=null useCaseTemplate=false rootClass=TreeElement rootName=input root name=input class=TreeElement children=0 commcaresession class=ExternalDataInstance instanceId=commcaresession ref=jr://instance/session sourceUri=null useCaseTemplate=false rootClass=TreeElement rootName=session root name=session class=TreeElement children=3 cacheCollisionProbe: (no non-capacity positions found in results — cache clean this run) recordObjectCacheEvents: BULK_LOAD key=casedb te=1107500281 storage=1559892410 cache=1691588858 count=1189 firstIds=[1,2,3,4,5] HIT key=casedb te=1107500281 storage=1559892410 cache=1691588858 firstRecordId=2 BULK_LOAD key=casedb te=732472401 storage=1905688841 cache=2112698688 count=1189 firstIds=[1,2,3,4,5] POST /navigate_menu
+
+Error
+—
+USH-6370 Checking at 'entityListScreen.getEntities' ok POST /navigate_menu
+

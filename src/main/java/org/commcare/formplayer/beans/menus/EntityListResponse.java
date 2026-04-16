@@ -2,6 +2,8 @@ package org.commcare.formplayer.beans.menus;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.entity.Entity;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
@@ -17,6 +19,8 @@ import org.commcare.suite.model.EndpointAction;
 import org.commcare.suite.model.EndpointArgument;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.Style;
+import org.commcare.cases.instance.CaseInstanceTreeElement;
+import org.commcare.cases.instance.StorageInstanceTreeElement;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
@@ -24,16 +28,16 @@ import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.AbstractTreeElement;
+import org.javarosa.core.model.instance.DataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.NoLocalizedTextException;
 import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Predicate;
 
 import datadog.trace.api.Trace;
@@ -42,6 +46,8 @@ import datadog.trace.api.Trace;
  * Created by willpride on 4/13/16.
  */
 public class EntityListResponse extends MenuBean {
+    private static final Log log = LogFactory.getLog(EntityListResponse.class);
+
     private EntityBean[] entities;
     private DisplayElement[] actions;
     private String redoLast;
@@ -83,12 +89,15 @@ public class EntityListResponse extends MenuBean {
         // subscreen should be of type EntityListSubscreen in order to init this response class
         Subscreen subScreen = nextScreen.getCurrentScreen();
         if (subScreen instanceof EntityListSubscreen) {
-            EntityListSubscreen entityListScreen = ((EntityListSubscreen)nextScreen.getCurrentScreen());
+            EntityListSubscreen entityListScreen = ((EntityListSubscreen) nextScreen.getCurrentScreen());
             Vector<Action> entityListActions = entityListScreen.getActions();
             this.actions = processActions(nextScreen.getSession(), entityListActions);
             this.redoLast = processRedoLast(entityListActions);
 
             List<Entity<TreeReference>> entityList = entityListScreen.getEntities();
+            StringBuilder sb1 = buildCaseTypeCheckFromEntities(
+                    "entityListScreen.getEntities", entityList);
+
             EntityScreenContext entityScreenContext = nextScreen.getEntityScreenContext();
             int casesPerPage = entityScreenContext.getCasesPerPage();
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
@@ -96,12 +105,19 @@ public class EntityListResponse extends MenuBean {
             Detail detail = nextScreen.getShortDetail();
             List<Entity<TreeReference>> entitesForPage = paginateEntities(entityList, detail, casesPerPage,
                     offset);
+            StringBuilder sb2 = buildCaseTypeCheckFromEntities(
+                    "paginateEntities", entitesForPage);
+
             EvaluationContext ec = nextScreen.getEvalContext();
             SessionWrapper session = nextScreen.getSession();
-            EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
+            EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
             List<EntityBean> entityBeans = processEntitiesForCaseList(entitesForPage, ec, neededDatum);
             entities = new EntityBean[entityBeans.size()];
             entityBeans.toArray(entities);
+
+            StringBuilder sb3 = buildCaseTypeCheckFromBeans(
+                    "processEntitiesForCaseList", entities);
+
             setNoItemsText(getNoItemsTextLocaleString(detail));
             setSelectText(getSelectTextLocaleString(detail));
             hasDetails = nextScreen.getLongDetail() != null;
@@ -117,7 +133,7 @@ public class EntityListResponse extends MenuBean {
             this.sortIndices = detail.getOrderedFieldIndicesForSorting();
             isMultiSelect = nextScreen instanceof MultiSelectEntityScreen;
             if (isMultiSelect) {
-                maxSelectValue = ((MultiSelectEntityScreen)nextScreen).getMaxSelectValue();
+                maxSelectValue = ((MultiSelectEntityScreen) nextScreen).getMaxSelectValue();
             }
             if (detail.getGroup() != null) {
                 groupHeaderRows = detail.getGroup().getHeaderRows();
@@ -125,10 +141,18 @@ public class EntityListResponse extends MenuBean {
 
             QueryScreen queryScreen = nextScreen.getQueryScreen();
             if (queryScreen != null) {
+//                sb.append("\nqueryScreen");
                 setQueryKey(queryScreen.getQueryKey());
                 if (FeatureFlagChecker.isToggleEnabled(TOGGLE_SPLIT_SCREEN_CASE_SEARCH)) {
                     queryResponse = new QueryResponseBean(queryScreen);
                 }
+            }
+            if (this.headers.length > 0 && this.headers[0].equals("Case Type")) {
+                log.error(buildEvalContextInventory(nextScreen).toString());
+                log.error(sb1.toString());
+                // Silenced to reduce Sentry volume — sb2/sb3 confirmed to track sb1 in prior runs.
+                // log.error(sb2.toString());
+                // log.error(sb3.toString());
             }
         }
     }
@@ -170,9 +194,221 @@ public class EntityListResponse extends MenuBean {
             EntityDatum neededDatum) {
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
-            entities.add(toEntityBean(entity, ec, neededDatum));
+            EntityBean bean = toEntityBean(entity, ec, neededDatum);
+            entities.add(bean);
         }
         return entities;
+    }
+
+    private static StringBuilder buildEvalContextInventory(EntityScreen nextScreen) {
+        StringBuilder sb = new StringBuilder("USH-6370 EvalContext inventory ");
+        try {
+            EvaluationContext ec = nextScreen.getEvalContext();
+            SessionWrapper session = nextScreen.getSession();
+            EntityDatum datum = null;
+            try {
+                datum = (EntityDatum) session.getNeededDatum();
+            } catch (Exception ignore) {
+                // leave null
+            }
+            if (datum != null) {
+                TreeReference nodeset = datum.getNodeset();
+                sb.append("\ndatumId=").append(datum.getDataId())
+                        .append(" nodeset=").append(nodeset == null ? "null" : nodeset.toString())
+                        .append(" shortDetail=").append(datum.getShortDetail());
+            }
+            List<String> instanceIds = ec.getInstanceIds();
+            sb.append("\ninstances=").append(instanceIds);
+            for (String id : instanceIds) {
+                DataInstance inst = ec.getInstance(id);
+                if (inst == null) {
+                    sb.append("\n  ").append(id).append(" -> null");
+                    continue;
+                }
+                sb.append("\n  ").append(id)
+                        .append(" class=").append(inst.getClass().getSimpleName())
+                        .append(" instanceId=").append(inst.getInstanceId());
+                if (inst instanceof ExternalDataInstance) {
+                    ExternalDataInstance ext = (ExternalDataInstance) inst;
+                    sb.append(" ref=").append(ext.getReference());
+                    ExternalDataInstanceSource src = ext.getSource();
+                    sb.append(" sourceUri=").append(src == null ? "null" : src.getSourceUri());
+                    sb.append(" useCaseTemplate=").append(ext.useCaseTemplate());
+                }
+                AbstractTreeElement root = inst.getRoot();
+                if (root == null) {
+                    sb.append(" root=null");
+                    continue;
+                }
+                sb.append(" rootClass=").append(root.getClass().getSimpleName())
+                        .append(" rootName=").append(root.getName());
+                if (root instanceof CaseInstanceTreeElement) {
+                    sb.append(" storageCacheName=")
+                            .append(((CaseInstanceTreeElement) root).getStorageCacheName());
+                }
+                // Full scan the results instance (the one we care about); sample casedb.
+                boolean shallow = "casedb".equals(id);
+                summarizeCaseContainer(sb, "    root", root, 5, !shallow);
+            }
+            // Cross-reference: if results has non-capacity cases, compare the same
+            // positions in casedb. If case_ids match, RecordObjectCache collision
+            // (shared 'casedb' cache key across instances) is confirmed.
+            appendCacheCollisionProbe(sb, ec);
+            // RecordObjectCache bulk-load / first-hit events captured during this
+            // request by StorageInstanceTreeElement.USH6370_DIAGNOSTIC_LOG.
+            StringBuilder diagLog = StorageInstanceTreeElement.USH6370_DIAGNOSTIC_LOG.get();
+            if (diagLog != null && diagLog.length() > 0) {
+                sb.append("\n  recordObjectCacheEvents:").append(diagLog);
+            }
+        } catch (Exception e) {
+            sb.append("\nERROR during inventory: ").append(e);
+        }
+        return sb;
+    }
+
+    private static void appendCacheCollisionProbe(StringBuilder sb, EvaluationContext ec) {
+        DataInstance resultsInst = ec.getInstance("results");
+        DataInstance casedbInst = ec.getInstance("casedb");
+        if (resultsInst == null || casedbInst == null) {
+            return;
+        }
+        AbstractTreeElement resultsRoot = resultsInst.getRoot();
+        AbstractTreeElement casedbRoot = casedbInst.getRoot();
+        if (resultsRoot == null || casedbRoot == null) {
+            return;
+        }
+        int resultsKids = resultsRoot.getNumChildren();
+        int casedbKids = casedbRoot.getNumChildren();
+        if (resultsKids == 0 || casedbKids == 0) {
+            return;
+        }
+        // Find up to 3 positions in results where case_type != capacity and pos < casedbKids
+        sb.append("\n  cacheCollisionProbe:");
+        int samples = 0;
+        for (int j = 0; j < resultsKids && samples < 3; j++) {
+            AbstractTreeElement rKid = resultsRoot.getChildAt(j);
+            String rType = String.valueOf(rKid.getAttributeValue(null, "case_type"));
+            if ("capacity".equals(rType)) {
+                continue;
+            }
+            String rId = String.valueOf(rKid.getAttributeValue(null, "case_id"));
+            String cId = null;
+            String cType = null;
+            if (j < casedbKids) {
+                AbstractTreeElement cKid = casedbRoot.getChildAt(j);
+                cId = String.valueOf(cKid.getAttributeValue(null, "case_id"));
+                cType = String.valueOf(cKid.getAttributeValue(null, "case_type"));
+            }
+            boolean sameId = cId != null && cId.equals(rId);
+            sb.append("\n    pos=").append(j)
+                    .append(" results(id=").append(rId).append(", type=").append(rType).append(")")
+                    .append(" casedb(id=").append(cId).append(", type=").append(cType).append(")")
+                    .append(" match=").append(sameId);
+            samples++;
+        }
+        if (samples == 0) {
+            sb.append(" (no non-capacity positions found in results — cache clean this run)");
+        }
+    }
+
+    /**
+     * Describes a tree element that may be a container of cases. Handles both shapes:
+     * - Root is directly a case container (e.g., CaseInstanceTreeElement): iterate root's children
+     * - Root wraps a container (e.g., <results><case/></results>): recurse into first child
+     *
+     * fullScan=true iterates all children and emits a case_type histogram. fullScan=false caps.
+     */
+    private static void summarizeCaseContainer(StringBuilder sb, String indent,
+            AbstractTreeElement node, int sampleCap, boolean fullScan) {
+        int kids = node.getNumChildren();
+        sb.append("\n").append(indent)
+                .append(" name=").append(node.getName())
+                .append(" class=").append(node.getClass().getSimpleName())
+                .append(" children=").append(kids);
+        if (kids == 0) {
+            return;
+        }
+        AbstractTreeElement first = node.getChildAt(0);
+        if ("case".equals(first.getName())) {
+            if (fullScan) {
+                Map<String, Integer> histogram = new LinkedHashMap<>();
+                for (int j = 0; j < kids; j++) {
+                    AbstractTreeElement caseNode = node.getChildAt(j);
+                    String t = String.valueOf(caseNode.getAttributeValue(null, "case_type"));
+                    histogram.merge(t, 1, Integer::sum);
+                }
+                sb.append(" caseTypes=").append(histogram);
+            } else {
+                int cap = Math.min(kids, sampleCap);
+                Set<String> caseTypes = new LinkedHashSet<>();
+                for (int j = 0; j < cap; j++) {
+                    AbstractTreeElement caseNode = node.getChildAt(j);
+                    caseTypes.add(String.valueOf(caseNode.getAttributeValue(null, "case_type")));
+                }
+                sb.append(" caseTypes=").append(caseTypes);
+                if (cap < kids) {
+                    sb.append(" (sampled first ").append(cap).append(" of ").append(kids).append(")");
+                }
+            }
+        } else if (kids == 1) {
+            // Single wrapper child — recurse one level
+            summarizeCaseContainer(sb, indent + "  ", first, sampleCap, fullScan);
+        }
+    }
+
+    private static StringBuilder buildCaseTypeCheckFromEntities(String label,
+            List<Entity<TreeReference>> entityList) {
+        StringBuilder sb = new StringBuilder("USH-6370 Checking at '").append(label).append("' ");
+        Set<String> caseTypes = new HashSet<>();
+        for (Entity<TreeReference> e : entityList) {
+            Object[] data = e.getData();
+            if (data != null && data.length > 0 && data[0] != null) {
+                caseTypes.add(data[0].toString());
+            }
+        }
+        if (caseTypes.size() > 1) {
+            sb.append("mismatch")
+                    .append("\nExpected all 'Case Type's to be the same. Got: ")
+                    .append(caseTypes);
+            for (Entity<TreeReference> e : entityList) {
+                Object[] data = e.getData();
+                sb.append("\n")
+                        .append(e.getElement() == null ? "" : e.getElement().toString())
+                        .append(": ")
+                        .append(data != null && data.length > 0 && data[0] != null
+                                ? data[0].toString() : "null");
+            }
+        } else {
+            sb.append("ok");
+        }
+        return sb;
+    }
+
+    private static StringBuilder buildCaseTypeCheckFromBeans(String label, EntityBean[] entities) {
+        StringBuilder sb = new StringBuilder("USH-6370 Checking at '").append(label).append("' ");
+        Set<String> caseTypes = new HashSet<>();
+        for (EntityBean entity : entities) {
+            Object[] data = entity.getData();
+            if (data != null && data.length > 0 && data[0] != null) {
+                caseTypes.add(data[0].toString());
+            }
+        }
+        if (caseTypes.size() > 1) {
+            sb.append("mismatch")
+                    .append("\nExpected all 'Case Type's to be the same. Got: ")
+                    .append(caseTypes);
+            for (EntityBean entity : entities) {
+                Object[] data = entity.getData();
+                sb.append("\n")
+                        .append(entity.getId())
+                        .append(": ")
+                        .append(data != null && data.length > 0 && data[0] != null
+                                ? data[0].toString() : "null");
+            }
+        } else {
+            sb.append("ok");
+        }
+        return sb;
     }
 
     private List<Entity<TreeReference>> paginateEntities(

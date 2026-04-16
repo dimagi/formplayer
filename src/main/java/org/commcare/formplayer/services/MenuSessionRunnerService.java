@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.data.xml.VirtualInstances;
+import org.commcare.formplayer.application.MenuController;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
@@ -191,6 +192,7 @@ public class MenuSessionRunnerService {
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse((EntityScreen)nextScreen);
+//            MenuController.logCaseTypeColumnIfPresent(menuResponseBean, "getNextMenu", log);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
             // using getBestTitle to eliminate risk of showing private information
@@ -301,6 +303,7 @@ public class MenuSessionRunnerService {
                                             NotificationMessage.Tag.sync),
                                     true);
                         }
+//                        log.error("USH-6370_2: advanceSessionWithSelections: postSyncResponse");
                         return postSyncResponse;
                     }
                 } else {
@@ -325,6 +328,7 @@ public class MenuSessionRunnerService {
                 queryData,
                 entityScreenContext
         );
+//        MenuController.logCaseTypeColumnIfPresent(nextResponse, "advanceSessionWithSelections", log);
         restoreFactory.cacheSessionSelections(menuSession.getSelections());
 
         if (nextResponse != null) {
@@ -333,11 +337,13 @@ public class MenuSessionRunnerService {
             }
             log.info("Returning menu: " + nextResponse);
             nextResponse.setSelections(menuSession.getSelections());
+//            log.error("USH-6370_2: advanceSessionWithSelections: nextResponse");
             return nextResponse;
         } else {
             if (notificationMessage == null) {
                 notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
             }
+//            log.error("USH-6370_2: advanceSessionWithSelections: BaseResponseBean");
             return new BaseResponseBean(null, notificationMessage, true);
         }
     }
@@ -390,7 +396,10 @@ public class MenuSessionRunnerService {
                 // Auto select if we have not advanced as part of auto launch
                 // avoiding unnecessary screen init by skipping the original screen
                 if (!sessionAdvanced && iterationCount != 0) {
-                    nextScreen.init(menuSession.getSessionWrapper());
+                    StringBuilder sb = new StringBuilder();
+                    nextScreen.init(menuSession.getSessionWrapper(), sb);
+                    // Silenced to reduce Sentry volume — dumps 200+ case IDs per call.
+                    // log.error(sb.toString());
                     if (nextScreen.shouldBeSkipped()) {
                         sessionAdvanced = ((EntityScreen)nextScreen).autoSelectEntities(
                                 menuSession.getSessionWrapper());

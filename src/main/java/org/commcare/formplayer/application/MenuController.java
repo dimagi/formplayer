@@ -18,6 +18,7 @@ import org.commcare.formplayer.services.ResponseMetaDataTracker;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.NotificationLogger;
+import org.commcare.cases.instance.StorageInstanceTreeElement;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.EntityScreenContext;
 import org.commcare.util.screen.Screen;
@@ -32,6 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -162,39 +165,45 @@ public class MenuController extends AbstractBaseController {
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
-        String[] selections = sessionNavigationBean.getSelections();
-        if (selections == null) {
-            selections = new String[0];
-        }
-        MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
-        EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText(),
-                sessionNavigationBean.getSortIndex(),
-                sessionNavigationBean.getCasesPerPage(),
-                sessionNavigationBean.getSelectedValues(),
-                null,
-                storageFactory.getPropertyManager().isFuzzySearchEnabled());
-        BaseResponseBean response = runnerService.advanceSessionWithSelections(
-                menuSession,
-                selections,
-                sessionNavigationBean.getQueryData(),
-                entityScreenContext,
-                sessionNavigationBean.getFormSessionId()
-        );
+        // USH-6370: capture RecordObjectCache bulk-load / first-hit events
+        // across the whole request. Retrieved & logged in EntityListResponse
+        // when the Case Type header matches.
+        StorageInstanceTreeElement.USH6370_DIAGNOSTIC_LOG.set(new StringBuilder());
+        try {
+            String[] selections = sessionNavigationBean.getSelections();
+            if (selections == null) {
+                selections = new String[0];
+            }
+            MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(sessionNavigationBean);
+            EntityScreenContext entityScreenContext = new EntityScreenContext(sessionNavigationBean.getOffset(),
+                    sessionNavigationBean.getSearchText(),
+                    sessionNavigationBean.getSortIndex(),
+                    sessionNavigationBean.getCasesPerPage(),
+                    sessionNavigationBean.getSelectedValues(),
+                    null,
+                    storageFactory.getPropertyManager().isFuzzySearchEnabled());
+            BaseResponseBean response = runnerService.advanceSessionWithSelections(
+                    menuSession,
+                    selections,
+                    sessionNavigationBean.getQueryData(),
+                    entityScreenContext,
+                    sessionNavigationBean.getFormSessionId()
+            );
 
-        String domain = sessionNavigationBean.getDomain();
-        if (domain != null && domain.startsWith("co-carecoordination")) {
-            logUSH6370(response);
-        }
-        setResponseMetaData(response);
+            // Silenced to reduce Sentry volume — redundant with EntityListResponse sb1 in prior runs.
+            // logCaseTypeColumnIfPresent(response, "controller", log);
+            setResponseMetaData(response);
 
-        SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
-                response);
-        if (formSubmissionResponse != null) {
-            return formSubmissionResponse;
-        } else {
-            notificationLogger.logNotification(response.getNotification(), request);
-            return setLocationNeeds(response, menuSession);
+            SubmitResponseBean formSubmissionResponse = handleAutoFormSubmission(request, sessionNavigationBean,
+                    response);
+            if (formSubmissionResponse != null) {
+                return formSubmissionResponse;
+            } else {
+                notificationLogger.logNotification(response.getNotification(), request);
+                return setLocationNeeds(response, menuSession);
+            }
+        } finally {
+            StorageInstanceTreeElement.USH6370_DIAGNOSTIC_LOG.remove();
         }
     }
 
@@ -215,6 +224,38 @@ public class MenuController extends AbstractBaseController {
             if (blankEntities > 0) {
                 log.error("USH-6370 response with " + blankEntities + " leading **** in first column");
             }
+        }
+    }
+
+    public static void logCaseTypeColumnIfPresent(BaseResponseBean response, String label, Log log) {
+
+        if (response instanceof EntityListResponse entityListResponse &&
+                entityListResponse.getEntities().length > 0 &&
+                entityListResponse.getHeaders().length > 0 &&
+                entityListResponse.getHeaders()[0].equals("Case Type")
+        ) {
+            StringBuilder sb = new StringBuilder("USH-6370 Checking at '" + label + "' ");
+
+            Set<String> caseTypes = new HashSet<>();
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                caseTypes.add(entity.getData()[0].toString());
+            }
+            if (caseTypes.size() > 1) {
+                sb.append("mismatch");
+                sb.append("\nExpected all 'Case Type's to be the same at '")
+                        .append(label)
+                        .append("'. Got: ")
+                        .append(caseTypes);
+            } else {
+                sb.append("ok");
+            }
+            for (EntityBean entity : entityListResponse.getEntities()) {
+                sb.append("\n")
+                        .append(entity.getId())
+                        .append(": ")
+                        .append(entity.getData()[0].toString());
+            }
+            log.error(sb.toString());
         }
     }
 
