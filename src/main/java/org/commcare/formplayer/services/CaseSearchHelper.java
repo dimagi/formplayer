@@ -122,7 +122,8 @@ public class CaseSearchHelper {
             // return root as CaseInstanceTreeElement
             InstanceBase instanceBase = new InstanceBase(instanceId);
             logStorageSnapshotBeforeReturn(caseSearchTableName, cacheKey, caseSearchStorage);
-            return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable);
+            return new CaseInstanceTreeElement(instanceBase, caseSearchStorage,
+                    caseSearchIndexTable, caseSearchTableName);
         }
 
         throw new IOException("No response from server for case search query");
