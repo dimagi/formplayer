@@ -54,9 +54,43 @@ BULK_LOAD key=casedb te=732472401  cache=2112698688 count=1189
 
 Different `cache=` hashes. No cross-instance events.
 
-### 4. Intermittency explained
+### 4. Why clickable icons trigger the collision
 
-The collision only occurs when both instances share the same `QueryContext` (and thus the same `RecordObjectCache`). Whether this happens depends on how the evaluation context forks query contexts during nodeset evaluation — which varies by execution path and request state. This is why identical requests from the test script produce different outcomes.
+The bug reproduces on case lists with "clickable icons" — detail fields whose XPath cross-references `instance('casedb')`. The test app's clickable icon field uses:
+
+```xpath
+if(selected(
+  instance('casedb')/casedb/case[
+    @case_id = instance('casedb')/casedb/case[
+      @case_type = 'commcare-user'
+    ][hq_user_id = instance('commcaresession')/session/context/userid]/@case_id
+  ]/favorite_clinic_case_ids,
+  current()/index/parent),
+'yes', 'no')
+```
+
+This expression queries `instance('casedb')` during entity detail field evaluation. During `NodeEntityFactory.getEntity()`, each entity's detail field template is evaluated via `f.getTemplate().evaluate(nodeContext)`. This XPath hits the user's `CaseInstanceTreeElement`, triggering `tryBatchChildFetch` → `reportBulkRecordSet` with key `"casedb"`. The user's casedb records get bulk-loaded into the `RecordObjectCache` under key `"casedb"`.
+
+When the case search `results` instance later does its own bulk load, it uses the same key `"casedb"` in the same `RecordObjectCache` (shared via `QueryContext` parent chain — `QueryCacheHost.getQueryCacheOrNull` walks up parents at `QueryCacheHost.java:60-63`). Records from the user's casedb overwrite or are read in place of records from the search table.
+
+Apps without `instance('casedb')` references in their detail fields never load the user's casedb during entity evaluation, so the collision never fires.
+
+### 5. Intermittency
+
+The collision mechanism is confirmed by the diagnostic logs: in failure runs, two tree elements with different storage objects share a single `RecordObjectCache` instance and one reads the other's data. In success runs, each tree element gets its own `RecordObjectCache` instance — no cross-instance reads.
+
+The exact trigger for this difference is **not fully explained**. The cache is per-request, request handling is single-threaded, and the inputs are identical between iterations. The `RecordObjectCache` topology (shared vs separate) should therefore be deterministic — yet it isn't.
+
+Evidence that the inputs are the same:
+- Both sentry_8_mismatch and sentry_8_ok show `casedb children=455` and `results children=1189`
+- Same table name, same cache key hash, same storage counts
+
+Candidates for the remaining non-determinism:
+- **QueryContext forking differences.** The `RecordObjectCache` is obtained via `QueryCacheHost.getQueryCacheOrNull`, which walks a parent chain. Whether two tree elements end up in the same or different `QueryContext` branch depends on scope escalation decisions in the evaluation engine. A subtle difference in evaluation order could produce a different `QueryContext` topology.
+- **State from prior iterations.** The test script clicks a random case between list requests. If this triggers a case claim, the casedb grows by one case per iteration. We observed casedb growing from 389 to 455 across test runs. Within a single run the growth could shift record ID distributions and affect query planner behavior.
+- **Something not yet identified.** A debugger session stepping through `QueryContext.checkForDerivativeContextAndReturn` and `QueryCacheHost.getQueryCache` on both a success and failure iteration would pin down the exact divergence point.
+
+The fix is correct regardless of the intermittency trigger: unique cache keys make cross-instance reads impossible no matter what the `QueryContext` topology looks like.
 
 ## Fix
 
