@@ -9,6 +9,7 @@ forms.m1f1=Close
 homescreen.title=Case Claim
 lang.current=en
 m0.case_long.case_name_1.header=Name
+m0.search_short.open_cases.header=Open Cases
 m0.case_long.title=Cases
 m0.case_short.case_name_1.header=Name
 m0.case_short.title=Cases

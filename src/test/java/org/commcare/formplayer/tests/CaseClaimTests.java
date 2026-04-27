@@ -358,10 +358,13 @@ public class CaseClaimTests extends BaseTestClass {
         assertEquals(entityDetailResponse.length, 1);
         entityDetailResponseItem = entityDetailResponse[0];
         detailFields = entityDetailResponseItem.getDetails();
-        assertEquals(detailFields.length, 3);
+        assertEquals(detailFields.length, 4);
         assertEquals(detailFields[0], "Burt Maclin");
         assertEquals(detailFields[1], "Burt Maclin");
         assertEquals(detailFields[2], "Kurt Maclin");
+        // Field 3: instance('casedb') cross-reference added to exercise USH-6370 collision path.
+        // The restore (caseclaim.xml) has 7 open 'case'-type cases.
+        assertEquals(detailFields[3], "7");
     }
 
     @Test
