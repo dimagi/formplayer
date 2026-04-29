@@ -13,6 +13,8 @@ import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.instance.StorageInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.query.QueryContext;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.utils.*;
 import org.commcare.modern.engine.cases.RecordObjectCache;
 import org.commcare.formplayer.application.MenuController;
 import org.commcare.formplayer.services.CaseSearchHelper;
@@ -31,8 +33,6 @@ import org.commcare.formplayer.junit.StorageFactoryExtension;
 import org.commcare.formplayer.junit.request.Response;
 import org.commcare.formplayer.junit.request.SessionNavigationRequest;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
-import org.commcare.formplayer.utils.HqUserDetails;
-import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -41,8 +41,6 @@ import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.sqlitedb.CaseSearchDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
-import org.commcare.formplayer.utils.MockRequestUtils;
-import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.MD5;
@@ -243,10 +241,8 @@ public class CaseSearchResultsInStorageTests {
      * under the same "casedb" key, causing cross-instance data pollution (USH-6370).
      */
     @Test
+    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
     public void testCaseSearchResultsHaveUniqueStorageCacheNameWithFfOn() throws Exception {
-        WithHqUserSecurityContextFactory.setSecurityContext(
-                HqUserDetails.builder().enabledToggles(new String[]{"CASE_SEARCH_CACHE_KEY"}).build()
-        );
 
         ImmutableMultimap<String, String> requestData = ImmutableMultimap.of(
                 "case_type", "case1",
@@ -272,6 +268,34 @@ public class CaseSearchResultsInStorageTests {
                     "Storage cache name should be prefixed with 'casedb:'");
         }
     }
+
+    @Test
+//    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
+    public void testCaseSearchResultsHaveUniqueStorageCacheNameWithFfOff() throws Exception {
+
+        ImmutableMultimap<String, String> requestData = ImmutableMultimap.of(
+                "case_type", "case1",
+                "case_type", "case2",
+                "case_type", "case3",
+                "include_closed", "False");
+
+        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
+                "query_responses/case_claim_response.xml")) {
+            var instance = caseSearchHelper.getRemoteDataInstance(
+                    "results", true,
+                    new java.net.URL("http://localhost:8000/a/test/phone/search/"),
+                    requestData, false);
+
+            var root = instance.getRoot();
+            assertTrue(root instanceof CaseInstanceTreeElement,
+                    "Expected CaseInstanceTreeElement for indexed case search results");
+
+            String cacheName = ((CaseInstanceTreeElement) root).getStorageCacheName();
+            assertEquals(CaseInstanceTreeElement.MODEL_NAME, cacheName,
+                    "Case search results uses plain 'casedb' as storage cache name");
+        }
+    }
+
 
     @Test
     public void testCaseSearchResultsStorageCacheNameClashes() throws Exception {
@@ -350,10 +374,8 @@ public class CaseSearchResultsInStorageTests {
      * doesn't break any step of the claim workflow.
      */
     @Test
+    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
     public void testCaseClaimFlowWithFfOn() throws Exception {
-        WithHqUserSecurityContextFactory.setSecurityContext(
-                HqUserDetails.builder().enabledToggles(new String[]{"CASE_SEARCH_CACHE_KEY"}).build()
-        );
 
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
                 "query_responses/case_claim_response.xml")) {
@@ -414,11 +436,8 @@ public class CaseSearchResultsInStorageTests {
      */
     @Test
     @SuppressWarnings("unchecked")
+    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
     public void testUniqueStorageKeyPreventsRecordObjectCacheCollision() throws Exception {
-        WithHqUserSecurityContextFactory.setSecurityContext(
-                HqUserDetails.builder().enabledToggles(new String[]{"CASE_SEARCH_CACHE_KEY"}).build()
-        );
-
         ImmutableMultimap<String, String> requestData = ImmutableMultimap.of(
                 "case_type", "case1",
                 "case_type", "case2",
