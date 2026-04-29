@@ -311,15 +311,11 @@ public class CaseSearchResultsInStorageTests {
      * unique cache keys per storage table prevent any cross-instance contamination.
      *
      * Verifies that:
-     * - entity data from instance('results') is correct (would be "" without fix)
+     * - entity data from instance('results') is correct (would return '' if a cache collision occurred)
      * - entity data from the instance('casedb') cross-reference field is also correct
      */
     @Test
     public void testCaseListWithCasedbCrossReferenceInSearchDetail() throws Exception {
-        WithHqUserSecurityContextFactory.setSecurityContext(
-                HqUserDetails.builder().enabledToggles(new String[]{"CASE_SEARCH_CACHE_KEY"}).build()
-        );
-
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
                 "query_responses/case_claim_response.xml")) {
             Response<EntityListResponse> response = navigate(new String[]{"1", "action 1"},
