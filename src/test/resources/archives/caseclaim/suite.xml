@@ -224,6 +224,18 @@
         </text>
       </template>
     </field>
+    <field>
+      <header>
+        <text>
+          <locale id="m0.search_short.open_cases.header"/>
+        </text>
+      </header>
+      <template>
+        <text>
+          <xpath function="count(instance('casedb')/casedb/case[@case_type='case'][@status='open'])"/>
+        </text>
+      </template>
+    </field>
     <action redo_last="true">
       <display>
         <text>
