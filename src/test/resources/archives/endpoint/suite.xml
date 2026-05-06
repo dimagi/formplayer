@@ -489,7 +489,7 @@
     <instance id="commcaresession" src="jr://instance/session"/>
     <instance id="results:inline" src="jr://instance/remote/results:inline"/>
     <session>
-      <query url="http://localhost:8000/a/test-1/phone/search/343af03494944cf4affdf775964eba54/" storage-instance="results:inline" template="case" default_search="true" dynamic_search="false">
+      <query url="http://localhost:8000/a/test-1/phone/search/343af03494944cf4affdf775964eba54/" storage-instance="results:inline" template="case" default_search="true">
         <data key="case_type" ref="'case'"/>
         <prompt key="name">
           <display>
@@ -520,7 +520,7 @@
     <instance id="commcaresession" src="jr://instance/session"/>
     <instance id="results:inline" src="jr://instance/remote/results:inline"/>
     <session>
-      <query url="http://localhost:8000/a/test-1/phone/search/343af03494944cf4affdf775964eba54/" storage-instance="results:inline" template="case" default_search="true" dynamic_search="false">
+      <query url="http://localhost:8000/a/test-1/phone/search/343af03494944cf4affdf775964eba54/" storage-instance="results:inline" template="case" default_search="true">
         <data key="case_type" ref="'case'"/>
         <prompt key="name">
           <display>
