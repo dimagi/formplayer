@@ -241,8 +241,7 @@ public class CaseSearchResultsInStorageTests {
      * under the same "casedb" key, causing cross-instance data pollution (USH-6370).
      */
     @Test
-    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
-    public void testCaseSearchResultsHaveUniqueStorageCacheNameWithFfOn() throws Exception {
+    public void testCaseSearchResultsHaveUniqueStorageCacheName() throws Exception {
 
         ImmutableMultimap<String, String> requestData = ImmutableMultimap.of(
                 "case_type", "case1",
@@ -268,62 +267,6 @@ public class CaseSearchResultsInStorageTests {
                     "Storage cache name should be prefixed with 'casedb:'");
         }
     }
-
-    @Test
-//    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
-    public void testCaseSearchResultsHaveUniqueStorageCacheNameWithFfOff() throws Exception {
-
-        ImmutableMultimap<String, String> requestData = ImmutableMultimap.of(
-                "case_type", "case1",
-                "case_type", "case2",
-                "case_type", "case3",
-                "include_closed", "False");
-
-        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
-                "query_responses/case_claim_response.xml")) {
-            var instance = caseSearchHelper.getRemoteDataInstance(
-                    "results", true,
-                    new java.net.URL("http://localhost:8000/a/test/phone/search/"),
-                    requestData, false);
-
-            var root = instance.getRoot();
-            assertTrue(root instanceof CaseInstanceTreeElement,
-                    "Expected CaseInstanceTreeElement for indexed case search results");
-
-            String cacheName = ((CaseInstanceTreeElement) root).getStorageCacheName();
-            assertEquals(CaseInstanceTreeElement.MODEL_NAME, cacheName,
-                    "Case search results uses plain 'casedb' as storage cache name");
-        }
-    }
-
-
-    @Test
-    public void testCaseSearchResultsStorageCacheNameClashes() throws Exception {
-
-        ImmutableMultimap<String, String> requestData = ImmutableMultimap.of(
-                "case_type", "case1",
-                "case_type", "case2",
-                "case_type", "case3",
-                "include_closed", "False");
-
-        try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
-                "query_responses/case_claim_response.xml")) {
-            var instance = caseSearchHelper.getRemoteDataInstance(
-                    "results", true,
-                    new java.net.URL("http://localhost:8000/a/test/phone/search/"),
-                    requestData, false);
-
-            var root = instance.getRoot();
-            assertTrue(root instanceof CaseInstanceTreeElement,
-                    "Expected CaseInstanceTreeElement for indexed case search results");
-
-            String cacheName = ((CaseInstanceTreeElement) root).getStorageCacheName();
-            assertEquals(CaseInstanceTreeElement.MODEL_NAME, cacheName,
-                    "Case search results should use 'casedb' as storage cache name without FF");
-        }
-    }
-
-
 
     /**
      * Functional regression test for USH-6370.
@@ -374,7 +317,6 @@ public class CaseSearchResultsInStorageTests {
      * doesn't break any step of the claim workflow.
      */
     @Test
-    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
     public void testCaseClaimFlowWithFfOn() throws Exception {
 
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
@@ -436,7 +378,6 @@ public class CaseSearchResultsInStorageTests {
      */
     @Test
     @SuppressWarnings("unchecked")
-    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
     public void testUniqueStorageKeyPreventsRecordObjectCacheCollision() throws Exception {
         ImmutableMultimap<String, String> requestData = ImmutableMultimap.of(
                 "case_type", "case1",

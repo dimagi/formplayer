@@ -55,7 +55,6 @@ public class CaseSearchCacheCollisionTest {
      * This shared cache key is the root cause of USH-6370.
      */
     @Test
-    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
     public void testStorageCacheNameCollision() {
         SqlStorage<Case> casedbStorage = new SqlStorage<>(
                 () -> connection, Case.class, "user_casedb");
