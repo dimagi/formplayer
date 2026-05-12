@@ -13,7 +13,6 @@ import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.instance.StorageInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.query.QueryContext;
-import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.*;
 import org.commcare.modern.engine.cases.RecordObjectCache;
 import org.commcare.formplayer.application.MenuController;
@@ -313,11 +312,10 @@ public class CaseSearchResultsInStorageTests {
 
     /**
      * Gap 2: Verifies the full case claim flow (entity list → case selection → claim POST → sync →
-     * storage cleared) with the CASE_SEARCH_CACHE_KEY FF enabled. Ensures the unique cache key
-     * doesn't break any step of the claim workflow.
+     * storage cleared). Ensures the unique cache key doesn't break any step of the claim workflow.
      */
     @Test
-    public void testCaseClaimFlowWithFfOn() throws Exception {
+    public void testCaseClaimFlow() throws Exception {
 
         try (MockRequestUtils.VerifiedMock ignore = mockRequest.mockQuery(
                 "query_responses/case_claim_response.xml")) {

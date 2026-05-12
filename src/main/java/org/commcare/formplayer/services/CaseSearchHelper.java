@@ -10,7 +10,6 @@ import org.commcare.cases.model.Case;
 import org.commcare.core.parse.CaseInstanceXmlTransactionParserFactory;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
-import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
