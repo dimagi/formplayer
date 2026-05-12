@@ -1,16 +1,12 @@
 package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.query.QueryContext;
 import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.utils.WithHqUser;
-import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
 import org.commcare.modern.engine.cases.RecordObjectCache;
 import org.javarosa.core.model.instance.InstanceBase;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -21,9 +17,6 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.HashMap;
-
-import org.commcare.formplayer.utils.HqUserDetails;
 
 /**
  * Reproduces USH-6370: CaseInstanceTreeElement.getStorageCacheName() returns "casedb"
@@ -55,7 +48,6 @@ public class CaseSearchCacheCollisionTest {
      * This shared cache key is the root cause of USH-6370.
      */
     @Test
-    @WithHqUser(enabledToggles = Constants.TOGGLE_CASE_SEARCH_CACHE_KEY)
     public void testStorageCacheNameCollision() {
         SqlStorage<Case> casedbStorage = new SqlStorage<>(
                 () -> connection, Case.class, "user_casedb");

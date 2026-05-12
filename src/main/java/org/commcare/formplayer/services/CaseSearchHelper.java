@@ -10,7 +10,6 @@ import org.commcare.cases.model.Case;
 import org.commcare.core.parse.CaseInstanceXmlTransactionParserFactory;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.DbUtils;
-import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.sandbox.CaseSearchSqlSandbox;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -48,8 +47,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static org.commcare.formplayer.util.Constants.TOGGLE_CASE_SEARCH_CACHE_KEY;
 
 @CacheConfig(cacheNames = "case_search")
 @Component
@@ -121,10 +118,7 @@ public class CaseSearchHelper {
         if (caseSearchStorage.isStorageExists()) {
             // return root as CaseInstanceTreeElement
             InstanceBase instanceBase = new InstanceBase(instanceId);
-            if (FeatureFlagChecker.isToggleEnabled(TOGGLE_CASE_SEARCH_CACHE_KEY)) {
-                return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable, caseSearchTableName);
-            }
-            return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable);
+            return new CaseInstanceTreeElement(instanceBase, caseSearchStorage, caseSearchIndexTable, caseSearchTableName);
         }
 
         throw new IOException("No response from server for case search query");
