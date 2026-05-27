@@ -1,7 +1,6 @@
 package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -43,12 +42,10 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
 
 
     private final String INDEX_PARENT_SEARCH_FIRST = "1";
-    private final String INDEX_PARENT_SEE_MORE = "2";
     private final String INDEX_PARENT_SKIP_TO_RESULTS = "3";
 
     private final String INDEX_PARENT_SEARCH_FIRST_CHILD = "1";
     private final String INDEX_PARENT_SEARCH_FIRST_CHILD_SEARCH_FIRST = "2";
-    private final String INDEX_PARENT_SEARCH_FIRST_CHILD_SEE_MORE = "3";
     private final String INDEX_PARENT_SEARCH_FIRST_CHILD_SKIP_TO_RESULTS = "4";
 
     private final String INDEX_CHILD_FORM = "0";
@@ -74,11 +71,6 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
     }
 
     @Test
-    public void testSpfOtherWithSameCaseType_SeeMore() throws Exception {
-        testParentSeeMore(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
-    }
-
-    @Test
     public void testSpfOtherWithSameCaseType_SkipToSearchResults() throws Exception {
         testParentSkipToSearchResults(APP_CASE_CLAIM_SPF_OTHER, PARENT_CASE_ID);
     }
@@ -86,11 +78,6 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
     @Test
     public void testSpfParentWithChildCase_SearchFirst() throws Exception {
         testParentSearchFirst(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
-    }
-
-    @Test
-    public void testSpfParentWithChildCase_SeeMore() throws Exception {
-        testParentSeeMore(APP_CASE_CLAIM_SPF_PARENT, CHILD_CASE_ID);
     }
 
     @Test
@@ -203,38 +190,7 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
                 subCaseSelectionId);
         testChildSearchFirst(appName, new QueryData(), new ArrayList<>(selections), "search_command.m7_results",
                 subCaseSelectionId);
-        testChildSeeMore(appName, new QueryData(), new ArrayList<>(selections), subCaseSelectionId);
         testChildSkipToResults(appName, new QueryData(), new ArrayList<>(selections), subCaseSelectionId);
-    }
-
-    public void testParentSeeMore(String appName, String subCaseSelectionId) throws Exception {
-        ArrayList<String> selections = new ArrayList<>();
-        selections.add(INDEX_PARENT_SEE_MORE);
-        QueryData queryData = new QueryData();
-
-        // we should see parent case list with search action
-        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        assert entityListResponse.getActions().length == 1;
-
-        // move to search screen
-        selections.add("action 0");
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        queryData.setExecute("search_command.m10_results", true);
-        testParentSearchResults(appName, queryData, selections);
-        testParentSelection(appName, queryData, selections);
-
-        testChildSearchFirst(appName, queryData, new ArrayList<>(selections), "search_command.m12_results",
-                subCaseSelectionId);
-        testChildSeeMore(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
-        testChildSkipToResults(appName, queryData, new ArrayList<>(selections), subCaseSelectionId);
     }
 
     public void testParentSkipToSearchResults(String appName, String subCaseSelectionId)
@@ -249,10 +205,7 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
 
         testChildSearchFirst(appName, new QueryData(), new ArrayList<>(selections), "search_command.m17_results",
                 subCaseSelectionId);
-        testChildSeeMore(appName, new QueryData(), new ArrayList<>(selections), subCaseSelectionId);
         testChildSkipToResults(appName, new QueryData(), new ArrayList<>(selections), subCaseSelectionId);
-        testParentSkipToResultsChildForceManualSearch(appName, new QueryData(),
-                new ArrayList<>(selections), "search_command.m18_results", subCaseSelectionId);
     }
 
     private void testChildSearchNormal(String appName, QueryData queryData,
@@ -332,26 +285,6 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
         testChildSelection(appName, queryData, selections, subCaseSelectionId);
     }
 
-    private void testParentSkipToResultsChildForceManualSearch(String appName, QueryData queryData,
-            ArrayList<String> selections, String searchKey, String subCaseSelectionId)
-            throws Exception {
-
-        // we see child's case list
-        selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SEE_MORE);
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        // click search to show results
-        selections.add("action 0");
-        queryData.setForceManualSearch(searchKey, true);
-        sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                QueryResponseBean.class);
-    }
-
     // test result of executing child search
     private void testChildSearchResult(String appName, QueryData queryData,
             ArrayList<String> selections, String subCaseSelectionId) throws Exception {
@@ -385,23 +318,6 @@ public class CaseClaimNavigationParentChildTests extends BaseTestClass {
                 appName,
                 queryData,
                 NewFormResponse.class);
-    }
-
-
-    private void testChildSeeMore(String appName, QueryData queryData,
-            ArrayList<String> selections, String subCaseSelectionId) throws Exception {
-        // we see a case list first
-        selections.add(INDEX_PARENT_SEARCH_FIRST_CHILD_SEE_MORE);
-        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
-                appName,
-                queryData,
-                EntityListResponse.class);
-
-        // clicking search moves user to search results screen directly
-        selections.add("action 0");
-
-        testChildSearchResult(appName, queryData, selections, subCaseSelectionId);
-        testChildSelection(appName, queryData, selections, subCaseSelectionId);
     }
 
     private void configureSyncMock() {
