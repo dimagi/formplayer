@@ -1,11 +1,8 @@
 package org.commcare.formplayer.beans.menus;
 
-import static org.commcare.formplayer.util.Constants.TOGGLE_SPLIT_SCREEN_CASE_SEARCH;
-
 import org.commcare.cases.entity.Entity;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.util.FormplayerGraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -126,9 +123,7 @@ public class EntityListResponse extends MenuBean {
             QueryScreen queryScreen = nextScreen.getQueryScreen();
             if (queryScreen != null) {
                 setQueryKey(queryScreen.getQueryKey());
-                if (FeatureFlagChecker.isToggleEnabled(TOGGLE_SPLIT_SCREEN_CASE_SEARCH)) {
-                    queryResponse = new QueryResponseBean(queryScreen);
-                }
+                queryResponse = new QueryResponseBean(queryScreen);
             }
         }
     }
