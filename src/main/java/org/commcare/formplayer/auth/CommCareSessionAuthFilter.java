@@ -38,7 +38,7 @@ public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessin
             boolean hasCookie = Arrays.stream(request.getCookies()).anyMatch(
                     (cookie) -> Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())
             );
-            if (!hasCookie) {
+            if (!hasCookie && !isPublicSessionRequest(request)) {
                 return false;
             }
             Authentication currentUser = SecurityContextHolder.getContext().getAuthentication();
@@ -49,9 +49,30 @@ public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessin
 
     @Override
     protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
+        if (isPublicSessionRequest(request)) {
+            return new PublicSessionCredential(
+                    getCookieValue(request, Constants.PUBLIC_FORM_SESSION_COOKIE_NAME));
+        }
+        return getCookieValue(request, Constants.POSTGRES_DJANGO_SESSION_ID);
+    }
+
+    /**
+     * A public web apps request is signaled by the {@code CommCare-Public-Session: true} header
+     * (a credential-routing hint, not a trust signal) paired with the
+     * {@code public_form_session_key} cookie carrying the session key.
+     */
+    private static boolean isPublicSessionRequest(HttpServletRequest request) {
+        if (!Constants.PUBLIC_FORM_SESSION_HEADER_VALUE.equals(
+                request.getHeader(Constants.PUBLIC_FORM_SESSION_HEADER))) {
+            return false;
+        }
+        return getCookieValue(request, Constants.PUBLIC_FORM_SESSION_COOKIE_NAME) != null;
+    }
+
+    private static String getCookieValue(HttpServletRequest request, String name) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if (Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())) {
+                if (name.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

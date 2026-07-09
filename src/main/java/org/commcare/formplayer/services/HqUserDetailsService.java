@@ -1,7 +1,9 @@
 package org.commcare.formplayer.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commcare.formplayer.auth.PublicSessionCredential;
 import org.commcare.formplayer.auth.UserDomainPreAuthPrincipal;
+import org.commcare.formplayer.beans.auth.HqPublicSessionKeyBean;
 import org.commcare.formplayer.beans.auth.HqSessionKeyBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
@@ -38,10 +40,23 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
     private WebClient webClient;
 
     public HqUserDetailsBean getUserDetails(String domain, String sessionKey) {
+        return requestUserDetails(domain, new HqSessionKeyBean(domain, sessionKey));
+    }
+
+    /**
+     * Look up user details for a public web apps session. Sends the session key as
+     * {@code publicSessionKey} rather than {@code sessionId} so HQ knows to resolves it against
+     * the public form session.
+     */
+    public HqUserDetailsBean getPublicUserDetails(String domain, String publicSessionKey) {
+        return requestUserDetails(domain, new HqPublicSessionKeyBean(domain, publicSessionKey));
+    }
+
+    private HqUserDetailsBean requestUserDetails(String domain, Object requestBody) {
         HttpHeaders headers = new HttpHeaders();
-        String data = null;
+        String data;
         try {
-            data = objectMapper.writeValueAsString(new HqSessionKeyBean(domain, sessionKey));
+            data = objectMapper.writeValueAsString(requestBody);
             headers.set("X-MAC-DIGEST", getHmac(data));
         } catch (Exception e) {
             throw new UserDetailsException(e);
@@ -73,9 +88,14 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
     @Override
     public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
         final UserDomainPreAuthPrincipal principal = (UserDomainPreAuthPrincipal) token.getPrincipal();
-        final String sessionId = (String) token.getCredentials();
+        final Object credentials = token.getCredentials();
         try {
-            HqUserDetailsBean userDetails = getUserDetails(principal.getDomain(), sessionId);
+            HqUserDetailsBean userDetails;
+            if (credentials instanceof PublicSessionCredential publicCredential) {
+                userDetails = getPublicUserDetails(principal.getDomain(), publicCredential.getSessionKey());
+            } else {
+                userDetails = getUserDetails(principal.getDomain(), (String) credentials);
+            }
             if (!userDetails.isAuthorized(principal.getDomain(), principal.getUsername())) {
                 throw new UsernameNotFoundException("Unable to authenticate user in requested domain");
             }
