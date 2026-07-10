@@ -40,6 +40,33 @@ public class HqUserDetailsTests {
     }
 
     @Test
+    public void testPublicSessionIsAuthorized() {
+        HqUserDetailsBean publicUser = new HqUserDetailsBean("domain",
+                new String[]{"domain"}, "public_abc123@domain.commcarehq.org",
+                false, new String[]{}, new String[]{});
+        publicUser.setPublicSession(true);
+
+        // Synthetic username is not checked for a public session...
+        Assertions.assertTrue(publicUser.isAuthorized("domain", "public_abc123@domain.commcarehq.org"));
+        Assertions.assertTrue(publicUser.isAuthorized("domain", "some-other-name"));
+
+        // ...but the requested domain must still be the session's domain.
+        Assertions.assertFalse(publicUser.isAuthorized("other-domain", "public_abc123@domain.commcarehq.org"));
+        Assertions.assertFalse(publicUser.isAuthorized("other-domain", "some-other-name"));
+    }
+
+    @Test
+    public void testNonPublicSessionStillEnforcesUsername() {
+        // Same shape as the public case but publicSession=false: the username check is enforced.
+        HqUserDetailsBean regularUser = new HqUserDetailsBean("domain",
+                new String[]{"domain"}, "real@domain.commcarehq.org",
+                false, new String[]{}, new String[]{});
+
+        Assertions.assertTrue(regularUser.isAuthorized("domain", "real@domain.commcarehq.org"));
+        Assertions.assertFalse(regularUser.isAuthorized("domain", "some-other-name"));
+    }
+
+    @Test
     public void testPublicSessionDeserialization() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
 
