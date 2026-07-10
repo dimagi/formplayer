@@ -53,6 +53,12 @@ public class HqUserDetailsBean implements UserDetails {
     }
 
     public boolean isAuthorized(String domain, String username) {
+        if (publicSession) {
+            // Public web apps sessions authenticate via a single-use key that HQ has already
+            // validated and tied to exactly one domain. There is no real HQ account, so the
+            // per-session username is not a meaningful check.
+            return Arrays.asList(domains).contains(domain);
+        }
         return isSuperUser || Arrays.asList(domains).contains(domain) && this.username.equals(
                 username);
     }
