@@ -1,6 +1,7 @@
 package org.commcare.formplayer.beans.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -28,6 +29,11 @@ public class HqUserDetailsBean implements UserDetails {
     private String domain;
     private String[] enabledToggles;
     private String[] enabledPreviews;
+
+    // HQ marks public web apps sessions with a JSON `public` field. `public` is a reserved word,
+    // so map it to this property. Primitive boolean so missing JSON defaults to false.
+    @JsonProperty("public")
+    private boolean publicSession;
 
     public HqUserDetailsBean() {
     }
