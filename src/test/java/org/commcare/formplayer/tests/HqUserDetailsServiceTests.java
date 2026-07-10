@@ -141,6 +141,7 @@ public class HqUserDetailsServiceTests {
 
         assertThat(details.getUsername()).isEqualTo("public@domain");
         assertThat(details.getDomains()).isEqualTo(new String[]{"domain"});
+        assertThat(details.isPublicSession()).isTrue();
     }
 
     @Test

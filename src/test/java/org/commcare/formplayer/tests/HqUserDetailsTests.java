@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.utils.HqUserDetails;
@@ -35,6 +37,25 @@ public class HqUserDetailsTests {
         Assertions.assertTrue(user.isAuthorized("domain", "bilbo"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "bilbo"));
         Assertions.assertFalse(user.isAuthorized("domain", "wrong-bilbo"));
+    }
+
+    @Test
+    public void testPublicSessionDeserialization() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // HQ sends the reserved word `public` for a public web apps session.
+        HqUserDetailsBean publicUser = mapper.readValue(
+                "{\"username\":\"pub\",\"public\":true}", HqUserDetailsBean.class);
+        Assertions.assertTrue(publicUser.isPublicSession());
+
+        HqUserDetailsBean regularUser = mapper.readValue(
+                "{\"username\":\"reg\",\"public\":false}", HqUserDetailsBean.class);
+        Assertions.assertFalse(regularUser.isPublicSession());
+
+        // Absent `public` defaults to false (primitive boolean; the bean also ignores unknowns).
+        HqUserDetailsBean noField = mapper.readValue(
+                "{\"username\":\"reg\"}", HqUserDetailsBean.class);
+        Assertions.assertFalse(noField.isPublicSession());
     }
 
     @Test
