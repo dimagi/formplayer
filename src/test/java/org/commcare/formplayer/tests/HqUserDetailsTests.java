@@ -70,19 +70,27 @@ public class HqUserDetailsTests {
     public void testPublicSessionDeserialization() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
 
-        // HQ sends the reserved word `public` for a public web apps session.
+        // HQ sends the reserved word `public` for a public web apps session, along with the
+        // authoritative app id and session endpoint the link is bound to.
         HqUserDetailsBean publicUser = mapper.readValue(
-                "{\"username\":\"pub\",\"public\":true}", HqUserDetailsBean.class);
+                "{\"username\":\"pub\",\"public\":true,"
+                        + "\"commcare_app_id\":\"app-1\",\"endpoint_id\":\"ep-1\"}",
+                HqUserDetailsBean.class);
         Assertions.assertTrue(publicUser.isPublicSession());
+        Assertions.assertEquals("app-1", publicUser.getPublicAppId());
+        Assertions.assertEquals("ep-1", publicUser.getPublicEndpointId());
 
         HqUserDetailsBean regularUser = mapper.readValue(
                 "{\"username\":\"reg\",\"public\":false}", HqUserDetailsBean.class);
         Assertions.assertFalse(regularUser.isPublicSession());
 
         // Absent `public` defaults to false (primitive boolean; the bean also ignores unknowns).
+        // The app/endpoint fields are reference types, so they default to null.
         HqUserDetailsBean noField = mapper.readValue(
                 "{\"username\":\"reg\"}", HqUserDetailsBean.class);
         Assertions.assertFalse(noField.isPublicSession());
+        Assertions.assertNull(noField.getPublicAppId());
+        Assertions.assertNull(noField.getPublicEndpointId());
     }
 
     @Test
