@@ -1,6 +1,7 @@
 package org.commcare.formplayer.auth;
 
 import static org.commcare.formplayer.auth.AuthTestUtils.getMultipartRequestBuilder;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -138,6 +139,40 @@ public class SessionAuthTests {
         this.testEndpoint(builder, status().isOk());
     }
 
+    /**
+     * A public web apps session is confined to its allowlisted routes: any other route is denied
+     * with 403 at the security layer, before the controller runs. (clear_user_data is not on the
+     * allowlist.)
+     */
+    @Test
+    public void testPublicSession_DeniedOnNonAllowlistedRoute() throws Exception {
+        String sessionKey = "public-key-abc";
+        mockValidPublicSessionAuth(sessionKey);
+        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
+                .header(Constants.PUBLIC_FORM_SESSION_HEADER, Constants.PUBLIC_FORM_SESSION_HEADER_VALUE)
+                .cookie(new Cookie(Constants.PUBLIC_FORM_SESSION_COOKIE_NAME, sessionKey));
+        this.testEndpoint(builder, status().isForbidden());
+    }
+
+    /**
+     * A public web apps session is permitted on get_endpoint, answer, and submit-all. No controller
+     * for these is wired in this test, so an allowed request falls through (404) — the point is that
+     * the security layer does NOT deny it with 403.
+     */
+    @Test
+    public void testPublicSession_AllowedOnAllowlistedRoutes() throws Exception {
+        String sessionKey = "public-key-abc";
+        mockValidPublicSessionAuth(sessionKey);
+        for (String path : new String[]{
+                Constants.URL_GET_ENDPOINT, Constants.URL_ANSWER_QUESTION, Constants.URL_SUBMIT_FORM}) {
+            MockHttpServletRequestBuilder builder = getRequestBuilder(path, FULL_AUTH_BODY)
+                    .header(Constants.PUBLIC_FORM_SESSION_HEADER, Constants.PUBLIC_FORM_SESSION_HEADER_VALUE)
+                    .cookie(new Cookie(Constants.PUBLIC_FORM_SESSION_COOKIE_NAME, sessionKey));
+            this.testEndpoint(builder, result -> assertNotEquals(403, result.getResponse().getStatus(),
+                    "Allowlisted route '" + path + "' must not be forbidden for a public session"));
+        }
+    }
+
     @Test
     public void testMultipartEndpointWithFullAuth_WithAnyHmacAuth_Succeeds() throws Exception {
         String sessionId = "123";
@@ -156,11 +191,20 @@ public class SessionAuthTests {
         );
     }
 
+    // Returns a non-public bean on purpose: these tests isolate the auth filter's credential
+    // routing from the route allowlist (which only restricts sessions whose bean is public).
     private void mockValidPublicAuth(String sessionKey) {
         PublicTokenMatcher matcher = new PublicTokenMatcher(DOMAIN, USERNAME, sessionKey);
         when(userDetailsService.loadUserDetails(argThat(matcher))).thenReturn(
                 new HqUserDetailsBean(DOMAIN, USERNAME)
         );
+    }
+
+    private void mockValidPublicSessionAuth(String sessionKey) {
+        PublicTokenMatcher matcher = new PublicTokenMatcher(DOMAIN, USERNAME, sessionKey);
+        HqUserDetailsBean bean = new HqUserDetailsBean(DOMAIN, USERNAME);
+        bean.setPublicSession(true);
+        when(userDetailsService.loadUserDetails(argThat(matcher))).thenReturn(bean);
     }
 
     private void testEndpoint(MockHttpServletRequestBuilder requestBuilder,
@@ -177,7 +221,11 @@ public class SessionAuthTests {
      * Use the 'clear_user_data' endpoint for 'full auth' which required user details.
      */
     private MockHttpServletRequestBuilder getRequestBuilder(String body) {
-        return post(String.format("/%s", Constants.URL_CLEAR_USER_DATA))
+        return getRequestBuilder(Constants.URL_CLEAR_USER_DATA, body);
+    }
+
+    private MockHttpServletRequestBuilder getRequestBuilder(String path, String body) {
+        return post(String.format("/%s", path))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
                 .with(SecurityMockMvcRequestPostProcessors.csrf());
