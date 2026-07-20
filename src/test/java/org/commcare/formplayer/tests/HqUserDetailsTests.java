@@ -74,7 +74,7 @@ public class HqUserDetailsTests {
         // authoritative app id and session endpoint the link is bound to.
         HqUserDetailsBean publicUser = mapper.readValue(
                 "{\"username\":\"pub\",\"public\":true,"
-                        + "\"commcare_app_id\":\"app-1\",\"endpoint_id\":\"ep-1\"}",
+                        + "\"app_build_id\":\"app-1\",\"endpoint_id\":\"ep-1\"}",
                 HqUserDetailsBean.class);
         Assertions.assertTrue(publicUser.isPublicSession());
         Assertions.assertEquals("app-1", publicUser.getPublicAppId());
