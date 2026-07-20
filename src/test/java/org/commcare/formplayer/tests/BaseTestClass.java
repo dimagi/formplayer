@@ -122,6 +122,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -841,6 +842,14 @@ public class BaseTestClass {
             String endpointId,
             HashMap<String, String> endpointArgs,
             Class<T> clazz) throws Exception {
+        return sessionNavigateWithEndpoint(testName, endpointId, endpointArgs, true, clazz);
+    }
+
+    <T> T sessionNavigateWithEndpoint(String testName,
+            String endpointId,
+            HashMap<String, String> endpointArgs,
+            boolean withAuthCookie,
+            Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setEndpointId(endpointId);
         if (endpointArgs != null) {
@@ -854,6 +863,7 @@ public class BaseTestClass {
                 RequestType.POST,
                 Constants.URL_GET_ENDPOINT,
                 sessionNavigationBean,
+                withAuthCookie,
                 clazz);
     }
 
@@ -947,6 +957,19 @@ public class BaseTestClass {
         );
     }
 
+    private <T> T generateMockQueryWithInstallReference(String installReference,
+            ControllerType controllerType,
+            RequestType requestType,
+            String urlPath,
+            Object bean,
+            boolean withAuthCookie,
+            Class<T> clazz) throws Exception {
+        return Installer.mockInstallReference(
+                () -> generateMockQuery(controllerType, requestType, urlPath, bean, null, withAuthCookie, clazz),
+                installReference
+        );
+    }
+
     private <T> T generateMockQuery(ControllerType controllerType,
             RequestType requestType,
             String urlPath,
@@ -960,6 +983,16 @@ public class BaseTestClass {
             String urlPath,
             Object bean,
             MockMultipartFile file,
+            Class<T> clazz) throws Exception {
+        return generateMockQuery(controllerType, requestType, urlPath, bean, file, true, clazz);
+    }
+
+    private <T> T generateMockQuery(ControllerType controllerType,
+            RequestType requestType,
+            String urlPath,
+            Object bean,
+            MockMultipartFile file,
+            boolean withAuthCookie,
             Class<T> clazz) throws Exception {
         MockMvc controller = null;
         ResultActions result = null;
@@ -1000,21 +1033,27 @@ public class BaseTestClass {
                 break;
         }
         switch (requestType) {
-            case POST:
-                result = controller.perform(
-                        post(urlPrepend(urlPath))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                                .content((String)bean));
+            case POST: {
+                MockHttpServletRequestBuilder builder = post(urlPrepend(urlPath))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content((String)bean);
+                if (withAuthCookie) {
+                    builder.cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"));
+                }
+                result = controller.perform(builder);
                 break;
+            }
 
-            case GET:
-                result = controller.perform(
-                        get(urlPrepend(urlPath))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                                .content((String)bean));
+            case GET: {
+                MockHttpServletRequestBuilder builder = get(urlPrepend(urlPath))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content((String)bean);
+                if (withAuthCookie) {
+                    builder.cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"));
+                }
+                result = controller.perform(builder);
                 break;
+            }
         }
         restoreFactoryMock.getSQLiteDB().closeConnection();
         storageFactoryMock.getSQLiteDB().closeConnection();
