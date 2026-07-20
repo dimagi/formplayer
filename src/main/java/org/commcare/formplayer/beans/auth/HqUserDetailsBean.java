@@ -35,6 +35,15 @@ public class HqUserDetailsBean implements UserDetails {
     @JsonProperty("public")
     private boolean publicSession;
 
+    // For a public web apps session, HQ returns the authoritative app and session endpoint the
+    // link is bound to. Formplayer uses these instead of the client-supplied values so a public
+    // session cannot navigate to any other app/form. Null for non-public sessions.
+    @JsonProperty("app_build_id")
+    private String publicAppId;
+
+    @JsonProperty("endpoint_id")
+    private String publicEndpointId;
+
     public HqUserDetailsBean() {
     }
 
