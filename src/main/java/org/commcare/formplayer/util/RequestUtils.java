@@ -109,6 +109,13 @@ public class RequestUtils {
     }
 
     /**
+     * @return True if the current request is authenticated as a public web apps session.
+     */
+    public static boolean isPublicSession() {
+        return getUserDetails().map(HqUserDetailsBean::isPublicSession).orElse(false);
+    }
+
+    /**
      * @return True if there is request in the context AND the request was authenticated with HMAC
      * auth
      */
