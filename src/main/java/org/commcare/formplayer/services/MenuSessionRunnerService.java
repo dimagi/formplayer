@@ -36,6 +36,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
@@ -773,7 +774,10 @@ public class MenuSessionRunnerService {
         public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId,
             @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
-        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+        // A public web apps session is a deep-link into a form itself; we use the underlying
+        // functionality of SESSION_ENDPOINTS without its toggle.
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)
+                && !RequestUtils.isPublicSession()) {
             throw new RuntimeException("Linking into applications has been disabled for this project.");
         }
 
