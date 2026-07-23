@@ -39,7 +39,11 @@ public class PublicSessionLockAspect {
         HqUserDetailsBean details = userDetails.get();
         Object[] args = joinPoint.getArgs();
         if (args.length == 0 || !(args[0] instanceof InstallRequestBean requestBean)) {
-            return;
+            // Fail closed: this only runs for a public session (non-public returned above), so an
+            // @AppInstall handler whose request we cannot lock must be rejected.
+            throw new IllegalStateException(
+                    "Public web apps session reached an @AppInstall handler whose request cannot be "
+                            + "locked to the authoritative app/endpoint");
         }
 
         // Fail closed: a public session must carry HQ's authoritative app id. A missing value means
