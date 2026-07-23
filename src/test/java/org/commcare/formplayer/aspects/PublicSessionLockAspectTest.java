@@ -126,4 +126,29 @@ public class PublicSessionLockAspectTest {
             assertThrows(IllegalStateException.class, () -> aspect.lockToPublicApp(joinPoint));
         }
     }
+
+    @Test
+    public void publicSession_nonInstallRequestBeanArg_failsClosed() {
+        // A public session on an @AppInstall handler whose first arg cannot be locked must be
+        // rejected, not silently let through unlocked.
+        JoinPoint joinPoint = joinPointFor("not-an-install-request-bean");
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            assertThrows(IllegalStateException.class, () -> aspect.lockToPublicApp(joinPoint));
+        }
+    }
+
+    @Test
+    public void nonPublicSession_nonInstallRequestBeanArg_isIgnored() {
+        // The fail-closed guard is public-only: a non-public session on such a handler is untouched.
+        JoinPoint joinPoint = joinPointFor("not-an-install-request-bean");
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(new HqUserDetailsBean("domain", "user")));
+            aspect.lockToPublicApp(joinPoint); // no throw
+        }
+    }
 }
