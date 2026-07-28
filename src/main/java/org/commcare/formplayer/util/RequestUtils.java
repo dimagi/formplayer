@@ -101,8 +101,8 @@ public class RequestUtils {
 
     public static Optional<HqUserDetailsBean> getUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            HqUserDetailsBean userDetails = (HqUserDetailsBean)authentication.getPrincipal();
+        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)
+                && authentication.getPrincipal() instanceof HqUserDetailsBean userDetails) {
             return Optional.of(userDetails);
         }
         return Optional.empty();
