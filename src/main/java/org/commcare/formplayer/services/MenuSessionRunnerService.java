@@ -176,7 +176,7 @@ public class MenuSessionRunnerService {
                     (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
-            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            String moduleName = menuSession.getSessionWrapper().getClosestMenuTitle();
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             Sentry.setTag(Constants.MODULE_TAG, "menu");
@@ -194,14 +194,14 @@ public class MenuSessionRunnerService {
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
             // using getBestTitle to eliminate risk of showing private information
-            String caseListName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            String caseListName = menuSession.getSessionWrapper().getClosestMenuTitle();
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             String queryKey = ((FormplayerQueryScreen)nextScreen).getQueryKey();
             answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey);
             menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
-            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            String moduleName = menuSession.getSessionWrapper().getClosestMenuTitle();
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
             Sentry.setTag(Constants.MODULE_TAG, "case_search");
