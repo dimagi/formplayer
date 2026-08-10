@@ -20,6 +20,7 @@ import org.javarosa.core.services.locale.Localization;
 public class BaseResponseBean extends LocationRelevantResponseBean {
     protected NotificationMessage notification;
     protected String title;
+    protected String menuTitle;
     protected boolean clearSession;
     protected boolean shouldAutoSubmit;
     private String appId;
@@ -44,6 +45,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     protected void processTitle(SessionWrapper session) {
         setTitle(ScreenUtils.getBestTitle(session));
+        setMenuTitle(ScreenUtils.getMenuTitle(session));
     }
 
     public String getTitle() {
@@ -52,6 +54,14 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getMenuTitle() {
+        return menuTitle;
+    }
+
+    public void setMenuTitle(String menuTitle) {
+        this.menuTitle = menuTitle;
     }
 
     public String getSmartLinkRedirect() {
