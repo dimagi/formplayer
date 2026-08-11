@@ -151,6 +151,13 @@ public class FormSubmissionHelper {
             return error.get();
         }
 
+        onSuccessfulSubmit(sessionID);
+
+        return context.getResponse();
+    }
+
+    // Package-private for testing.
+    void onSuccessfulSubmit(String sessionID) {
         // Only delete session immediately after successful submit
         formSessionService.deleteSessionById(sessionID);
 
@@ -158,8 +165,6 @@ public class FormSubmissionHelper {
         if (RequestUtils.isPublicSession()) {
             restoreFactory.markPublicSandboxForDeletion();
         }
-
-        return context.getResponse();
     }
 
     private FormSubmissionContext getFormProcessingContext(HttpServletRequest request, String sessionID, String domain,
