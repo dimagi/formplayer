@@ -47,6 +47,7 @@ public class FormSessionFactory {
     private CommCareSessionFactory commCareSessionFactory;
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession, String windowWidth) throws Exception {
+        verifyPublicSessionOwnership(serializableFormSession);
         CommCareSession commCareSession = commCareSessionFactory.getCommCareSession(serializableFormSession.getMenuSessionId());
         return getFormSession(serializableFormSession, commCareSession, windowWidth);
     }

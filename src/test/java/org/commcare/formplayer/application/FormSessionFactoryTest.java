@@ -1,8 +1,11 @@
 package org.commcare.formplayer.application;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
@@ -12,6 +15,7 @@ import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.modern.database.TableBuilder;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -37,6 +41,23 @@ public class FormSessionFactoryTest {
         when(session.getDomain()).thenReturn(domain);
         when(session.getId()).thenReturn("session-id");
         return session;
+    }
+
+    @Test
+    public void publicSession_isRejectedBeforeTheForeignSessionIsLoaded() throws Exception {
+        CommCareSessionFactory commCareSessionFactory = mock(CommCareSessionFactory.class);
+        ReflectionTestUtils.setField(factory, "commCareSessionFactory", commCareSessionFactory);
+        SerializableFormSession victimSession = session("victim@domain", "domain");
+
+        try (MockedStatic<RequestUtils> mocked = mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("public_abc123@domain", "domain")));
+            assertThrows(FormNotFoundException.class,
+                    () -> factory.getFormSession(victimSession, "800"));
+        }
+
+        // getCommCareSession runs configureApplication, which can delete that user's app DB.
+        verify(commCareSessionFactory, never()).getCommCareSession(any());
     }
 
     @Test
