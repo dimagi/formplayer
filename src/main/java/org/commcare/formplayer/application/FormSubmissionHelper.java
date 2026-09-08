@@ -34,6 +34,7 @@ import org.commcare.formplayer.util.FormSubmissionContext;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.ProcessingStep;
+import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.session.CommCareSession;
 import org.commcare.util.FileUtils;
@@ -150,10 +151,20 @@ public class FormSubmissionHelper {
             return error.get();
         }
 
+        onSuccessfulSubmit(sessionID);
+
+        return context.getResponse();
+    }
+
+    // Package-private for testing.
+    void onSuccessfulSubmit(String sessionID) {
         // Only delete session immediately after successful submit
         formSessionService.deleteSessionById(sessionID);
 
-        return context.getResponse();
+        // A public session is one-time use, so discard its sandbox once the connection closes.
+        if (RequestUtils.isPublicSession()) {
+            restoreFactory.markPublicSandboxForDeletion();
+        }
     }
 
     private FormSubmissionContext getFormProcessingContext(HttpServletRequest request, String sessionID, String domain,

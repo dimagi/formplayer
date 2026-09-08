@@ -125,6 +125,13 @@ public class UserRestoreAspect {
     @After(value = "@annotation(org.commcare.formplayer.annotations.UserRestore)")
     public void closeRestoreFactory(JoinPoint joinPoint) throws Throwable {
         restoreFactory.getSQLiteDB().closeConnection();
+        if (restoreFactory.shouldDeletePublicSandboxOnClose()) {
+            try {
+                restoreFactory.getSQLiteDB().deleteDatabaseFolder();
+            } catch (Exception e) {
+                log.error("Failed to delete public web apps session sandbox", e);
+            }
+        }
     }
 
     // Package-private for testing.

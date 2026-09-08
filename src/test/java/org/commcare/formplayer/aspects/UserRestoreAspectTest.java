@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.auth.HqAuth;
@@ -16,6 +18,7 @@ import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.RequestUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -137,5 +140,50 @@ public class UserRestoreAspectTest {
 
         // Unchanged: a non-public session configures the restore from the request bean itself.
         verify(restoreFactory).configure(requestBean, auth);
+    }
+
+    @Test
+    public void closeRestoreFactory_publicSandboxMarked_deletesSandboxAfterClose() throws Throwable {
+        RestoreFactory restoreFactory = mock(RestoreFactory.class);
+        SQLiteDB sqLiteDB = mock(SQLiteDB.class);
+        when(restoreFactory.getSQLiteDB()).thenReturn(sqLiteDB);
+        when(restoreFactory.shouldDeletePublicSandboxOnClose()).thenReturn(true);
+        aspect.restoreFactory = restoreFactory;
+
+        aspect.closeRestoreFactory(null);
+
+        // The connection is always closed; a consumed public session's sandbox is then discarded.
+        verify(sqLiteDB).closeConnection();
+        verify(sqLiteDB).deleteDatabaseFolder();
+    }
+
+    @Test
+    public void closeRestoreFactory_notMarked_leavesSandboxInPlace() throws Throwable {
+        RestoreFactory restoreFactory = mock(RestoreFactory.class);
+        SQLiteDB sqLiteDB = mock(SQLiteDB.class);
+        when(restoreFactory.getSQLiteDB()).thenReturn(sqLiteDB);
+        when(restoreFactory.shouldDeletePublicSandboxOnClose()).thenReturn(false);
+        aspect.restoreFactory = restoreFactory;
+
+        aspect.closeRestoreFactory(null);
+
+        // Default path (regular session, or a public in-form action that is not a submit): never delete.
+        verify(sqLiteDB).closeConnection();
+        verify(sqLiteDB, never()).deleteDatabaseFolder();
+    }
+
+    @Test
+    public void closeRestoreFactory_deleteFailure_isSwallowed() throws Throwable {
+        RestoreFactory restoreFactory = mock(RestoreFactory.class);
+        SQLiteDB sqLiteDB = mock(SQLiteDB.class);
+        when(restoreFactory.getSQLiteDB()).thenReturn(sqLiteDB);
+        when(restoreFactory.shouldDeletePublicSandboxOnClose()).thenReturn(true);
+        doThrow(new RuntimeException("disk error")).when(sqLiteDB).deleteDatabaseFolder();
+        aspect.restoreFactory = restoreFactory;
+
+        // Cleanup is best-effort: a deletion failure must not propagate and fail the request.
+        aspect.closeRestoreFactory(null);
+
+        verify(sqLiteDB).deleteDatabaseFolder();
     }
 }
