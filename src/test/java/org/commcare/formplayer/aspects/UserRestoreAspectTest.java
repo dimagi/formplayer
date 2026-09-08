@@ -121,6 +121,24 @@ public class UserRestoreAspectTest {
     }
 
     @Test
+    public void noAuthenticatedUser_honorsRequestBeanIdentity() throws Exception {
+        RestoreFactory restoreFactory = mock(RestoreFactory.class);
+        aspect.restoreFactory = restoreFactory;
+        HqAuth auth = new DjangoAuth("sessionid-value");
+
+        SessionNavigationBean requestBean = new SessionNavigationBean();
+        requestBean.setUsername("real-user");
+        requestBean.setDomain("domain");
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails).thenReturn(Optional.empty());
+            aspect.configureRestoreFactory(requestBean, auth);
+        }
+
+        verify(restoreFactory).configure(requestBean, auth);
+    }
+
+    @Test
     public void regularSession_honorsRequestBeanIdentity() throws Exception {
         RestoreFactory restoreFactory = mock(RestoreFactory.class);
         aspect.restoreFactory = restoreFactory;

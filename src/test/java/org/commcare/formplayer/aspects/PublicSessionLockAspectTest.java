@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.aspectj.lang.JoinPoint;
+import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
@@ -42,6 +43,12 @@ public class PublicSessionLockAspectTest {
         bean.setEndpointId(endpointId);
         bean.setEndpointArgs(args);
         return bean;
+    }
+
+    private JoinPoint joinPointForNoArgs() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{});
+        return joinPoint;
     }
 
     private JoinPoint joinPointFor(Object bean) {
@@ -127,6 +134,76 @@ public class PublicSessionLockAspectTest {
         }
 
         assertEquals("realuser@domain", bean.getUsername());
+    }
+
+    @Test
+    public void publicSession_noRequestArgs_failsClosed() {
+        JoinPoint identityJoinPoint = joinPointForNoArgs();
+        JoinPoint appJoinPoint = joinPointForNoArgs();
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            assertThrows(IllegalStateException.class,
+                    () -> aspect.pinPublicSessionIdentity(identityJoinPoint));
+            assertThrows(IllegalStateException.class, () -> aspect.lockToPublicApp(appJoinPoint));
+        }
+    }
+
+    @Test
+    public void publicSession_installWithoutNavigation_pinsAppOnly() {
+        InstallRequestBean bean = new InstallRequestBean();
+        bean.setAppId("attacker-app");
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            aspect.lockToPublicApp(joinPointFor(bean));
+        }
+
+        assertEquals("real-app", bean.getAppId());
+    }
+
+    @Test
+    public void publicSession_endpointAlreadyAuthoritativeWithNoArgs_isUnchanged() {
+        SessionNavigationBean bean = navBean("real-app", "real-endpoint", null);
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            aspect.lockToPublicApp(joinPointFor(bean));
+        }
+
+        assertEquals("real-endpoint", bean.getEndpointId());
+        assertNull(bean.getEndpointArgs());
+    }
+
+    @Test
+    public void publicSession_endpointAuthoritativeWithEmptyArgs_isUnchanged() {
+        SessionNavigationBean bean = navBean("real-app", "real-endpoint", new HashMap<>());
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            aspect.lockToPublicApp(joinPointFor(bean));
+        }
+
+        assertNull(bean.getEndpointArgs());
+    }
+
+    @Test
+    public void publicSession_endpointAuthoritativeButArgsSupplied_clearsArgs() {
+        HashMap<String, String> args = new HashMap<>();
+        args.put("case_id", "abc");
+        SessionNavigationBean bean = navBean("real-app", "real-endpoint", args);
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            aspect.lockToPublicApp(joinPointFor(bean));
+        }
+
+        assertNull(bean.getEndpointArgs());
     }
 
     @Test
