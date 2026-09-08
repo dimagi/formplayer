@@ -1,6 +1,7 @@
 package org.commcare.formplayer.aspects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import org.aspectj.lang.JoinPoint;
 import org.commcare.formplayer.beans.SessionNavigationBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.util.RequestUtils;
 import org.junit.jupiter.api.Test;
@@ -66,12 +68,11 @@ public class PublicSessionLockAspectTest {
     }
 
     @Test
-    public void publicSession_pinsIdentityToAuthoritativeUser() {
-        SessionNavigationBean bean = navBean("real-app", "real-endpoint", null);
-        // Client tries to key storage off an arbitrary user; publicBean() is HQ's authoritative user.
-        // username/domain plus restoreAs/restoreAsCaseId all feed FormplayerStorageFactory's sandbox
-        // key (and the @UserLock key), so every one of them must be pinned, not just username/domain.
-        bean.setUsername("attacker");
+    public void publicSession_pinsIdentityOnRoutesThatInstallNoApp() {
+        // A form-entry route such as /answer is not @AppInstall, and its username feeds the
+        // @UserLock key, so identity has to be pinned there too.
+        SessionRequestBean bean = new SessionRequestBean();
+        bean.setUsername("realuser@domain");
         bean.setDomain("attacker-domain");
         bean.setRestoreAs("victim");
         bean.setRestoreAsCaseId("victim-case-id");
@@ -79,13 +80,53 @@ public class PublicSessionLockAspectTest {
         try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
             mocked.when(RequestUtils::getUserDetails)
                     .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
-            aspect.lockToPublicApp(joinPointFor(bean));
+            aspect.pinPublicSessionIdentity(joinPointFor(bean));
         }
 
         assertEquals("user", bean.getUsername());
         assertEquals("domain", bean.getDomain());
         assertNull(bean.getRestoreAs());
         assertNull(bean.getRestoreAsCaseId());
+    }
+
+    @Test
+    public void publicSession_forcesPreviewOff() {
+        SessionNavigationBean bean = navBean("real-app", "real-endpoint", null);
+        bean.setPreview(true);
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            aspect.lockToPublicApp(joinPointFor(bean));
+        }
+
+        assertFalse(bean.getPreview());
+    }
+
+    @Test
+    public void publicSession_unpinnableIdentityArg_failsClosed() {
+        JoinPoint joinPoint = joinPointFor("not-a-request-bean");
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(publicBean("real-app", "real-endpoint")));
+            assertThrows(IllegalStateException.class,
+                    () -> aspect.pinPublicSessionIdentity(joinPoint));
+        }
+    }
+
+    @Test
+    public void nonPublicSession_identityPinningIsSkipped() {
+        SessionRequestBean bean = new SessionRequestBean();
+        bean.setUsername("realuser@domain");
+
+        try (MockedStatic<RequestUtils> mocked = Mockito.mockStatic(RequestUtils.class)) {
+            mocked.when(RequestUtils::getUserDetails)
+                    .thenReturn(Optional.of(new HqUserDetailsBean("domain", "user")));
+            aspect.pinPublicSessionIdentity(joinPointFor(bean));
+        }
+
+        assertEquals("realuser@domain", bean.getUsername());
     }
 
     @Test
