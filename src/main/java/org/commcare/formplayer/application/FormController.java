@@ -257,7 +257,8 @@ public class FormController extends AbstractBaseController {
     @UserRestore
     @ConfigureStorageFromSession
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken)
+            throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(
                 newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, newRepeatRequestBean.getWindowWidth());

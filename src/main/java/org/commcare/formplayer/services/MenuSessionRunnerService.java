@@ -770,7 +770,10 @@ public class MenuSessionRunnerService {
         public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId,
             @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
-        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+        // A public web apps session is a deep-link into a form itself; we use the underlying
+        // functionality of SESSION_ENDPOINTS without its toggle.
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)
+                && !RequestUtils.isPublicSession()) {
             throw new RuntimeException("Linking into applications has been disabled for this project.");
         }
 

@@ -12,6 +12,7 @@ import org.commcare.formplayer.aspects.ConfigureStorageFromSessionAspect;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.aspects.LoggingAspect;
 import org.commcare.formplayer.aspects.MetricsAspect;
+import org.commcare.formplayer.aspects.PublicSessionLockAspect;
 import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
 import org.commcare.formplayer.aspects.TagTracingDisabledAspect;
 import org.commcare.formplayer.aspects.UserRestoreAspect;
@@ -196,6 +197,11 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public AppInstallAspect appInstallAspect() {
         return new AppInstallAspect();
+    }
+
+    @Bean
+    public PublicSessionLockAspect publicSessionLockAspect() {
+        return new PublicSessionLockAspect();
     }
 
     @Bean

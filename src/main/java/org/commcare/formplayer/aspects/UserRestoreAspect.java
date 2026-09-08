@@ -84,7 +84,15 @@ public class UserRestoreAspect {
         });
     }
 
-    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) throws Exception {
+    // Package-private for testing.
+    void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) throws Exception {
+        Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
+        if (userDetails.isPresent() && userDetails.get().isPublicSession()) {
+            // A public web apps session restores only as its own user; never use client-supplied values
+            HqUserDetailsBean details = userDetails.get();
+            restoreFactory.configure(details.getUsername(), details.getDomain(), null, auth);
+            return;
+        }
         if (requestBean.getRestoreAsCaseId() != null) {
             // SMS user filling out a form as a case
             restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(), auth);

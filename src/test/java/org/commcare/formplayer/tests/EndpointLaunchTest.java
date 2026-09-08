@@ -140,6 +140,40 @@ public class EndpointLaunchTest extends BaseTestClass {
                         "f04bf0e8-2001-4885-a724-5497b34abe95"});
     }
 
+    /**
+     * A public web apps session carries the public_form_session_key cookie, not the Django
+     * sessionid. Exercises the get_endpoint deep-link with NO sessionid cookie: it must reach the
+     * handler and navigate.
+     */
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointLaunchWithoutSessionCookie() throws Exception {
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_parent",
+                null,
+                false,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Add Parent");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"0", "0"});
+    }
+
+    /**
+     * A public web apps session must be able to launch its endpoint even when the domain does not
+     * have the SESSION_ENDPOINTS toggle enabled. No sessionid cookie, matching a real public
+     * session. The toggle-off + non-public case still throws, per testToggleOff.
+     */
+    @Test
+    @WithHqUser(enabledToggles = {}, publicSession = true)
+    public void testEndpointLaunchForPublicSessionWithoutToggle() throws Exception {
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_parent",
+                null,
+                false,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Add Parent");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"0", "0"});
+    }
+
     @Test
     @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
     public void testEndpointsWithInlineCaseSearch() throws Exception {
