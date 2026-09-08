@@ -168,4 +168,26 @@ public class HqUserDetailsServiceTests {
         UserDetails details = this.service.loadUserDetails(token);
         assertThat(details.getUsername()).isEqualTo("citrus");
     }
+
+    @Test
+    public void loadUserDetails_publicSession_authorizesOnDomainIgnoringClaimedUsername()
+            throws Exception {
+        String detailsString = "{" +
+                "\"domains\":[\"domain\"]," +
+                "\"username\":\"public_abc123@domain\"," +
+                "\"authToken\":\"pub-key\"," +
+                "\"superUser\":false," +
+                "\"public\":true" +
+                "}";
+
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
+
+        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("someone-else", "domain");
+        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
+                principal, new PublicSessionCredential("pub-key"));
+
+        UserDetails details = this.service.loadUserDetails(token);
+        assertThat(details.getUsername()).isEqualTo("public_abc123@domain");
+    }
 }
