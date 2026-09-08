@@ -10,6 +10,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.commcare.formplayer.auth.PublicSessionCredential;
+import org.commcare.formplayer.auth.UserDomainPreAuthPrincipal;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
@@ -32,6 +34,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -113,5 +118,97 @@ public class HqUserDetailsServiceTests {
         assertThrows(SessionAuthUnavailableException.class, () -> {
             this.service.getUserDetails("domain", "invalid");
         });
+    }
+
+    @Test
+    public void whenCallingGetPublicUserDetails_thenClientSendsPublicSessionKey()
+            throws Exception {
+        String detailsString = "{" +
+                "\"domains\":[\"domain\"]," +
+                "\"djangoUserId\":null," +
+                "\"username\":\"public@domain\"," +
+                "\"authToken\":\"pub-key\"," +
+                "\"superUser\":false," +
+                "\"public\":true" +
+                "}";
+
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andExpect(jsonPath("$.publicSessionKey").value("pub-key"))
+                .andExpect(jsonPath("$.sessionId").doesNotExist())
+                .andExpect(jsonPath("$.domain").value("domain"))
+                .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
+
+        HqUserDetailsBean details = this.service.getPublicUserDetails("domain", "pub-key");
+
+        assertThat(details.getUsername()).isEqualTo("public@domain");
+        assertThat(details.getDomains()).isEqualTo(new String[]{"domain"});
+        assertThat(details.isPublicSession()).isTrue();
+    }
+
+    @Test
+    public void loadUserDetails_withPublicCredential_routesToPublicSessionKey()
+            throws Exception {
+        String detailsString = "{" +
+                "\"domains\":[\"domain\"]," +
+                "\"djangoUserId\":null," +
+                "\"username\":\"citrus\"," +
+                "\"authToken\":\"pub-key\"," +
+                "\"superUser\":false," +
+                "\"public\":true" +
+                "}";
+
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andExpect(jsonPath("$.publicSessionKey").value("pub-key"))
+                .andExpect(jsonPath("$.sessionId").doesNotExist())
+                .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
+
+        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("citrus", "domain");
+        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
+                principal, new PublicSessionCredential("pub-key"));
+
+        UserDetails details = this.service.loadUserDetails(token);
+        assertThat(details.getUsername()).isEqualTo("citrus");
+    }
+
+    @Test
+    public void loadUserDetails_publicSession_authorizesOnDomainIgnoringClaimedUsername()
+            throws Exception {
+        String detailsString = "{" +
+                "\"domains\":[\"domain\"]," +
+                "\"username\":\"public_abc123@domain\"," +
+                "\"authToken\":\"pub-key\"," +
+                "\"superUser\":false," +
+                "\"public\":true" +
+                "}";
+
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
+
+        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("someone-else", "domain");
+        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
+                principal, new PublicSessionCredential("pub-key"));
+
+        UserDetails details = this.service.loadUserDetails(token);
+        assertThat(details.getUsername()).isEqualTo("public_abc123@domain");
+    }
+
+    @Test
+    public void loadUserDetails_publicSessionWithoutSessionKey_failsAuthentication()
+            throws Exception {
+        String detailsString = "{" +
+                "\"domains\":[\"domain\"]," +
+                "\"username\":\"public_abc123@domain\"," +
+                "\"superUser\":false," +
+                "\"public\":true" +
+                "}";
+
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
+
+        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("someone", "domain");
+        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
+                principal, new PublicSessionCredential("pub-key"));
+
+        assertThrows(UsernameNotFoundException.class, () -> this.service.loadUserDetails(token));
     }
 }
