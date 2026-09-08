@@ -2,7 +2,6 @@ package org.commcare.formplayer.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -25,11 +24,5 @@ public class PublicFormSessionAuthTest {
     @Test
     public void toString_doesNotLeakTheKey() {
         assertFalse(new PublicFormSessionAuth("super-secret-key").toString().contains("super-secret-key"));
-    }
-
-    @Test
-    public void constructor_rejectsMissingKey() {
-        assertThrows(IllegalArgumentException.class, () -> new PublicFormSessionAuth(null));
-        assertThrows(IllegalArgumentException.class, () -> new PublicFormSessionAuth(""));
     }
 }

@@ -2,7 +2,6 @@ package org.commcare.formplayer.auth;
 
 import org.commcare.formplayer.util.Constants;
 import org.springframework.http.HttpHeaders;
-import org.springframework.util.Assert;
 
 /**
  * {@link HqAuth} for a public web apps session.
@@ -16,7 +15,6 @@ public class PublicFormSessionAuth implements HqAuth {
     private final String sessionKey;
 
     public PublicFormSessionAuth(String sessionKey) {
-        Assert.hasText(sessionKey, "A public form session key is required");
         this.sessionKey = sessionKey;
     }
 

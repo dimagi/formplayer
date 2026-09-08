@@ -35,6 +35,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -189,5 +190,25 @@ public class HqUserDetailsServiceTests {
 
         UserDetails details = this.service.loadUserDetails(token);
         assertThat(details.getUsername()).isEqualTo("public_abc123@domain");
+    }
+
+    @Test
+    public void loadUserDetails_publicSessionWithoutSessionKey_failsAuthentication()
+            throws Exception {
+        String detailsString = "{" +
+                "\"domains\":[\"domain\"]," +
+                "\"username\":\"public_abc123@domain\"," +
+                "\"superUser\":false," +
+                "\"public\":true" +
+                "}";
+
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
+
+        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("someone", "domain");
+        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
+                principal, new PublicSessionCredential("pub-key"));
+
+        assertThrows(UsernameNotFoundException.class, () -> this.service.loadUserDetails(token));
     }
 }
