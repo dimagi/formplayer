@@ -783,6 +783,11 @@ public class MenuSessionRunnerService {
                     "This link does not exist. Your app may have changed so that the given link is no longer "
                             + "valid");
         }
+        // Endpoint args are stripped from a public session, so fail here rather than downstream
+        if (RequestUtils.isPublicSession() && !endpoint.getArguments().isEmpty()) {
+            throw new ApplicationConfigException(
+                    "This link requires additional information and cannot be opened as a public link.");
+        }
         SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
         try {

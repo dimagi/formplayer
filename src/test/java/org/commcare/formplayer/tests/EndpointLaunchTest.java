@@ -3,6 +3,7 @@ package org.commcare.formplayer.tests;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,6 +15,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
+import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.MockRequestUtils;
@@ -172,6 +174,21 @@ public class EndpointLaunchTest extends BaseTestClass {
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Add Parent");
         assertArrayEquals(formResponse.getSelections(), new String[]{"0", "0"});
+    }
+
+    /**
+     * A public link uses a single endpoint and its args are stripped, so reject early.
+     */
+    @Test
+    @WithHqUser(enabledToggles = {}, publicSession = true)
+    public void testPublicSessionRejectsEndpointDeclaringArguments() {
+        ServletException exception = assertThrows(ServletException.class,
+                () -> sessionNavigateWithEndpoint(APP_NAME,
+                        "followup",
+                        null,
+                        false,
+                        NewFormResponse.class));
+        assertInstanceOf(ApplicationConfigException.class, exception.getCause());
     }
 
     @Test
