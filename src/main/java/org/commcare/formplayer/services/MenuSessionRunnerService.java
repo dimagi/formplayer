@@ -770,7 +770,10 @@ public class MenuSessionRunnerService {
         public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId,
             @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
-        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+        // A public web apps session is a deep-link into a form itself; we use the underlying
+        // functionality of SESSION_ENDPOINTS without its toggle.
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)
+                && !RequestUtils.isPublicSession()) {
             throw new RuntimeException("Linking into applications has been disabled for this project.");
         }
 
@@ -779,6 +782,11 @@ public class MenuSessionRunnerService {
             throw new RuntimeException(
                     "This link does not exist. Your app may have changed so that the given link is no longer "
                             + "valid");
+        }
+        // Endpoint args are stripped from a public session, so fail here rather than downstream
+        if (RequestUtils.isPublicSession() && !endpoint.getArguments().isEmpty()) {
+            throw new ApplicationConfigException(
+                    "This link requires additional information and cannot be opened as a public link.");
         }
         SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();

@@ -92,4 +92,9 @@ public @interface WithHqUser {
      * List of enabled toggles for the user. Defaults to a mock list of toggle_a and toggle_b
      */
     String[] enabledToggles() default {"toggle_a", "toggle_b"};
+
+    /**
+     * Whether this is a public web apps session (one-time link). Defaults to false.
+     */
+    boolean publicSession() default false;
 }
