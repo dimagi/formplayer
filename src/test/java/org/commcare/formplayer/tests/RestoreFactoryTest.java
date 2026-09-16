@@ -373,6 +373,16 @@ public class RestoreFactoryTest extends BaseTestClass {
         Assertions.assertEquals("testLocationId2 testLocationId1", UserUtils.getUserLocationsByDomain(domain, afterSandbox));
     }
 
+    @Test
+    public void markPublicSandboxForDeletion_flipsShouldDeleteFlag() {
+        RestoreFactory factory = new RestoreFactory();
+        Assertions.assertFalse(factory.shouldDeletePublicSandboxOnClose());
+
+        factory.markPublicSandboxForDeletion();
+
+        Assertions.assertTrue(factory.shouldDeletePublicSandboxOnClose());
+    }
+
     private void validateHeaders(HttpHeaders headers,
             List<Matcher<Map<? extends String, ? extends List<String>>>> matchers) {
         for (Matcher<Map<? extends String, ? extends List<String>>> matcher : matchers) {
