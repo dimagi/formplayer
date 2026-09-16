@@ -97,6 +97,47 @@ public class SessionAuthTests {
         this.testEndpoint(builder, status().isOk());
     }
 
+    /**
+     * A public web apps request (public header + public cookie, no session cookie) authenticates
+     * via a {@link PublicSessionCredential} carrying the public_form_session_key.
+     */
+    @Test
+    public void testEndpoint_WithPublicSession_Succeeds() throws Exception {
+        String sessionKey = "public-key-abc";
+        mockValidPublicAuth(sessionKey);
+        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
+                .header(Constants.PUBLIC_FORM_SESSION_HEADER, Constants.PUBLIC_FORM_SESSION_HEADER_VALUE)
+                .cookie(new Cookie(Constants.PUBLIC_FORM_SESSION_COOKIE_NAME, sessionKey));
+        this.testEndpoint(builder, status().isOk());
+    }
+
+    /**
+     * The public header is only honored when its value is exactly "true". A different value with no
+     * session cookie is not a recognized session and must not authenticate.
+     */
+    @Test
+    public void testEndpoint_PublicHeaderWrongValue_NoSessionCookie_Fails() throws Exception {
+        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
+                .header(Constants.PUBLIC_FORM_SESSION_HEADER, "false")
+                .cookie(new Cookie(Constants.PUBLIC_FORM_SESSION_COOKIE_NAME, "public-key-abc"));
+        this.testEndpoint(builder, status().isForbidden());
+    }
+
+    /**
+     * When both signals are present, the explicit public header routes to the public credential
+     * rather than the Django session cookie.
+     */
+    @Test
+    public void testEndpoint_PublicHeaderAndSessionCookie_PrefersPublicCredential() throws Exception {
+        String sessionKey = "public-key-abc";
+        mockValidPublicAuth(sessionKey);
+        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
+                .header(Constants.PUBLIC_FORM_SESSION_HEADER, Constants.PUBLIC_FORM_SESSION_HEADER_VALUE)
+                .cookie(new Cookie(Constants.PUBLIC_FORM_SESSION_COOKIE_NAME, sessionKey))
+                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "123"));
+        this.testEndpoint(builder, status().isOk());
+    }
+
     @Test
     public void testMultipartEndpointWithFullAuth_WithAnyHmacAuth_Succeeds() throws Exception {
         String sessionId = "123";
@@ -110,6 +151,13 @@ public class SessionAuthTests {
 
     private void mockValidAuth(String sessionId) {
         TokenMatcher matcher = new TokenMatcher(DOMAIN, USERNAME, sessionId);
+        when(userDetailsService.loadUserDetails(argThat(matcher))).thenReturn(
+                new HqUserDetailsBean(DOMAIN, USERNAME)
+        );
+    }
+
+    private void mockValidPublicAuth(String sessionKey) {
+        PublicTokenMatcher matcher = new PublicTokenMatcher(DOMAIN, USERNAME, sessionKey);
         when(userDetailsService.loadUserDetails(argThat(matcher))).thenReturn(
                 new HqUserDetailsBean(DOMAIN, USERNAME)
         );
@@ -154,6 +202,32 @@ public class SessionAuthTests {
             return principal.getDomain().equals(this.domain)
                     && principal.getUsername().equals(this.username)
                     && sessionId.equals(this.sessionId);
+        }
+    }
+
+    private class PublicTokenMatcher implements ArgumentMatcher<PreAuthenticatedAuthenticationToken> {
+        private String domain;
+        private String username;
+        private String sessionKey;
+
+        public PublicTokenMatcher(String domain, String username, String sessionKey) {
+            this.domain = domain;
+            this.username = username;
+            this.sessionKey = sessionKey;
+        }
+
+        @Override
+        public boolean matches(PreAuthenticatedAuthenticationToken token) {
+            if (token == null) {
+                return false;
+            }
+            final UserDomainPreAuthPrincipal principal =
+                    (UserDomainPreAuthPrincipal)token.getPrincipal();
+            final Object credentials = token.getCredentials();
+            return credentials instanceof PublicSessionCredential
+                    && ((PublicSessionCredential)credentials).getSessionKey().equals(this.sessionKey)
+                    && principal.getDomain().equals(this.domain)
+                    && principal.getUsername().equals(this.username);
         }
     }
 }

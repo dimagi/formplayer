@@ -12,6 +12,7 @@ import static java.util.Collections.singletonList;
 
 import org.commcare.cases.util.CaseDBUtils;
 import org.commcare.formplayer.auth.DjangoAuth;
+import org.commcare.formplayer.auth.PublicFormSessionAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.junit.RestoreFactoryAnswer;
@@ -263,6 +264,29 @@ public class RestoreFactoryTest extends BaseTestClass {
                 hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
         );
+    }
+
+    @Test
+    public void testGetRequestHeaders_PublicSession() {
+        String syncToken = "synctoken";
+        Mockito.doReturn(syncToken).when(restoreFactorySpy).getSyncToken();
+        // A public web apps session authenticates outbound calls with the public session key.
+        restoreFactorySpy.setHqAuth(new PublicFormSessionAuth("pkey"));
+
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(null);
+
+        assertEquals(6, headers.size());
+        validateHeaders(headers, Arrays.asList(
+                hasEntry("Cookie", singletonList("public_form_session_key=pkey")),
+                hasEntry("CommCare-Public-Session", singletonList("true")),
+                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
+                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
+                hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)),
+                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
+        );
+        // The Django sessionid must never travel on a public session's outbound calls.
+        Assertions.assertFalse(headers.containsKey("sessionid"));
+        Assertions.assertFalse(headers.containsKey("Authorization"));
     }
 
     @Test

@@ -107,6 +107,13 @@ public class Constants {
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
     public static final String COMMCARE_USER_SUFFIX = "commcarehq.org";
 
+    // Public web apps sessions (one-time links). Must match HQ's
+    // corehq/apps/app_manager/const.py PUBLIC_FORM_SESSION_* values.
+    public static final String PUBLIC_FORM_SESSION_COOKIE_NAME = "public_form_session_key";
+    public static final String PUBLIC_FORM_SESSION_HEADER = "CommCare-Public-Session";
+    // HQ compares the header against this exact value (case-sensitive).
+    public static final String PUBLIC_FORM_SESSION_HEADER_VALUE = "true";
+
     public static final int USER_LOCK_TIMEOUT = 21;
     // 15 minutes in milliseconds
     public static final int LOCK_DURATION = 60 * 15 * 1000;

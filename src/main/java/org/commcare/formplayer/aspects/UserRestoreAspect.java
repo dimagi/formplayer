@@ -5,9 +5,12 @@ import io.opentracing.util.GlobalTracer;
 import io.sentry.Sentry;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.auth.HqAuth;
+import org.commcare.formplayer.auth.PublicFormSessionAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.util.RequestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
@@ -23,6 +26,7 @@ import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.RestoreFactory;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import datadog.trace.api.interceptor.MutableSpan;
 
@@ -115,7 +119,15 @@ public class UserRestoreAspect {
         restoreFactory.getSQLiteDB().closeConnection();
     }
 
-    private HqAuth getHqAuth(String sessionToken) {
+    // Package-private for testing.
+    HqAuth getHqAuth(String sessionToken) {
+        // A public web apps session has no Django sessionid; authenticate its outbound HQ calls
+        // with the public session key instead. Gate this on the HMAC-authenticated `public` field
+        // from HQ's session_details response, never on the client-supplied header.
+        Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
+        if (userDetails.isPresent() && userDetails.get().isPublicSession()) {
+            return new PublicFormSessionAuth(userDetails.get().getAuthToken());
+        }
         if (sessionToken != null) {
             return new DjangoAuth(sessionToken);
         }
