@@ -11,6 +11,7 @@ import org.commcare.formplayer.exceptions.AsyncRetryException;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.FormattedApplicationConfigException;
 import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
+import org.commcare.formplayer.exceptions.PermissionDeniedException;
 import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
@@ -130,6 +131,14 @@ public class GlobalDefaultExceptionHandler {
     public ExceptionResponseBean handleLockError(HttpServletRequest req, Exception exception) {
         log.info("User lock timed out", exception);
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
+    }
+
+    @ExceptionHandler({PermissionDeniedException.class})
+    @ResponseBody
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ExceptionResponseBean handlePermissionDenied(HttpServletRequest req, PermissionDeniedException exception) {
+        log.info("Permission denied", exception);
+        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
     @ExceptionHandler({InterruptedRuntimeException.class})

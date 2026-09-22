@@ -31,6 +31,7 @@ public class HqUserDetails {
     private String[] enabledPreviews;
     private String[] enabledToggles;
     private boolean publicSession;
+    private String[] permissions;
 
     public HqUserDetails(WithHqUser withUser) {
         String username = StringUtils.hasLength(withUser.username()) ? withUser.username()
@@ -50,6 +51,7 @@ public class HqUserDetails {
         HqUserDetailsBean bean = new HqUserDetailsBean(domain, domains, username, isSuperUser,
                 enabledToggles, enabledPreviews);
         bean.setPublicSession(publicSession);
+        bean.setPermissions(permissions);
         return bean;
     }
 }

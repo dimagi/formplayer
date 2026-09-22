@@ -24,12 +24,14 @@ import org.commcare.formplayer.application.FormController;
 import org.commcare.formplayer.application.FormSessionFactory;
 import org.commcare.formplayer.application.FormSubmissionController;
 import org.commcare.formplayer.application.FormSubmissionHelper;
+import org.commcare.formplayer.application.GlobalDefaultExceptionHandler;
 import org.commcare.formplayer.application.MenuController;
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AnswerQuestionRequestBean;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.beans.ChangeLocaleRequestBean;
 import org.commcare.formplayer.beans.DeleteApplicationDbsRequestBean;
 import org.commcare.formplayer.beans.EvaluateXPathMenuRequestBean;
@@ -70,6 +72,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.FormattedQuestionsService;
 import org.commcare.formplayer.services.FormplayerRemoteInstanceFetcher;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
@@ -86,9 +89,12 @@ import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
+import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.HqUserDetails;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUserSecurityContextFactory;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
@@ -119,6 +125,7 @@ import org.springframework.http.MediaType;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.lang.Nullable;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -132,6 +139,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.servlet.http.Cookie;
@@ -193,6 +201,9 @@ public class BaseTestClass {
 
     @Autowired
     private NewFormResponseFactory newFormResponseFactoryMock;
+
+    @Autowired
+    protected FormattedQuestionsService formattedQuestionsServiceMock;
 
     @Autowired
     protected FormplayerDatadog datadogMock;
@@ -270,6 +281,7 @@ public class BaseTestClass {
         Mockito.reset(installService);
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);
+        Mockito.reset(formattedQuestionsServiceMock);
         Mockito.reset(storageFactoryMock);
         Mockito.reset(formplayerInstallerFactory);
         Mockito.reset(datadogMock);
@@ -283,7 +295,11 @@ public class BaseTestClass {
                 formSubmissionController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
-        mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
+        GlobalDefaultExceptionHandler exceptionHandler = new GlobalDefaultExceptionHandler();
+        ReflectionTestUtils.setField(exceptionHandler, "datadog", datadogMock);
+        mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController)
+                .setControllerAdvice(exceptionHandler)
+                .build();
         setupRestoreFactoryMock();
         setupSubmitServiceMock();
         mapper = new ObjectMapper();
@@ -294,6 +310,18 @@ public class BaseTestClass {
         mockVirtualDataInstanceService();
         // this shouldn't be needed here (see TestContext) but tests fail without it
         new SQLiteProperties().setDataDir("testdbs/");
+        setEditDataPermission(true);
+    }
+
+    protected void setEditDataPermission(boolean granted) {
+        String[] permissions = granted ? new String[]{Constants.PERMISSION_EDIT_DATA} : new String[]{};
+        Optional<HqUserDetailsBean> existing = RequestUtils.getUserDetails();
+        if (existing.isPresent()) {
+            existing.get().setPermissions(permissions);
+        } else {
+            WithHqUserSecurityContextFactory.setSecurityContext(
+                    HqUserDetails.builder().permissions(permissions).build());
+        }
     }
 
     private void setupRestoreFactoryMock() {
@@ -416,6 +444,7 @@ public class BaseTestClass {
         }
         ReferenceHandler.clearInstance();
         LocalizerManager.clearInstance();
+        SecurityContextHolder.clearContext();
     }
 
     private UserDB customConnector;
@@ -641,6 +670,22 @@ public class BaseTestClass {
         return new EvaluateXpathRequest(mockDebuggerController, sessionId, xPath, formSessionService, null)
                 .request()
                 .bean();
+    }
+
+    ResultActions postDebuggerRequest(String urlPath, Object bean) throws Exception {
+        return mockDebuggerController.perform(post(urlPrepend(urlPath))
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
+                .content(mapper.writeValueAsString(bean)));
+    }
+
+    ResultActions postDebuggerRequestWithInstallReference(String requestPath, String urlPath,
+            Class<?> beanClass) throws Exception {
+        Pair<String, ?> refAndBean = Installer.getInstallReferenceAndBean(requestPath, beanClass);
+        return Installer.mockInstallReference(
+                () -> postDebuggerRequest(urlPath, refAndBean.second),
+                refAndBean.first
+        );
     }
 
     EvaluateXPathResponseBean evaluateMenuXpath(String requestPath) throws Exception {
