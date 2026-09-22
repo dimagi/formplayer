@@ -29,6 +29,7 @@ public class HqUserDetailsBean implements UserDetails {
     private String domain;
     private String[] enabledToggles;
     private String[] enabledPreviews;
+    private String[] permissions;
 
     // HQ marks public web apps sessions with a JSON `public` field. `public` is a reserved word,
     // so map it to this property. Primitive boolean so missing JSON defaults to false.
@@ -68,6 +69,10 @@ public class HqUserDetailsBean implements UserDetails {
 
     public boolean isAuthorizedForDomain(String domain) {
         return Arrays.asList(domains).contains(domain);
+    }
+
+    public boolean hasPermission(String permission) {
+        return permissions != null && Arrays.asList(permissions).contains(permission);
     }
 
     /////////////////////// UserDetails methods
