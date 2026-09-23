@@ -210,4 +210,8 @@ public class Constants {
     public static final String TOGGLE_INCLUDE_STATE_HASH = "FORMPLAYER_INCLUDE_STATE_HASH";
 
     public static final String AUTHORITY_COMMCARE = "COMMCARE";
+
+    // HQ domain permissions
+    // These correspond to property names of commcare-hq corehq/apps/users/models.py HqPermissions
+    public static final String PERMISSION_EDIT_DATA = "edit_data";
 }

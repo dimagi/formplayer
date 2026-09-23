@@ -13,6 +13,7 @@ import org.commcare.formplayer.beans.debugger.DebuggerFormattedQuestionsResponse
 import org.commcare.formplayer.beans.debugger.MenuDebuggerContentResponseBean;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
+import org.commcare.formplayer.exceptions.PermissionDeniedException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.FormattedQuestionsService;
@@ -21,6 +22,7 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.NotificationLogger;
+import org.commcare.formplayer.util.RequestUtils;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
@@ -66,6 +68,7 @@ public class DebuggerController extends AbstractBaseController {
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        requireEditDataPermission();
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(serializableFormSession.getMenuSessionId());
         FormSession formSession = formSessionFactory.getFormSession(serializableFormSession, debuggerRequest.getWindowWidth());
@@ -95,6 +98,7 @@ public class DebuggerController extends AbstractBaseController {
             @RequestBody SessionNavigationBean debuggerMenuRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
             HttpServletRequest request) throws Exception {
+        requireEditDataPermission();
 
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(debuggerMenuRequest);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
@@ -117,6 +121,7 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
                                                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                        HttpServletRequest request) throws Exception {
+        requireEditDataPermission();
         MenuSession menuSession = menuSessionFactory.getMenuSessionFromBean(evaluateXPathRequestBean);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(
                 menuSession, evaluateXPathRequestBean.getSelections(),
@@ -147,6 +152,7 @@ public class DebuggerController extends AbstractBaseController {
     @ConfigureStorageFromSession
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        requireEditDataPermission();
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = formSessionFactory.getFormSession(serializableFormSession, evaluateXPathRequestBean.getWindowWidth());
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
@@ -164,6 +170,15 @@ public class DebuggerController extends AbstractBaseController {
         );
 
         return evaluateXPathResponseBean;
+    }
+
+    void requireEditDataPermission() {
+        boolean granted = RequestUtils.getUserDetails()
+                .map(details -> details.hasPermission(Constants.PERMISSION_EDIT_DATA))
+                .orElse(false);
+        if (!granted) {
+            throw new PermissionDeniedException(Constants.PERMISSION_EDIT_DATA);
+        }
     }
 
     private List<XPathQueryItem> fetchRecentMenuXPathQueries(String domain, String username) {

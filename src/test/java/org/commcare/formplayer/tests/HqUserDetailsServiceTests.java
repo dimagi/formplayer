@@ -94,7 +94,8 @@ public class HqUserDetailsServiceTests {
                 "\"djangoUserId\":1," +
                 "\"username\":\"user@domain.commcarehq.org\"," +
                 "\"authToken\":\"authToke\"," +
-                "\"superUser\":false" +
+                "\"superUser\":false," +
+                "\"permissions\":[\"edit_data\"]" +
                 "}";
 
         this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
@@ -107,6 +108,7 @@ public class HqUserDetailsServiceTests {
 
         assertThat(details.getUsername()).isEqualTo("user@domain.commcarehq.org");
         assertThat(details.getDomains()).isEqualTo(new String[]{"domain"});
+        assertThat(details.getPermissions()).containsExactly("edit_data");
     }
 
     @Test

@@ -90,6 +90,24 @@ public class HqUserDetailsTests {
     }
 
     @Test
+    public void testHasPermission() {
+        HqUserDetailsBean user = new HqUserDetailsBean("domain",
+                new String[]{"domain"}, "aragorn",
+                false, new String[]{}, new String[]{});
+        user.setPermissions(new String[]{"edit_data"});
+
+        Assertions.assertTrue(user.hasPermission("edit_data"));
+        Assertions.assertFalse(user.hasPermission("access_web_apps"));
+    }
+
+    @Test
+    public void testHasPermissionWhenPermissionsMissing() {
+        HqUserDetailsBean user = new HqUserDetailsBean("domain", "aragorn");
+
+        Assertions.assertFalse(user.hasPermission("edit_data"));
+    }
+
+    @Test
     public void testFeatureFlagChecker_isToggleEnabled() {
         WithHqUserSecurityContextFactory.setSecurityContext(
                 HqUserDetails.builder().enabledToggles(new String[]{"toggle_a", "toggle_b"}).build()

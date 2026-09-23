@@ -14,6 +14,7 @@ import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormDefinitionService;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.FormattedQuestionsService;
 import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.HqUserDetailsService;
@@ -170,6 +171,11 @@ public class TestContext {
     @Bean
     public NewFormResponseFactory newFormResponseFactory() {
         return Mockito.spy(NewFormResponseFactory.class);
+    }
+
+    @Bean
+    public FormattedQuestionsService formattedQuestionsService() {
+        return Mockito.spy(FormattedQuestionsService.class);
     }
 
     @Bean
