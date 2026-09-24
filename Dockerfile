@@ -23,4 +23,4 @@ COPY --from=builder application/application/ ./
 COPY scripts/docker_entrypoint.sh /entrypoint
 RUN chmod +x /entrypoint
 ENTRYPOINT ["/entrypoint"]
-CMD ["java", "org.springframework.boot.loader.JarLauncher"]
+CMD ["java", "org.springframework.boot.loader.launch.JarLauncher"]
