@@ -3,6 +3,7 @@ package org.commcare.formplayer.application;
 import io.sentry.SentryLevel;
 
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
+import org.commcare.formplayer.annotations.ValidateSessionOwner;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.SubmitRequestBean;
@@ -40,6 +41,7 @@ public class FormSubmissionController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @ValidateSessionOwner
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
             @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
             HttpServletRequest request) throws Exception {

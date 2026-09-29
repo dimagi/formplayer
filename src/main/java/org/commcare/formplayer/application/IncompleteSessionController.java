@@ -1,6 +1,7 @@
 package org.commcare.formplayer.application;
 
 import org.commcare.formplayer.annotations.UserLock;
+import org.commcare.formplayer.annotations.ValidateSessionOwner;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.FormsSessionsRequestBean;
 import org.commcare.formplayer.beans.GetSessionsResponse;
@@ -37,6 +38,7 @@ public class IncompleteSessionController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
+    @ValidateSessionOwner
     public NewFormResponse openIncompleteForm(@RequestBody SessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionService.getSessionById(incompleteSessionRequestBean.getSessionId());
@@ -66,6 +68,7 @@ public class IncompleteSessionController extends AbstractBaseController {
     }
 
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION, method = RequestMethod.POST)
+    @ValidateSessionOwner
     public NotificationMessage deleteIncompleteForm(
             @RequestBody SessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
