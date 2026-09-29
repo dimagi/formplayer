@@ -9,6 +9,7 @@ import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 
 import org.commcare.formplayer.aspects.AppInstallAspect;
 import org.commcare.formplayer.aspects.ConfigureStorageFromSessionAspect;
+import org.commcare.formplayer.aspects.SessionOwnershipAspect;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.aspects.LoggingAspect;
 import org.commcare.formplayer.aspects.MetricsAspect;
@@ -173,6 +174,11 @@ public class WebAppContext implements WebMvcConfigurer {
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     BrowserValuesProvider browserValuesProvider() {
         return new BrowserValuesProvider();
+    }
+
+    @Bean
+    public SessionOwnershipAspect sessionOwnershipAspect() {
+        return new SessionOwnershipAspect();
     }
 
     @Bean
