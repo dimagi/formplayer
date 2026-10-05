@@ -27,7 +27,7 @@ import java.util.HashMap;
 /**
  * Proves {@link PublicSessionLockAspect} actually intercepts {@code @AppInstall} handlers through
  * real Spring AOP weaving. Catches a broken pointcut, missing weaving, or a lost bean.
- * Complemented by two reflection guards for the wiring the aspect depends on.
+ * Complemented by three reflection guards for the wiring the aspect depends on.
  */
 @SpringJUnitConfig(PublicSessionLockAspectWeavingTest.Config.class)
 public class PublicSessionLockAspectWeavingTest {
@@ -112,6 +112,14 @@ public class PublicSessionLockAspectWeavingTest {
                 "lock aspect must be ordered after ExposeInvocationInterceptor or it fails reading the JoinPoint");
         assertTrue(lockOrder < appInstallOrder,
                 "lock aspect must run before AppInstallAspect keys the sandbox off the app id");
+    }
+
+    @Test
+    public void lockAspectOrderedBeforeUserRestore() {
+        // UserRestoreAspect configures the restore from the request, so the pinned identity and
+        // cleared restoreAs/restoreAsCaseId must already be in place.
+        assertTrue(orderOf(PublicSessionLockAspect.class) < orderOf(UserRestoreAspect.class),
+                "lock aspect must run before UserRestoreAspect configures the restore from the request");
     }
 
     private static int orderOf(Class<?> aspect) {
