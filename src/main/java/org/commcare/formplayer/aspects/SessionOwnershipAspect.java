@@ -29,11 +29,13 @@ import java.util.Arrays;
  * authentication filter has already bound to the authenticated session. This mirrors
  * how {@link UserRestoreAspect} and {@link LockAspect} already derive identity from the bean.
  *
- * <p>Ordered ahead of {@link LockAspect} (2) and {@link UserRestoreAspect} (5) so a foreign session
- * is refused before either derives a lock key or restore context from it.
+ * <p>Ordered after {@link PublicSessionLockAspect} (0), which pins a public session's bean identity
+ * to the authenticated principal, so this check compares against the pinned identity rather than the
+ * raw client value. Still ahead of {@link LockAspect} (2) and {@link UserRestoreAspect} (5) so a
+ * foreign session is refused before either derives a lock key or restore context from it.
  */
 @Aspect
-@Order(0)
+@Order(1)
 public class SessionOwnershipAspect {
 
     private static final Log log = LogFactory.getLog(SessionOwnershipAspect.class);

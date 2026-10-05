@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.annotations.ValidateSessionOwner;
 import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * <p>{@code SessionOwnershipAspectTest} exercises the check's logic directly. This
  * test confirms the check is actually connected and runs, catching mistakes a direct
  * call cannot, like a wrong or moved annotation, or the check never being registered.
+ * It also confirms a public web apps session still reaches its own form session with
+ * {@link PublicSessionLockAspect} woven alongside the check.
  */
 @SpringJUnitConfig(SessionOwnershipAspectIntegrationTest.Config.class)
 public class SessionOwnershipAspectIntegrationTest {
@@ -44,6 +48,11 @@ public class SessionOwnershipAspectIntegrationTest {
         }
 
         @Bean
+        public PublicSessionLockAspect publicSessionLockAspect() {
+            return new PublicSessionLockAspect();
+        }
+
+        @Bean
         public SessionKeyedHandler sessionKeyedHandler() {
             return new SessionKeyedHandler();
         }
@@ -51,6 +60,8 @@ public class SessionOwnershipAspectIntegrationTest {
 
     /** Stand-in for a controller: a bean with a {@code @ValidateSessionOwner} handler to run the check before. */
     static class SessionKeyedHandler {
+        // Mirrors the real in-form routes, so the public session lock also runs.
+        @UserRestore
         @ValidateSessionOwner
         public void act(SessionRequestBean bean) {
             // no-op; the ownership check runs before this method
@@ -95,6 +106,22 @@ public class SessionOwnershipAspectIntegrationTest {
     @Test
     public void foreignRequestIsRefused() {
         // A different user in a different domain, addressing the victim's session by id.
+        assertThrows(FormNotFoundException.class,
+                () -> handler.act(requestBean("attacker", "attacker_domain")));
+    }
+
+    @Test
+    @WithHqUser(username = "victim", domain = "victim_domain", publicSession = true)
+    public void publicOwnerRequestIsAllowed() {
+        // Deliberately set a non-owner username/domain. The request is only allowed if
+        // PublicSessionLockAspect rewrites it to the authenticated principal (the real owner)
+        // before the ownership check reads it. A bean that already matched couldn't prove this
+        assertDoesNotThrow(() -> handler.act(requestBean("stale_user", "stale_domain")));
+    }
+
+    @Test
+    @WithHqUser(username = "attacker", domain = "attacker_domain", publicSession = true)
+    public void publicForeignRequestIsRefused() {
         assertThrows(FormNotFoundException.class,
                 () -> handler.act(requestBean("attacker", "attacker_domain")));
     }
