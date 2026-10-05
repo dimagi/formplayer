@@ -97,10 +97,9 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
             } else {
                 userDetails = getUserDetails(principal.getDomain(), (String) credentials);
             }
-            // A public session has no real HQ account, so only its bound domain is meaningful.
-            boolean authorized = userDetails.isPublicSession()
-                    ? userDetails.isAuthorizedForDomain(principal.getDomain())
-                    : userDetails.isAuthorized(principal.getDomain(), principal.getUsername());
+            // Formplayer keys sandboxes, locks and form session ownership on the request's username,
+            // so it must match the one HQ returned, even for a public session's synthetic username.
+            boolean authorized = userDetails.isAuthorized(principal.getDomain(), principal.getUsername());
             if (!authorized) {
                 throw new UsernameNotFoundException("Unable to authenticate user in requested domain");
             }
