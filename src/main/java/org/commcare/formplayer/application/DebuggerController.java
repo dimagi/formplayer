@@ -1,6 +1,7 @@
 package org.commcare.formplayer.application;
 
 import org.commcare.formplayer.annotations.AppInstall;
+import org.commcare.formplayer.annotations.ValidateSessionOwner;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
@@ -65,6 +66,7 @@ public class DebuggerController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)
     @UserRestore
     @ConfigureStorageFromSession
+    @ValidateSessionOwner
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
@@ -150,6 +152,7 @@ public class DebuggerController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @ConfigureStorageFromSession
+    @ValidateSessionOwner
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         requireEditDataPermission();
