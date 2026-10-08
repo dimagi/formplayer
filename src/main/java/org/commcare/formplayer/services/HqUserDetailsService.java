@@ -62,6 +62,7 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
         } catch (Exception e) {
             throw new UserDetailsException(e);
         }
+        webClient.addOriginIpHeader(headers);
         try {
 
             HqUserDetailsBean userDetails = webClient.postRaw(

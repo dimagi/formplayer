@@ -23,6 +23,8 @@ import lombok.extern.apachecommons.CommonsLog;
 @CommonsLog
 public class WebClient {
 
+    public static final String ORIGIN_IP_HEADER = "X-CommCareHQ-Origin-IP";
+
     RestTemplate restTemplate;
 
     RestoreFactory restoreFactory;
@@ -65,11 +67,20 @@ public class WebClient {
         if (isMultipart) {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         }
+        addOriginIpHeader(headers);
+        return postRaw(uri, headers, body, String.class).getBody();
+    }
+
+    /**
+     * Forwards the Web Apps client's IP address to HQ, which otherwise only sees
+     * formplayer's. HQ trusts the header only on requests it can verify came from
+     * formplayer.
+     */
+    public void addOriginIpHeader(HttpHeaders headers) {
         String ipAddress = RequestUtils.getIpAddress();
         if (ipAddress != null) {
-            headers.add("X-CommCareHQ-Origin-IP", ipAddress);
+            headers.add(ORIGIN_IP_HEADER, ipAddress);
         }
-        return postRaw(uri, headers, body, String.class).getBody();
     }
 
     public <T> String postFormData(String url, Multimap<String, String> data) {
