@@ -173,7 +173,7 @@ public class HqUserDetailsServiceTests {
     }
 
     @Test
-    public void loadUserDetails_publicSession_authorizesOnDomainIgnoringClaimedUsername()
+    public void loadUserDetails_publicSession_rejectsMismatchedUsername()
             throws Exception {
         String detailsString = "{" +
                 "\"domains\":[\"domain\"]," +
@@ -190,8 +190,7 @@ public class HqUserDetailsServiceTests {
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
                 principal, new PublicSessionCredential("pub-key"));
 
-        UserDetails details = this.service.loadUserDetails(token);
-        assertThat(details.getUsername()).isEqualTo("public_abc123@domain");
+        assertThrows(UsernameNotFoundException.class, () -> this.service.loadUserDetails(token));
     }
 
     @Test
@@ -207,7 +206,7 @@ public class HqUserDetailsServiceTests {
         this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
                 .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
 
-        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("someone", "domain");
+        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("public_abc123@domain", "domain");
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
                 principal, new PublicSessionCredential("pub-key"));
 

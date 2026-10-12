@@ -22,8 +22,9 @@ import lombok.extern.java.Log;
  * HMAC-authenticated ones from session_details. Identity is pinned on every public request; the
  * app and endpoint are pinned wherever an app is installed.
  *
- * Ordered ahead of every other formplayer aspect so that {@link LockAspect} derives its lock key,
- * and {@link AppInstallAspect} keys the sandbox DB, from the authoritative values.
+ * Ordered ahead of every other formplayer aspect so that {@link SessionOwnershipAspect} checks
+ * ownership, {@link LockAspect} derives its lock key, {@link UserRestoreAspect} configures the
+ * restore, and {@link AppInstallAspect} keys the sandbox DB, all from the authoritative values.
  */
 @Aspect
 @Order(0)

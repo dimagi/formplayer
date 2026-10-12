@@ -63,12 +63,8 @@ public class HqUserDetailsBean implements UserDetails {
     }
 
     public boolean isAuthorized(String domain, String username) {
-        return isSuperUser || isAuthorizedForDomain(domain) && this.username.equals(
+        return isSuperUser || Arrays.asList(domains).contains(domain) && this.username.equals(
                 username);
-    }
-
-    public boolean isAuthorizedForDomain(String domain) {
-        return Arrays.asList(domains).contains(domain);
     }
 
     public boolean hasPermission(String permission) {

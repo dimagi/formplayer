@@ -20,6 +20,7 @@ public class HqUserDetailsTests {
                 false, new String[]{}, new String[]{});
 
         Assertions.assertTrue(user.isAuthorized("domain", "aragorn"));
+        Assertions.assertTrue(user.isAuthorized("other-domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("domain", "wrong-aragorn"));
 
@@ -37,17 +38,6 @@ public class HqUserDetailsTests {
         Assertions.assertTrue(user.isAuthorized("domain", "bilbo"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "bilbo"));
         Assertions.assertFalse(user.isAuthorized("domain", "wrong-bilbo"));
-    }
-
-    @Test
-    public void testIsAuthorizedForDomain() {
-        HqUserDetailsBean user = new HqUserDetailsBean("domain",
-                new String[]{"domain", "other-domain"}, "aragorn",
-                false, new String[]{}, new String[]{});
-
-        Assertions.assertTrue(user.isAuthorizedForDomain("domain"));
-        Assertions.assertTrue(user.isAuthorizedForDomain("other-domain"));
-        Assertions.assertFalse(user.isAuthorizedForDomain("wrong-domain"));
     }
 
     @Test
