@@ -1,0 +1,33 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/2002/xforms" xmlns:jr="http://openrosa.org/javarosa">
+    <h:head>
+        <h:title>Web Apps Pragmas</h:title>
+        <model>
+            <instance>
+                <data xmlns="http://openrosa.org/formdesigner/web-apps-pragmas">
+                    <q_name/>
+                </data>
+            </instance>
+            <itext>
+                <translation lang="hin" default="">
+                    <text id="Pragma-WebApps-Layout">
+                        <value>condensed</value>
+                    </text>
+                    <text id="Pragma-WebApps-Other">
+                        <value>other</value>
+                    </text>
+                    <text id="Pragma-Skip-Full-Form-Validation">
+                        <value>true</value>
+                    </text>
+                </translation>
+                <translation lang="en">
+                    <text id="Pragma-WebApps-Layout">
+                        <value>EN: condensed</value>
+                    </text>
+                </translation>
+            </itext>
+        </model>
+    </h:head>
+    <h:body>
+        <input ref="/data/q_name"/>
+    </h:body>
+</h:html>
