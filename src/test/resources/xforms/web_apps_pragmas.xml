@@ -10,7 +10,7 @@
             <itext>
                 <translation lang="hin" default="">
                     <text id="Pragma-WebApps-Layout">
-                        <value>condensed</value>
+                        <value>condensed (Hindi)</value>
                     </text>
                     <text id="Pragma-WebApps-Other">
                         <value>other</value>
@@ -21,7 +21,7 @@
                 </translation>
                 <translation lang="en">
                     <text id="Pragma-WebApps-Layout">
-                        <value>EN: condensed</value>
+                        <value>condensed (English)</value>
                     </text>
                 </translation>
             </itext>

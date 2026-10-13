@@ -366,7 +366,7 @@ public class FormSession {
     private void setWebAppsPragmas() {
         this.webAppsPragmas = new HashMap<>();
         Localizer localizer = formDef.getLocalizer();
-        Map<String, String> localeData = localizer.getLocaleData(localizer.getDefaultLocale());
+        Map<String, String> localeData = localizer.getLocaleData(localizer.getLocale());
         for (Map.Entry<String, String> entry : localeData.entrySet()) {
             String key = entry.getKey();
             if (key.startsWith(WEB_APPS_PRAGMA_PREFIX)) {

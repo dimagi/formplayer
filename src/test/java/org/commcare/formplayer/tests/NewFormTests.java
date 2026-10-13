@@ -61,7 +61,7 @@ public class NewFormTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
                 "xforms/web_apps_pragmas.xml");
 
-        assertEquals(Map.of("Layout", "condensed", "Other", "other"),
+        assertEquals(Map.of("Layout", "condensed (English)", "Other", "other"),
                 newSessionResponse.getWebAppsPragmas());
     }
 
