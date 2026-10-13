@@ -131,9 +131,8 @@ public class NewFormResponseFactory {
         NewFormResponse response = new NewFormResponse(
                 formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
                 serializedSession.getId(), serializedSession.getVersion(),
-                serializedSession.getInstanceXml()
+                serializedSession.getInstanceXml(), formEntrySession.getWebAppsPragmas()
         );
-        response.setWebAppsPragmas(formEntrySession.getWebAppsPragmas());
 
         response.populateTranslations();
 
@@ -143,13 +142,11 @@ public class NewFormResponseFactory {
     public NewFormResponse getResponse(SerializableFormSession session, CommCareSession commCareSession, String windowWidth) throws Exception {
         FormSession formSession = getFormSession(session, commCareSession, windowWidth);
         String formTreeJson = formSession.getFormTree().toString();
-        NewFormResponse response = new NewFormResponse(
+        return new NewFormResponse(
                 formTreeJson, formSession.getLanguages(), session.getTitle(),
                 session.getId(), session.getVersion(),
-                session.getInstanceXml()
+                session.getInstanceXml(), formSession.getWebAppsPragmas()
         );
-        response.setWebAppsPragmas(formSession.getWebAppsPragmas());
-        return response;
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession,

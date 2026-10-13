@@ -23,13 +23,14 @@ public class NewFormResponse extends SessionResponseBean {
 
     public NewFormResponse(String formTreeJson, String[] languages,
             String title, String sessionId, int sequenceId,
-            String instanceXml) throws IOException {
+            String instanceXml, Map<String, String> webAppsPragmas) throws IOException {
         this.tree = new ObjectMapper().readValue(formTreeJson, QuestionBean[].class);
         this.langs = languages;
         this.title = title;
         this.sessionId = sessionId;
         this.sequenceId = sequenceId;
         this.instanceXml = new InstanceXmlBean(instanceXml);
+        this.webAppsPragmas = webAppsPragmas;
     }
 
     public QuestionBean[] getTree() {
@@ -78,9 +79,5 @@ public class NewFormResponse extends SessionResponseBean {
 
     public Map<String, String> getWebAppsPragmas() {
         return webAppsPragmas;
-    }
-
-    public void setWebAppsPragmas(Map<String, String> webAppsPragmas) {
-        this.webAppsPragmas = webAppsPragmas;
     }
 }
