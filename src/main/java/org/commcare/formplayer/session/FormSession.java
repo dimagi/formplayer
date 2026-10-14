@@ -39,6 +39,7 @@ import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.locale.Localization;
+import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.engine.FunctionExtensions;
@@ -59,6 +60,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -77,6 +79,8 @@ import datadog.trace.api.Trace;
  */
 public class FormSession {
 
+    private static final String WEB_APPS_PRAGMA_PREFIX = "Pragma-WebApps-";
+
     private final SerializableFormSession session;
     private final FormDef formDef;
     private final UserSqlSandbox sandbox;
@@ -92,6 +96,7 @@ public class FormSession {
     private boolean shouldAutoSubmit;
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
+    private Map<String, String> webAppsPragmas;
     private String windowWidth;
     private Text formTitleText;
 
@@ -293,6 +298,7 @@ public class FormSession {
         setAutoSubmitFlag();
         setSuppressAutosyncFlag();
         setSkipValidation();
+        setWebAppsPragmas();
     }
 
 
@@ -355,6 +361,23 @@ public class FormSession {
     private void setSkipValidation() {
         String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
         this.shouldSkipFullFormValidation = shouldSkipValidation != null;
+    }
+
+    private void setWebAppsPragmas() {
+        this.webAppsPragmas = new HashMap<>();
+        Localizer localizer = formDef.getLocalizer();
+        Map<String, String> localeData = localizer.getLocaleData(localizer.getLocale());
+        for (Map.Entry<String, String> entry : localeData.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(WEB_APPS_PRAGMA_PREFIX)) {
+                String value = formDef.fillTemplateString(entry.getValue(), TreeReference.rootRef());
+                webAppsPragmas.put(key.substring(WEB_APPS_PRAGMA_PREFIX.length()), value);
+            }
+        }
+    }
+
+    public Map<String, String> getWebAppsPragmas() {
+        return webAppsPragmas;
     }
 
     public boolean getAutoSubmitFlag() {
