@@ -1,0 +1,188 @@
+# Claude Dependabot PR Review Workflow
+#
+# This workflow automatically runs Claude analysis on Dependabot PRs to:
+# - Identify dependency changes and their versions
+# - Determine the version that actually resolves (Spring Boot BOM may override it)
+# - Look up changelogs for updated packages
+# - Assess breaking changes and security impacts
+# - Provide actionable recommendations for the development team
+#
+# Triggered on: Dependabot PRs when opened (not on later pushes, to limit cost), or manual
+#   dispatch with a PR number to re-run the review
+# Requirements: ANTHROPIC_API_KEY must be configured as a *Dependabot* secret
+#   (Settings → Secrets and variables → Dependabot). Workflows triggered by Dependabot
+#   cannot read regular Actions secrets. For manual dispatch it must also exist as an
+#   Actions secret.
+
+name: Claude Dependabot PR Review
+
+on:
+  pull_request:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to analyze'
+        required: true
+        type: string
+
+jobs:
+  dependabot-review:
+    # Only run on PRs opened by Dependabot,
+    # or manual dispatch for testing
+    if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Resolve PR ref
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ inputs.pr_number || github.event.pull_request.number }}"
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          REF=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json headRefOid --jq '.headRefOid')
+          echo "ref=$REF" >> $GITHUB_OUTPUT
+
+      # commcare-core is a submodule at libs/commcare; check out the commit this PR pins
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.ref }}
+          fetch-depth: 2
+          submodules: recursive
+
+      - name: Run Claude Dependabot Analysis
+        id: claude_review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_bots: "dependabot[bot]"
+          claude_args: |
+            --allowedTools "Grep,Bash(git:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh api:*),Read,WebFetch"
+          prompt: |
+            You are reviewing PR #${{ steps.pr.outputs.pr_number }} in ${{ github.repository }}.
+
+            You are Claude, an AI assistant specialized in reviewing Dependabot dependency update PRs
+            for Formplayer — CommCare's Spring Boot web service that powers Web Apps form entry and
+            case/menu navigation. It is a mixed Java 17 / Kotlin application built with Gradle.
+
+            Project layout:
+            - `build.gradle` — root project dependencies. Uses the Spring Boot Gradle plugin and
+              `io.spring.dependency-management` (check the `org.springframework.boot` plugin version
+              in the `plugins {}` block).
+            - `libs/commcare/` — the `commcare-core` git submodule (XForm engine, case/session logic,
+              Retrofit/OkHttp networking), included as the `:commcare` Gradle subproject. Its
+              dependencies are declared in `libs/commcare/build.gradle`.
+            - `scripts/rebuildstaging-requirements.txt` — Python dependencies for a deploy helper
+              script (Dependabot `pip` ecosystem).
+            - Key libraries: Spring Boot / Spring Framework / Spring Security, Spring Data JPA with
+              PostgreSQL, Redis, SQLite (per-user databases), Retrofit/OkHttp, Sentry, ShedLock, Lombok.
+
+            Your primary tasks are:
+            1. **Analyze the dependency changes** in this Dependabot PR
+            2. **Determine the version that will actually resolve** in the Formplayer build
+            3. **Look up changelogs** for all updated dependencies to understand what changed
+            4. **Identify breaking changes** and assess potential impact on the Formplayer codebase
+            5. **Provide actionable recommendations** for the development team
+
+            ## Analysis Process:
+
+            1. **Identify Changed Dependencies**:
+               - Use `gh pr diff` to see what dependencies were updated
+               - Changes may be in `build.gradle`, `libs/commcare/build.gradle` (via a submodule
+                 pointer bump — inspect the submodule with `git -C libs/commcare log` / `git -C
+                 libs/commcare show`), or `scripts/rebuildstaging-requirements.txt`
+               - List all package versions: old → new
+
+            2. **Resolved Version Check (Gradle only)**:
+               - Formplayer applies the Spring Boot BOM. For any dependency the BOM manages, the
+                 BOM's version wins over the version declared in `build.gradle` or
+                 `libs/commcare/build.gradle`, unless overridden via a property in the root
+                 `build.gradle` `ext {}` block (e.g. `set('okhttp.version', '5.5.0')`).
+               - Check whether the dependency is managed by fetching the `spring-boot-dependencies`
+                 BOM for the Boot version in use, e.g.
+                 https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/{version}/spring-boot-dependencies-{version}.pom
+               - State clearly which version will actually ship. If the bump has no effect because
+                 the BOM pins an older version, say so and note the `ext {}` override needed.
+               - If the dependency is Spring Boot itself, note the managed library versions it
+                 changes (Spring Framework, Spring Security, Hibernate, Jackson, etc.).
+
+            3. **Changelog Research**:
+               - For each updated dependency, look up its changelog/release notes in:
+                  - Spring Boot: https://github.com/spring-projects/spring-boot/releases (and the
+                    wiki release notes for minor/major upgrades)
+                  - Spring Framework / Security / Data: GitHub releases for the corresponding
+                    `spring-projects` repository
+                  - Python packages: the project's changelog linked from https://pypi.org/project/{name}/
+                  - For other libraries, check GitHub releases or the changelog at the project's repo URL
+               - Focus on versions between the old and new versions
+               - Identify: breaking changes, deprecations, security fixes, new features
+
+            4. **Breaking Change Assessment**:
+               - Categorize changes: BREAKING, MAJOR, MINOR, PATCH, SECURITY
+               - Assess impact on Formplayer's usage patterns
+               - Check if Formplayer or commcare-core uses affected APIs/features, including use
+                 by Spring itself (e.g. Spring's OkHttp3ClientHttpRequestFactory relies on OkHttp
+                 APIs, some of them internal)
+               - Look for migration guides or upgrade instructions
+
+            5. **Codebase Impact Analysis**:
+               - Search `src/` and `libs/commcare/src/` for usage of changed APIs
+               - Check usage of updated packages in the codebase
+               - Identify any tests (`src/test/`, `libs/commcare/src/test/`) that might be affected
+               - Identify files that might be affected by breaking changes
+               - Note any changes to `application.properties` or other configuration that may be needed
+
+            ## Output Format:
+
+            Post a PR comment with a comprehensive review for MAJOR bumps. For MINOR and PATCH
+            bumps, use a condensed format with only a summary, resolved version, risk level and
+            merge recommendation.
+
+            This workflow may be re-run manually on the same PR. Before posting, check for an earlier
+            review comment of yours on this PR (it starts with the heading below), using
+            `gh api repos/${{ github.repository }}/issues/${{ steps.pr.outputs.pr_number }}/comments`.
+            If one exists, update it in place with
+            `gh api -X PATCH repos/${{ github.repository }}/issues/comments/{comment_id} -f body=...`
+            instead of posting a new comment. Otherwise post with `gh pr comment`.
+
+            Structure your comment with the following sections:
+
+            ### 🔍 Dependency Analysis Summary
+            - List of updated packages with version changes
+            - Resolved version in the Formplayer build (if different from the declared version)
+            - Overall risk assessment (LOW/MEDIUM/HIGH)
+
+            ### 📋 Detailed Changelog Review
+            For each updated dependency:
+            - **Package**: name (old_version → new_version)
+            - **Changes**: Summary of key changes
+            - **Breaking Changes**: List any breaking changes
+            - **Security Fixes**: Note security improvements
+            - **Migration Notes**: Any upgrade steps needed
+
+            ### ⚠️ Impact Assessment
+            - **Breaking Changes Found**: Yes/No with details
+            - **Affected Files**: List Formplayer / commcare-core files that may need updates
+            - **Test Impact**: Any tests that may need updating
+            - **Configuration Changes**: Required config updates
+
+            ### 🛠️ Recommendations
+            - **Action Required**: What the team should do
+            - **Testing Focus**: Areas to test thoroughly
+            - **Follow-up Tasks**: Any additional work needed
+            - **Merge Recommendation**: APPROVE / REVIEW_NEEDED / HOLD
+
+            ### 📚 Useful Links
+            - Links to relevant changelogs, migration guides, documentation
+
+            Be thorough but concise. Focus on actionable insights that help the development
+            team make informed decisions about the dependency updates.
