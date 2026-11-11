@@ -6,12 +6,14 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.configuration.CacheConfiguration;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
+import org.commcare.formplayer.exceptions.SessionAuthDeniedException;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.services.HqUserDetailsService;
@@ -87,6 +89,42 @@ public class SessionAuthTests {
         MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
         this.testEndpoint(builder, status().isForbidden());
+    }
+
+    /**
+     * A failed session auth says why in the body, so an invalid session is distinguishable from
+     * a denial by HQ.
+     */
+    @Test
+    public void testEndpoint_WithFullAuth_BadCredentials_ReportsReason() throws Exception {
+        String sessionId = "123";
+        TokenMatcher matcher = new TokenMatcher(DOMAIN, USERNAME, sessionId);
+        when(userDetailsService.loadUserDetails(argThat(matcher))).thenThrow(
+                new UsernameNotFoundException(""));
+        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
+                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
+        this.testEndpoint(builder,
+                status().isForbidden(),
+                jsonPath("$.status").value("error"),
+                jsonPath("$.reason").value(SessionAuthDeniedException.REASON_SESSION_INVALID));
+    }
+
+    /**
+     * HQ denied the session (for example by IP access controls); the reason it gave is passed
+     * through to the client.
+     */
+    @Test
+    public void testEndpoint_WithFullAuth_DeniedByHq_ReportsReason() throws Exception {
+        String sessionId = "123";
+        TokenMatcher matcher = new TokenMatcher(DOMAIN, USERNAME, sessionId);
+        when(userDetailsService.loadUserDetails(argThat(matcher))).thenThrow(
+                new SessionAuthDeniedException("ip_access_denied"));
+        MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
+                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
+        this.testEndpoint(builder,
+                status().isForbidden(),
+                jsonPath("$.status").value("error"),
+                jsonPath("$.reason").value("ip_access_denied"));
     }
 
     @Test

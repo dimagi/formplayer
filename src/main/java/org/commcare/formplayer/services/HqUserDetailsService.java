@@ -1,11 +1,13 @@
 package org.commcare.formplayer.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commcare.formplayer.auth.PublicSessionCredential;
 import org.commcare.formplayer.auth.UserDomainPreAuthPrincipal;
 import org.commcare.formplayer.beans.auth.HqPublicSessionKeyBean;
 import org.commcare.formplayer.beans.auth.HqSessionKeyBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.exceptions.SessionAuthDeniedException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.exceptions.UserDetailsException;
 import org.commcare.formplayer.util.Constants;
@@ -26,7 +28,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 
+import lombok.extern.apachecommons.CommonsLog;
+
 @Service
+@CommonsLog
 public class HqUserDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
     @Value("${commcarehq.host}")
     private String host;
@@ -62,6 +67,7 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
         } catch (Exception e) {
             throw new UserDetailsException(e);
         }
+        webClient.addOriginIpHeader(headers);
         try {
 
             HqUserDetailsBean userDetails = webClient.postRaw(
@@ -70,7 +76,24 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
             return userDetails;
         } catch(HttpClientErrorException.NotFound nfe) {
             throw new SessionAuthUnavailableException();
+        } catch(HttpClientErrorException.Forbidden forbidden) {
+            throw new SessionAuthDeniedException(getDenialReason(forbidden));
         }
+    }
+
+    /**
+     * HQ states why it denied the session as {@code {"reason": "..."}} in a 403 body.
+     */
+    private String getDenialReason(HttpClientErrorException.Forbidden forbidden) {
+        try {
+            JsonNode reason = objectMapper.readTree(forbidden.getResponseBodyAsString()).get("reason");
+            if (reason != null && reason.isTextual()) {
+                return reason.asText();
+            }
+        } catch (Exception e) {
+            log.warn("Could not parse session denial reason from HQ", e);
+        }
+        return SessionAuthDeniedException.REASON_UNKNOWN;
     }
 
     private URI getSessionDetailsUrl() {
@@ -109,6 +132,10 @@ public class HqUserDetailsService implements AuthenticationUserDetailsService<Pr
             return userDetails;
         } catch (SessionAuthUnavailableException e) {
             throw new UsernameNotFoundException("Unable to authenticate user");
+        } catch (SessionAuthDeniedException e) {
+            log.warn(String.format("HQ denied session for user '%s' in domain '%s': %s",
+                    principal.getUsername(), principal.getDomain(), e.getReason()));
+            throw e;
         }
     }
 }

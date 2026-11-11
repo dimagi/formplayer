@@ -4,6 +4,7 @@ import static org.springframework.security.authorization.AuthorityAuthorizationM
 
 import org.commcare.formplayer.auth.CommCareSessionAuthFilter;
 import org.commcare.formplayer.auth.HmacAuthFilter;
+import org.commcare.formplayer.auth.SessionAuthFailureHandler;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.HqUserDetailsService;
@@ -106,8 +107,12 @@ public class WebSecurityConfig {
         http.authenticationManager(authenticationManager);
 
         // configure auth filters
+        SessionAuthFailureHandler sessionAuthFailureHandler = new SessionAuthFailureHandler();
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(getSessionAuthFilter(authenticationManager), HmacAuthFilter.class);
+        http.addFilterAfter(getSessionAuthFilter(authenticationManager, sessionAuthFailureHandler),
+                HmacAuthFilter.class);
+        // say why a session was not authenticated instead of Spring's bare 403
+        http.exceptionHandling(it -> it.authenticationEntryPoint(sessionAuthFailureHandler));
 
         // By setting the csrfRequestAttributeName to null, the CsrfToken must first be loaded to determine what
         // attribute name to use. This causes the CsrfToken to be loaded on every request.
@@ -190,9 +195,11 @@ public class WebSecurityConfig {
         http.httpBasic(AbstractHttpConfigurer::disable);
     }
 
-    public CommCareSessionAuthFilter getSessionAuthFilter(AuthenticationManager authenticationManager) throws Exception {
+    public CommCareSessionAuthFilter getSessionAuthFilter(AuthenticationManager authenticationManager,
+            SessionAuthFailureHandler failureHandler) throws Exception {
         CommCareSessionAuthFilter filter = new CommCareSessionAuthFilter();
         filter.setAuthenticationManager(authenticationManager);
+        filter.setAuthenticationFailureHandler(failureHandler);
         filter.setRequiresAuthenticationRequestMatcher(new CommCareSessionAuthFilter.SessionAuthRequestMatcher());
         return filter;
     }

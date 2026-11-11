@@ -3,6 +3,7 @@ package org.commcare.formplayer.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.headerDoesNotExist;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commcare.formplayer.auth.PublicSessionCredential;
 import org.commcare.formplayer.auth.UserDomainPreAuthPrincipal;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.exceptions.SessionAuthDeniedException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.commcare.formplayer.repo.FormSessionRepo;
@@ -23,6 +25,7 @@ import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.web.client.WebClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,12 +37,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @SpringBootTest
 @AutoConfigureMockRestServiceServer
@@ -81,9 +87,104 @@ public class HqUserDetailsServiceTests {
     @Autowired
     private MockRestServiceServer server;
 
+    private static final String DETAILS_JSON = "{" +
+            "\"domains\":[\"domain\"]," +
+            "\"djangoUserId\":1," +
+            "\"username\":\"user@domain.commcarehq.org\"," +
+            "\"authToken\":\"authToke\"," +
+            "\"superUser\":false" +
+            "}";
+
     @BeforeEach
     public void setUp() throws Exception {
         this.server.reset();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        RequestContextHolder.resetRequestAttributes();
+    }
+
+    private static void setCurrentRequest(MockHttpServletRequest request) {
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    }
+
+    /**
+     * HQ evaluates IP access controls against the Web Apps client's IP, so the session
+     * details request must carry it.
+     */
+    @Test
+    public void getUserDetails_forwardsClientIpToHq() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("X-FORWARDED-FOR", "203.0.113.7");
+        setCurrentRequest(request);
+
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andExpect(header("X-CommCareHQ-Origin-IP", "203.0.113.7"))
+                .andRespond(withSuccess(DETAILS_JSON, MediaType.APPLICATION_JSON));
+
+        this.service.getUserDetails("domain", "123abc");
+        this.server.verify();
+    }
+
+    @Test
+    public void getUserDetails_withoutCurrentRequest_sendsNoOriginIp() {
+        // @SpringBootTest binds a mock request to the test thread; detach it
+        RequestContextHolder.resetRequestAttributes();
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andExpect(headerDoesNotExist("X-CommCareHQ-Origin-IP"))
+                .andRespond(withSuccess(DETAILS_JSON, MediaType.APPLICATION_JSON));
+
+        this.service.getUserDetails("domain", "123abc");
+        this.server.verify();
+    }
+
+    /**
+     * A 403 from HQ is a denial with a reason (for example IP access controls), distinct from
+     * the 404 that means the session is unavailable.
+     */
+    @Test
+    public void getUserDetails_forbidden_throwsSessionAuthDeniedWithReason() {
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andRespond(withStatus(HttpStatus.FORBIDDEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"reason\": \"ip_access_denied\"}"));
+
+        SessionAuthDeniedException e = assertThrows(SessionAuthDeniedException.class, () -> {
+            this.service.getUserDetails("domain", "123abc");
+        });
+        assertThat(e.getReason()).isEqualTo("ip_access_denied");
+    }
+
+    @Test
+    public void getUserDetails_forbiddenWithoutReason_throwsSessionAuthDenied() {
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andRespond(withStatus(HttpStatus.FORBIDDEN));
+
+        SessionAuthDeniedException e = assertThrows(SessionAuthDeniedException.class, () -> {
+            this.service.getUserDetails("domain", "123abc");
+        });
+        assertThat(e.getReason()).isEqualTo(SessionAuthDeniedException.REASON_UNKNOWN);
+    }
+
+    /**
+     * The denial reason must reach the auth filter, so it is not collapsed into the generic
+     * {@link UsernameNotFoundException}.
+     */
+    @Test
+    public void loadUserDetails_forbidden_propagatesSessionAuthDenied() {
+        this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
+                .andRespond(withStatus(HttpStatus.FORBIDDEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"reason\": \"ip_access_denied\"}"));
+
+        UserDomainPreAuthPrincipal principal = new UserDomainPreAuthPrincipal("user", "domain");
+        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(
+                principal, "123abc");
+
+        SessionAuthDeniedException e = assertThrows(SessionAuthDeniedException.class,
+                () -> this.service.loadUserDetails(token));
+        assertThat(e.getReason()).isEqualTo("ip_access_denied");
     }
 
     @Test
