@@ -66,7 +66,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           allowed_bots: "dependabot[bot]"
           claude_args: |
-            --allowedTools "Grep,Bash(git:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh api:*),Read,WebFetch"
+            --allowedTools "Grep,Bash(git:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Read,WebFetch"
           prompt: |
             You are reviewing PR #${{ steps.pr.outputs.pr_number }} in ${{ github.repository }}.
 
@@ -147,12 +147,7 @@ jobs:
             bumps, use a condensed format with only a summary, resolved version, risk level and
             merge recommendation.
 
-            This workflow may be re-run manually on the same PR. Before posting, check for an earlier
-            review comment of yours on this PR (it starts with the heading below), using
-            `gh api repos/${{ github.repository }}/issues/${{ steps.pr.outputs.pr_number }}/comments`.
-            If one exists, update it in place with
-            `gh api -X PATCH repos/${{ github.repository }}/issues/comments/{comment_id} -f body=...`
-            instead of posting a new comment. Otherwise post with `gh pr comment`.
+            Post the comment with `gh pr comment`.
 
             Structure your comment with the following sections:
 
