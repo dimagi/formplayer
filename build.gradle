@@ -162,7 +162,7 @@ test {
     finalizedBy jacocoTestReport // report is always generated after tests run
 }
 
-task CreateSnapshotDbs(type: Test) {
+tasks.register('CreateSnapshotDbs', Test) {
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform()
@@ -173,15 +173,15 @@ task CreateSnapshotDbs(type: Test) {
     }
 }
 
-task copyTestResources(type: Copy) {
+tasks.register('copyTestResources', Copy) {
     from "${projectDir}/src/test/resources"
-    into "${buildDir}/classes/test"
+    into layout.buildDirectory.dir("classes/test")
 }
 test.dependsOn copyTestResources
 
-task copyScripts(type: Copy) {
+tasks.register('copyScripts', Copy) {
     from "${projectDir}/scripts/archive_dbs.sh"
-    into "${buildDir}/scripts"
+    into layout.buildDirectory.dir("scripts")
 }
 
 assemble.dependsOn copyScripts
