@@ -33,10 +33,7 @@ import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
-import org.commcare.formplayer.util.SimpleTimer;
+import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -176,7 +173,7 @@ public class MenuSessionRunnerService {
                     (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
-            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            String moduleName = ScreenUtils.getMenuTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             Sentry.setTag(Constants.MODULE_TAG, "menu");
@@ -194,14 +191,14 @@ public class MenuSessionRunnerService {
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
             // using getBestTitle to eliminate risk of showing private information
-            String caseListName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            String caseListName = ScreenUtils.getMenuTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
             Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             String queryKey = ((FormplayerQueryScreen)nextScreen).getQueryKey();
             answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData, queryKey);
             menuResponseBean = new QueryResponseBean((QueryScreen)nextScreen);
-            String moduleName = ScreenUtils.getBestTitle(menuSession.getSessionWrapper());
+            String moduleName = ScreenUtils.getMenuTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, moduleName);
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
             Sentry.setTag(Constants.MODULE_TAG, "case_search");
@@ -773,7 +770,10 @@ public class MenuSessionRunnerService {
         public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId,
             @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
-        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+        // A public web apps session is a deep-link into a form itself; we use the underlying
+        // functionality of SESSION_ENDPOINTS without its toggle.
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)
+                && !RequestUtils.isPublicSession()) {
             throw new RuntimeException("Linking into applications has been disabled for this project.");
         }
 
@@ -782,6 +782,11 @@ public class MenuSessionRunnerService {
             throw new RuntimeException(
                     "This link does not exist. Your app may have changed so that the given link is no longer "
                             + "valid");
+        }
+        // Endpoint args are stripped from a public session, so fail here rather than downstream
+        if (RequestUtils.isPublicSession() && !endpoint.getArguments().isEmpty()) {
+            throw new ApplicationConfigException(
+                    "This link requires additional information and cannot be opened as a public link.");
         }
         SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();

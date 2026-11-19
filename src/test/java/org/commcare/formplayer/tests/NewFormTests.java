@@ -1,11 +1,15 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.Map;
 
 /**
  * Created by willpride on 1/14/16.
@@ -50,6 +54,15 @@ public class NewFormTests extends BaseTestClass {
                     assert currentBean.getBinding().equals("/data/q_numeric");
             }
         }
+    }
+
+    @Test
+    public void testWebAppsPragmas() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
+                "xforms/web_apps_pragmas.xml");
+
+        assertEquals(Map.of("Layout", "condensed (English)", "Other", "other"),
+                newSessionResponse.getWebAppsPragmas());
     }
 
     // Open a form that requires custom user data

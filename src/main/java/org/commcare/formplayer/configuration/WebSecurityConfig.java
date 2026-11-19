@@ -4,6 +4,8 @@ import static org.springframework.security.authorization.AuthorityAuthorizationM
 
 import org.commcare.formplayer.auth.CommCareSessionAuthFilter;
 import org.commcare.formplayer.auth.HmacAuthFilter;
+import org.commcare.formplayer.auth.SessionAuthFailureHandler;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
@@ -18,6 +20,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,7 +33,11 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import java.util.Arrays;
 
 @Configuration
 public class WebSecurityConfig {
@@ -46,6 +53,30 @@ public class WebSecurityConfig {
     @Value("${formplayer.allowDoubleSlash:true}")
     private boolean allowDoubleSlash;
 
+    // The only routes a public web apps session may reach: get_endpoint to enter its locked form,
+    // plus every in-form action (endpoints that operate on an already-established form session).
+    // Every other route is denied (default-deny).
+    private static final String[] PUBLIC_SESSION_ALLOWED_URLS = {
+            Constants.URL_GET_ENDPOINT,
+            Constants.URL_ANSWER_QUESTION,
+            Constants.URL_ANSWER_MEDIA_QUESTION,
+            Constants.URL_CLEAR_ANSWER,
+            Constants.URL_NEW_REPEAT,
+            Constants.URL_DELETE_REPEAT,
+            Constants.URL_NEXT_INDEX,
+            Constants.URL_NEXT,
+            Constants.URL_PREV_INDEX,
+            Constants.URL_CURRENT,
+            Constants.URL_CHANGE_LANGUAGE,
+            Constants.URL_GET_INSTANCE,
+            Constants.URL_SUBMIT_FORM,
+    };
+
+    private final RequestMatcher allowedForPublicSession = new OrRequestMatcher(
+            Arrays.stream(PUBLIC_SESSION_ALLOWED_URLS)
+                    .map(url -> new AntPathRequestMatcher("/" + url))
+                    .toArray(RequestMatcher[]::new));
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         disableDefaults(http);
@@ -59,12 +90,15 @@ public class WebSecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/serverup")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
 
-                // validate form auth
+                // validate form auth. Any route-specific rule added before anyRequest must be
+                // wrapped in restrictPublicSession, or a public session bypasses the allowlist here.
                 .requestMatchers(new AntPathRequestMatcher("/validate_form")).access(
-                        getFormValidationAuthManager())
+                        restrictPublicSession(getFormValidationAuthManager()))
 
-                // full auth required for all other requests
-                .anyRequest().authenticated()
+                // full auth required for all other requests; a public web apps session is
+                // further restricted to its allowlisted routes (default-deny)
+                .anyRequest().access(
+                        restrictPublicSession(AuthenticatedAuthorizationManager.authenticated()))
         );
 
         // Configure the authentication manager with a provider that will use the
@@ -73,8 +107,12 @@ public class WebSecurityConfig {
         http.authenticationManager(authenticationManager);
 
         // configure auth filters
+        SessionAuthFailureHandler sessionAuthFailureHandler = new SessionAuthFailureHandler();
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(getSessionAuthFilter(authenticationManager), HmacAuthFilter.class);
+        http.addFilterAfter(getSessionAuthFilter(authenticationManager, sessionAuthFailureHandler),
+                HmacAuthFilter.class);
+        // say why a session was not authenticated instead of Spring's bare 403
+        http.exceptionHandling(it -> it.authenticationEntryPoint(sessionAuthFailureHandler));
 
         // By setting the csrfRequestAttributeName to null, the CsrfToken must first be loaded to determine what
         // attribute name to use. This causes the CsrfToken to be loaded on every request.
@@ -115,6 +153,31 @@ public class WebSecurityConfig {
         };
     }
 
+    /**
+     * Wraps an {@link AuthorizationManager} with the public web apps session route allowlist: a
+     * public session may reach only urls in {@code PUBLIC_SESSION_ALLOWED_URLS}; on every other
+     * route it is denied (default-deny), regardless of what {@code inner} decides.
+     * Non-public sessions get exactly {@code inner}'s decision.
+     */
+    private AuthorizationManager<RequestAuthorizationContext> restrictPublicSession(
+            AuthorizationManager<RequestAuthorizationContext> inner) {
+        return (authentication, context) -> {
+            AuthorizationDecision authDecision = inner.check(authentication, context);
+            if (authDecision != null && authDecision.isGranted()
+                    && isPublicSession(authentication.get())
+                    && !allowedForPublicSession.matches(context.getRequest())) {
+                return new AuthorizationDecision(false);
+            }
+            return authDecision;
+        };
+    }
+
+    private boolean isPublicSession(Authentication authentication) {
+        return authentication != null
+                && authentication.getPrincipal() instanceof HqUserDetailsBean bean
+                && bean.isPublicSession();
+    }
+
     private HmacAuthFilter getHmacAuthFilter() {
         return HmacAuthFilter.builder()
                 .hmacKey(formplayerAuthKey)
@@ -132,9 +195,11 @@ public class WebSecurityConfig {
         http.httpBasic(AbstractHttpConfigurer::disable);
     }
 
-    public CommCareSessionAuthFilter getSessionAuthFilter(AuthenticationManager authenticationManager) throws Exception {
+    public CommCareSessionAuthFilter getSessionAuthFilter(AuthenticationManager authenticationManager,
+            SessionAuthFailureHandler failureHandler) throws Exception {
         CommCareSessionAuthFilter filter = new CommCareSessionAuthFilter();
         filter.setAuthenticationManager(authenticationManager);
+        filter.setAuthenticationFailureHandler(failureHandler);
         filter.setRequiresAuthenticationRequestMatcher(new CommCareSessionAuthFilter.SessionAuthRequestMatcher());
         return filter;
     }

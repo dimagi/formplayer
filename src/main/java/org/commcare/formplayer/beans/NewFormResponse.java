@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/12/16.
@@ -15,19 +16,21 @@ public class NewFormResponse extends SessionResponseBean {
     private String[] breadcrumbs;
     private EntityDetailResponse persistentCaseTile;
     private QuestionBean event;
+    private Map<String, String> webAppsPragmas;
 
     public NewFormResponse() {
     }
 
     public NewFormResponse(String formTreeJson, String[] languages,
             String title, String sessionId, int sequenceId,
-            String instanceXml) throws IOException {
+            String instanceXml, Map<String, String> webAppsPragmas) throws IOException {
         this.tree = new ObjectMapper().readValue(formTreeJson, QuestionBean[].class);
         this.langs = languages;
         this.title = title;
         this.sessionId = sessionId;
         this.sequenceId = sequenceId;
         this.instanceXml = new InstanceXmlBean(instanceXml);
+        this.webAppsPragmas = webAppsPragmas;
     }
 
     public QuestionBean[] getTree() {
@@ -72,5 +75,9 @@ public class NewFormResponse extends SessionResponseBean {
 
     public void setTree(QuestionBean[] tree) {
         this.tree = tree;
+    }
+
+    public Map<String, String> getWebAppsPragmas() {
+        return webAppsPragmas;
     }
 }

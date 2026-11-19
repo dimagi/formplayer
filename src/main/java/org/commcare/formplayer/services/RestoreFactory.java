@@ -102,6 +102,8 @@ public class RestoreFactory {
 
     private boolean permitAggressiveSyncs = true;
 
+    private boolean deletePublicSandboxOnClose = false;
+
     public static final String FREQ_DAILY = "freq-daily";
     public static final String FREQ_WEEKLY = "freq-weekly";
     public static final String FREQ_NEVER = "freq-never";
@@ -374,6 +376,17 @@ public class RestoreFactory {
 
     public SQLiteDB getSQLiteDB() {
         return sqLiteDB;
+    }
+
+    /**
+     * Marks this request's sandbox for deletion once the restore connection is closed.
+     */
+    public void markPublicSandboxForDeletion() {
+        this.deletePublicSandboxOnClose = true;
+    }
+
+    public boolean shouldDeletePublicSandboxOnClose() {
+        return deletePublicSandboxOnClose;
     }
 
     public boolean getHasLocationChanged() {

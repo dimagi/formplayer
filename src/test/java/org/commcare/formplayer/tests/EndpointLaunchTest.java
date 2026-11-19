@@ -3,6 +3,7 @@ package org.commcare.formplayer.tests;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,6 +15,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.PersistentCommand;
 import org.commcare.formplayer.beans.menus.CommandUtils.NavIconState;
+import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.MockRequestUtils;
@@ -138,6 +140,55 @@ public class EndpointLaunchTest extends BaseTestClass {
         assertArrayEquals(formResponse.getSelections(),
                 new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1",
                         "f04bf0e8-2001-4885-a724-5497b34abe95"});
+    }
+
+    /**
+     * A public web apps session carries the public_form_session_key cookie, not the Django
+     * sessionid. Exercises the get_endpoint deep-link with NO sessionid cookie: it must reach the
+     * handler and navigate.
+     */
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
+    public void testEndpointLaunchWithoutSessionCookie() throws Exception {
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_parent",
+                null,
+                false,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Add Parent");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"0", "0"});
+    }
+
+    /**
+     * A public web apps session must be able to launch its endpoint even when the domain does not
+     * have the SESSION_ENDPOINTS toggle enabled. No sessionid cookie, matching a real public
+     * session. The toggle-off + non-public case still throws, per testToggleOff.
+     */
+    @Test
+    @WithHqUser(enabledToggles = {}, publicSession = true)
+    public void testEndpointLaunchForPublicSessionWithoutToggle() throws Exception {
+        NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
+                "add_parent",
+                null,
+                false,
+                NewFormResponse.class);
+        assert formResponse.getTitle().contentEquals("Add Parent");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"0", "0"});
+    }
+
+    /**
+     * A public link uses a single endpoint and its args are stripped, so reject early.
+     */
+    @Test
+    @WithHqUser(enabledToggles = {}, publicSession = true)
+    public void testPublicSessionRejectsEndpointDeclaringArguments() {
+        ServletException exception = assertThrows(ServletException.class,
+                () -> sessionNavigateWithEndpoint(APP_NAME,
+                        "followup",
+                        null,
+                        false,
+                        NewFormResponse.class));
+        assertInstanceOf(ApplicationConfigException.class, exception.getCause());
     }
 
     @Test

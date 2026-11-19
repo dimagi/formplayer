@@ -131,7 +131,7 @@ public class NewFormResponseFactory {
         NewFormResponse response = new NewFormResponse(
                 formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
                 serializedSession.getId(), serializedSession.getVersion(),
-                serializedSession.getInstanceXml()
+                serializedSession.getInstanceXml(), formEntrySession.getWebAppsPragmas()
         );
 
         response.populateTranslations();
@@ -145,7 +145,7 @@ public class NewFormResponseFactory {
         return new NewFormResponse(
                 formTreeJson, formSession.getLanguages(), session.getTitle(),
                 session.getId(), session.getVersion(),
-                session.getInstanceXml()
+                session.getInstanceXml(), formSession.getWebAppsPragmas()
         );
     }
 

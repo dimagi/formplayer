@@ -30,6 +30,8 @@ public class HqUserDetails {
     private boolean isSuperUser;
     private String[] enabledPreviews;
     private String[] enabledToggles;
+    private boolean publicSession;
+    private String[] permissions;
 
     public HqUserDetails(WithHqUser withUser) {
         String username = StringUtils.hasLength(withUser.username()) ? withUser.username()
@@ -42,9 +44,14 @@ public class HqUserDetails {
         this.isSuperUser = withUser.isSuperUser();
         this.enabledPreviews = withUser.enabledPreviews();
         this.enabledToggles = withUser.enabledToggles();
+        this.publicSession = withUser.publicSession();
     }
 
     public HqUserDetailsBean toBean() {
-        return new HqUserDetailsBean(domain, domains, username, isSuperUser, enabledToggles, enabledPreviews);
+        HqUserDetailsBean bean = new HqUserDetailsBean(domain, domains, username, isSuperUser,
+                enabledToggles, enabledPreviews);
+        bean.setPublicSession(publicSession);
+        bean.setPermissions(permissions);
+        return bean;
     }
 }

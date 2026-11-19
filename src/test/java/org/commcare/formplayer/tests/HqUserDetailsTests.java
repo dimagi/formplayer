@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.utils.HqUserDetails;
@@ -18,6 +20,7 @@ public class HqUserDetailsTests {
                 false, new String[]{}, new String[]{});
 
         Assertions.assertTrue(user.isAuthorized("domain", "aragorn"));
+        Assertions.assertTrue(user.isAuthorized("other-domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("domain", "wrong-aragorn"));
 
@@ -35,6 +38,63 @@ public class HqUserDetailsTests {
         Assertions.assertTrue(user.isAuthorized("domain", "bilbo"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "bilbo"));
         Assertions.assertFalse(user.isAuthorized("domain", "wrong-bilbo"));
+    }
+
+    @Test
+    public void testIsAuthorizedIgnoresPublicSessionFlag() {
+        HqUserDetailsBean publicUser = new HqUserDetailsBean("domain",
+                new String[]{"domain"}, "public_abc123@domain.commcarehq.org",
+                false, new String[]{}, new String[]{});
+        publicUser.setPublicSession(true);
+
+        Assertions.assertTrue(publicUser.isAuthorized("domain", "public_abc123@domain.commcarehq.org"));
+        Assertions.assertFalse(publicUser.isAuthorized("domain", "some-other-name"));
+        Assertions.assertFalse(publicUser.isAuthorized("other-domain", "public_abc123@domain.commcarehq.org"));
+    }
+
+    @Test
+    public void testPublicSessionDeserialization() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // HQ sends the reserved word `public` for a public web apps session, along with the
+        // authoritative app id and session endpoint the link is bound to.
+        HqUserDetailsBean publicUser = mapper.readValue(
+                "{\"username\":\"pub\",\"public\":true,"
+                        + "\"app_build_id\":\"app-1\",\"endpoint_id\":\"ep-1\"}",
+                HqUserDetailsBean.class);
+        Assertions.assertTrue(publicUser.isPublicSession());
+        Assertions.assertEquals("app-1", publicUser.getPublicAppId());
+        Assertions.assertEquals("ep-1", publicUser.getPublicEndpointId());
+
+        HqUserDetailsBean regularUser = mapper.readValue(
+                "{\"username\":\"reg\",\"public\":false}", HqUserDetailsBean.class);
+        Assertions.assertFalse(regularUser.isPublicSession());
+
+        // Absent `public` defaults to false (primitive boolean; the bean also ignores unknowns).
+        // The app/endpoint fields are reference types, so they default to null.
+        HqUserDetailsBean noField = mapper.readValue(
+                "{\"username\":\"reg\"}", HqUserDetailsBean.class);
+        Assertions.assertFalse(noField.isPublicSession());
+        Assertions.assertNull(noField.getPublicAppId());
+        Assertions.assertNull(noField.getPublicEndpointId());
+    }
+
+    @Test
+    public void testHasPermission() {
+        HqUserDetailsBean user = new HqUserDetailsBean("domain",
+                new String[]{"domain"}, "aragorn",
+                false, new String[]{}, new String[]{});
+        user.setPermissions(new String[]{"edit_data"});
+
+        Assertions.assertTrue(user.hasPermission("edit_data"));
+        Assertions.assertFalse(user.hasPermission("access_web_apps"));
+    }
+
+    @Test
+    public void testHasPermissionWhenPermissionsMissing() {
+        HqUserDetailsBean user = new HqUserDetailsBean("domain", "aragorn");
+
+        Assertions.assertFalse(user.hasPermission("edit_data"));
     }
 
     @Test

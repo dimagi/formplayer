@@ -250,7 +250,7 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateToEndpoint(@RequestBody SessionNavigationBean sessionNavigationBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            @CookieValue(value = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
             HttpServletRequest request) throws Exception {
         // Apps using aggressive syncs are likely to hit a sync whenever using endpoint-based navigation,
         // since they use it to jump between different sandboxes. Turn it off.

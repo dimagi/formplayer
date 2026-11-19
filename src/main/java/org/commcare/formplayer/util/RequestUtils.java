@@ -101,11 +101,18 @@ public class RequestUtils {
 
     public static Optional<HqUserDetailsBean> getUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            HqUserDetailsBean userDetails = (HqUserDetailsBean)authentication.getPrincipal();
+        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)
+                && authentication.getPrincipal() instanceof HqUserDetailsBean userDetails) {
             return Optional.of(userDetails);
         }
         return Optional.empty();
+    }
+
+    /**
+     * @return True if the current request is authenticated as a public web apps session.
+     */
+    public static boolean isPublicSession() {
+        return getUserDetails().map(HqUserDetailsBean::isPublicSession).orElse(false);
     }
 
     /**
