@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 buildscript {
     repositories {
         mavenCentral()
@@ -43,7 +45,7 @@ allprojects{
 
 repositories {
     mavenCentral()
-    maven { url "https://jitpack.io" }
+    maven { url = "https://jitpack.io" }
 }
 
 ext {
@@ -52,8 +54,10 @@ ext {
     shedlockVersion = '6.10.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 idea {
     module {
@@ -144,7 +148,7 @@ dependencies {
 test {
     useJUnitPlatform()
     testLogging {
-        exceptionFormat 'full'
+        exceptionFormat = 'full'
         events "passed", "skipped", "failed"
     }
     if (isTravisBuild) {
@@ -160,7 +164,9 @@ test {
     finalizedBy jacocoTestReport // report is always generated after tests run
 }
 
-task CreateSnapshotDbs(type: Test) {
+tasks.register('CreateSnapshotDbs', Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform()
     environment('org.commcare.formplayer.test.snapshot.mode', 'write')
     filter {
@@ -169,15 +175,15 @@ task CreateSnapshotDbs(type: Test) {
     }
 }
 
-task copyTestResources(type: Copy) {
+tasks.register('copyTestResources', Copy) {
     from "${projectDir}/src/test/resources"
-    into "${buildDir}/classes/test"
+    into layout.buildDirectory.dir("classes/test")
 }
 test.dependsOn copyTestResources
 
-task copyScripts(type: Copy) {
+tasks.register('copyScripts', Copy) {
     from "${projectDir}/scripts/archive_dbs.sh"
-    into "${buildDir}/scripts"
+    into layout.buildDirectory.dir("scripts")
 }
 
 assemble.dependsOn copyScripts
@@ -190,8 +196,8 @@ jacocoTestReport {
     }
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
-    kotlinOptions {
-        jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }

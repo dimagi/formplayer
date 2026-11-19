@@ -20,3 +20,4 @@ out/
 lombok.config
 /artifacts/
 forms
+.kotlin/
