@@ -17,7 +17,7 @@ import java.nio.file.Paths
 class MediaHandler(val file: MultipartFile, val mediaMetaDataService: MediaMetaDataService) {
 
     companion object {
-        val log = LogFactory.getLog(this.javaClass)
+        val log = LogFactory.getLog(MediaHandler::class.java)
 
         private fun getMediaFilePath(parentDirPath: Path, fileId: String): Path {
             return Paths.get(parentDirPath.toString(), fileId)
