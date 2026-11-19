@@ -7,7 +7,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '3.3.5'
+    id 'org.springframework.boot' version '3.5.16'
     id "com.gorylenko.gradle-git-properties" version "2.4.2"
     id "io.freefair.lombok" version "9.0.0"
     id 'org.jetbrains.kotlin.jvm' version '2.2.20'
@@ -87,16 +87,6 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-autoconfigure'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache'
-    implementation('org.apache.logging.log4j:log4j-to-slf4j') {
-        version {
-            strictly '2.15.0'
-        }
-    }
-    implementation('org.apache.logging.log4j:log4j-api') {
-        version {
-            strictly '2.15.0'
-        }
-    }
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation group: 'org.xerial', name: 'sqlite-jdbc'
     implementation group: 'redis.clients', name: 'jedis'

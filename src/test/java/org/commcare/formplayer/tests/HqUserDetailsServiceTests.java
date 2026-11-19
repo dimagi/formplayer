@@ -201,7 +201,9 @@ public class HqUserDetailsServiceTests {
 
         this.server.expect(requestTo(Constants.SESSION_DETAILS_VIEW))
                 .andExpect(jsonPath("$.sessionId").value("123abc"))
-                .andExpect(header("X-MAC-DIGEST", "4mpTOxhuJ+QJQcbeEPtRkr9goVhNh9HP2NszeP+bguc="))
+                // HMAC of {"domain":"domain","sessionId":"123abc"}; Jackson 2.18+ orders the
+                // properties by HqSessionKeyBean's constructor
+                .andExpect(header("X-MAC-DIGEST", "u18K1/6DOEYHX2C6MJcC6lereZzEtNAHhdU0XOU1yms="))
                 .andExpect(jsonPath("$.domain").value("domain"))
                 .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
 

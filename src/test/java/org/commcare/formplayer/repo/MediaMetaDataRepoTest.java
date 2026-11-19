@@ -79,9 +79,13 @@ public class MediaMetaDataRepoTest {
                 "appid"
         );
         MediaMetadataRecord savedMediaRecord = mediaMetadataRepo.saveAndFlush(mediaMetaData);
+        // In production the media record is saved and the session deleted in separate requests.
+        // Hibernate 6.6 refuses to flush a session delete while the referencing record is still
+        // in the persistence context, so detach it as a separate request would.
+        entityManager.clear();
 
-        // delete form session
-        formSessionRepo.delete(session);
+        // delete form session the way FormSessionService.deleteSessionById does
+        formSessionRepo.deleteById(session.getId());
         entityManager.flush();
         entityManager.clear();
         // get the meta data record to verify if the form session is set to null
