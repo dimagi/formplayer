@@ -52,8 +52,10 @@ ext {
     shedlockVersion = '6.10.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 idea {
     module {
@@ -161,6 +163,8 @@ test {
 }
 
 task CreateSnapshotDbs(type: Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform()
     environment('org.commcare.formplayer.test.snapshot.mode', 'write')
     filter {
